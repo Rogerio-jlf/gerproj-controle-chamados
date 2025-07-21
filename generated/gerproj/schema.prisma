@@ -1,0 +1,667 @@
+generator gerprojClient {
+  provider = "prisma-client-js"
+  output   = "../../generated/gerproj"
+}
+
+datasource gerprojDb {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_GERPROJ")
+}
+
+model acesso_sistema {
+  cod_usuario    Int
+  cod_modulo     Int
+  cod_tela       Int
+  incluir        String         @default("SIM") @gerprojDb.Char(3)
+  modificar      String         @default("SIM") @gerprojDb.Char(3)
+  eliminar       String         @default("SIM") @gerprojDb.Char(3)
+  modulo_sistema modulo_sistema @relation(fields: [cod_modulo], references: [cod_modulo], onDelete: NoAction, onUpdate: NoAction, map: "fk_acesso_modulo")
+  tela_sistema   tela_sistema   @relation(fields: [cod_tela, cod_modulo], references: [cod_tela, cod_modulo], onDelete: NoAction, onUpdate: NoAction, map: "fk_acesso_tela")
+  usuario        usuario        @relation(fields: [cod_usuario], references: [cod_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_acesso_usuario")
+
+  @@id([cod_usuario, cod_modulo, cod_tela], map: "pk_acesso")
+}
+
+model agenrec {
+  cod_agenrec     Int      @id(map: "pk_agenrec")
+  cod_recurso     Int
+  data_agenrec    DateTime @gerprojDb.Date
+  hrini_agenrec   String   @gerprojDb.Char(4)
+  hrfim_agenrec   String   @gerprojDb.Char(4)
+  status_agenrec  Int      @default(0)
+  obs_agenrec     String?  @gerprojDb.VarChar(200)
+  custo_agenrec   Decimal? @default(0) @gerprojDb.Decimal(15, 2)
+  receita_agenrec Decimal? @default(0) @gerprojDb.Decimal(15, 2)
+  tpcusto_agenrec Int?     @default(1)
+  recurso         recurso  @relation(fields: [cod_recurso], references: [cod_recurso], onDelete: NoAction, onUpdate: NoAction, map: "fk_agenrec_recurso")
+}
+
+model area {
+  cod_area  Int      @id(map: "pk_area")
+  nome_area String   @gerprojDb.VarChar(50)
+  meta      meta[]
+  tarefa    tarefa[]
+}
+
+model avaliacao {
+  cod_avaliacao    Int        @id(map: "pk_avaliacao")
+  anomes_avaliacao String     @gerprojDb.Char(6)
+  data_avaliacao   DateTime   @gerprojDb.Date
+  codrec_avaliacao Int
+  status_avaliacao String     @gerprojDb.Char(3)
+  codpro_avaliacao Int
+  projeto          projeto    @relation(fields: [codpro_avaliacao], references: [cod_projeto], onDelete: NoAction, onUpdate: NoAction, map: "fk_avaliacao_projeto")
+  avaliado         avaliado[]
+}
+
+model avaliado {
+  codaval_avaliado Int
+  codrec_avaliado  Int
+  status_avaliado  String       @gerprojDb.Char(3)
+  data_avaliado    DateTime?    @gerprojDb.Date
+  hora_avaliado    String?      @gerprojDb.Char(4)
+  usuario_avaliado String?      @gerprojDb.VarChar(10)
+  avaliacao        avaliacao    @relation(fields: [codaval_avaliado], references: [cod_avaliacao], onDelete: NoAction, onUpdate: NoAction, map: "fk_avaliado_avaliacao")
+  recurso          recurso      @relation(fields: [codrec_avaliado], references: [cod_recurso], onDelete: NoAction, onUpdate: NoAction, map: "fk_avaliado_recurso")
+  itavaliado       itavaliado[]
+
+  @@id([codaval_avaliado, codrec_avaliado], map: "pk_avaliado")
+}
+
+model chamado {
+  cod_chamado          Int       @id(map: "pk_chamado")
+  data_chamado         DateTime  @gerprojDb.Date
+  hora_chamado         String    @gerprojDb.Char(4)
+  solicitacao_chamado  Bytes?
+  conclusao_chamado    DateTime? @gerprojDb.Date
+  status_chamado       String    @gerprojDb.VarChar(20)
+  dtenvio_chamado      String?   @gerprojDb.VarChar(100)
+  cod_recurso          Int?
+  cliente_chamado      String?   @gerprojDb.VarChar(50)
+  codtrf_chamado       Int?
+  cod_cliente          Int?
+  solicitacao2_chamado Bytes?
+  assunto_chamado      String?   @gerprojDb.VarChar(150)
+  email_chamado        String?   @gerprojDb.VarChar(250)
+  prior_chamado        Int?      @default(100)
+  cod_classificacao    Int?      @default(0)
+
+  // RELAÇÃO COM CLIENTE
+  cliente cliente? @relation(fields: [cod_cliente], references: [cod_cliente])
+
+  // RELAÇÃO COM RECURSO
+  recurso recurso? @relation(fields: [cod_recurso], references: [cod_recurso])
+}
+
+model cidade {
+  cod_cidade     Int     @id(map: "pk_cidade")
+  nome_cidade    String  @gerprojDb.VarChar(50)
+  codibge_cidade String? @gerprojDb.Char(10)
+  uf_cidade      String? @gerprojDb.Char(2)
+}
+
+model classificacao {
+  cod_classificacao   Int     @id(map: "pk_classificacao")
+  nome_classificacao  String  @gerprojDb.VarChar(50)
+  ativo_classificacao String? @default("SIM") @gerprojDb.Char(3)
+}
+
+model cliente {
+  cod_cliente         Int     @id(map: "pk_cliente")
+  nome_cliente        String  @gerprojDb.VarChar(50)
+  razao_cliente       String? @gerprojDb.VarChar(100)
+  end_cliente         String? @gerprojDb.VarChar(100)
+  bairro_cliente      String? @gerprojDb.VarChar(50)
+  cep_cliente         String? @gerprojDb.VarChar(8)
+  fone_cliente        String? @gerprojDb.VarChar(10)
+  cnpj_cliente        String? @gerprojDb.VarChar(14)
+  ie_cliente          String? @gerprojDb.VarChar(20)
+  uf_cliente          String? @gerprojDb.Char(2)
+  fax_cliente         String? @gerprojDb.VarChar(10)
+  contato_cliente     String? @gerprojDb.VarChar(100)
+  funccontato_cliente String? @gerprojDb.VarChar(100)
+  endcob_cliente      String? @gerprojDb.VarChar(100)
+  bairrocob_cliente   String? @gerprojDb.VarChar(50)
+  cepcob_cliente      String? @gerprojDb.VarChar(8)
+  cidadecob_cliente   String? @gerprojDb.VarChar(100)
+  ufcob_cliente       String? @gerprojDb.Char(2)
+  ativo_cliente       Int     @default(1)
+  obs_cliente         Bytes?
+  im_cliente          String? @gerprojDb.VarChar(20)
+  cod_cidade          Int?
+  numend_cliente      String? @gerprojDb.VarChar(20)
+  comend_cliente      String? @gerprojDb.VarChar(50)
+  email_cliente       String? @gerprojDb.VarChar(200)
+  codbanco_cliente    String? @gerprojDb.VarChar(25)
+  sla_cliente         Int     @default(0)
+
+  // 🔽 Adicione essas duas relações
+  chamados chamado[]
+  fatrec   fatrec[] // <- campo oposto adicionado
+  projeto  projeto[]
+}
+
+model composicao {
+  cod_composicao    Int      @id(map: "pk_composicao")
+  cod_fatura        Int
+  cod_cliente       Int
+  cod_projeto       Int
+  cod_tarefa        Int
+  cod_recurso       Int
+  hrfat_composicao  Decimal? @gerprojDb.Decimal(15, 2)
+  hrnfat_composicao Decimal? @gerprojDb.Decimal(15, 2)
+  vrhr_composicao   Decimal? @gerprojDb.Decimal(15, 2)
+  vrfat_composicao  Decimal? @gerprojDb.Decimal(15, 2)
+}
+
+model contato {
+  cod_contato         Int      @id(map: "pk_contato")
+  data_contato        DateTime @gerprojDb.Date
+  hora_contato        String   @gerprojDb.Char(5)
+  nomeusuario_contato String   @gerprojDb.VarChar(50)
+  desc_contato        String?  @gerprojDb.VarChar(250)
+  cod_lista           Int
+}
+
+model ctiss {
+  cod_ctiss     Int     @id(map: "pk_ctiss")
+  num_ctiss     String  @gerprojDb.Char(20)
+  subitem_ctiss String  @gerprojDb.Char(10)
+  descr_ctiss   String? @gerprojDb.VarChar(100)
+  csll_ctiss    Decimal @gerprojDb.Decimal(15, 2)
+  pis_ctiss     Decimal @gerprojDb.Decimal(15, 2)
+  cofins_ctiss  Decimal @gerprojDb.Decimal(15, 2)
+  irrf_ctiss    Decimal @gerprojDb.Decimal(15, 2)
+  aliq_ctiss    Decimal @gerprojDb.Decimal(15, 2)
+  aliqret_ctiss Decimal @gerprojDb.Decimal(15, 2)
+}
+
+model despesa {
+  cod_despesa    Int     @id(map: "pk_despesa")
+  cod_recurso    Int
+  cod_tpdesp     Int
+  valor_despesa  Decimal @default(1) @gerprojDb.Decimal(15, 2)
+  mesano_despesa String  @gerprojDb.Char(7)
+}
+
+model desprec {
+  cod_desprec   Int     @id(map: "pk_desprec")
+  cod_recurso   Int
+  cod_tpdesp    Int
+  valor_desprec Decimal @default(1) @gerprojDb.Decimal(15, 2)
+}
+
+model empresa {
+  cod_empresa         Int     @id(map: "pk_empresa")
+  nome_empresa        String  @gerprojDb.VarChar(50)
+  razao_empresa       String? @gerprojDb.VarChar(100)
+  end_empresa         String? @gerprojDb.VarChar(100)
+  bairro_empresa      String? @gerprojDb.VarChar(50)
+  cep_empresa         String? @gerprojDb.Char(8)
+  ddd_empresa         String? @gerprojDb.Char(3)
+  fone_empresa        String? @gerprojDb.Char(9)
+  cnpj_empresa        String? @gerprojDb.Char(14)
+  ie_empresa          String? @gerprojDb.VarChar(20)
+  im_empresa          String? @gerprojDb.VarChar(20)
+  cod_cidade          Int?
+  certificado_empresa String? @gerprojDb.VarChar(100)
+  email_empresa       String? @gerprojDb.VarChar(200)
+}
+
+model fase {
+  cod_fase  Int      @id(map: "pk_fase")
+  nome_fase String   @gerprojDb.VarChar(50)
+  meta      meta[]
+  tarefa    tarefa[]
+}
+
+model fatdes {
+  cod_fatdes    Int       @id(map: "pk_fatdes")
+  mesano_fatdes String?   @gerprojDb.Char(7)
+  desc_fatdes   String    @gerprojDb.VarChar(50)
+  vrdesp_fatdes Decimal   @default(0) @gerprojDb.Decimal(15, 2)
+  dtpag_fatdes  DateTime? @gerprojDb.Date
+  obs_fatdes    Bytes?
+  dtven_fatdes  DateTime? @gerprojDb.Date
+}
+
+model fatfun {
+  cod_fatfun    Int       @id(map: "pk_fatfun")
+  mesano_fatfun String?   @gerprojDb.Char(7)
+  nome_fatfun   String    @gerprojDb.VarChar(50)
+  vrdesl_fatfun Decimal   @default(0) @gerprojDb.Decimal(15, 2)
+  vralm_fatfun  Decimal   @default(0) @gerprojDb.Decimal(15, 2)
+  vrsal_fatfun  Decimal   @default(0) @gerprojDb.Decimal(15, 2)
+  dtpag_fatfun  DateTime? @gerprojDb.Date
+  obs_fatfun    Bytes?
+  dtpag1_fatfun DateTime? @gerprojDb.Date
+  dtpag2_fatfun DateTime? @gerprojDb.Date
+  cod_recurso   Int?
+}
+
+model fatrec {
+  cod_fatrec     Int       @id(map: "pk_fatrec")
+  cod_cliente    Int
+  desc_fatrec    String    @gerprojDb.VarChar(100)
+  qtdhora_fatrec Decimal   @default(0) @gerprojDb.Decimal(15, 2)
+  vrhora_fatrec  Decimal   @default(0) @gerprojDb.Decimal(15, 2)
+  vrtot_fatrec   Decimal   @default(0) @gerprojDb.Decimal(15, 2)
+  dtvenc_fatrec  DateTime? @gerprojDb.Date
+  dtnf_fatrec    DateTime? @gerprojDb.Date
+  dtcob_fatrec   DateTime? @gerprojDb.Date
+  dtpag_fatrec   DateTime? @gerprojDb.Date
+  vrpag_fatrec   Decimal   @default(0) @gerprojDb.Decimal(15, 2)
+  imp_fatrec     Decimal   @default(0) @gerprojDb.Decimal(15, 2)
+  mesano_fatrec  String?   @gerprojDb.Char(7)
+  obs_fatrec     Bytes?
+  cod_recurso    Int?
+  perccom_fatrec Decimal   @default(0) @gerprojDb.Decimal(15, 2)
+  dtpgcom_fatrec DateTime? @gerprojDb.Date
+  cod_empresa    Int?
+  nf_fatrec      String?   @gerprojDb.VarChar(20)
+  cliente        cliente   @relation(fields: [cod_cliente], references: [cod_cliente], onDelete: NoAction, onUpdate: NoAction, map: "fk_fatrec_cliente")
+}
+
+model fatura {
+  cod_fatura    Int      @id(map: "pk_fatura")
+  mesano_fatura String   @gerprojDb.Char(7)
+  desp_fatura   Decimal? @default(0) @gerprojDb.Decimal(15, 2)
+  imp_fatura    Decimal? @default(0) @gerprojDb.Decimal(15, 2)
+  lucro_fatura  Decimal? @default(0) @gerprojDb.Decimal(15, 2)
+}
+
+model faturamento {
+  cod_faturamento    Int      @id(map: "pk_faturamento")
+  data_faturamento   DateTime @gerprojDb.Date
+  hora_faturamento   String   @gerprojDb.Char(4)
+  usu_faturamento    String?  @gerprojDb.VarChar(10)
+  ini_faturamento    DateTime @gerprojDb.Date
+  fim_faturamento    DateTime @gerprojDb.Date
+  status_faturamento String   @default("GERADO") @gerprojDb.VarChar(10)
+  mesano_faturamento String?  @gerprojDb.Char(7)
+}
+
+model grupo {
+  cod_grupo  Int    @id(map: "pk_grupo")
+  desc_grupo String @gerprojDb.VarChar(50)
+}
+
+model histchamado {
+  cod_histchamado  Int      @id(map: "pk_histchamado")
+  cod_chamado      Int
+  data_histchamado DateTime @gerprojDb.Date
+  hora_histchamado String   @gerprojDb.Char(4)
+  desc_histchamado String?  @gerprojDb.VarChar(200)
+}
+
+model itavaliado {
+  codaval_itavaliado  Int
+  codrec_itavaliado   Int
+  codmat_itavaliado   Int
+  coditmat_itavaliado Int
+  ptoger_itavaliado   Int
+  ptorec_itavaliado   Int
+  obs_itavaliado      String?  @gerprojDb.VarChar(200)
+  nota1_itavaliado    Decimal  @gerprojDb.Decimal(15, 2)
+  nota2_itavaliado    Decimal  @gerprojDb.Decimal(15, 2)
+  nota3_itavaliado    Decimal  @gerprojDb.Decimal(15, 2)
+  avaliado            avaliado @relation(fields: [codaval_itavaliado, codrec_itavaliado], references: [codaval_avaliado, codrec_avaliado], onDelete: NoAction, onUpdate: NoAction, map: "fk_itavaliado_avaliado")
+  itmatriz            itmatriz @relation(fields: [codmat_itavaliado, coditmat_itavaliado], references: [codmat_itmatriz, cod_itmatriz], onDelete: NoAction, onUpdate: NoAction, map: "fk_itavaliado_itmatriz")
+
+  @@id([codaval_itavaliado, codrec_itavaliado, codmat_itavaliado, coditmat_itavaliado], map: "pk_itavaliado")
+}
+
+model itmatriz {
+  codmat_itmatriz  Int
+  cod_itmatriz     Int
+  nota1_itmatriz   Decimal      @gerprojDb.Decimal(15, 2)
+  nota2_itmatriz   Decimal      @gerprojDb.Decimal(15, 2)
+  nota3_itmatriz   Decimal      @gerprojDb.Decimal(15, 2)
+  questao_itmatriz Bytes?
+  itavaliado       itavaliado[]
+  matriz           matriz       @relation(fields: [codmat_itmatriz], references: [cod_matriz], onDelete: NoAction, onUpdate: NoAction, map: "fk_itmatriz_matriz")
+
+  @@id([codmat_itmatriz, cod_itmatriz], map: "pk_itmatriz")
+}
+
+model layout {
+  cod_layout     Int     @id(map: "pk_layout")
+  tabela_layout  String? @gerprojDb.VarChar(30)
+  campo_layout   String? @gerprojDb.VarChar(30)
+  posicao_layout Int?
+}
+
+model lista {
+  cod_lista         Int      @id(map: "pk_lista")
+  cod_grupo         Int
+  cod_status        Int      @default(0)
+  cgccpf_lista      String   @gerprojDb.VarChar(20)
+  id_lista          String?  @gerprojDb.VarChar(15)
+  nome_lista        String   @gerprojDb.VarChar(50)
+  end_lista         String?  @gerprojDb.VarChar(150)
+  num_lista         String?  @gerprojDb.VarChar(10)
+  comp_lista        String?  @gerprojDb.VarChar(10)
+  cep_lista         String?  @gerprojDb.VarChar(8)
+  bairro_lista      String?  @gerprojDb.VarChar(150)
+  cidade_lista      String?  @gerprojDb.VarChar(150)
+  uf_lista          String?  @gerprojDb.VarChar(2)
+  email_lista       String?  @gerprojDb.VarChar(200)
+  dtcontactar_lista DateTime @gerprojDb.Date
+  dtcad_lista       DateTime @gerprojDb.Date
+  obs_lista         Bytes?
+}
+
+model matriz {
+  cod_matriz    Int        @id(map: "pk_matriz")
+  desc_matriz   String     @gerprojDb.VarChar(50)
+  status_matriz String     @gerprojDb.Char(3)
+  itmatriz      itmatriz[]
+}
+
+model mensagem {
+  cod_mensagem  Int    @id(map: "pk_mensagem")
+  desc_mensagem String @gerprojDb.VarChar(50)
+}
+
+model meta {
+  codproj_meta Int
+  codarea_meta Int
+  codfase_meta Int
+  tempo_meta   Decimal @gerprojDb.Decimal(15, 2)
+  altesc_meta  Decimal @default(0) @gerprojDb.Decimal(15, 2)
+  area         area    @relation(fields: [codarea_meta], references: [cod_area], onDelete: NoAction, onUpdate: NoAction, map: "fk_meta_area")
+  fase         fase    @relation(fields: [codfase_meta], references: [cod_fase], onDelete: NoAction, onUpdate: NoAction, map: "fk_meta_fase")
+  projeto      projeto @relation(fields: [codproj_meta], references: [cod_projeto], onDelete: NoAction, onUpdate: NoAction, map: "fk_meta_projeto")
+
+  @@id([codproj_meta, codarea_meta, codfase_meta], map: "pk_meta")
+}
+
+model modulo_sistema {
+  cod_modulo     Int              @id(map: "pk_modulo")
+  desc_modulo    String           @gerprojDb.VarChar(30)
+  acesso_sistema acesso_sistema[]
+  tela_sistema   tela_sistema[]
+}
+
+model nfse {
+  cod_nfse        Int      @id(map: "pk_nfse")
+  num_nfse        String?  @gerprojDb.Char(20)
+  dtemissao_nfse  DateTime @gerprojDb.Date
+  hremissao_nfse  String   @gerprojDb.Char(5)
+  cod_empresa     Int
+  cod_cliente     Int
+  discr_nfse      Bytes?
+  cod_ctiss       Int
+  natoper_nfse    Int
+  regtrib_nfse    Int
+  vrtot_nfse      Decimal  @default(0) @gerprojDb.Decimal(15, 2)
+  vrded_nfse      Decimal  @default(0) @gerprojDb.Decimal(15, 2)
+  vrdesc1_nfse    Decimal  @default(0) @gerprojDb.Decimal(15, 2)
+  vrdesc2_nfse    Decimal  @default(0) @gerprojDb.Decimal(15, 2)
+  vrir_nfse       Decimal  @default(0) @gerprojDb.Decimal(15, 2)
+  vrpis_nfse      Decimal  @default(0) @gerprojDb.Decimal(15, 2)
+  vrcofins_nfse   Decimal  @default(0) @gerprojDb.Decimal(15, 2)
+  vrcsll_nfse     Decimal  @default(0) @gerprojDb.Decimal(15, 2)
+  vrout_nfse      Decimal  @default(0) @gerprojDb.Decimal(15, 2)
+  issret_nfse     Int      @default(0)
+  aliqiss_nfse    Decimal  @default(0) @gerprojDb.Decimal(15, 2)
+  vrinss_nfse     Decimal  @default(0) @gerprojDb.Decimal(15, 2)
+  doc_nfse        String?  @gerprojDb.VarChar(200)
+  aliqissret_nfse Decimal  @default(0) @gerprojDb.Decimal(15, 2)
+  xml_nfse        Bytes?
+  codver_nfse     String?  @gerprojDb.VarChar(20)
+  logtrans_nfse   Bytes?
+  logcan_nfse     Bytes?
+  xmlformat_nfse  Bytes?
+  prot_nfse       String?  @gerprojDb.VarChar(50)
+  chvcan_nfse     String?  @gerprojDb.VarChar(50)
+  dtcanc_nfse     String?  @gerprojDb.VarChar(20)
+  tipoper_nfse    Int
+  opsimnac_nfse   Int
+  csll_nfse       Decimal  @gerprojDb.Decimal(15, 2)
+  pis_nfse        Decimal  @gerprojDb.Decimal(15, 2)
+  cofins_nfse     Decimal  @gerprojDb.Decimal(15, 2)
+  irrf_nfse       Decimal  @gerprojDb.Decimal(15, 2)
+}
+
+model nivel {
+  cod_nivel  Int       @id(map: "pk_nivel")
+  nome_nivel String    @gerprojDb.VarChar(50)
+  perc_nivel Decimal   @default(0) @gerprojDb.Decimal(15, 2)
+  recurso    recurso[]
+}
+
+model os {
+  cod_os          Int      @id(map: "pk_os")
+  codtrf_os       Int
+  dtini_os        DateTime @gerprojDb.Date
+  hrini_os        String   @gerprojDb.Char(4)
+  hrfim_os        String   @gerprojDb.Char(4)
+  obs_os          String?  @gerprojDb.VarChar(200)
+  status_os       Int      @default(1)
+  produtivo_os    String   @default("SIM") @gerprojDb.Char(3)
+  codrec_os       Int
+  produtivo2_os   String   @default("SIM") @gerprojDb.Char(3)
+  respcli_os      String   @gerprojDb.VarChar(50)
+  remdes_os       String   @default("NAO") @gerprojDb.Char(3)
+  abono_os        String   @default("NAO") @gerprojDb.Char(3)
+  desloc_os       String?  @gerprojDb.Char(4)
+  obs             Bytes?
+  dtinc_os        DateTime @gerprojDb.Date
+  faturado_os     String   @default("SIM") @gerprojDb.Char(3)
+  perc_os         Int      @default(0)
+  cod_faturamento Int?
+  comp_os         String?  @gerprojDb.Char(7)
+  valid_os        String   @default("NAO") @gerprojDb.Char(3)
+  vrhr_os         Decimal  @default(0) @gerprojDb.Decimal(15, 2)
+  num_os          String?  @gerprojDb.VarChar(6)
+  chamado_os      String?  @gerprojDb.VarChar(10)
+  tarefa          tarefa   @relation(fields: [codtrf_os], references: [cod_tarefa], onDelete: NoAction, onUpdate: NoAction, map: "fk_os_tarefa")
+}
+
+model parametros {
+  cod_parametro   Int     @id(map: "pk_parametros")
+  descr_parametro String  @gerprojDb.VarChar(20)
+  valor_parametro String? @gerprojDb.VarChar(200)
+}
+
+model parcela {
+  cod_parcela      Int      @id(map: "pk_parcela")
+  cod_lista        Int
+  data_parcela     String?  @gerprojDb.VarChar(10)
+  venc_parcela     String?  @gerprojDb.VarChar(10)
+  pag_parcela      String?  @gerprojDb.VarChar(10)
+  valor_parcela    Decimal? @gerprojDb.Decimal(15, 2)
+  juros_parcela    Decimal? @gerprojDb.Decimal(15, 2)
+  multa_parcela    Decimal? @gerprojDb.Decimal(15, 2)
+  desconto_parcela Decimal? @gerprojDb.Decimal(15, 2)
+  status_parcela   String   @default("N") @gerprojDb.Char(1)
+  id_parcela       String?  @gerprojDb.VarChar(15)
+}
+
+model pauta {
+  cod_pauta   Int       @id(map: "pk_pauta")
+  cod_recurso Int
+  data_pauta  DateTime  @gerprojDb.Date
+  prazo_pauta DateTime  @gerprojDb.Date
+  concl_pauta DateTime? @gerprojDb.Date
+  desc_pauta  String?   @gerprojDb.VarChar(150)
+  obs_pauta   Bytes?
+}
+
+model ponto {
+  cod_ponto     Int       @id(map: "pk_ponto")
+  entrada_ponto DateTime  @gerprojDb.Date
+  saida_ponto   DateTime? @gerprojDb.Date
+  cod_recurso   Int
+}
+
+model projeto {
+  cod_projeto      Int         @id(map: "pk_projeto")
+  nome_projeto     String      @gerprojDb.VarChar(50)
+  codcli_projeto   Int
+  respcli_projeto  String      @gerprojDb.VarChar(50)
+  proposta_projeto String?     @gerprojDb.VarChar(50)
+  codrec_projeto   Int
+  perc_projeto     Decimal     @default(0) @gerprojDb.Decimal(15, 2)
+  loginc_projeto   String?     @gerprojDb.VarChar(75)
+  logalt_projeto   String?     @gerprojDb.VarChar(75)
+  qtdhoras_projeto Decimal     @default(0) @gerprojDb.Decimal(15, 2)
+  status_projeto   String      @default("ATI") @gerprojDb.Char(3)
+  avaliacao        avaliacao[]
+  meta             meta[]
+  cliente          cliente     @relation(fields: [codcli_projeto], references: [cod_cliente], onDelete: NoAction, onUpdate: NoAction, map: "fk_projeto_cliente")
+  recurso          recurso     @relation(fields: [codrec_projeto], references: [cod_recurso], onDelete: NoAction, onUpdate: NoAction, map: "fk_projeto_recurso")
+  tarefa           tarefa[]
+  valor            valor[]
+}
+
+model recurso {
+  cod_recurso                              Int        @id(map: "pk_recurso")
+  nome_recurso                             String     @gerprojDb.VarChar(50)
+  fone_recurso                             String?    @gerprojDb.VarChar(10)
+  ativo_recurso                            Int        @default(1)
+  codusr_recurso                           Int
+  cod_nivel                                Int
+  hrdia_recurso                            String?    @gerprojDb.Char(4)
+  percprod_recurso                         Decimal?   @gerprojDb.Decimal(15, 2)
+  email_recurso                            String?    @gerprojDb.VarChar(100)
+  dtlimite_recurso                         DateTime?  @gerprojDb.Date
+  permapo_recurso                          String     @default("NAO") @gerprojDb.Char(3)
+  matr_recurso                             String?    @gerprojDb.VarChar(8)
+  obs_recurso                              Bytes?
+  custo_recurso                            Decimal?   @default(0) @gerprojDb.Decimal(15, 2)
+  receita_recurso                          Decimal?   @default(0) @gerprojDb.Decimal(15, 2)
+  tpcusto_recurso                          Int?       @default(1)
+  agenrec                                  agenrec[]
+  avaliado                                 avaliado[]
+  projeto                                  projeto[]
+  nivel                                    nivel      @relation(fields: [cod_nivel], references: [cod_nivel], onDelete: NoAction, onUpdate: NoAction, map: "fk_recurso_nivel")
+  usuario                                  usuario    @relation(fields: [codusr_recurso], references: [cod_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_recurso_usuario")
+  tarefa_tarefa_codrecresp_tarefaTorecurso tarefa[]   @relation("tarefa_codrecresp_tarefaTorecurso")
+  tarefa_tarefa_codrec_tarefaTorecurso     tarefa[]   @relation("tarefa_codrec_tarefaTorecurso")
+
+  chamado chamado[]
+}
+
+model rescon {
+  cod_rescon         Int      @id(map: "pk_rescon")
+  cod_fatura         Int
+  cod_recurso        Int
+  hrfat_rescon       Decimal? @gerprojDb.Decimal(15, 2)
+  hrnfat_rescon      Decimal? @gerprojDb.Decimal(15, 2)
+  vrfat_rescon       Decimal? @gerprojDb.Decimal(15, 2)
+  vrnfat_rescon      Decimal? @gerprojDb.Decimal(15, 2)
+  realizado_rescon   Decimal? @gerprojDb.Decimal(15, 2)
+  disponivel_rescon  Decimal? @gerprojDb.Decimal(15, 2)
+  perc1_rescon       Decimal? @gerprojDb.Decimal(15, 2)
+  perc2_rescon       Decimal? @gerprojDb.Decimal(15, 2)
+  perc3_rescon       Decimal? @gerprojDb.Decimal(15, 2)
+  custo_rescon       Decimal? @gerprojDb.Decimal(15, 2)
+  contrib_rescon     Decimal? @gerprojDb.Decimal(15, 2)
+  perccontrib_rescon Decimal? @gerprojDb.Decimal(15, 2)
+  hrbase_rescon      Decimal? @gerprojDb.Decimal(15, 2)
+  mo_rescon          Decimal? @gerprojDb.Decimal(15, 2)
+  desp_rescon        Decimal? @gerprojDb.Decimal(15, 2)
+}
+
+model status {
+  cod_status  Int    @id(map: "pk_status")
+  desc_status String @gerprojDb.VarChar(50)
+}
+
+model tarefa {
+  cod_tarefa                                Int       @id(map: "pk_tarefa")
+  nome_tarefa                               String    @gerprojDb.VarChar(50)
+  codpro_tarefa                             Int
+  codrec_tarefa                             Int
+  dtsol_tarefa                              DateTime? @gerprojDb.Date
+  dtaprov_tarefa                            DateTime? @gerprojDb.Date
+  dtprevent_tarefa                          DateTime? @gerprojDb.Date
+  hrest_tarefa                              Decimal?  @gerprojDb.Decimal(15, 2)
+  hratesc_tarefa                            Decimal?  @gerprojDb.Decimal(15, 2)
+  margem_tarefa                             String    @default("SIM") @gerprojDb.Char(3)
+  status_tarefa                             Int       @default(0)
+  ordem_tarefa                              Int
+  cod_area                                  Int
+  estimado_tarefa                           String    @default("SIM") @gerprojDb.Char(3)
+  cod_tipotrf                               Int
+  codrecresp_tarefa                         Int
+  hrreal_tarefa                             Decimal?  @gerprojDb.Decimal(15, 2)
+  fatest_tarefa                             String    @default("SIM") @gerprojDb.Char(3)
+  cod_fase                                  Int
+  valini_tarefa                             DateTime  @gerprojDb.Date
+  valfim_tarefa                             DateTime  @gerprojDb.Date
+  perimp_tarefa                             String    @default("SIM") @gerprojDb.Char(3)
+  dtinc_tarefa                              DateTime  @gerprojDb.Date
+  perc_tarefa                               Int       @default(0)
+  fatura_tarefa                             String    @default("SIM") @gerprojDb.Char(3)
+  valida_tarefa                             Int       @default(1)
+  vrhr_tarefa                               Decimal   @default(0) @gerprojDb.Decimal(15, 2)
+  obs_tarefa                                Bytes?
+  limmes_tarefa                             Int?
+  exibecham_tarefa                          Int?
+  os                                        os[]
+  area                                      area      @relation(fields: [cod_area], references: [cod_area], onDelete: NoAction, onUpdate: NoAction, map: "fk_tarefa_area")
+  fase                                      fase      @relation(fields: [cod_fase], references: [cod_fase], onDelete: NoAction, onUpdate: NoAction, map: "fk_tarefa_fase")
+  projeto                                   projeto   @relation(fields: [codpro_tarefa], references: [cod_projeto], onDelete: NoAction, onUpdate: NoAction, map: "fk_tarefa_projeto")
+  recurso_tarefa_codrecresp_tarefaTorecurso recurso   @relation("tarefa_codrecresp_tarefaTorecurso", fields: [codrecresp_tarefa], references: [cod_recurso], onDelete: NoAction, onUpdate: NoAction, map: "fk_tarefa_rec")
+  recurso_tarefa_codrec_tarefaTorecurso     recurso   @relation("tarefa_codrec_tarefaTorecurso", fields: [codrec_tarefa], references: [cod_recurso], onDelete: NoAction, onUpdate: NoAction, map: "fk_tarefa_recurso")
+}
+
+model tela_sistema {
+  cod_tela       Int
+  cod_modulo     Int
+  desc_tela      String           @gerprojDb.VarChar(30)
+  acesso_sistema acesso_sistema[]
+  modulo_sistema modulo_sistema   @relation(fields: [cod_modulo], references: [cod_modulo], onDelete: NoAction, onUpdate: NoAction, map: "fk_tela_modulo")
+
+  @@id([cod_tela, cod_modulo], map: "pk_tela")
+}
+
+model telefone {
+  cod_telefone    Int     @id(map: "pk_telefone")
+  cod_lista       Int
+  ddd_telefone    String? @gerprojDb.Char(3)
+  numero_telefone String  @gerprojDb.VarChar(50)
+  desc_telefone   String? @gerprojDb.VarChar(150)
+}
+
+model tipotrf {
+  cod_tipotrf  Int     @id(map: "pk_tipotrf")
+  nome_tipotrf String  @gerprojDb.VarChar(50)
+  valor        valor[]
+}
+
+model tpdesp {
+  cod_tpdesp  Int    @id(map: "pk_tpdesp")
+  nome_tpdesp String @gerprojDb.VarChar(50)
+}
+
+model usuario {
+  cod_usuario      Int              @id(map: "pk_usuario")
+  nome_usuario     String           @gerprojDb.VarChar(50)
+  id_usuario       String           @gerprojDb.VarChar(10)
+  senha            String?          @gerprojDb.Char(10)
+  tipo_usuario     String           @default("USU") @gerprojDb.Char(3)
+  permtar_usuario  String           @default("NAO") @gerprojDb.Char(3)
+  altsen_usuario   Int              @default(0)
+  perproj1_usuario String           @default("NAO") @gerprojDb.Char(3)
+  perproj2_usuario String           @default("NAO") @gerprojDb.Char(3)
+  tela1_usuario    Int?
+  tela2_usuario    Int?
+  tela3_usuario    Int?
+  tela4_usuario    Int?
+  acesso_sistema   acesso_sistema[]
+  recurso          recurso[]
+}
+
+model valor {
+  codproj_valor Int
+  codtipo_valor Int
+  preco_valor   Decimal @gerprojDb.Decimal(15, 2)
+  projeto       projeto @relation(fields: [codproj_valor], references: [cod_projeto], onDelete: NoAction, onUpdate: NoAction, map: "fk_valor_projeto")
+  tipotrf       tipotrf @relation(fields: [codtipo_valor], references: [cod_tipotrf], onDelete: NoAction, onUpdate: NoAction, map: "fk_valor_tipo")
+
+  @@id([codproj_valor, codtipo_valor], map: "pk_valor")
+}
