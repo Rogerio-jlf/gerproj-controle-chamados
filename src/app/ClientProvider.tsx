@@ -1,8 +1,8 @@
 // src/app/ClientProviders.tsx
 'use client';
 
-import { AuthProvider } from '@/context/AuthContext';
-import { FiltersProvider } from '@/context/FiltersContext';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { FiltersProvider } from '@/contexts/FiltersContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode, useState } from 'react';
 import { Toaster } from 'sonner';

@@ -18,7 +18,7 @@ export async function GET(request: Request) {
       // Valida o parâmetro 'mes'
       return NextResponse.json(
         { error: "Parâmetro 'mes' deve ser um número entre 1 e 12" }, // Retorna erro se inválido
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
       // Valida o parâmetro 'ano'
       return NextResponse.json(
         { error: "Parâmetro 'ano' deve ser um número válido" }, // Retorna erro se inválido
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
         {
           error: "Parâmetro 'codCliente' é obrigatório para usuários não admin", // Retorna erro se ausente
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
     });
 
     const nomesRecursos = recursos // Processa os resultados da consulta
-      .map((item) => item.nome_recurso) // Extrai o nome do recurso
+      .map(item => item.nome_recurso) // Extrai o nome do recurso
       .filter((nome): nome is string => nome != null && nome.trim() !== '') // Remove nulos e vazios
       .sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })); // Ordena alfabeticamente
 
@@ -86,13 +86,13 @@ export async function GET(request: Request) {
           message: error.message, // Mensagem detalhada do erro
           timestamp: new Date().toISOString(), // Timestamp do erro
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
     return NextResponse.json(
       { error: 'Erro interno do servidor' }, // Mensagem genérica de erro
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

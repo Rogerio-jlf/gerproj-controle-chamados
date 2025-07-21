@@ -34,13 +34,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       { success: true, message: 'Notificações enviadas com sucesso' },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error('Erro ao enviar notificações:', error);
     return NextResponse.json(
       { error: 'Erro interno ao processar a solicitação' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

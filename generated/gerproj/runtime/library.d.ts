@@ -3,7 +3,7 @@
  */
 declare function $extends(
   this: Client,
-  extension: ExtensionArgs | ((client: Client) => Client),
+  extension: ExtensionArgs | ((client: Client) => Client)
 ): Client;
 
 declare type AccelerateEngineConfig = {
@@ -159,14 +159,14 @@ declare type BatchQuery = {
 declare type BatchQueryEngineResult<T> = QueryEngineResultData<T> | Error;
 
 declare type BatchQueryOptionsCb = (
-  args: BatchQueryOptionsCbArgs,
+  args: BatchQueryOptionsCbArgs
 ) => Promise<any>;
 
 declare type BatchQueryOptionsCbArgs = {
   args: BatchArgs;
   query: (
     args: BatchArgs,
-    __internalParams?: BatchInternalParams,
+    __internalParams?: BatchInternalParams
   ) => Promise<unknown[]>;
   __internalParams: BatchInternalParams;
 };
@@ -453,7 +453,7 @@ declare type DatamodelEnum = ReadonlyDeep_2<{
 }>;
 
 declare function datamodelEnumToSchemaEnum(
-  datamodelEnum: DatamodelEnum,
+  datamodelEnum: DatamodelEnum
 ): SchemaEnum;
 
 declare type Datasource = {
@@ -686,7 +686,7 @@ export declare class Decimal {
   toSignificantDigits(significantDigits?: number): Decimal;
   toSignificantDigits(
     significantDigits: number,
-    rounding: Decimal.Rounding,
+    rounding: Decimal.Rounding
   ): Decimal;
   toSD(significantDigits?: number): Decimal;
   toSD(significantDigits: number, rounding: Decimal.Rounding): Decimal;
@@ -712,7 +712,7 @@ export declare class Decimal {
   static clamp(
     n: Decimal.Value,
     min: Decimal.Value,
-    max: Decimal.Value,
+    max: Decimal.Value
   ): Decimal;
   static clone(object?: Decimal.Config): Decimal.Constructor;
   static config(object: Decimal.Config): Decimal.Constructor;
@@ -809,11 +809,11 @@ export declare type DefaultSelection<
 
 export declare function defineDmmfProperty(
   target: object,
-  runtimeDataModel: RuntimeDataModel,
+  runtimeDataModel: RuntimeDataModel
 ): void;
 
 declare function defineExtension(
-  ext: ExtensionArgs | ((client: Client) => Client),
+  ext: ExtensionArgs | ((client: Client) => Client)
 ): (client: Client) => Client;
 
 declare const denylist: readonly [
@@ -836,7 +836,7 @@ declare type DeserializedResponse = Array<Record<string, unknown>>;
 export declare function deserializeJsonResponse(result: unknown): unknown;
 
 export declare function deserializeRawResult(
-  response: RawResponse,
+  response: RawResponse
 ): DeserializedResponse;
 
 export declare type DevTypeMapDef = {
@@ -942,7 +942,7 @@ declare namespace DMMF_2 {
 }
 
 export declare function dmmfToRuntimeDataModel(
-  dmmfDataModel: DMMF_2.Datamodel,
+  dmmfDataModel: DMMF_2.Datamodel
 ): RuntimeDataModel;
 
 declare type Document_2 = ReadonlyDeep_2<{
@@ -1031,20 +1031,20 @@ export declare type DynamicClientExtensionThisBuiltin<
     arg: [...P],
     options?: {
       isolationLevel?: TypeMap['meta']['txIsolationLevel'];
-    },
+    }
   ): Promise<UnwrapTuple<P>>;
   $transaction<R>(
     fn: (
       client: Omit<
         DynamicClientExtensionThis<TypeMap, TypeMapCb, ExtArgs>,
         ITXClientDenyList
-      >,
+      >
     ) => Promise<R>,
     options?: {
       maxWait?: number;
       timeout?: number;
       isolationLevel?: TypeMap['meta']['txIsolationLevel'];
-    },
+    }
   ): Promise<R>;
   $disconnect(): Promise<void>;
   $connect(): Promise<void>;
@@ -1097,7 +1097,7 @@ export declare type DynamicModelExtensionFluentApi<
     args?: Exact<
       A,
       Path<TypeMap['model'][M]['operations'][P]['args']['select'], [K]>
-    >,
+    >
   ) => PrismaPromise<
     | Path<
         DynamicModelExtensionFnResultBase<
@@ -1154,7 +1154,7 @@ export declare type DynamicModelExtensionOperationFn<
   P extends PropertyKey,
 > = {} extends TypeMap['model'][M]['operations'][P]['args']
   ? <A extends TypeMap['model'][M]['operations'][P]['args']>(
-      args?: Exact<A, TypeMap['model'][M]['operations'][P]['args']>,
+      args?: Exact<A, TypeMap['model'][M]['operations'][P]['args']>
     ) => DynamicModelExtensionFnResult<
       TypeMap,
       M,
@@ -1163,7 +1163,7 @@ export declare type DynamicModelExtensionOperationFn<
       DynamicModelExtensionFnResultNull<P>
     >
   : <A extends TypeMap['model'][M]['operations'][P]['args']>(
-      args: Exact<A, TypeMap['model'][M]['operations'][P]['args']>,
+      args: Exact<A, TypeMap['model'][M]['operations'][P]['args']>
     ) => DynamicModelExtensionFnResult<
       TypeMap,
       M,
@@ -1264,7 +1264,7 @@ export declare type DynamicQueryExtensionCb<
   _1 extends PropertyKey,
   _2 extends PropertyKey,
 > = <A extends DynamicQueryExtensionCbArgs<TypeMap, _0, _1, _2>>(
-  args: A,
+  args: A
 ) => Promise<TypeMap[_0][_1][_2]['result']>;
 
 export declare type DynamicQueryExtensionCbArgs<
@@ -1279,13 +1279,13 @@ export declare type DynamicQueryExtensionCbArgs<
         model: _0 extends 0 ? undefined : _1;
         operation: _2;
         query: <A extends DynamicQueryExtensionCbArgsArgs<TypeMap, _0, _1, _2>>(
-          args: A,
+          args: A
         ) => PrismaPromise<TypeMap[_0][_1]['operations'][_2]['result']>;
       }
     : never
   : never) & {
   query: (
-    args: DynamicQueryExtensionCbArgsArgs<TypeMap, _0, _1, _2>,
+    args: DynamicQueryExtensionCbArgsArgs<TypeMap, _0, _1, _2>
   ) => PrismaPromise<TypeMap[_0][_1]['operations'][_2]['result']>;
 };
 
@@ -1315,7 +1315,7 @@ export declare type DynamicResultExtensionArgs<
           TypeMap,
           ModelKey<TypeMap, K>,
           R_[K][P]
-        >,
+        >
       ): any;
     };
   };
@@ -1361,26 +1361,26 @@ declare interface Engine<InteractiveTransactionPayload = unknown> {
   version(forceRun?: boolean): Promise<string> | string;
   request<T>(
     query: JsonQuery,
-    options: RequestOptions<InteractiveTransactionPayload>,
+    options: RequestOptions<InteractiveTransactionPayload>
   ): Promise<QueryEngineResultData<T>>;
   requestBatch<T>(
     queries: JsonQuery[],
-    options: RequestBatchOptions<InteractiveTransactionPayload>,
+    options: RequestBatchOptions<InteractiveTransactionPayload>
   ): Promise<BatchQueryEngineResult<T>[]>;
   transaction(
     action: 'start',
     headers: Transaction_2.TransactionHeaders,
-    options: Transaction_2.Options,
+    options: Transaction_2.Options
   ): Promise<Transaction_2.InteractiveTransactionInfo<unknown>>;
   transaction(
     action: 'commit',
     headers: Transaction_2.TransactionHeaders,
-    info: Transaction_2.InteractiveTransactionInfo<unknown>,
+    info: Transaction_2.InteractiveTransactionInfo<unknown>
   ): Promise<void>;
   transaction(
     action: 'rollback',
     headers: Transaction_2.TransactionHeaders,
-    info: Transaction_2.InteractiveTransactionInfo<unknown>,
+    info: Transaction_2.InteractiveTransactionInfo<unknown>
   ): Promise<void>;
   metrics(options: MetricsOptionsJson): Promise<Metrics>;
   metrics(options: MetricsOptionsPrometheus): Promise<string>;
@@ -1762,7 +1762,7 @@ export declare interface ExtendsHook<
             M;
           client?: DynamicClientExtensionArgs<C_, TypeMap, TypeMapCb, ExtArgs> &
             C;
-        },
+        }
   ): {
     extends: DynamicClientExtensionThis<
       Call<
@@ -1959,7 +1959,7 @@ export declare type GetAggregateResult<P extends OperationPayload, A> = {
 
 declare function getBatchRequestPayload(
   batch: JsonQuery[],
-  transaction?: TransactionOptions_3<unknown>,
+  transaction?: TransactionOptions_3<unknown>
 ): QueryEngineBatchRequest;
 
 export declare type GetBatchResult = {
@@ -2129,7 +2129,7 @@ export declare function getPrismaClient(config: GetPrismaClientConfig): {
     $use(middleware: QueryMiddleware): void;
     $on<E extends ExtendedEventType>(
       eventType: E,
-      callback: EventCallback<E>,
+      callback: EventCallback<E>
     ): any;
     $connect(): Promise<void>;
     /**
@@ -2143,7 +2143,7 @@ export declare function getPrismaClient(config: GetPrismaClientConfig): {
       transaction: PrismaPromiseTransaction | undefined,
       clientMethod: string,
       args: RawQueryArgs,
-      middlewareArgsMapper?: MiddlewareArgsMapper<unknown, unknown>,
+      middlewareArgsMapper?: MiddlewareArgsMapper<unknown, unknown>
     ): Promise<number>;
     /**
      * Executes a raw query provided through a safe tag function
@@ -2176,7 +2176,7 @@ export declare function getPrismaClient(config: GetPrismaClientConfig): {
      * @returns
      */
     $runCommandRaw(
-      command: Record<string, JsInputValue>,
+      command: Record<string, JsInputValue>
     ): PrismaPromise_2<unknown, any>;
     /**
      * Executes a raw query and returns selected data
@@ -2185,7 +2185,7 @@ export declare function getPrismaClient(config: GetPrismaClientConfig): {
       transaction: PrismaPromiseTransaction | undefined,
       clientMethod: string,
       args: RawQueryArgs,
-      middlewareArgsMapper?: MiddlewareArgsMapper<unknown, unknown>,
+      middlewareArgsMapper?: MiddlewareArgsMapper<unknown, unknown>
     ): Promise<any>;
     /**
      * Executes a raw query provided through a safe tag function
@@ -2625,7 +2625,7 @@ export declare function join(
   values: readonly RawValue[],
   separator?: string,
   prefix?: string,
-  suffix?: string,
+  suffix?: string
 ): Sql;
 
 export declare type JsArgs = {
@@ -2825,7 +2825,7 @@ declare type LogDefinition = {
 declare type LogEmitter = {
   on<E extends EngineEventType>(
     event: E,
-    listener: (event: EngineEvent<E>) => void,
+    listener: (event: EngineEvent<E>) => void
   ): LogEmitter;
   emit(event: QueryEventType, payload: QueryEvent): boolean;
   emit(event: LogEventType, payload: LogEvent): boolean;
@@ -2862,7 +2862,7 @@ export declare function makeStrictEnum<
 >(definition: T): T;
 
 export declare function makeTypedQueryFactory(
-  sql: string,
+  sql: string
 ): (...values: any[]) => TypedSql<any[], unknown>;
 
 declare type Mappings = ReadonlyDeep_2<{
@@ -3055,7 +3055,7 @@ declare type ModelMapping = ReadonlyDeep_2<{
 }>;
 
 export declare type ModelQueryOptionsCb = (
-  args: ModelQueryOptionsCbArgs,
+  args: ModelQueryOptionsCbArgs
 ) => Promise<any>;
 
 export declare type ModelQueryOptionsCbArgs = {
@@ -3214,7 +3214,7 @@ declare type OutputTypeRef = TypeRef<
 >;
 
 export declare function Param<$Type, $Value extends string>(
-  name: $Value,
+  name: $Value
 ): Param<$Type, $Value>;
 
 export declare type Param<out $Type, $Value extends string> = {
@@ -3280,7 +3280,7 @@ export declare class PrismaClientKnownRequestError
   batchRequestIdx?: number;
   constructor(
     message: string,
-    { code, clientVersion, meta, batchRequestIdx }: KnownErrorParams,
+    { code, clientVersion, meta, batchRequestIdx }: KnownErrorParams
   );
   get [Symbol.toStringTag](): string;
 }
@@ -3356,7 +3356,7 @@ export declare class PrismaClientUnknownRequestError
   batchRequestIdx?: number;
   constructor(
     message: string,
-    { clientVersion, batchRequestIdx }: UnknownErrorParams,
+    { clientVersion, batchRequestIdx }: UnknownErrorParams
   );
   get [Symbol.toStringTag](): string;
 }
@@ -3371,7 +3371,7 @@ export declare class PrismaClientValidationError extends Error {
 declare function prismaGraphQLToJSError(
   { error, user_facing_error }: RequestError,
   clientVersion: string,
-  activeProvider: string,
+  activeProvider: string
 ): PrismaClientKnownRequestError | PrismaClientUnknownRequestError;
 
 declare type PrismaOperationSpec<TArgs, TAction = string> = {
@@ -3403,7 +3403,7 @@ declare interface PrismaPromise_2<
   then<R1 = TResult, R2 = never>(
     onfulfilled?: (value: TResult) => R1 | PromiseLike<R1>,
     onrejected?: (error: unknown) => R2 | PromiseLike<R2>,
-    transaction?: PrismaPromiseTransaction,
+    transaction?: PrismaPromiseTransaction
   ): Promise<R1 | R2>;
   /**
    * Extension of the original `.catch` function
@@ -3412,7 +3412,7 @@ declare interface PrismaPromise_2<
    */
   catch<R = never>(
     onrejected?: ((reason: any) => R | PromiseLike<R>) | undefined | null,
-    transaction?: PrismaPromiseTransaction,
+    transaction?: PrismaPromiseTransaction
   ): Promise<TResult | R>;
   /**
    * Extension of the original `.finally` function
@@ -3421,14 +3421,14 @@ declare interface PrismaPromise_2<
    */
   finally(
     onfinally?: (() => void) | undefined | null,
-    transaction?: PrismaPromiseTransaction,
+    transaction?: PrismaPromiseTransaction
   ): Promise<TResult>;
   /**
    * Called when executing a batch of regular tx
    * @param transaction transaction options for batch tx
    */
   requestTransaction?(
-    transaction: PrismaPromiseBatchTransaction,
+    transaction: PrismaPromiseBatchTransaction
   ): PromiseLike<unknown>;
 }
 
@@ -3441,7 +3441,7 @@ declare type PrismaPromiseBatchTransaction = {
 };
 
 declare type PrismaPromiseCallback = (
-  transaction?: PrismaPromiseTransaction,
+  transaction?: PrismaPromiseTransaction
 ) => Promise<unknown>;
 
 /**
@@ -3455,7 +3455,7 @@ declare type PrismaPromiseCallback = (
  */
 declare type PrismaPromiseFactory = <T extends PrismaOperationSpec<unknown>>(
   callback: PrismaPromiseCallback,
-  op?: T,
+  op?: T
 ) => PrismaPromise_2<unknown>;
 
 declare type PrismaPromiseInteractiveTransaction<PayloadType = unknown> = {
@@ -3539,7 +3539,7 @@ declare interface QueryEngineConstructor {
   new (
     config: QueryEngineConfig,
     logger: (log: string) => void,
-    adapter?: ErrorCapturingSqlDriverAdapter,
+    adapter?: ErrorCapturingSqlDriverAdapter
   ): QueryEngineInstance;
 }
 
@@ -3554,23 +3554,23 @@ declare type QueryEngineInstance = {
     requestStr: string,
     headersStr: string,
     transactionId: string | undefined,
-    requestId: string,
+    requestId: string
   ): Promise<string>;
   sdlSchema?(): Promise<string>;
   startTransaction(
     options: string,
     traceHeaders: string,
-    requestId: string,
+    requestId: string
   ): Promise<string>;
   commitTransaction(
     id: string,
     traceHeaders: string,
-    requestId: string,
+    requestId: string
   ): Promise<string>;
   rollbackTransaction(
     id: string,
     traceHeaders: string,
-    requestId: string,
+    requestId: string
   ): Promise<string>;
   metrics?(options: string): Promise<string>;
   applyPendingMigrations?(): Promise<void>;
@@ -3643,7 +3643,7 @@ declare type QueryIntrospectionBuiltinType =
 
 declare type QueryMiddleware = (
   params: QueryMiddlewareParams,
-  next: (params: QueryMiddlewareParams) => Promise<unknown>,
+  next: (params: QueryMiddlewareParams) => Promise<unknown>
 ) => Promise<unknown>;
 
 declare type QueryMiddlewareParams = {
@@ -3760,7 +3760,7 @@ declare class RequestHandler {
   request(params: RequestParams): Promise<any>;
   mapQueryEngineResult(
     { dataPath, unpacker }: RequestParams,
-    response: QueryEngineResultData<any>,
+    response: QueryEngineResultData<any>
   ): any;
   /**
    * Handles the error and logs it, logging the error is done synchronously waiting for the event
@@ -4085,7 +4085,7 @@ declare interface Span {
   addEvent(
     name: string,
     attributesOrStartTime?: SpanAttributes | TimeInput,
-    startTime?: TimeInput,
+    startTime?: TimeInput
   ): this;
   /**
    * Adds a single link to the span.
@@ -4423,7 +4423,7 @@ declare interface TracingHelper {
   getActiveContext(): Context | undefined;
   runInChildSpan<R>(
     nameOrOptions: string | ExtendedSpanOptions,
-    callback: SpanCallback<R>,
+    callback: SpanCallback<R>
   ): R;
 }
 
@@ -4610,7 +4610,7 @@ declare function validator<
   client: C,
   model: M,
   operation: O,
-  prop: P,
+  prop: P
 ): <S>(select: Exact<S, Args<C[M], O>[P]>) => S;
 
 /**

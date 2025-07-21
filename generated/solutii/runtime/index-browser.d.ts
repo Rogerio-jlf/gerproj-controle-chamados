@@ -212,7 +212,7 @@ export declare class Decimal {
   toSignificantDigits(significantDigits?: number): Decimal;
   toSignificantDigits(
     significantDigits: number,
-    rounding: Decimal.Rounding,
+    rounding: Decimal.Rounding
   ): Decimal;
   toSD(significantDigits?: number): Decimal;
   toSD(significantDigits: number, rounding: Decimal.Rounding): Decimal;
@@ -238,7 +238,7 @@ export declare class Decimal {
   static clamp(
     n: Decimal.Value,
     min: Decimal.Value,
-    max: Decimal.Value,
+    max: Decimal.Value
   ): Decimal;
   static clone(object?: Decimal.Config): Decimal.Constructor;
   static config(object: Decimal.Config): Decimal.Constructor;
@@ -424,7 +424,7 @@ declare function validator<
   client: C,
   model: M,
   operation: O,
-  prop: P,
+  prop: P
 ): <S>(select: Exact<S, Args<C[M], O>[P]>) => S;
 
 export {};

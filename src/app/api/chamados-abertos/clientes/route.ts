@@ -19,7 +19,7 @@ export async function GET() {
       EMAIL_CLIENTE: string | null;
     }>(sql);
 
-    const clientes = responseClientes.map((cliente) => ({
+    const clientes = responseClientes.map(cliente => ({
       cod_cliente: cliente.COD_CLIENTE,
       nome_cliente: cliente.NOME_CLIENTE?.trim() ?? '',
       email_cliente: cliente.EMAIL_CLIENTE?.trim() ?? '',
@@ -30,7 +30,7 @@ export async function GET() {
     console.error('Erro ao tentar buscar os clientes:', error);
     return NextResponse.json(
       { error: 'Erro interno no servidor' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

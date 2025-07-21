@@ -1,12 +1,12 @@
 import cron from 'node-cron';
-import { prisma } from './src/lib/solutii-prisma';
+import { solutiiPrisma } from './src/lib/solutii-prisma';
 
 // Atualiza às 3h e 15h, todos os dias a view materializada "Apontamentos"
 cron.schedule('0 3,15 * * *', async () => {
   try {
     console.log('[CRON] Atualizando view materializada...');
-    await prisma.$executeRawUnsafe(
-      'REFRESH MATERIALIZED VIEW CONCURRENTLY public."Apontamentos"',
+    await solutiiPrisma.$executeRawUnsafe(
+      'REFRESH MATERIALIZED VIEW CONCURRENTLY public."Apontamentos"'
     );
     console.log('[CRON] Atualização concluída.');
   } catch (error) {

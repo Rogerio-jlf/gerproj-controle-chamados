@@ -19,7 +19,7 @@ export async function GET() {
       EMAIL_RECURSO: string | null;
     }>(sql);
 
-    const recursos = responseRecursos.map((recurso) => ({
+    const recursos = responseRecursos.map(recurso => ({
       cod_recurso: recurso.COD_RECURSO,
       nome_recurso: recurso.NOME_RECURSO?.trim() ?? '',
       email_recurso: recurso.EMAIL_RECURSO?.trim() ?? '',
@@ -30,7 +30,7 @@ export async function GET() {
     console.error('Erro ao tentar buscar os recursos:', error);
     return NextResponse.json(
       { error: 'Erro interno no servidor' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

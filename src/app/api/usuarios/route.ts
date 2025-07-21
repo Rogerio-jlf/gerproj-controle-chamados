@@ -13,7 +13,7 @@ export async function GET() {
     console.error('Erro na API /usuarios:', error);
     return NextResponse.json(
       { error: 'Erro ao carregar usuários' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

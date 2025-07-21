@@ -1,9 +1,9 @@
 'use client';
 
-import { useFilters } from '@/context/FiltersContext';
+import { useFilters } from '@/contexts/FiltersContext';
 import { useRouter } from 'next/navigation';
 import { IoLogOut } from 'react-icons/io5'; // Ícone de logout
-import { useAuth } from '../context/AuthContext'; // Contexto de autenticação
+import { useAuth } from '../contexts/AuthContext'; // Contexto de autenticação
 
 // Interface para as props do componente
 interface LogoutButtonProps {

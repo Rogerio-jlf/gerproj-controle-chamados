@@ -19,7 +19,7 @@ export async function GET(request: Request) {
       // Valida se o mês está entre 1 e 12
       return NextResponse.json(
         { error: "Parâmetro 'mes' deve ser um número entre 1 e 12" }, // Retorna erro se inválido
-        { status: 400 }, // Código de status HTTP 400 (Bad Request)
+        { status: 400 } // Código de status HTTP 400 (Bad Request)
       );
     }
 
@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       // Valida se o ano está em um intervalo aceitável
       return NextResponse.json(
         { error: "Parâmetro 'ano' deve ser um número válido" }, // Retorna erro se inválido
-        { status: 400 }, // Código de status HTTP 400 (Bad Request)
+        { status: 400 } // Código de status HTTP 400 (Bad Request)
       );
     }
 
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
         {
           error: "Parâmetro 'codCliente' é obrigatório para usuários não admin", // Retorna erro se faltar
         },
-        { status: 400 }, // Código de status HTTP 400 (Bad Request)
+        { status: 400 } // Código de status HTTP 400 (Bad Request)
       );
     }
 

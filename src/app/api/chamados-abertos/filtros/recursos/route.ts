@@ -17,14 +17,14 @@ export async function GET(request: Request) {
     if (!mesParam || isNaN(mes) || mes < 1 || mes > 12) {
       return NextResponse.json(
         { error: "Parâmetro 'mês' inválido" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (!anoParam || isNaN(ano) || ano < 2000 || ano > 3000) {
       return NextResponse.json(
         { error: "Parâmetro 'ano' inválido" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -33,7 +33,7 @@ export async function GET(request: Request) {
         {
           error: "Parâmetro 'codRecurso' é obrigatório para usuários não admin",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
     const params: any[] = [];
 
     whereConditions.push(
-      'Chamado.DATA_CHAMADO >= ? AND Chamado.DATA_CHAMADO < ?',
+      'Chamado.DATA_CHAMADO >= ? AND Chamado.DATA_CHAMADO < ?'
     );
     params.push(dataInicio);
     params.push(dataFim);
@@ -67,11 +67,11 @@ export async function GET(request: Request) {
 
     const recursos = await firebirdQuery<{ NOME_RECURSO: string | null }>(
       sql,
-      params,
+      params
     );
 
     const nomesRecursos = recursos
-      .map((item) => item.NOME_RECURSO?.trim())
+      .map(item => item.NOME_RECURSO?.trim())
       .filter((nome): nome is string => !!nome && nome.length > 0)
       .sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
 
@@ -86,13 +86,13 @@ export async function GET(request: Request) {
           message: error.message,
           timestamp: new Date().toISOString(),
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
     return NextResponse.json(
       { error: 'Erro interno no servidor' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

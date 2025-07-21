@@ -12,13 +12,13 @@ export async function POST(request: Request) {
   const usuarios = JSON.parse(data);
 
   const user = usuarios.find(
-    (u: any) => u.email.toLowerCase() === email.toLowerCase(),
+    (u: any) => u.email.toLowerCase() === email.toLowerCase()
   );
 
   if (!user) {
     return NextResponse.json(
       { success: false, message: 'Usuário não encontrado' },
-      { status: 401 },
+      { status: 401 }
     );
   }
 
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   if (!validPassword) {
     return NextResponse.json(
       { success: false, message: 'Senha incorreta' },
-      { status: 401 },
+      { status: 401 }
     );
   }
 

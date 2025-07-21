@@ -33,7 +33,7 @@ export async function GET(request: Request) {
       // Valida o parâmetro 'mes'
       return NextResponse.json(
         { error: "Parâmetro 'mes' deve ser um número entre 1 e 12" }, // Retorna erro se inválido
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -41,7 +41,7 @@ export async function GET(request: Request) {
       // Valida o parâmetro 'ano'
       return NextResponse.json(
         { error: "Parâmetro 'ano' deve ser um número válido" }, // Retorna erro se inválido
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
         {
           error: "Parâmetro 'codCliente' é obrigatório para usuários não admin", // Retorna erro se faltar
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -118,7 +118,7 @@ export async function GET(request: Request) {
     const clientesUnicos = new Set<string>();
 
     // Processa cada apontamento
-    apontamentos.forEach((apontamento) => {
+    apontamentos.forEach(apontamento => {
       // Itera sobre cada apontamento retornado do banco
       const codRecurso = apontamento.codrec_os || 'SEM_CODIGO'; // Usa o código do recurso ou 'SEM_CODIGO' se não existir
       const codCliente = apontamento.cod_cliente || 'SEM_CODIGO'; // Código do cliente para contagem
@@ -183,18 +183,18 @@ export async function GET(request: Request) {
           horasExecutadas: totalHorasExecutadasRecurso, // Horas executadas pelo recurso
           numeroClientesUnicos: dados.clientes.size, // Número de clientes únicos que usaram este recurso
         };
-      },
+      }
     );
 
     // Calcula o percentual de horas executadas por recurso
-    const detalhesRecursosFinais = detalhesRecursos.map((recurso) => ({
+    const detalhesRecursosFinais = detalhesRecursos.map(recurso => ({
       ...recurso,
       percentual:
         totalHorasExecutadas > 0
           ? Number(
               ((recurso.horasExecutadas / totalHorasExecutadas) * 100).toFixed(
-                2,
-              ),
+                2
+              )
             )
           : 0, // Percentual de horas executadas
     }));
@@ -218,7 +218,7 @@ export async function GET(request: Request) {
     console.error('Erro ao processar a requisição:', error); // Loga o erro no console
     return NextResponse.json(
       { error: 'Erro ao processar a requisição' }, // Retorna uma mensagem de erro genérica
-      { status: 500 }, // Com status HTTP 500 (Erro Interno do Servidor)
+      { status: 500 } // Com status HTTP 500 (Erro Interno do Servidor)
     );
   }
 }

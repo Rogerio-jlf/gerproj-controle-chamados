@@ -302,13 +302,13 @@ export class PrismaClient<
    */
 
   constructor(
-    optionsArg?: Prisma.Subset<ClientOptions, Prisma.PrismaClientOptions>,
+    optionsArg?: Prisma.Subset<ClientOptions, Prisma.PrismaClientOptions>
   );
   $on<V extends U>(
     eventType: V,
     callback: (
-      event: V extends 'query' ? Prisma.QueryEvent : Prisma.LogEvent,
-    ) => void,
+      event: V extends 'query' ? Prisma.QueryEvent : Prisma.LogEvent
+    ) => void
   ): PrismaClient;
 
   /**
@@ -401,18 +401,18 @@ export class PrismaClient<
    */
   $transaction<P extends Prisma.PrismaPromise<any>[]>(
     arg: [...P],
-    options?: { isolationLevel?: Prisma.TransactionIsolationLevel },
+    options?: { isolationLevel?: Prisma.TransactionIsolationLevel }
   ): $Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>;
 
   $transaction<R>(
     fn: (
-      prisma: Omit<PrismaClient, runtime.ITXClientDenyList>,
+      prisma: Omit<PrismaClient, runtime.ITXClientDenyList>
     ) => $Utils.JsPromise<R>,
     options?: {
       maxWait?: number;
       timeout?: number;
       isolationLevel?: Prisma.TransactionIsolationLevel;
-    },
+    }
   ): $Utils.JsPromise<R>;
 
   $extends: $Extensions.ExtendsHook<
@@ -5362,12 +5362,12 @@ export namespace Prisma {
    */
   export type Middleware<T = any> = (
     params: MiddlewareParams,
-    next: (params: MiddlewareParams) => $Utils.JsPromise<T>,
+    next: (params: MiddlewareParams) => $Utils.JsPromise<T>
   ) => $Utils.JsPromise<T>;
 
   // tested in getLogLevel.test.ts
   export function getLogLevel(
-    log: Array<LogLevel | LogDefinition>,
+    log: Array<LogLevel | LogDefinition>
   ): LogLevel | undefined;
 
   /**
@@ -6454,7 +6454,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends acesso_sistemaFindUniqueArgs>(
-      args: SelectSubset<T, acesso_sistemaFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, acesso_sistemaFindUniqueArgs<ExtArgs>>
     ): Prisma__acesso_sistemaClient<
       $Result.GetResult<
         Prisma.$acesso_sistemaPayload<ExtArgs>,
@@ -6480,7 +6480,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends acesso_sistemaFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, acesso_sistemaFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, acesso_sistemaFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__acesso_sistemaClient<
       $Result.GetResult<
         Prisma.$acesso_sistemaPayload<ExtArgs>,
@@ -6507,7 +6507,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends acesso_sistemaFindFirstArgs>(
-      args?: SelectSubset<T, acesso_sistemaFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, acesso_sistemaFindFirstArgs<ExtArgs>>
     ): Prisma__acesso_sistemaClient<
       $Result.GetResult<
         Prisma.$acesso_sistemaPayload<ExtArgs>,
@@ -6535,7 +6535,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends acesso_sistemaFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, acesso_sistemaFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, acesso_sistemaFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__acesso_sistemaClient<
       $Result.GetResult<
         Prisma.$acesso_sistemaPayload<ExtArgs>,
@@ -6565,7 +6565,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends acesso_sistemaFindManyArgs>(
-      args?: SelectSubset<T, acesso_sistemaFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, acesso_sistemaFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$acesso_sistemaPayload<ExtArgs>,
@@ -6588,7 +6588,7 @@ export namespace Prisma {
      *
      */
     create<T extends acesso_sistemaCreateArgs>(
-      args: SelectSubset<T, acesso_sistemaCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, acesso_sistemaCreateArgs<ExtArgs>>
     ): Prisma__acesso_sistemaClient<
       $Result.GetResult<
         Prisma.$acesso_sistemaPayload<ExtArgs>,
@@ -6614,7 +6614,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends acesso_sistemaCreateManyArgs>(
-      args?: SelectSubset<T, acesso_sistemaCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, acesso_sistemaCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -6640,7 +6640,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends acesso_sistemaCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, acesso_sistemaCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, acesso_sistemaCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$acesso_sistemaPayload<ExtArgs>,
@@ -6663,7 +6663,7 @@ export namespace Prisma {
      *
      */
     delete<T extends acesso_sistemaDeleteArgs>(
-      args: SelectSubset<T, acesso_sistemaDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, acesso_sistemaDeleteArgs<ExtArgs>>
     ): Prisma__acesso_sistemaClient<
       $Result.GetResult<
         Prisma.$acesso_sistemaPayload<ExtArgs>,
@@ -6692,7 +6692,7 @@ export namespace Prisma {
      *
      */
     update<T extends acesso_sistemaUpdateArgs>(
-      args: SelectSubset<T, acesso_sistemaUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, acesso_sistemaUpdateArgs<ExtArgs>>
     ): Prisma__acesso_sistemaClient<
       $Result.GetResult<
         Prisma.$acesso_sistemaPayload<ExtArgs>,
@@ -6718,7 +6718,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends acesso_sistemaDeleteManyArgs>(
-      args?: SelectSubset<T, acesso_sistemaDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, acesso_sistemaDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -6739,7 +6739,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends acesso_sistemaUpdateManyArgs>(
-      args: SelectSubset<T, acesso_sistemaUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, acesso_sistemaUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -6771,7 +6771,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends acesso_sistemaUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, acesso_sistemaUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, acesso_sistemaUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$acesso_sistemaPayload<ExtArgs>,
@@ -6799,7 +6799,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends acesso_sistemaUpsertArgs>(
-      args: SelectSubset<T, acesso_sistemaUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, acesso_sistemaUpsertArgs<ExtArgs>>
     ): Prisma__acesso_sistemaClient<
       $Result.GetResult<
         Prisma.$acesso_sistemaPayload<ExtArgs>,
@@ -6826,7 +6826,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends acesso_sistemaCountArgs>(
-      args?: Subset<T, acesso_sistemaCountArgs>,
+      args?: Subset<T, acesso_sistemaCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -6860,7 +6860,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends Acesso_sistemaAggregateArgs>(
-      args: Subset<T, Acesso_sistemaAggregateArgs>,
+      args: Subset<T, Acesso_sistemaAggregateArgs>
     ): Prisma.PrismaPromise<GetAcesso_sistemaAggregateType<T>>;
 
     /**
@@ -6942,7 +6942,7 @@ export namespace Prisma {
                   }[OrderFields],
     >(
       args: SubsetIntersection<T, acesso_sistemaGroupByArgs, OrderByArg> &
-        InputErrors,
+        InputErrors
     ): {} extends InputErrors
       ? GetAcesso_sistemaGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -6966,7 +6966,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     modulo_sistema<T extends modulo_sistemaDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, modulo_sistemaDefaultArgs<ExtArgs>>,
+      args?: Subset<T, modulo_sistemaDefaultArgs<ExtArgs>>
     ): Prisma__modulo_sistemaClient<
       | $Result.GetResult<
           Prisma.$modulo_sistemaPayload<ExtArgs>,
@@ -6980,7 +6980,7 @@ export namespace Prisma {
       GlobalOmitOptions
     >;
     tela_sistema<T extends tela_sistemaDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, tela_sistemaDefaultArgs<ExtArgs>>,
+      args?: Subset<T, tela_sistemaDefaultArgs<ExtArgs>>
     ): Prisma__tela_sistemaClient<
       | $Result.GetResult<
           Prisma.$tela_sistemaPayload<ExtArgs>,
@@ -6994,7 +6994,7 @@ export namespace Prisma {
       GlobalOmitOptions
     >;
     usuario<T extends usuarioDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, usuarioDefaultArgs<ExtArgs>>,
+      args?: Subset<T, usuarioDefaultArgs<ExtArgs>>
     ): Prisma__usuarioClient<
       | $Result.GetResult<
           Prisma.$usuarioPayload<ExtArgs>,
@@ -7021,7 +7021,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -7032,7 +7032,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -7913,7 +7913,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends agenrecFindUniqueArgs>(
-      args: SelectSubset<T, agenrecFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, agenrecFindUniqueArgs<ExtArgs>>
     ): Prisma__agenrecClient<
       $Result.GetResult<
         Prisma.$agenrecPayload<ExtArgs>,
@@ -7939,7 +7939,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends agenrecFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, agenrecFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, agenrecFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__agenrecClient<
       $Result.GetResult<
         Prisma.$agenrecPayload<ExtArgs>,
@@ -7966,7 +7966,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends agenrecFindFirstArgs>(
-      args?: SelectSubset<T, agenrecFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, agenrecFindFirstArgs<ExtArgs>>
     ): Prisma__agenrecClient<
       $Result.GetResult<
         Prisma.$agenrecPayload<ExtArgs>,
@@ -7994,7 +7994,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends agenrecFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, agenrecFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, agenrecFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__agenrecClient<
       $Result.GetResult<
         Prisma.$agenrecPayload<ExtArgs>,
@@ -8024,7 +8024,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends agenrecFindManyArgs>(
-      args?: SelectSubset<T, agenrecFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, agenrecFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$agenrecPayload<ExtArgs>,
@@ -8047,7 +8047,7 @@ export namespace Prisma {
      *
      */
     create<T extends agenrecCreateArgs>(
-      args: SelectSubset<T, agenrecCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, agenrecCreateArgs<ExtArgs>>
     ): Prisma__agenrecClient<
       $Result.GetResult<
         Prisma.$agenrecPayload<ExtArgs>,
@@ -8073,7 +8073,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends agenrecCreateManyArgs>(
-      args?: SelectSubset<T, agenrecCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, agenrecCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -8099,7 +8099,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends agenrecCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, agenrecCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, agenrecCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$agenrecPayload<ExtArgs>,
@@ -8122,7 +8122,7 @@ export namespace Prisma {
      *
      */
     delete<T extends agenrecDeleteArgs>(
-      args: SelectSubset<T, agenrecDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, agenrecDeleteArgs<ExtArgs>>
     ): Prisma__agenrecClient<
       $Result.GetResult<
         Prisma.$agenrecPayload<ExtArgs>,
@@ -8151,7 +8151,7 @@ export namespace Prisma {
      *
      */
     update<T extends agenrecUpdateArgs>(
-      args: SelectSubset<T, agenrecUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, agenrecUpdateArgs<ExtArgs>>
     ): Prisma__agenrecClient<
       $Result.GetResult<
         Prisma.$agenrecPayload<ExtArgs>,
@@ -8177,7 +8177,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends agenrecDeleteManyArgs>(
-      args?: SelectSubset<T, agenrecDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, agenrecDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -8198,7 +8198,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends agenrecUpdateManyArgs>(
-      args: SelectSubset<T, agenrecUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, agenrecUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -8230,7 +8230,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends agenrecUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, agenrecUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, agenrecUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$agenrecPayload<ExtArgs>,
@@ -8258,7 +8258,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends agenrecUpsertArgs>(
-      args: SelectSubset<T, agenrecUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, agenrecUpsertArgs<ExtArgs>>
     ): Prisma__agenrecClient<
       $Result.GetResult<
         Prisma.$agenrecPayload<ExtArgs>,
@@ -8285,7 +8285,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends agenrecCountArgs>(
-      args?: Subset<T, agenrecCountArgs>,
+      args?: Subset<T, agenrecCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -8319,7 +8319,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends AgenrecAggregateArgs>(
-      args: Subset<T, AgenrecAggregateArgs>,
+      args: Subset<T, AgenrecAggregateArgs>
     ): Prisma.PrismaPromise<GetAgenrecAggregateType<T>>;
 
     /**
@@ -8400,7 +8400,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, agenrecGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, agenrecGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetAgenrecGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -8424,7 +8424,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     recurso<T extends recursoDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, recursoDefaultArgs<ExtArgs>>,
+      args?: Subset<T, recursoDefaultArgs<ExtArgs>>
     ): Prisma__recursoClient<
       | $Result.GetResult<
           Prisma.$recursoPayload<ExtArgs>,
@@ -8451,7 +8451,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -8462,7 +8462,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -9208,7 +9208,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends areaFindUniqueArgs>(
-      args: SelectSubset<T, areaFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, areaFindUniqueArgs<ExtArgs>>
     ): Prisma__areaClient<
       $Result.GetResult<
         Prisma.$areaPayload<ExtArgs>,
@@ -9234,7 +9234,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends areaFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, areaFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, areaFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__areaClient<
       $Result.GetResult<
         Prisma.$areaPayload<ExtArgs>,
@@ -9261,7 +9261,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends areaFindFirstArgs>(
-      args?: SelectSubset<T, areaFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, areaFindFirstArgs<ExtArgs>>
     ): Prisma__areaClient<
       $Result.GetResult<
         Prisma.$areaPayload<ExtArgs>,
@@ -9289,7 +9289,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends areaFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, areaFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, areaFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__areaClient<
       $Result.GetResult<
         Prisma.$areaPayload<ExtArgs>,
@@ -9319,7 +9319,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends areaFindManyArgs>(
-      args?: SelectSubset<T, areaFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, areaFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$areaPayload<ExtArgs>,
@@ -9342,7 +9342,7 @@ export namespace Prisma {
      *
      */
     create<T extends areaCreateArgs>(
-      args: SelectSubset<T, areaCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, areaCreateArgs<ExtArgs>>
     ): Prisma__areaClient<
       $Result.GetResult<
         Prisma.$areaPayload<ExtArgs>,
@@ -9368,7 +9368,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends areaCreateManyArgs>(
-      args?: SelectSubset<T, areaCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, areaCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -9394,7 +9394,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends areaCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, areaCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, areaCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$areaPayload<ExtArgs>,
@@ -9417,7 +9417,7 @@ export namespace Prisma {
      *
      */
     delete<T extends areaDeleteArgs>(
-      args: SelectSubset<T, areaDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, areaDeleteArgs<ExtArgs>>
     ): Prisma__areaClient<
       $Result.GetResult<
         Prisma.$areaPayload<ExtArgs>,
@@ -9446,7 +9446,7 @@ export namespace Prisma {
      *
      */
     update<T extends areaUpdateArgs>(
-      args: SelectSubset<T, areaUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, areaUpdateArgs<ExtArgs>>
     ): Prisma__areaClient<
       $Result.GetResult<
         Prisma.$areaPayload<ExtArgs>,
@@ -9472,7 +9472,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends areaDeleteManyArgs>(
-      args?: SelectSubset<T, areaDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, areaDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -9493,7 +9493,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends areaUpdateManyArgs>(
-      args: SelectSubset<T, areaUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, areaUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -9525,7 +9525,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends areaUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, areaUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, areaUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$areaPayload<ExtArgs>,
@@ -9553,7 +9553,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends areaUpsertArgs>(
-      args: SelectSubset<T, areaUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, areaUpsertArgs<ExtArgs>>
     ): Prisma__areaClient<
       $Result.GetResult<
         Prisma.$areaPayload<ExtArgs>,
@@ -9580,7 +9580,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends areaCountArgs>(
-      args?: Subset<T, areaCountArgs>,
+      args?: Subset<T, areaCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -9614,7 +9614,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends AreaAggregateArgs>(
-      args: Subset<T, AreaAggregateArgs>,
+      args: Subset<T, AreaAggregateArgs>
     ): Prisma.PrismaPromise<GetAreaAggregateType<T>>;
 
     /**
@@ -9695,7 +9695,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, areaGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, areaGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetAreaGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -9719,7 +9719,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     meta<T extends area$metaArgs<ExtArgs> = {}>(
-      args?: Subset<T, area$metaArgs<ExtArgs>>,
+      args?: Subset<T, area$metaArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$metaPayload<ExtArgs>,
@@ -9730,7 +9730,7 @@ export namespace Prisma {
       | Null
     >;
     tarefa<T extends area$tarefaArgs<ExtArgs> = {}>(
-      args?: Subset<T, area$tarefaArgs<ExtArgs>>,
+      args?: Subset<T, area$tarefaArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$tarefaPayload<ExtArgs>,
@@ -9754,7 +9754,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -9765,7 +9765,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -10618,7 +10618,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends avaliacaoFindUniqueArgs>(
-      args: SelectSubset<T, avaliacaoFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, avaliacaoFindUniqueArgs<ExtArgs>>
     ): Prisma__avaliacaoClient<
       $Result.GetResult<
         Prisma.$avaliacaoPayload<ExtArgs>,
@@ -10644,7 +10644,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends avaliacaoFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, avaliacaoFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, avaliacaoFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__avaliacaoClient<
       $Result.GetResult<
         Prisma.$avaliacaoPayload<ExtArgs>,
@@ -10671,7 +10671,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends avaliacaoFindFirstArgs>(
-      args?: SelectSubset<T, avaliacaoFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, avaliacaoFindFirstArgs<ExtArgs>>
     ): Prisma__avaliacaoClient<
       $Result.GetResult<
         Prisma.$avaliacaoPayload<ExtArgs>,
@@ -10699,7 +10699,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends avaliacaoFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, avaliacaoFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, avaliacaoFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__avaliacaoClient<
       $Result.GetResult<
         Prisma.$avaliacaoPayload<ExtArgs>,
@@ -10729,7 +10729,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends avaliacaoFindManyArgs>(
-      args?: SelectSubset<T, avaliacaoFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, avaliacaoFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$avaliacaoPayload<ExtArgs>,
@@ -10752,7 +10752,7 @@ export namespace Prisma {
      *
      */
     create<T extends avaliacaoCreateArgs>(
-      args: SelectSubset<T, avaliacaoCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, avaliacaoCreateArgs<ExtArgs>>
     ): Prisma__avaliacaoClient<
       $Result.GetResult<
         Prisma.$avaliacaoPayload<ExtArgs>,
@@ -10778,7 +10778,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends avaliacaoCreateManyArgs>(
-      args?: SelectSubset<T, avaliacaoCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, avaliacaoCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -10804,7 +10804,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends avaliacaoCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, avaliacaoCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, avaliacaoCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$avaliacaoPayload<ExtArgs>,
@@ -10827,7 +10827,7 @@ export namespace Prisma {
      *
      */
     delete<T extends avaliacaoDeleteArgs>(
-      args: SelectSubset<T, avaliacaoDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, avaliacaoDeleteArgs<ExtArgs>>
     ): Prisma__avaliacaoClient<
       $Result.GetResult<
         Prisma.$avaliacaoPayload<ExtArgs>,
@@ -10856,7 +10856,7 @@ export namespace Prisma {
      *
      */
     update<T extends avaliacaoUpdateArgs>(
-      args: SelectSubset<T, avaliacaoUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, avaliacaoUpdateArgs<ExtArgs>>
     ): Prisma__avaliacaoClient<
       $Result.GetResult<
         Prisma.$avaliacaoPayload<ExtArgs>,
@@ -10882,7 +10882,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends avaliacaoDeleteManyArgs>(
-      args?: SelectSubset<T, avaliacaoDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, avaliacaoDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -10903,7 +10903,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends avaliacaoUpdateManyArgs>(
-      args: SelectSubset<T, avaliacaoUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, avaliacaoUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -10935,7 +10935,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends avaliacaoUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, avaliacaoUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, avaliacaoUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$avaliacaoPayload<ExtArgs>,
@@ -10963,7 +10963,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends avaliacaoUpsertArgs>(
-      args: SelectSubset<T, avaliacaoUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, avaliacaoUpsertArgs<ExtArgs>>
     ): Prisma__avaliacaoClient<
       $Result.GetResult<
         Prisma.$avaliacaoPayload<ExtArgs>,
@@ -10990,7 +10990,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends avaliacaoCountArgs>(
-      args?: Subset<T, avaliacaoCountArgs>,
+      args?: Subset<T, avaliacaoCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -11024,7 +11024,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends AvaliacaoAggregateArgs>(
-      args: Subset<T, AvaliacaoAggregateArgs>,
+      args: Subset<T, AvaliacaoAggregateArgs>
     ): Prisma.PrismaPromise<GetAvaliacaoAggregateType<T>>;
 
     /**
@@ -11106,7 +11106,7 @@ export namespace Prisma {
                   }[OrderFields],
     >(
       args: SubsetIntersection<T, avaliacaoGroupByArgs, OrderByArg> &
-        InputErrors,
+        InputErrors
     ): {} extends InputErrors
       ? GetAvaliacaoGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -11130,7 +11130,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     projeto<T extends projetoDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, projetoDefaultArgs<ExtArgs>>,
+      args?: Subset<T, projetoDefaultArgs<ExtArgs>>
     ): Prisma__projetoClient<
       | $Result.GetResult<
           Prisma.$projetoPayload<ExtArgs>,
@@ -11144,7 +11144,7 @@ export namespace Prisma {
       GlobalOmitOptions
     >;
     avaliado<T extends avaliacao$avaliadoArgs<ExtArgs> = {}>(
-      args?: Subset<T, avaliacao$avaliadoArgs<ExtArgs>>,
+      args?: Subset<T, avaliacao$avaliadoArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$avaliadoPayload<ExtArgs>,
@@ -11168,7 +11168,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -11179,7 +11179,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -12032,7 +12032,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends avaliadoFindUniqueArgs>(
-      args: SelectSubset<T, avaliadoFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, avaliadoFindUniqueArgs<ExtArgs>>
     ): Prisma__avaliadoClient<
       $Result.GetResult<
         Prisma.$avaliadoPayload<ExtArgs>,
@@ -12058,7 +12058,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends avaliadoFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, avaliadoFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, avaliadoFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__avaliadoClient<
       $Result.GetResult<
         Prisma.$avaliadoPayload<ExtArgs>,
@@ -12085,7 +12085,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends avaliadoFindFirstArgs>(
-      args?: SelectSubset<T, avaliadoFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, avaliadoFindFirstArgs<ExtArgs>>
     ): Prisma__avaliadoClient<
       $Result.GetResult<
         Prisma.$avaliadoPayload<ExtArgs>,
@@ -12113,7 +12113,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends avaliadoFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, avaliadoFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, avaliadoFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__avaliadoClient<
       $Result.GetResult<
         Prisma.$avaliadoPayload<ExtArgs>,
@@ -12143,7 +12143,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends avaliadoFindManyArgs>(
-      args?: SelectSubset<T, avaliadoFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, avaliadoFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$avaliadoPayload<ExtArgs>,
@@ -12166,7 +12166,7 @@ export namespace Prisma {
      *
      */
     create<T extends avaliadoCreateArgs>(
-      args: SelectSubset<T, avaliadoCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, avaliadoCreateArgs<ExtArgs>>
     ): Prisma__avaliadoClient<
       $Result.GetResult<
         Prisma.$avaliadoPayload<ExtArgs>,
@@ -12192,7 +12192,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends avaliadoCreateManyArgs>(
-      args?: SelectSubset<T, avaliadoCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, avaliadoCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -12218,7 +12218,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends avaliadoCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, avaliadoCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, avaliadoCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$avaliadoPayload<ExtArgs>,
@@ -12241,7 +12241,7 @@ export namespace Prisma {
      *
      */
     delete<T extends avaliadoDeleteArgs>(
-      args: SelectSubset<T, avaliadoDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, avaliadoDeleteArgs<ExtArgs>>
     ): Prisma__avaliadoClient<
       $Result.GetResult<
         Prisma.$avaliadoPayload<ExtArgs>,
@@ -12270,7 +12270,7 @@ export namespace Prisma {
      *
      */
     update<T extends avaliadoUpdateArgs>(
-      args: SelectSubset<T, avaliadoUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, avaliadoUpdateArgs<ExtArgs>>
     ): Prisma__avaliadoClient<
       $Result.GetResult<
         Prisma.$avaliadoPayload<ExtArgs>,
@@ -12296,7 +12296,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends avaliadoDeleteManyArgs>(
-      args?: SelectSubset<T, avaliadoDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, avaliadoDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -12317,7 +12317,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends avaliadoUpdateManyArgs>(
-      args: SelectSubset<T, avaliadoUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, avaliadoUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -12349,7 +12349,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends avaliadoUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, avaliadoUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, avaliadoUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$avaliadoPayload<ExtArgs>,
@@ -12377,7 +12377,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends avaliadoUpsertArgs>(
-      args: SelectSubset<T, avaliadoUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, avaliadoUpsertArgs<ExtArgs>>
     ): Prisma__avaliadoClient<
       $Result.GetResult<
         Prisma.$avaliadoPayload<ExtArgs>,
@@ -12404,7 +12404,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends avaliadoCountArgs>(
-      args?: Subset<T, avaliadoCountArgs>,
+      args?: Subset<T, avaliadoCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -12438,7 +12438,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends AvaliadoAggregateArgs>(
-      args: Subset<T, AvaliadoAggregateArgs>,
+      args: Subset<T, AvaliadoAggregateArgs>
     ): Prisma.PrismaPromise<GetAvaliadoAggregateType<T>>;
 
     /**
@@ -12519,8 +12519,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, avaliadoGroupByArgs, OrderByArg> &
-        InputErrors,
+      args: SubsetIntersection<T, avaliadoGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetAvaliadoGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -12544,7 +12543,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     avaliacao<T extends avaliacaoDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, avaliacaoDefaultArgs<ExtArgs>>,
+      args?: Subset<T, avaliacaoDefaultArgs<ExtArgs>>
     ): Prisma__avaliacaoClient<
       | $Result.GetResult<
           Prisma.$avaliacaoPayload<ExtArgs>,
@@ -12558,7 +12557,7 @@ export namespace Prisma {
       GlobalOmitOptions
     >;
     recurso<T extends recursoDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, recursoDefaultArgs<ExtArgs>>,
+      args?: Subset<T, recursoDefaultArgs<ExtArgs>>
     ): Prisma__recursoClient<
       | $Result.GetResult<
           Prisma.$recursoPayload<ExtArgs>,
@@ -12572,7 +12571,7 @@ export namespace Prisma {
       GlobalOmitOptions
     >;
     itavaliado<T extends avaliado$itavaliadoArgs<ExtArgs> = {}>(
-      args?: Subset<T, avaliado$itavaliadoArgs<ExtArgs>>,
+      args?: Subset<T, avaliado$itavaliadoArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$itavaliadoPayload<ExtArgs>,
@@ -12596,7 +12595,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -12607,7 +12606,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -13601,7 +13600,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends chamadoFindUniqueArgs>(
-      args: SelectSubset<T, chamadoFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, chamadoFindUniqueArgs<ExtArgs>>
     ): Prisma__chamadoClient<
       $Result.GetResult<
         Prisma.$chamadoPayload<ExtArgs>,
@@ -13627,7 +13626,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends chamadoFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, chamadoFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, chamadoFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__chamadoClient<
       $Result.GetResult<
         Prisma.$chamadoPayload<ExtArgs>,
@@ -13654,7 +13653,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends chamadoFindFirstArgs>(
-      args?: SelectSubset<T, chamadoFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, chamadoFindFirstArgs<ExtArgs>>
     ): Prisma__chamadoClient<
       $Result.GetResult<
         Prisma.$chamadoPayload<ExtArgs>,
@@ -13682,7 +13681,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends chamadoFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, chamadoFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, chamadoFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__chamadoClient<
       $Result.GetResult<
         Prisma.$chamadoPayload<ExtArgs>,
@@ -13712,7 +13711,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends chamadoFindManyArgs>(
-      args?: SelectSubset<T, chamadoFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, chamadoFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$chamadoPayload<ExtArgs>,
@@ -13735,7 +13734,7 @@ export namespace Prisma {
      *
      */
     create<T extends chamadoCreateArgs>(
-      args: SelectSubset<T, chamadoCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, chamadoCreateArgs<ExtArgs>>
     ): Prisma__chamadoClient<
       $Result.GetResult<
         Prisma.$chamadoPayload<ExtArgs>,
@@ -13761,7 +13760,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends chamadoCreateManyArgs>(
-      args?: SelectSubset<T, chamadoCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, chamadoCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -13787,7 +13786,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends chamadoCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, chamadoCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, chamadoCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$chamadoPayload<ExtArgs>,
@@ -13810,7 +13809,7 @@ export namespace Prisma {
      *
      */
     delete<T extends chamadoDeleteArgs>(
-      args: SelectSubset<T, chamadoDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, chamadoDeleteArgs<ExtArgs>>
     ): Prisma__chamadoClient<
       $Result.GetResult<
         Prisma.$chamadoPayload<ExtArgs>,
@@ -13839,7 +13838,7 @@ export namespace Prisma {
      *
      */
     update<T extends chamadoUpdateArgs>(
-      args: SelectSubset<T, chamadoUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, chamadoUpdateArgs<ExtArgs>>
     ): Prisma__chamadoClient<
       $Result.GetResult<
         Prisma.$chamadoPayload<ExtArgs>,
@@ -13865,7 +13864,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends chamadoDeleteManyArgs>(
-      args?: SelectSubset<T, chamadoDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, chamadoDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -13886,7 +13885,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends chamadoUpdateManyArgs>(
-      args: SelectSubset<T, chamadoUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, chamadoUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -13918,7 +13917,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends chamadoUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, chamadoUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, chamadoUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$chamadoPayload<ExtArgs>,
@@ -13946,7 +13945,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends chamadoUpsertArgs>(
-      args: SelectSubset<T, chamadoUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, chamadoUpsertArgs<ExtArgs>>
     ): Prisma__chamadoClient<
       $Result.GetResult<
         Prisma.$chamadoPayload<ExtArgs>,
@@ -13973,7 +13972,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends chamadoCountArgs>(
-      args?: Subset<T, chamadoCountArgs>,
+      args?: Subset<T, chamadoCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -14007,7 +14006,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends ChamadoAggregateArgs>(
-      args: Subset<T, ChamadoAggregateArgs>,
+      args: Subset<T, ChamadoAggregateArgs>
     ): Prisma.PrismaPromise<GetChamadoAggregateType<T>>;
 
     /**
@@ -14088,7 +14087,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, chamadoGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, chamadoGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetChamadoGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -14112,7 +14111,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     cliente<T extends chamado$clienteArgs<ExtArgs> = {}>(
-      args?: Subset<T, chamado$clienteArgs<ExtArgs>>,
+      args?: Subset<T, chamado$clienteArgs<ExtArgs>>
     ): Prisma__clienteClient<
       $Result.GetResult<
         Prisma.$clientePayload<ExtArgs>,
@@ -14125,7 +14124,7 @@ export namespace Prisma {
       GlobalOmitOptions
     >;
     recurso<T extends chamado$recursoArgs<ExtArgs> = {}>(
-      args?: Subset<T, chamado$recursoArgs<ExtArgs>>,
+      args?: Subset<T, chamado$recursoArgs<ExtArgs>>
     ): Prisma__recursoClient<
       $Result.GetResult<
         Prisma.$recursoPayload<ExtArgs>,
@@ -14151,7 +14150,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -14162,7 +14161,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -14966,7 +14965,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends cidadeFindUniqueArgs>(
-      args: SelectSubset<T, cidadeFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, cidadeFindUniqueArgs<ExtArgs>>
     ): Prisma__cidadeClient<
       $Result.GetResult<
         Prisma.$cidadePayload<ExtArgs>,
@@ -14992,7 +14991,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends cidadeFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, cidadeFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, cidadeFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__cidadeClient<
       $Result.GetResult<
         Prisma.$cidadePayload<ExtArgs>,
@@ -15019,7 +15018,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends cidadeFindFirstArgs>(
-      args?: SelectSubset<T, cidadeFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, cidadeFindFirstArgs<ExtArgs>>
     ): Prisma__cidadeClient<
       $Result.GetResult<
         Prisma.$cidadePayload<ExtArgs>,
@@ -15047,7 +15046,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends cidadeFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, cidadeFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, cidadeFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__cidadeClient<
       $Result.GetResult<
         Prisma.$cidadePayload<ExtArgs>,
@@ -15077,7 +15076,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends cidadeFindManyArgs>(
-      args?: SelectSubset<T, cidadeFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, cidadeFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$cidadePayload<ExtArgs>,
@@ -15100,7 +15099,7 @@ export namespace Prisma {
      *
      */
     create<T extends cidadeCreateArgs>(
-      args: SelectSubset<T, cidadeCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, cidadeCreateArgs<ExtArgs>>
     ): Prisma__cidadeClient<
       $Result.GetResult<
         Prisma.$cidadePayload<ExtArgs>,
@@ -15126,7 +15125,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends cidadeCreateManyArgs>(
-      args?: SelectSubset<T, cidadeCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, cidadeCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -15152,7 +15151,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends cidadeCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, cidadeCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, cidadeCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$cidadePayload<ExtArgs>,
@@ -15175,7 +15174,7 @@ export namespace Prisma {
      *
      */
     delete<T extends cidadeDeleteArgs>(
-      args: SelectSubset<T, cidadeDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, cidadeDeleteArgs<ExtArgs>>
     ): Prisma__cidadeClient<
       $Result.GetResult<
         Prisma.$cidadePayload<ExtArgs>,
@@ -15204,7 +15203,7 @@ export namespace Prisma {
      *
      */
     update<T extends cidadeUpdateArgs>(
-      args: SelectSubset<T, cidadeUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, cidadeUpdateArgs<ExtArgs>>
     ): Prisma__cidadeClient<
       $Result.GetResult<
         Prisma.$cidadePayload<ExtArgs>,
@@ -15230,7 +15229,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends cidadeDeleteManyArgs>(
-      args?: SelectSubset<T, cidadeDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, cidadeDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -15251,7 +15250,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends cidadeUpdateManyArgs>(
-      args: SelectSubset<T, cidadeUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, cidadeUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -15283,7 +15282,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends cidadeUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, cidadeUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, cidadeUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$cidadePayload<ExtArgs>,
@@ -15311,7 +15310,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends cidadeUpsertArgs>(
-      args: SelectSubset<T, cidadeUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, cidadeUpsertArgs<ExtArgs>>
     ): Prisma__cidadeClient<
       $Result.GetResult<
         Prisma.$cidadePayload<ExtArgs>,
@@ -15338,7 +15337,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends cidadeCountArgs>(
-      args?: Subset<T, cidadeCountArgs>,
+      args?: Subset<T, cidadeCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -15372,7 +15371,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends CidadeAggregateArgs>(
-      args: Subset<T, CidadeAggregateArgs>,
+      args: Subset<T, CidadeAggregateArgs>
     ): Prisma.PrismaPromise<GetCidadeAggregateType<T>>;
 
     /**
@@ -15453,7 +15452,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, cidadeGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, cidadeGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetCidadeGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -15490,7 +15489,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -15501,7 +15500,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -16193,7 +16192,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends classificacaoFindUniqueArgs>(
-      args: SelectSubset<T, classificacaoFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, classificacaoFindUniqueArgs<ExtArgs>>
     ): Prisma__classificacaoClient<
       $Result.GetResult<
         Prisma.$classificacaoPayload<ExtArgs>,
@@ -16219,7 +16218,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends classificacaoFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, classificacaoFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, classificacaoFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__classificacaoClient<
       $Result.GetResult<
         Prisma.$classificacaoPayload<ExtArgs>,
@@ -16246,7 +16245,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends classificacaoFindFirstArgs>(
-      args?: SelectSubset<T, classificacaoFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, classificacaoFindFirstArgs<ExtArgs>>
     ): Prisma__classificacaoClient<
       $Result.GetResult<
         Prisma.$classificacaoPayload<ExtArgs>,
@@ -16274,7 +16273,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends classificacaoFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, classificacaoFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, classificacaoFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__classificacaoClient<
       $Result.GetResult<
         Prisma.$classificacaoPayload<ExtArgs>,
@@ -16304,7 +16303,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends classificacaoFindManyArgs>(
-      args?: SelectSubset<T, classificacaoFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, classificacaoFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$classificacaoPayload<ExtArgs>,
@@ -16327,7 +16326,7 @@ export namespace Prisma {
      *
      */
     create<T extends classificacaoCreateArgs>(
-      args: SelectSubset<T, classificacaoCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, classificacaoCreateArgs<ExtArgs>>
     ): Prisma__classificacaoClient<
       $Result.GetResult<
         Prisma.$classificacaoPayload<ExtArgs>,
@@ -16353,7 +16352,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends classificacaoCreateManyArgs>(
-      args?: SelectSubset<T, classificacaoCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, classificacaoCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -16379,7 +16378,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends classificacaoCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, classificacaoCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, classificacaoCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$classificacaoPayload<ExtArgs>,
@@ -16402,7 +16401,7 @@ export namespace Prisma {
      *
      */
     delete<T extends classificacaoDeleteArgs>(
-      args: SelectSubset<T, classificacaoDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, classificacaoDeleteArgs<ExtArgs>>
     ): Prisma__classificacaoClient<
       $Result.GetResult<
         Prisma.$classificacaoPayload<ExtArgs>,
@@ -16431,7 +16430,7 @@ export namespace Prisma {
      *
      */
     update<T extends classificacaoUpdateArgs>(
-      args: SelectSubset<T, classificacaoUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, classificacaoUpdateArgs<ExtArgs>>
     ): Prisma__classificacaoClient<
       $Result.GetResult<
         Prisma.$classificacaoPayload<ExtArgs>,
@@ -16457,7 +16456,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends classificacaoDeleteManyArgs>(
-      args?: SelectSubset<T, classificacaoDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, classificacaoDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -16478,7 +16477,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends classificacaoUpdateManyArgs>(
-      args: SelectSubset<T, classificacaoUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, classificacaoUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -16510,7 +16509,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends classificacaoUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, classificacaoUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, classificacaoUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$classificacaoPayload<ExtArgs>,
@@ -16538,7 +16537,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends classificacaoUpsertArgs>(
-      args: SelectSubset<T, classificacaoUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, classificacaoUpsertArgs<ExtArgs>>
     ): Prisma__classificacaoClient<
       $Result.GetResult<
         Prisma.$classificacaoPayload<ExtArgs>,
@@ -16565,7 +16564,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends classificacaoCountArgs>(
-      args?: Subset<T, classificacaoCountArgs>,
+      args?: Subset<T, classificacaoCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -16599,7 +16598,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends ClassificacaoAggregateArgs>(
-      args: Subset<T, ClassificacaoAggregateArgs>,
+      args: Subset<T, ClassificacaoAggregateArgs>
     ): Prisma.PrismaPromise<GetClassificacaoAggregateType<T>>;
 
     /**
@@ -16681,7 +16680,7 @@ export namespace Prisma {
                   }[OrderFields],
     >(
       args: SubsetIntersection<T, classificacaoGroupByArgs, OrderByArg> &
-        InputErrors,
+        InputErrors
     ): {} extends InputErrors
       ? GetClassificacaoGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -16718,7 +16717,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -16729,7 +16728,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -17774,7 +17773,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends clienteFindUniqueArgs>(
-      args: SelectSubset<T, clienteFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, clienteFindUniqueArgs<ExtArgs>>
     ): Prisma__clienteClient<
       $Result.GetResult<
         Prisma.$clientePayload<ExtArgs>,
@@ -17800,7 +17799,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends clienteFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, clienteFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, clienteFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__clienteClient<
       $Result.GetResult<
         Prisma.$clientePayload<ExtArgs>,
@@ -17827,7 +17826,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends clienteFindFirstArgs>(
-      args?: SelectSubset<T, clienteFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, clienteFindFirstArgs<ExtArgs>>
     ): Prisma__clienteClient<
       $Result.GetResult<
         Prisma.$clientePayload<ExtArgs>,
@@ -17855,7 +17854,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends clienteFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, clienteFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, clienteFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__clienteClient<
       $Result.GetResult<
         Prisma.$clientePayload<ExtArgs>,
@@ -17885,7 +17884,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends clienteFindManyArgs>(
-      args?: SelectSubset<T, clienteFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, clienteFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$clientePayload<ExtArgs>,
@@ -17908,7 +17907,7 @@ export namespace Prisma {
      *
      */
     create<T extends clienteCreateArgs>(
-      args: SelectSubset<T, clienteCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, clienteCreateArgs<ExtArgs>>
     ): Prisma__clienteClient<
       $Result.GetResult<
         Prisma.$clientePayload<ExtArgs>,
@@ -17934,7 +17933,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends clienteCreateManyArgs>(
-      args?: SelectSubset<T, clienteCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, clienteCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -17960,7 +17959,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends clienteCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, clienteCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, clienteCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$clientePayload<ExtArgs>,
@@ -17983,7 +17982,7 @@ export namespace Prisma {
      *
      */
     delete<T extends clienteDeleteArgs>(
-      args: SelectSubset<T, clienteDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, clienteDeleteArgs<ExtArgs>>
     ): Prisma__clienteClient<
       $Result.GetResult<
         Prisma.$clientePayload<ExtArgs>,
@@ -18012,7 +18011,7 @@ export namespace Prisma {
      *
      */
     update<T extends clienteUpdateArgs>(
-      args: SelectSubset<T, clienteUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, clienteUpdateArgs<ExtArgs>>
     ): Prisma__clienteClient<
       $Result.GetResult<
         Prisma.$clientePayload<ExtArgs>,
@@ -18038,7 +18037,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends clienteDeleteManyArgs>(
-      args?: SelectSubset<T, clienteDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, clienteDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -18059,7 +18058,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends clienteUpdateManyArgs>(
-      args: SelectSubset<T, clienteUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, clienteUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -18091,7 +18090,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends clienteUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, clienteUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, clienteUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$clientePayload<ExtArgs>,
@@ -18119,7 +18118,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends clienteUpsertArgs>(
-      args: SelectSubset<T, clienteUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, clienteUpsertArgs<ExtArgs>>
     ): Prisma__clienteClient<
       $Result.GetResult<
         Prisma.$clientePayload<ExtArgs>,
@@ -18146,7 +18145,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends clienteCountArgs>(
-      args?: Subset<T, clienteCountArgs>,
+      args?: Subset<T, clienteCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -18180,7 +18179,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends ClienteAggregateArgs>(
-      args: Subset<T, ClienteAggregateArgs>,
+      args: Subset<T, ClienteAggregateArgs>
     ): Prisma.PrismaPromise<GetClienteAggregateType<T>>;
 
     /**
@@ -18261,7 +18260,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, clienteGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, clienteGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetClienteGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -18285,7 +18284,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     chamados<T extends cliente$chamadosArgs<ExtArgs> = {}>(
-      args?: Subset<T, cliente$chamadosArgs<ExtArgs>>,
+      args?: Subset<T, cliente$chamadosArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$chamadoPayload<ExtArgs>,
@@ -18296,7 +18295,7 @@ export namespace Prisma {
       | Null
     >;
     fatrec<T extends cliente$fatrecArgs<ExtArgs> = {}>(
-      args?: Subset<T, cliente$fatrecArgs<ExtArgs>>,
+      args?: Subset<T, cliente$fatrecArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$fatrecPayload<ExtArgs>,
@@ -18307,7 +18306,7 @@ export namespace Prisma {
       | Null
     >;
     projeto<T extends cliente$projetoArgs<ExtArgs> = {}>(
-      args?: Subset<T, cliente$projetoArgs<ExtArgs>>,
+      args?: Subset<T, cliente$projetoArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$projetoPayload<ExtArgs>,
@@ -18331,7 +18330,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -18342,7 +18341,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -19311,7 +19310,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends composicaoFindUniqueArgs>(
-      args: SelectSubset<T, composicaoFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, composicaoFindUniqueArgs<ExtArgs>>
     ): Prisma__composicaoClient<
       $Result.GetResult<
         Prisma.$composicaoPayload<ExtArgs>,
@@ -19337,7 +19336,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends composicaoFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, composicaoFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, composicaoFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__composicaoClient<
       $Result.GetResult<
         Prisma.$composicaoPayload<ExtArgs>,
@@ -19364,7 +19363,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends composicaoFindFirstArgs>(
-      args?: SelectSubset<T, composicaoFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, composicaoFindFirstArgs<ExtArgs>>
     ): Prisma__composicaoClient<
       $Result.GetResult<
         Prisma.$composicaoPayload<ExtArgs>,
@@ -19392,7 +19391,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends composicaoFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, composicaoFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, composicaoFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__composicaoClient<
       $Result.GetResult<
         Prisma.$composicaoPayload<ExtArgs>,
@@ -19422,7 +19421,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends composicaoFindManyArgs>(
-      args?: SelectSubset<T, composicaoFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, composicaoFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$composicaoPayload<ExtArgs>,
@@ -19445,7 +19444,7 @@ export namespace Prisma {
      *
      */
     create<T extends composicaoCreateArgs>(
-      args: SelectSubset<T, composicaoCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, composicaoCreateArgs<ExtArgs>>
     ): Prisma__composicaoClient<
       $Result.GetResult<
         Prisma.$composicaoPayload<ExtArgs>,
@@ -19471,7 +19470,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends composicaoCreateManyArgs>(
-      args?: SelectSubset<T, composicaoCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, composicaoCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -19497,7 +19496,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends composicaoCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, composicaoCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, composicaoCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$composicaoPayload<ExtArgs>,
@@ -19520,7 +19519,7 @@ export namespace Prisma {
      *
      */
     delete<T extends composicaoDeleteArgs>(
-      args: SelectSubset<T, composicaoDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, composicaoDeleteArgs<ExtArgs>>
     ): Prisma__composicaoClient<
       $Result.GetResult<
         Prisma.$composicaoPayload<ExtArgs>,
@@ -19549,7 +19548,7 @@ export namespace Prisma {
      *
      */
     update<T extends composicaoUpdateArgs>(
-      args: SelectSubset<T, composicaoUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, composicaoUpdateArgs<ExtArgs>>
     ): Prisma__composicaoClient<
       $Result.GetResult<
         Prisma.$composicaoPayload<ExtArgs>,
@@ -19575,7 +19574,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends composicaoDeleteManyArgs>(
-      args?: SelectSubset<T, composicaoDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, composicaoDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -19596,7 +19595,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends composicaoUpdateManyArgs>(
-      args: SelectSubset<T, composicaoUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, composicaoUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -19628,7 +19627,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends composicaoUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, composicaoUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, composicaoUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$composicaoPayload<ExtArgs>,
@@ -19656,7 +19655,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends composicaoUpsertArgs>(
-      args: SelectSubset<T, composicaoUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, composicaoUpsertArgs<ExtArgs>>
     ): Prisma__composicaoClient<
       $Result.GetResult<
         Prisma.$composicaoPayload<ExtArgs>,
@@ -19683,7 +19682,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends composicaoCountArgs>(
-      args?: Subset<T, composicaoCountArgs>,
+      args?: Subset<T, composicaoCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -19717,7 +19716,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends ComposicaoAggregateArgs>(
-      args: Subset<T, ComposicaoAggregateArgs>,
+      args: Subset<T, ComposicaoAggregateArgs>
     ): Prisma.PrismaPromise<GetComposicaoAggregateType<T>>;
 
     /**
@@ -19799,7 +19798,7 @@ export namespace Prisma {
                   }[OrderFields],
     >(
       args: SubsetIntersection<T, composicaoGroupByArgs, OrderByArg> &
-        InputErrors,
+        InputErrors
     ): {} extends InputErrors
       ? GetComposicaoGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -19836,7 +19835,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -19847,7 +19846,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -20596,7 +20595,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends contatoFindUniqueArgs>(
-      args: SelectSubset<T, contatoFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, contatoFindUniqueArgs<ExtArgs>>
     ): Prisma__contatoClient<
       $Result.GetResult<
         Prisma.$contatoPayload<ExtArgs>,
@@ -20622,7 +20621,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends contatoFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, contatoFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, contatoFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__contatoClient<
       $Result.GetResult<
         Prisma.$contatoPayload<ExtArgs>,
@@ -20649,7 +20648,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends contatoFindFirstArgs>(
-      args?: SelectSubset<T, contatoFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, contatoFindFirstArgs<ExtArgs>>
     ): Prisma__contatoClient<
       $Result.GetResult<
         Prisma.$contatoPayload<ExtArgs>,
@@ -20677,7 +20676,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends contatoFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, contatoFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, contatoFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__contatoClient<
       $Result.GetResult<
         Prisma.$contatoPayload<ExtArgs>,
@@ -20707,7 +20706,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends contatoFindManyArgs>(
-      args?: SelectSubset<T, contatoFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, contatoFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$contatoPayload<ExtArgs>,
@@ -20730,7 +20729,7 @@ export namespace Prisma {
      *
      */
     create<T extends contatoCreateArgs>(
-      args: SelectSubset<T, contatoCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, contatoCreateArgs<ExtArgs>>
     ): Prisma__contatoClient<
       $Result.GetResult<
         Prisma.$contatoPayload<ExtArgs>,
@@ -20756,7 +20755,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends contatoCreateManyArgs>(
-      args?: SelectSubset<T, contatoCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, contatoCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -20782,7 +20781,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends contatoCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, contatoCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, contatoCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$contatoPayload<ExtArgs>,
@@ -20805,7 +20804,7 @@ export namespace Prisma {
      *
      */
     delete<T extends contatoDeleteArgs>(
-      args: SelectSubset<T, contatoDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, contatoDeleteArgs<ExtArgs>>
     ): Prisma__contatoClient<
       $Result.GetResult<
         Prisma.$contatoPayload<ExtArgs>,
@@ -20834,7 +20833,7 @@ export namespace Prisma {
      *
      */
     update<T extends contatoUpdateArgs>(
-      args: SelectSubset<T, contatoUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, contatoUpdateArgs<ExtArgs>>
     ): Prisma__contatoClient<
       $Result.GetResult<
         Prisma.$contatoPayload<ExtArgs>,
@@ -20860,7 +20859,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends contatoDeleteManyArgs>(
-      args?: SelectSubset<T, contatoDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, contatoDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -20881,7 +20880,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends contatoUpdateManyArgs>(
-      args: SelectSubset<T, contatoUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, contatoUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -20913,7 +20912,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends contatoUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, contatoUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, contatoUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$contatoPayload<ExtArgs>,
@@ -20941,7 +20940,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends contatoUpsertArgs>(
-      args: SelectSubset<T, contatoUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, contatoUpsertArgs<ExtArgs>>
     ): Prisma__contatoClient<
       $Result.GetResult<
         Prisma.$contatoPayload<ExtArgs>,
@@ -20968,7 +20967,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends contatoCountArgs>(
-      args?: Subset<T, contatoCountArgs>,
+      args?: Subset<T, contatoCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -21002,7 +21001,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends ContatoAggregateArgs>(
-      args: Subset<T, ContatoAggregateArgs>,
+      args: Subset<T, ContatoAggregateArgs>
     ): Prisma.PrismaPromise<GetContatoAggregateType<T>>;
 
     /**
@@ -21083,7 +21082,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, contatoGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, contatoGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetContatoGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -21120,7 +21119,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -21131,7 +21130,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -21940,7 +21939,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends ctissFindUniqueArgs>(
-      args: SelectSubset<T, ctissFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, ctissFindUniqueArgs<ExtArgs>>
     ): Prisma__ctissClient<
       $Result.GetResult<
         Prisma.$ctissPayload<ExtArgs>,
@@ -21966,7 +21965,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends ctissFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, ctissFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, ctissFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__ctissClient<
       $Result.GetResult<
         Prisma.$ctissPayload<ExtArgs>,
@@ -21993,7 +21992,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends ctissFindFirstArgs>(
-      args?: SelectSubset<T, ctissFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, ctissFindFirstArgs<ExtArgs>>
     ): Prisma__ctissClient<
       $Result.GetResult<
         Prisma.$ctissPayload<ExtArgs>,
@@ -22021,7 +22020,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends ctissFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, ctissFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, ctissFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__ctissClient<
       $Result.GetResult<
         Prisma.$ctissPayload<ExtArgs>,
@@ -22051,7 +22050,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends ctissFindManyArgs>(
-      args?: SelectSubset<T, ctissFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, ctissFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$ctissPayload<ExtArgs>,
@@ -22074,7 +22073,7 @@ export namespace Prisma {
      *
      */
     create<T extends ctissCreateArgs>(
-      args: SelectSubset<T, ctissCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, ctissCreateArgs<ExtArgs>>
     ): Prisma__ctissClient<
       $Result.GetResult<
         Prisma.$ctissPayload<ExtArgs>,
@@ -22100,7 +22099,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends ctissCreateManyArgs>(
-      args?: SelectSubset<T, ctissCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, ctissCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -22126,7 +22125,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends ctissCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, ctissCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, ctissCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$ctissPayload<ExtArgs>,
@@ -22149,7 +22148,7 @@ export namespace Prisma {
      *
      */
     delete<T extends ctissDeleteArgs>(
-      args: SelectSubset<T, ctissDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, ctissDeleteArgs<ExtArgs>>
     ): Prisma__ctissClient<
       $Result.GetResult<
         Prisma.$ctissPayload<ExtArgs>,
@@ -22178,7 +22177,7 @@ export namespace Prisma {
      *
      */
     update<T extends ctissUpdateArgs>(
-      args: SelectSubset<T, ctissUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, ctissUpdateArgs<ExtArgs>>
     ): Prisma__ctissClient<
       $Result.GetResult<
         Prisma.$ctissPayload<ExtArgs>,
@@ -22204,7 +22203,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends ctissDeleteManyArgs>(
-      args?: SelectSubset<T, ctissDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, ctissDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -22225,7 +22224,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends ctissUpdateManyArgs>(
-      args: SelectSubset<T, ctissUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, ctissUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -22257,7 +22256,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends ctissUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, ctissUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, ctissUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$ctissPayload<ExtArgs>,
@@ -22285,7 +22284,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends ctissUpsertArgs>(
-      args: SelectSubset<T, ctissUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, ctissUpsertArgs<ExtArgs>>
     ): Prisma__ctissClient<
       $Result.GetResult<
         Prisma.$ctissPayload<ExtArgs>,
@@ -22312,7 +22311,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends ctissCountArgs>(
-      args?: Subset<T, ctissCountArgs>,
+      args?: Subset<T, ctissCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -22346,7 +22345,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends CtissAggregateArgs>(
-      args: Subset<T, CtissAggregateArgs>,
+      args: Subset<T, CtissAggregateArgs>
     ): Prisma.PrismaPromise<GetCtissAggregateType<T>>;
 
     /**
@@ -22427,7 +22426,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, ctissGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, ctissGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetCtissGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -22464,7 +22463,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -22475,7 +22474,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -23207,7 +23206,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends despesaFindUniqueArgs>(
-      args: SelectSubset<T, despesaFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, despesaFindUniqueArgs<ExtArgs>>
     ): Prisma__despesaClient<
       $Result.GetResult<
         Prisma.$despesaPayload<ExtArgs>,
@@ -23233,7 +23232,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends despesaFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, despesaFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, despesaFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__despesaClient<
       $Result.GetResult<
         Prisma.$despesaPayload<ExtArgs>,
@@ -23260,7 +23259,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends despesaFindFirstArgs>(
-      args?: SelectSubset<T, despesaFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, despesaFindFirstArgs<ExtArgs>>
     ): Prisma__despesaClient<
       $Result.GetResult<
         Prisma.$despesaPayload<ExtArgs>,
@@ -23288,7 +23287,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends despesaFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, despesaFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, despesaFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__despesaClient<
       $Result.GetResult<
         Prisma.$despesaPayload<ExtArgs>,
@@ -23318,7 +23317,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends despesaFindManyArgs>(
-      args?: SelectSubset<T, despesaFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, despesaFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$despesaPayload<ExtArgs>,
@@ -23341,7 +23340,7 @@ export namespace Prisma {
      *
      */
     create<T extends despesaCreateArgs>(
-      args: SelectSubset<T, despesaCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, despesaCreateArgs<ExtArgs>>
     ): Prisma__despesaClient<
       $Result.GetResult<
         Prisma.$despesaPayload<ExtArgs>,
@@ -23367,7 +23366,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends despesaCreateManyArgs>(
-      args?: SelectSubset<T, despesaCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, despesaCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -23393,7 +23392,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends despesaCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, despesaCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, despesaCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$despesaPayload<ExtArgs>,
@@ -23416,7 +23415,7 @@ export namespace Prisma {
      *
      */
     delete<T extends despesaDeleteArgs>(
-      args: SelectSubset<T, despesaDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, despesaDeleteArgs<ExtArgs>>
     ): Prisma__despesaClient<
       $Result.GetResult<
         Prisma.$despesaPayload<ExtArgs>,
@@ -23445,7 +23444,7 @@ export namespace Prisma {
      *
      */
     update<T extends despesaUpdateArgs>(
-      args: SelectSubset<T, despesaUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, despesaUpdateArgs<ExtArgs>>
     ): Prisma__despesaClient<
       $Result.GetResult<
         Prisma.$despesaPayload<ExtArgs>,
@@ -23471,7 +23470,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends despesaDeleteManyArgs>(
-      args?: SelectSubset<T, despesaDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, despesaDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -23492,7 +23491,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends despesaUpdateManyArgs>(
-      args: SelectSubset<T, despesaUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, despesaUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -23524,7 +23523,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends despesaUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, despesaUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, despesaUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$despesaPayload<ExtArgs>,
@@ -23552,7 +23551,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends despesaUpsertArgs>(
-      args: SelectSubset<T, despesaUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, despesaUpsertArgs<ExtArgs>>
     ): Prisma__despesaClient<
       $Result.GetResult<
         Prisma.$despesaPayload<ExtArgs>,
@@ -23579,7 +23578,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends despesaCountArgs>(
-      args?: Subset<T, despesaCountArgs>,
+      args?: Subset<T, despesaCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -23613,7 +23612,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends DespesaAggregateArgs>(
-      args: Subset<T, DespesaAggregateArgs>,
+      args: Subset<T, DespesaAggregateArgs>
     ): Prisma.PrismaPromise<GetDespesaAggregateType<T>>;
 
     /**
@@ -23694,7 +23693,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, despesaGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, despesaGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetDespesaGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -23731,7 +23730,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -23742,7 +23741,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -24459,7 +24458,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends desprecFindUniqueArgs>(
-      args: SelectSubset<T, desprecFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, desprecFindUniqueArgs<ExtArgs>>
     ): Prisma__desprecClient<
       $Result.GetResult<
         Prisma.$desprecPayload<ExtArgs>,
@@ -24485,7 +24484,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends desprecFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, desprecFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, desprecFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__desprecClient<
       $Result.GetResult<
         Prisma.$desprecPayload<ExtArgs>,
@@ -24512,7 +24511,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends desprecFindFirstArgs>(
-      args?: SelectSubset<T, desprecFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, desprecFindFirstArgs<ExtArgs>>
     ): Prisma__desprecClient<
       $Result.GetResult<
         Prisma.$desprecPayload<ExtArgs>,
@@ -24540,7 +24539,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends desprecFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, desprecFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, desprecFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__desprecClient<
       $Result.GetResult<
         Prisma.$desprecPayload<ExtArgs>,
@@ -24570,7 +24569,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends desprecFindManyArgs>(
-      args?: SelectSubset<T, desprecFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, desprecFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$desprecPayload<ExtArgs>,
@@ -24593,7 +24592,7 @@ export namespace Prisma {
      *
      */
     create<T extends desprecCreateArgs>(
-      args: SelectSubset<T, desprecCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, desprecCreateArgs<ExtArgs>>
     ): Prisma__desprecClient<
       $Result.GetResult<
         Prisma.$desprecPayload<ExtArgs>,
@@ -24619,7 +24618,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends desprecCreateManyArgs>(
-      args?: SelectSubset<T, desprecCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, desprecCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -24645,7 +24644,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends desprecCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, desprecCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, desprecCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$desprecPayload<ExtArgs>,
@@ -24668,7 +24667,7 @@ export namespace Prisma {
      *
      */
     delete<T extends desprecDeleteArgs>(
-      args: SelectSubset<T, desprecDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, desprecDeleteArgs<ExtArgs>>
     ): Prisma__desprecClient<
       $Result.GetResult<
         Prisma.$desprecPayload<ExtArgs>,
@@ -24697,7 +24696,7 @@ export namespace Prisma {
      *
      */
     update<T extends desprecUpdateArgs>(
-      args: SelectSubset<T, desprecUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, desprecUpdateArgs<ExtArgs>>
     ): Prisma__desprecClient<
       $Result.GetResult<
         Prisma.$desprecPayload<ExtArgs>,
@@ -24723,7 +24722,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends desprecDeleteManyArgs>(
-      args?: SelectSubset<T, desprecDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, desprecDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -24744,7 +24743,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends desprecUpdateManyArgs>(
-      args: SelectSubset<T, desprecUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, desprecUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -24776,7 +24775,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends desprecUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, desprecUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, desprecUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$desprecPayload<ExtArgs>,
@@ -24804,7 +24803,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends desprecUpsertArgs>(
-      args: SelectSubset<T, desprecUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, desprecUpsertArgs<ExtArgs>>
     ): Prisma__desprecClient<
       $Result.GetResult<
         Prisma.$desprecPayload<ExtArgs>,
@@ -24831,7 +24830,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends desprecCountArgs>(
-      args?: Subset<T, desprecCountArgs>,
+      args?: Subset<T, desprecCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -24865,7 +24864,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends DesprecAggregateArgs>(
-      args: Subset<T, DesprecAggregateArgs>,
+      args: Subset<T, DesprecAggregateArgs>
     ): Prisma.PrismaPromise<GetDesprecAggregateType<T>>;
 
     /**
@@ -24946,7 +24945,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, desprecGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, desprecGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetDesprecGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -24983,7 +24982,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -24994,7 +24993,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -25835,7 +25834,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends empresaFindUniqueArgs>(
-      args: SelectSubset<T, empresaFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, empresaFindUniqueArgs<ExtArgs>>
     ): Prisma__empresaClient<
       $Result.GetResult<
         Prisma.$empresaPayload<ExtArgs>,
@@ -25861,7 +25860,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends empresaFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, empresaFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, empresaFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__empresaClient<
       $Result.GetResult<
         Prisma.$empresaPayload<ExtArgs>,
@@ -25888,7 +25887,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends empresaFindFirstArgs>(
-      args?: SelectSubset<T, empresaFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, empresaFindFirstArgs<ExtArgs>>
     ): Prisma__empresaClient<
       $Result.GetResult<
         Prisma.$empresaPayload<ExtArgs>,
@@ -25916,7 +25915,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends empresaFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, empresaFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, empresaFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__empresaClient<
       $Result.GetResult<
         Prisma.$empresaPayload<ExtArgs>,
@@ -25946,7 +25945,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends empresaFindManyArgs>(
-      args?: SelectSubset<T, empresaFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, empresaFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$empresaPayload<ExtArgs>,
@@ -25969,7 +25968,7 @@ export namespace Prisma {
      *
      */
     create<T extends empresaCreateArgs>(
-      args: SelectSubset<T, empresaCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, empresaCreateArgs<ExtArgs>>
     ): Prisma__empresaClient<
       $Result.GetResult<
         Prisma.$empresaPayload<ExtArgs>,
@@ -25995,7 +25994,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends empresaCreateManyArgs>(
-      args?: SelectSubset<T, empresaCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, empresaCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -26021,7 +26020,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends empresaCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, empresaCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, empresaCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$empresaPayload<ExtArgs>,
@@ -26044,7 +26043,7 @@ export namespace Prisma {
      *
      */
     delete<T extends empresaDeleteArgs>(
-      args: SelectSubset<T, empresaDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, empresaDeleteArgs<ExtArgs>>
     ): Prisma__empresaClient<
       $Result.GetResult<
         Prisma.$empresaPayload<ExtArgs>,
@@ -26073,7 +26072,7 @@ export namespace Prisma {
      *
      */
     update<T extends empresaUpdateArgs>(
-      args: SelectSubset<T, empresaUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, empresaUpdateArgs<ExtArgs>>
     ): Prisma__empresaClient<
       $Result.GetResult<
         Prisma.$empresaPayload<ExtArgs>,
@@ -26099,7 +26098,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends empresaDeleteManyArgs>(
-      args?: SelectSubset<T, empresaDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, empresaDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -26120,7 +26119,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends empresaUpdateManyArgs>(
-      args: SelectSubset<T, empresaUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, empresaUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -26152,7 +26151,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends empresaUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, empresaUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, empresaUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$empresaPayload<ExtArgs>,
@@ -26180,7 +26179,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends empresaUpsertArgs>(
-      args: SelectSubset<T, empresaUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, empresaUpsertArgs<ExtArgs>>
     ): Prisma__empresaClient<
       $Result.GetResult<
         Prisma.$empresaPayload<ExtArgs>,
@@ -26207,7 +26206,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends empresaCountArgs>(
-      args?: Subset<T, empresaCountArgs>,
+      args?: Subset<T, empresaCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -26241,7 +26240,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends EmpresaAggregateArgs>(
-      args: Subset<T, EmpresaAggregateArgs>,
+      args: Subset<T, EmpresaAggregateArgs>
     ): Prisma.PrismaPromise<GetEmpresaAggregateType<T>>;
 
     /**
@@ -26322,7 +26321,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, empresaGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, empresaGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetEmpresaGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -26359,7 +26358,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -26370,7 +26369,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -27072,7 +27071,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends faseFindUniqueArgs>(
-      args: SelectSubset<T, faseFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, faseFindUniqueArgs<ExtArgs>>
     ): Prisma__faseClient<
       $Result.GetResult<
         Prisma.$fasePayload<ExtArgs>,
@@ -27098,7 +27097,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends faseFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, faseFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, faseFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__faseClient<
       $Result.GetResult<
         Prisma.$fasePayload<ExtArgs>,
@@ -27125,7 +27124,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends faseFindFirstArgs>(
-      args?: SelectSubset<T, faseFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, faseFindFirstArgs<ExtArgs>>
     ): Prisma__faseClient<
       $Result.GetResult<
         Prisma.$fasePayload<ExtArgs>,
@@ -27153,7 +27152,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends faseFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, faseFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, faseFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__faseClient<
       $Result.GetResult<
         Prisma.$fasePayload<ExtArgs>,
@@ -27183,7 +27182,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends faseFindManyArgs>(
-      args?: SelectSubset<T, faseFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, faseFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$fasePayload<ExtArgs>,
@@ -27206,7 +27205,7 @@ export namespace Prisma {
      *
      */
     create<T extends faseCreateArgs>(
-      args: SelectSubset<T, faseCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, faseCreateArgs<ExtArgs>>
     ): Prisma__faseClient<
       $Result.GetResult<
         Prisma.$fasePayload<ExtArgs>,
@@ -27232,7 +27231,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends faseCreateManyArgs>(
-      args?: SelectSubset<T, faseCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, faseCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -27258,7 +27257,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends faseCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, faseCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, faseCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$fasePayload<ExtArgs>,
@@ -27281,7 +27280,7 @@ export namespace Prisma {
      *
      */
     delete<T extends faseDeleteArgs>(
-      args: SelectSubset<T, faseDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, faseDeleteArgs<ExtArgs>>
     ): Prisma__faseClient<
       $Result.GetResult<
         Prisma.$fasePayload<ExtArgs>,
@@ -27310,7 +27309,7 @@ export namespace Prisma {
      *
      */
     update<T extends faseUpdateArgs>(
-      args: SelectSubset<T, faseUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, faseUpdateArgs<ExtArgs>>
     ): Prisma__faseClient<
       $Result.GetResult<
         Prisma.$fasePayload<ExtArgs>,
@@ -27336,7 +27335,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends faseDeleteManyArgs>(
-      args?: SelectSubset<T, faseDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, faseDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -27357,7 +27356,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends faseUpdateManyArgs>(
-      args: SelectSubset<T, faseUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, faseUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -27389,7 +27388,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends faseUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, faseUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, faseUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$fasePayload<ExtArgs>,
@@ -27417,7 +27416,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends faseUpsertArgs>(
-      args: SelectSubset<T, faseUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, faseUpsertArgs<ExtArgs>>
     ): Prisma__faseClient<
       $Result.GetResult<
         Prisma.$fasePayload<ExtArgs>,
@@ -27444,7 +27443,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends faseCountArgs>(
-      args?: Subset<T, faseCountArgs>,
+      args?: Subset<T, faseCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -27478,7 +27477,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends FaseAggregateArgs>(
-      args: Subset<T, FaseAggregateArgs>,
+      args: Subset<T, FaseAggregateArgs>
     ): Prisma.PrismaPromise<GetFaseAggregateType<T>>;
 
     /**
@@ -27559,7 +27558,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, faseGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, faseGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetFaseGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -27583,7 +27582,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     meta<T extends fase$metaArgs<ExtArgs> = {}>(
-      args?: Subset<T, fase$metaArgs<ExtArgs>>,
+      args?: Subset<T, fase$metaArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$metaPayload<ExtArgs>,
@@ -27594,7 +27593,7 @@ export namespace Prisma {
       | Null
     >;
     tarefa<T extends fase$tarefaArgs<ExtArgs> = {}>(
-      args?: Subset<T, fase$tarefaArgs<ExtArgs>>,
+      args?: Subset<T, fase$tarefaArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$tarefaPayload<ExtArgs>,
@@ -27618,7 +27617,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -27629,7 +27628,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -28461,7 +28460,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends fatdesFindUniqueArgs>(
-      args: SelectSubset<T, fatdesFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, fatdesFindUniqueArgs<ExtArgs>>
     ): Prisma__fatdesClient<
       $Result.GetResult<
         Prisma.$fatdesPayload<ExtArgs>,
@@ -28487,7 +28486,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends fatdesFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, fatdesFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, fatdesFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__fatdesClient<
       $Result.GetResult<
         Prisma.$fatdesPayload<ExtArgs>,
@@ -28514,7 +28513,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends fatdesFindFirstArgs>(
-      args?: SelectSubset<T, fatdesFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatdesFindFirstArgs<ExtArgs>>
     ): Prisma__fatdesClient<
       $Result.GetResult<
         Prisma.$fatdesPayload<ExtArgs>,
@@ -28542,7 +28541,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends fatdesFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, fatdesFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatdesFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__fatdesClient<
       $Result.GetResult<
         Prisma.$fatdesPayload<ExtArgs>,
@@ -28572,7 +28571,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends fatdesFindManyArgs>(
-      args?: SelectSubset<T, fatdesFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatdesFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$fatdesPayload<ExtArgs>,
@@ -28595,7 +28594,7 @@ export namespace Prisma {
      *
      */
     create<T extends fatdesCreateArgs>(
-      args: SelectSubset<T, fatdesCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, fatdesCreateArgs<ExtArgs>>
     ): Prisma__fatdesClient<
       $Result.GetResult<
         Prisma.$fatdesPayload<ExtArgs>,
@@ -28621,7 +28620,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends fatdesCreateManyArgs>(
-      args?: SelectSubset<T, fatdesCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatdesCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -28647,7 +28646,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends fatdesCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, fatdesCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatdesCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$fatdesPayload<ExtArgs>,
@@ -28670,7 +28669,7 @@ export namespace Prisma {
      *
      */
     delete<T extends fatdesDeleteArgs>(
-      args: SelectSubset<T, fatdesDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, fatdesDeleteArgs<ExtArgs>>
     ): Prisma__fatdesClient<
       $Result.GetResult<
         Prisma.$fatdesPayload<ExtArgs>,
@@ -28699,7 +28698,7 @@ export namespace Prisma {
      *
      */
     update<T extends fatdesUpdateArgs>(
-      args: SelectSubset<T, fatdesUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, fatdesUpdateArgs<ExtArgs>>
     ): Prisma__fatdesClient<
       $Result.GetResult<
         Prisma.$fatdesPayload<ExtArgs>,
@@ -28725,7 +28724,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends fatdesDeleteManyArgs>(
-      args?: SelectSubset<T, fatdesDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatdesDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -28746,7 +28745,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends fatdesUpdateManyArgs>(
-      args: SelectSubset<T, fatdesUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, fatdesUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -28778,7 +28777,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends fatdesUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, fatdesUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, fatdesUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$fatdesPayload<ExtArgs>,
@@ -28806,7 +28805,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends fatdesUpsertArgs>(
-      args: SelectSubset<T, fatdesUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, fatdesUpsertArgs<ExtArgs>>
     ): Prisma__fatdesClient<
       $Result.GetResult<
         Prisma.$fatdesPayload<ExtArgs>,
@@ -28833,7 +28832,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends fatdesCountArgs>(
-      args?: Subset<T, fatdesCountArgs>,
+      args?: Subset<T, fatdesCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -28867,7 +28866,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends FatdesAggregateArgs>(
-      args: Subset<T, FatdesAggregateArgs>,
+      args: Subset<T, FatdesAggregateArgs>
     ): Prisma.PrismaPromise<GetFatdesAggregateType<T>>;
 
     /**
@@ -28948,7 +28947,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, fatdesGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, fatdesGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetFatdesGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -28985,7 +28984,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -28996,7 +28995,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -29805,7 +29804,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends fatfunFindUniqueArgs>(
-      args: SelectSubset<T, fatfunFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, fatfunFindUniqueArgs<ExtArgs>>
     ): Prisma__fatfunClient<
       $Result.GetResult<
         Prisma.$fatfunPayload<ExtArgs>,
@@ -29831,7 +29830,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends fatfunFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, fatfunFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, fatfunFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__fatfunClient<
       $Result.GetResult<
         Prisma.$fatfunPayload<ExtArgs>,
@@ -29858,7 +29857,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends fatfunFindFirstArgs>(
-      args?: SelectSubset<T, fatfunFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatfunFindFirstArgs<ExtArgs>>
     ): Prisma__fatfunClient<
       $Result.GetResult<
         Prisma.$fatfunPayload<ExtArgs>,
@@ -29886,7 +29885,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends fatfunFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, fatfunFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatfunFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__fatfunClient<
       $Result.GetResult<
         Prisma.$fatfunPayload<ExtArgs>,
@@ -29916,7 +29915,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends fatfunFindManyArgs>(
-      args?: SelectSubset<T, fatfunFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatfunFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$fatfunPayload<ExtArgs>,
@@ -29939,7 +29938,7 @@ export namespace Prisma {
      *
      */
     create<T extends fatfunCreateArgs>(
-      args: SelectSubset<T, fatfunCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, fatfunCreateArgs<ExtArgs>>
     ): Prisma__fatfunClient<
       $Result.GetResult<
         Prisma.$fatfunPayload<ExtArgs>,
@@ -29965,7 +29964,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends fatfunCreateManyArgs>(
-      args?: SelectSubset<T, fatfunCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatfunCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -29991,7 +29990,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends fatfunCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, fatfunCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatfunCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$fatfunPayload<ExtArgs>,
@@ -30014,7 +30013,7 @@ export namespace Prisma {
      *
      */
     delete<T extends fatfunDeleteArgs>(
-      args: SelectSubset<T, fatfunDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, fatfunDeleteArgs<ExtArgs>>
     ): Prisma__fatfunClient<
       $Result.GetResult<
         Prisma.$fatfunPayload<ExtArgs>,
@@ -30043,7 +30042,7 @@ export namespace Prisma {
      *
      */
     update<T extends fatfunUpdateArgs>(
-      args: SelectSubset<T, fatfunUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, fatfunUpdateArgs<ExtArgs>>
     ): Prisma__fatfunClient<
       $Result.GetResult<
         Prisma.$fatfunPayload<ExtArgs>,
@@ -30069,7 +30068,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends fatfunDeleteManyArgs>(
-      args?: SelectSubset<T, fatfunDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatfunDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -30090,7 +30089,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends fatfunUpdateManyArgs>(
-      args: SelectSubset<T, fatfunUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, fatfunUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -30122,7 +30121,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends fatfunUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, fatfunUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, fatfunUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$fatfunPayload<ExtArgs>,
@@ -30150,7 +30149,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends fatfunUpsertArgs>(
-      args: SelectSubset<T, fatfunUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, fatfunUpsertArgs<ExtArgs>>
     ): Prisma__fatfunClient<
       $Result.GetResult<
         Prisma.$fatfunPayload<ExtArgs>,
@@ -30177,7 +30176,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends fatfunCountArgs>(
-      args?: Subset<T, fatfunCountArgs>,
+      args?: Subset<T, fatfunCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -30211,7 +30210,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends FatfunAggregateArgs>(
-      args: Subset<T, FatfunAggregateArgs>,
+      args: Subset<T, FatfunAggregateArgs>
     ): Prisma.PrismaPromise<GetFatfunAggregateType<T>>;
 
     /**
@@ -30292,7 +30291,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, fatfunGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, fatfunGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetFatfunGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -30329,7 +30328,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -30340,7 +30339,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -31297,7 +31296,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends fatrecFindUniqueArgs>(
-      args: SelectSubset<T, fatrecFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, fatrecFindUniqueArgs<ExtArgs>>
     ): Prisma__fatrecClient<
       $Result.GetResult<
         Prisma.$fatrecPayload<ExtArgs>,
@@ -31323,7 +31322,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends fatrecFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, fatrecFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, fatrecFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__fatrecClient<
       $Result.GetResult<
         Prisma.$fatrecPayload<ExtArgs>,
@@ -31350,7 +31349,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends fatrecFindFirstArgs>(
-      args?: SelectSubset<T, fatrecFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatrecFindFirstArgs<ExtArgs>>
     ): Prisma__fatrecClient<
       $Result.GetResult<
         Prisma.$fatrecPayload<ExtArgs>,
@@ -31378,7 +31377,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends fatrecFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, fatrecFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatrecFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__fatrecClient<
       $Result.GetResult<
         Prisma.$fatrecPayload<ExtArgs>,
@@ -31408,7 +31407,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends fatrecFindManyArgs>(
-      args?: SelectSubset<T, fatrecFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatrecFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$fatrecPayload<ExtArgs>,
@@ -31431,7 +31430,7 @@ export namespace Prisma {
      *
      */
     create<T extends fatrecCreateArgs>(
-      args: SelectSubset<T, fatrecCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, fatrecCreateArgs<ExtArgs>>
     ): Prisma__fatrecClient<
       $Result.GetResult<
         Prisma.$fatrecPayload<ExtArgs>,
@@ -31457,7 +31456,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends fatrecCreateManyArgs>(
-      args?: SelectSubset<T, fatrecCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatrecCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -31483,7 +31482,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends fatrecCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, fatrecCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatrecCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$fatrecPayload<ExtArgs>,
@@ -31506,7 +31505,7 @@ export namespace Prisma {
      *
      */
     delete<T extends fatrecDeleteArgs>(
-      args: SelectSubset<T, fatrecDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, fatrecDeleteArgs<ExtArgs>>
     ): Prisma__fatrecClient<
       $Result.GetResult<
         Prisma.$fatrecPayload<ExtArgs>,
@@ -31535,7 +31534,7 @@ export namespace Prisma {
      *
      */
     update<T extends fatrecUpdateArgs>(
-      args: SelectSubset<T, fatrecUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, fatrecUpdateArgs<ExtArgs>>
     ): Prisma__fatrecClient<
       $Result.GetResult<
         Prisma.$fatrecPayload<ExtArgs>,
@@ -31561,7 +31560,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends fatrecDeleteManyArgs>(
-      args?: SelectSubset<T, fatrecDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, fatrecDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -31582,7 +31581,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends fatrecUpdateManyArgs>(
-      args: SelectSubset<T, fatrecUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, fatrecUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -31614,7 +31613,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends fatrecUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, fatrecUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, fatrecUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$fatrecPayload<ExtArgs>,
@@ -31642,7 +31641,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends fatrecUpsertArgs>(
-      args: SelectSubset<T, fatrecUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, fatrecUpsertArgs<ExtArgs>>
     ): Prisma__fatrecClient<
       $Result.GetResult<
         Prisma.$fatrecPayload<ExtArgs>,
@@ -31669,7 +31668,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends fatrecCountArgs>(
-      args?: Subset<T, fatrecCountArgs>,
+      args?: Subset<T, fatrecCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -31703,7 +31702,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends FatrecAggregateArgs>(
-      args: Subset<T, FatrecAggregateArgs>,
+      args: Subset<T, FatrecAggregateArgs>
     ): Prisma.PrismaPromise<GetFatrecAggregateType<T>>;
 
     /**
@@ -31784,7 +31783,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, fatrecGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, fatrecGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetFatrecGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -31808,7 +31807,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     cliente<T extends clienteDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, clienteDefaultArgs<ExtArgs>>,
+      args?: Subset<T, clienteDefaultArgs<ExtArgs>>
     ): Prisma__clienteClient<
       | $Result.GetResult<
           Prisma.$clientePayload<ExtArgs>,
@@ -31835,7 +31834,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -31846,7 +31845,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -32633,7 +32632,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends faturaFindUniqueArgs>(
-      args: SelectSubset<T, faturaFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, faturaFindUniqueArgs<ExtArgs>>
     ): Prisma__faturaClient<
       $Result.GetResult<
         Prisma.$faturaPayload<ExtArgs>,
@@ -32659,7 +32658,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends faturaFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, faturaFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, faturaFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__faturaClient<
       $Result.GetResult<
         Prisma.$faturaPayload<ExtArgs>,
@@ -32686,7 +32685,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends faturaFindFirstArgs>(
-      args?: SelectSubset<T, faturaFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, faturaFindFirstArgs<ExtArgs>>
     ): Prisma__faturaClient<
       $Result.GetResult<
         Prisma.$faturaPayload<ExtArgs>,
@@ -32714,7 +32713,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends faturaFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, faturaFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, faturaFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__faturaClient<
       $Result.GetResult<
         Prisma.$faturaPayload<ExtArgs>,
@@ -32744,7 +32743,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends faturaFindManyArgs>(
-      args?: SelectSubset<T, faturaFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, faturaFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$faturaPayload<ExtArgs>,
@@ -32767,7 +32766,7 @@ export namespace Prisma {
      *
      */
     create<T extends faturaCreateArgs>(
-      args: SelectSubset<T, faturaCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, faturaCreateArgs<ExtArgs>>
     ): Prisma__faturaClient<
       $Result.GetResult<
         Prisma.$faturaPayload<ExtArgs>,
@@ -32793,7 +32792,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends faturaCreateManyArgs>(
-      args?: SelectSubset<T, faturaCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, faturaCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -32819,7 +32818,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends faturaCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, faturaCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, faturaCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$faturaPayload<ExtArgs>,
@@ -32842,7 +32841,7 @@ export namespace Prisma {
      *
      */
     delete<T extends faturaDeleteArgs>(
-      args: SelectSubset<T, faturaDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, faturaDeleteArgs<ExtArgs>>
     ): Prisma__faturaClient<
       $Result.GetResult<
         Prisma.$faturaPayload<ExtArgs>,
@@ -32871,7 +32870,7 @@ export namespace Prisma {
      *
      */
     update<T extends faturaUpdateArgs>(
-      args: SelectSubset<T, faturaUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, faturaUpdateArgs<ExtArgs>>
     ): Prisma__faturaClient<
       $Result.GetResult<
         Prisma.$faturaPayload<ExtArgs>,
@@ -32897,7 +32896,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends faturaDeleteManyArgs>(
-      args?: SelectSubset<T, faturaDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, faturaDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -32918,7 +32917,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends faturaUpdateManyArgs>(
-      args: SelectSubset<T, faturaUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, faturaUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -32950,7 +32949,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends faturaUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, faturaUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, faturaUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$faturaPayload<ExtArgs>,
@@ -32978,7 +32977,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends faturaUpsertArgs>(
-      args: SelectSubset<T, faturaUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, faturaUpsertArgs<ExtArgs>>
     ): Prisma__faturaClient<
       $Result.GetResult<
         Prisma.$faturaPayload<ExtArgs>,
@@ -33005,7 +33004,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends faturaCountArgs>(
-      args?: Subset<T, faturaCountArgs>,
+      args?: Subset<T, faturaCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -33039,7 +33038,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends FaturaAggregateArgs>(
-      args: Subset<T, FaturaAggregateArgs>,
+      args: Subset<T, FaturaAggregateArgs>
     ): Prisma.PrismaPromise<GetFaturaAggregateType<T>>;
 
     /**
@@ -33120,7 +33119,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, faturaGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, faturaGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetFaturaGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -33157,7 +33156,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -33168,7 +33167,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -33927,7 +33926,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends faturamentoFindUniqueArgs>(
-      args: SelectSubset<T, faturamentoFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, faturamentoFindUniqueArgs<ExtArgs>>
     ): Prisma__faturamentoClient<
       $Result.GetResult<
         Prisma.$faturamentoPayload<ExtArgs>,
@@ -33953,7 +33952,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends faturamentoFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, faturamentoFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, faturamentoFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__faturamentoClient<
       $Result.GetResult<
         Prisma.$faturamentoPayload<ExtArgs>,
@@ -33980,7 +33979,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends faturamentoFindFirstArgs>(
-      args?: SelectSubset<T, faturamentoFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, faturamentoFindFirstArgs<ExtArgs>>
     ): Prisma__faturamentoClient<
       $Result.GetResult<
         Prisma.$faturamentoPayload<ExtArgs>,
@@ -34008,7 +34007,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends faturamentoFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, faturamentoFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, faturamentoFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__faturamentoClient<
       $Result.GetResult<
         Prisma.$faturamentoPayload<ExtArgs>,
@@ -34038,7 +34037,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends faturamentoFindManyArgs>(
-      args?: SelectSubset<T, faturamentoFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, faturamentoFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$faturamentoPayload<ExtArgs>,
@@ -34061,7 +34060,7 @@ export namespace Prisma {
      *
      */
     create<T extends faturamentoCreateArgs>(
-      args: SelectSubset<T, faturamentoCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, faturamentoCreateArgs<ExtArgs>>
     ): Prisma__faturamentoClient<
       $Result.GetResult<
         Prisma.$faturamentoPayload<ExtArgs>,
@@ -34087,7 +34086,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends faturamentoCreateManyArgs>(
-      args?: SelectSubset<T, faturamentoCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, faturamentoCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -34113,7 +34112,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends faturamentoCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, faturamentoCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, faturamentoCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$faturamentoPayload<ExtArgs>,
@@ -34136,7 +34135,7 @@ export namespace Prisma {
      *
      */
     delete<T extends faturamentoDeleteArgs>(
-      args: SelectSubset<T, faturamentoDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, faturamentoDeleteArgs<ExtArgs>>
     ): Prisma__faturamentoClient<
       $Result.GetResult<
         Prisma.$faturamentoPayload<ExtArgs>,
@@ -34165,7 +34164,7 @@ export namespace Prisma {
      *
      */
     update<T extends faturamentoUpdateArgs>(
-      args: SelectSubset<T, faturamentoUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, faturamentoUpdateArgs<ExtArgs>>
     ): Prisma__faturamentoClient<
       $Result.GetResult<
         Prisma.$faturamentoPayload<ExtArgs>,
@@ -34191,7 +34190,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends faturamentoDeleteManyArgs>(
-      args?: SelectSubset<T, faturamentoDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, faturamentoDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -34212,7 +34211,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends faturamentoUpdateManyArgs>(
-      args: SelectSubset<T, faturamentoUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, faturamentoUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -34244,7 +34243,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends faturamentoUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, faturamentoUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, faturamentoUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$faturamentoPayload<ExtArgs>,
@@ -34272,7 +34271,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends faturamentoUpsertArgs>(
-      args: SelectSubset<T, faturamentoUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, faturamentoUpsertArgs<ExtArgs>>
     ): Prisma__faturamentoClient<
       $Result.GetResult<
         Prisma.$faturamentoPayload<ExtArgs>,
@@ -34299,7 +34298,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends faturamentoCountArgs>(
-      args?: Subset<T, faturamentoCountArgs>,
+      args?: Subset<T, faturamentoCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -34333,7 +34332,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends FaturamentoAggregateArgs>(
-      args: Subset<T, FaturamentoAggregateArgs>,
+      args: Subset<T, FaturamentoAggregateArgs>
     ): Prisma.PrismaPromise<GetFaturamentoAggregateType<T>>;
 
     /**
@@ -34415,7 +34414,7 @@ export namespace Prisma {
                   }[OrderFields],
     >(
       args: SubsetIntersection<T, faturamentoGroupByArgs, OrderByArg> &
-        InputErrors,
+        InputErrors
     ): {} extends InputErrors
       ? GetFaturamentoGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -34452,7 +34451,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -34463,7 +34462,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -35151,7 +35150,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends grupoFindUniqueArgs>(
-      args: SelectSubset<T, grupoFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, grupoFindUniqueArgs<ExtArgs>>
     ): Prisma__grupoClient<
       $Result.GetResult<
         Prisma.$grupoPayload<ExtArgs>,
@@ -35177,7 +35176,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends grupoFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, grupoFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, grupoFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__grupoClient<
       $Result.GetResult<
         Prisma.$grupoPayload<ExtArgs>,
@@ -35204,7 +35203,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends grupoFindFirstArgs>(
-      args?: SelectSubset<T, grupoFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, grupoFindFirstArgs<ExtArgs>>
     ): Prisma__grupoClient<
       $Result.GetResult<
         Prisma.$grupoPayload<ExtArgs>,
@@ -35232,7 +35231,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends grupoFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, grupoFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, grupoFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__grupoClient<
       $Result.GetResult<
         Prisma.$grupoPayload<ExtArgs>,
@@ -35262,7 +35261,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends grupoFindManyArgs>(
-      args?: SelectSubset<T, grupoFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, grupoFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$grupoPayload<ExtArgs>,
@@ -35285,7 +35284,7 @@ export namespace Prisma {
      *
      */
     create<T extends grupoCreateArgs>(
-      args: SelectSubset<T, grupoCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, grupoCreateArgs<ExtArgs>>
     ): Prisma__grupoClient<
       $Result.GetResult<
         Prisma.$grupoPayload<ExtArgs>,
@@ -35311,7 +35310,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends grupoCreateManyArgs>(
-      args?: SelectSubset<T, grupoCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, grupoCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -35337,7 +35336,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends grupoCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, grupoCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, grupoCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$grupoPayload<ExtArgs>,
@@ -35360,7 +35359,7 @@ export namespace Prisma {
      *
      */
     delete<T extends grupoDeleteArgs>(
-      args: SelectSubset<T, grupoDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, grupoDeleteArgs<ExtArgs>>
     ): Prisma__grupoClient<
       $Result.GetResult<
         Prisma.$grupoPayload<ExtArgs>,
@@ -35389,7 +35388,7 @@ export namespace Prisma {
      *
      */
     update<T extends grupoUpdateArgs>(
-      args: SelectSubset<T, grupoUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, grupoUpdateArgs<ExtArgs>>
     ): Prisma__grupoClient<
       $Result.GetResult<
         Prisma.$grupoPayload<ExtArgs>,
@@ -35415,7 +35414,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends grupoDeleteManyArgs>(
-      args?: SelectSubset<T, grupoDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, grupoDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -35436,7 +35435,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends grupoUpdateManyArgs>(
-      args: SelectSubset<T, grupoUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, grupoUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -35468,7 +35467,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends grupoUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, grupoUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, grupoUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$grupoPayload<ExtArgs>,
@@ -35496,7 +35495,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends grupoUpsertArgs>(
-      args: SelectSubset<T, grupoUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, grupoUpsertArgs<ExtArgs>>
     ): Prisma__grupoClient<
       $Result.GetResult<
         Prisma.$grupoPayload<ExtArgs>,
@@ -35523,7 +35522,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends grupoCountArgs>(
-      args?: Subset<T, grupoCountArgs>,
+      args?: Subset<T, grupoCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -35557,7 +35556,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends GrupoAggregateArgs>(
-      args: Subset<T, GrupoAggregateArgs>,
+      args: Subset<T, GrupoAggregateArgs>
     ): Prisma.PrismaPromise<GetGrupoAggregateType<T>>;
 
     /**
@@ -35638,7 +35637,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, grupoGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, grupoGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetGrupoGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -35675,7 +35674,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -35686,7 +35685,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -36407,7 +36406,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends histchamadoFindUniqueArgs>(
-      args: SelectSubset<T, histchamadoFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, histchamadoFindUniqueArgs<ExtArgs>>
     ): Prisma__histchamadoClient<
       $Result.GetResult<
         Prisma.$histchamadoPayload<ExtArgs>,
@@ -36433,7 +36432,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends histchamadoFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, histchamadoFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, histchamadoFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__histchamadoClient<
       $Result.GetResult<
         Prisma.$histchamadoPayload<ExtArgs>,
@@ -36460,7 +36459,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends histchamadoFindFirstArgs>(
-      args?: SelectSubset<T, histchamadoFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, histchamadoFindFirstArgs<ExtArgs>>
     ): Prisma__histchamadoClient<
       $Result.GetResult<
         Prisma.$histchamadoPayload<ExtArgs>,
@@ -36488,7 +36487,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends histchamadoFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, histchamadoFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, histchamadoFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__histchamadoClient<
       $Result.GetResult<
         Prisma.$histchamadoPayload<ExtArgs>,
@@ -36518,7 +36517,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends histchamadoFindManyArgs>(
-      args?: SelectSubset<T, histchamadoFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, histchamadoFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$histchamadoPayload<ExtArgs>,
@@ -36541,7 +36540,7 @@ export namespace Prisma {
      *
      */
     create<T extends histchamadoCreateArgs>(
-      args: SelectSubset<T, histchamadoCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, histchamadoCreateArgs<ExtArgs>>
     ): Prisma__histchamadoClient<
       $Result.GetResult<
         Prisma.$histchamadoPayload<ExtArgs>,
@@ -36567,7 +36566,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends histchamadoCreateManyArgs>(
-      args?: SelectSubset<T, histchamadoCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, histchamadoCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -36593,7 +36592,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends histchamadoCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, histchamadoCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, histchamadoCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$histchamadoPayload<ExtArgs>,
@@ -36616,7 +36615,7 @@ export namespace Prisma {
      *
      */
     delete<T extends histchamadoDeleteArgs>(
-      args: SelectSubset<T, histchamadoDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, histchamadoDeleteArgs<ExtArgs>>
     ): Prisma__histchamadoClient<
       $Result.GetResult<
         Prisma.$histchamadoPayload<ExtArgs>,
@@ -36645,7 +36644,7 @@ export namespace Prisma {
      *
      */
     update<T extends histchamadoUpdateArgs>(
-      args: SelectSubset<T, histchamadoUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, histchamadoUpdateArgs<ExtArgs>>
     ): Prisma__histchamadoClient<
       $Result.GetResult<
         Prisma.$histchamadoPayload<ExtArgs>,
@@ -36671,7 +36670,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends histchamadoDeleteManyArgs>(
-      args?: SelectSubset<T, histchamadoDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, histchamadoDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -36692,7 +36691,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends histchamadoUpdateManyArgs>(
-      args: SelectSubset<T, histchamadoUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, histchamadoUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -36724,7 +36723,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends histchamadoUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, histchamadoUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, histchamadoUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$histchamadoPayload<ExtArgs>,
@@ -36752,7 +36751,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends histchamadoUpsertArgs>(
-      args: SelectSubset<T, histchamadoUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, histchamadoUpsertArgs<ExtArgs>>
     ): Prisma__histchamadoClient<
       $Result.GetResult<
         Prisma.$histchamadoPayload<ExtArgs>,
@@ -36779,7 +36778,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends histchamadoCountArgs>(
-      args?: Subset<T, histchamadoCountArgs>,
+      args?: Subset<T, histchamadoCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -36813,7 +36812,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends HistchamadoAggregateArgs>(
-      args: Subset<T, HistchamadoAggregateArgs>,
+      args: Subset<T, HistchamadoAggregateArgs>
     ): Prisma.PrismaPromise<GetHistchamadoAggregateType<T>>;
 
     /**
@@ -36895,7 +36894,7 @@ export namespace Prisma {
                   }[OrderFields],
     >(
       args: SubsetIntersection<T, histchamadoGroupByArgs, OrderByArg> &
-        InputErrors,
+        InputErrors
     ): {} extends InputErrors
       ? GetHistchamadoGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -36932,7 +36931,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -36943,7 +36942,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -37797,7 +37796,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends itavaliadoFindUniqueArgs>(
-      args: SelectSubset<T, itavaliadoFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, itavaliadoFindUniqueArgs<ExtArgs>>
     ): Prisma__itavaliadoClient<
       $Result.GetResult<
         Prisma.$itavaliadoPayload<ExtArgs>,
@@ -37823,7 +37822,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends itavaliadoFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, itavaliadoFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, itavaliadoFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__itavaliadoClient<
       $Result.GetResult<
         Prisma.$itavaliadoPayload<ExtArgs>,
@@ -37850,7 +37849,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends itavaliadoFindFirstArgs>(
-      args?: SelectSubset<T, itavaliadoFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, itavaliadoFindFirstArgs<ExtArgs>>
     ): Prisma__itavaliadoClient<
       $Result.GetResult<
         Prisma.$itavaliadoPayload<ExtArgs>,
@@ -37878,7 +37877,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends itavaliadoFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, itavaliadoFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, itavaliadoFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__itavaliadoClient<
       $Result.GetResult<
         Prisma.$itavaliadoPayload<ExtArgs>,
@@ -37908,7 +37907,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends itavaliadoFindManyArgs>(
-      args?: SelectSubset<T, itavaliadoFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, itavaliadoFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$itavaliadoPayload<ExtArgs>,
@@ -37931,7 +37930,7 @@ export namespace Prisma {
      *
      */
     create<T extends itavaliadoCreateArgs>(
-      args: SelectSubset<T, itavaliadoCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, itavaliadoCreateArgs<ExtArgs>>
     ): Prisma__itavaliadoClient<
       $Result.GetResult<
         Prisma.$itavaliadoPayload<ExtArgs>,
@@ -37957,7 +37956,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends itavaliadoCreateManyArgs>(
-      args?: SelectSubset<T, itavaliadoCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, itavaliadoCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -37983,7 +37982,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends itavaliadoCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, itavaliadoCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, itavaliadoCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$itavaliadoPayload<ExtArgs>,
@@ -38006,7 +38005,7 @@ export namespace Prisma {
      *
      */
     delete<T extends itavaliadoDeleteArgs>(
-      args: SelectSubset<T, itavaliadoDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, itavaliadoDeleteArgs<ExtArgs>>
     ): Prisma__itavaliadoClient<
       $Result.GetResult<
         Prisma.$itavaliadoPayload<ExtArgs>,
@@ -38035,7 +38034,7 @@ export namespace Prisma {
      *
      */
     update<T extends itavaliadoUpdateArgs>(
-      args: SelectSubset<T, itavaliadoUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, itavaliadoUpdateArgs<ExtArgs>>
     ): Prisma__itavaliadoClient<
       $Result.GetResult<
         Prisma.$itavaliadoPayload<ExtArgs>,
@@ -38061,7 +38060,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends itavaliadoDeleteManyArgs>(
-      args?: SelectSubset<T, itavaliadoDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, itavaliadoDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -38082,7 +38081,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends itavaliadoUpdateManyArgs>(
-      args: SelectSubset<T, itavaliadoUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, itavaliadoUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -38114,7 +38113,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends itavaliadoUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, itavaliadoUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, itavaliadoUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$itavaliadoPayload<ExtArgs>,
@@ -38142,7 +38141,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends itavaliadoUpsertArgs>(
-      args: SelectSubset<T, itavaliadoUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, itavaliadoUpsertArgs<ExtArgs>>
     ): Prisma__itavaliadoClient<
       $Result.GetResult<
         Prisma.$itavaliadoPayload<ExtArgs>,
@@ -38169,7 +38168,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends itavaliadoCountArgs>(
-      args?: Subset<T, itavaliadoCountArgs>,
+      args?: Subset<T, itavaliadoCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -38203,7 +38202,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends ItavaliadoAggregateArgs>(
-      args: Subset<T, ItavaliadoAggregateArgs>,
+      args: Subset<T, ItavaliadoAggregateArgs>
     ): Prisma.PrismaPromise<GetItavaliadoAggregateType<T>>;
 
     /**
@@ -38285,7 +38284,7 @@ export namespace Prisma {
                   }[OrderFields],
     >(
       args: SubsetIntersection<T, itavaliadoGroupByArgs, OrderByArg> &
-        InputErrors,
+        InputErrors
     ): {} extends InputErrors
       ? GetItavaliadoGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -38309,7 +38308,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     avaliado<T extends avaliadoDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, avaliadoDefaultArgs<ExtArgs>>,
+      args?: Subset<T, avaliadoDefaultArgs<ExtArgs>>
     ): Prisma__avaliadoClient<
       | $Result.GetResult<
           Prisma.$avaliadoPayload<ExtArgs>,
@@ -38323,7 +38322,7 @@ export namespace Prisma {
       GlobalOmitOptions
     >;
     itmatriz<T extends itmatrizDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, itmatrizDefaultArgs<ExtArgs>>,
+      args?: Subset<T, itmatrizDefaultArgs<ExtArgs>>
     ): Prisma__itmatrizClient<
       | $Result.GetResult<
           Prisma.$itmatrizPayload<ExtArgs>,
@@ -38350,7 +38349,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -38361,7 +38360,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -39195,7 +39194,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends itmatrizFindUniqueArgs>(
-      args: SelectSubset<T, itmatrizFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, itmatrizFindUniqueArgs<ExtArgs>>
     ): Prisma__itmatrizClient<
       $Result.GetResult<
         Prisma.$itmatrizPayload<ExtArgs>,
@@ -39221,7 +39220,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends itmatrizFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, itmatrizFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, itmatrizFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__itmatrizClient<
       $Result.GetResult<
         Prisma.$itmatrizPayload<ExtArgs>,
@@ -39248,7 +39247,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends itmatrizFindFirstArgs>(
-      args?: SelectSubset<T, itmatrizFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, itmatrizFindFirstArgs<ExtArgs>>
     ): Prisma__itmatrizClient<
       $Result.GetResult<
         Prisma.$itmatrizPayload<ExtArgs>,
@@ -39276,7 +39275,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends itmatrizFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, itmatrizFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, itmatrizFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__itmatrizClient<
       $Result.GetResult<
         Prisma.$itmatrizPayload<ExtArgs>,
@@ -39306,7 +39305,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends itmatrizFindManyArgs>(
-      args?: SelectSubset<T, itmatrizFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, itmatrizFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$itmatrizPayload<ExtArgs>,
@@ -39329,7 +39328,7 @@ export namespace Prisma {
      *
      */
     create<T extends itmatrizCreateArgs>(
-      args: SelectSubset<T, itmatrizCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, itmatrizCreateArgs<ExtArgs>>
     ): Prisma__itmatrizClient<
       $Result.GetResult<
         Prisma.$itmatrizPayload<ExtArgs>,
@@ -39355,7 +39354,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends itmatrizCreateManyArgs>(
-      args?: SelectSubset<T, itmatrizCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, itmatrizCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -39381,7 +39380,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends itmatrizCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, itmatrizCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, itmatrizCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$itmatrizPayload<ExtArgs>,
@@ -39404,7 +39403,7 @@ export namespace Prisma {
      *
      */
     delete<T extends itmatrizDeleteArgs>(
-      args: SelectSubset<T, itmatrizDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, itmatrizDeleteArgs<ExtArgs>>
     ): Prisma__itmatrizClient<
       $Result.GetResult<
         Prisma.$itmatrizPayload<ExtArgs>,
@@ -39433,7 +39432,7 @@ export namespace Prisma {
      *
      */
     update<T extends itmatrizUpdateArgs>(
-      args: SelectSubset<T, itmatrizUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, itmatrizUpdateArgs<ExtArgs>>
     ): Prisma__itmatrizClient<
       $Result.GetResult<
         Prisma.$itmatrizPayload<ExtArgs>,
@@ -39459,7 +39458,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends itmatrizDeleteManyArgs>(
-      args?: SelectSubset<T, itmatrizDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, itmatrizDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -39480,7 +39479,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends itmatrizUpdateManyArgs>(
-      args: SelectSubset<T, itmatrizUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, itmatrizUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -39512,7 +39511,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends itmatrizUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, itmatrizUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, itmatrizUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$itmatrizPayload<ExtArgs>,
@@ -39540,7 +39539,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends itmatrizUpsertArgs>(
-      args: SelectSubset<T, itmatrizUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, itmatrizUpsertArgs<ExtArgs>>
     ): Prisma__itmatrizClient<
       $Result.GetResult<
         Prisma.$itmatrizPayload<ExtArgs>,
@@ -39567,7 +39566,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends itmatrizCountArgs>(
-      args?: Subset<T, itmatrizCountArgs>,
+      args?: Subset<T, itmatrizCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -39601,7 +39600,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends ItmatrizAggregateArgs>(
-      args: Subset<T, ItmatrizAggregateArgs>,
+      args: Subset<T, ItmatrizAggregateArgs>
     ): Prisma.PrismaPromise<GetItmatrizAggregateType<T>>;
 
     /**
@@ -39682,8 +39681,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, itmatrizGroupByArgs, OrderByArg> &
-        InputErrors,
+      args: SubsetIntersection<T, itmatrizGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetItmatrizGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -39707,7 +39705,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     itavaliado<T extends itmatriz$itavaliadoArgs<ExtArgs> = {}>(
-      args?: Subset<T, itmatriz$itavaliadoArgs<ExtArgs>>,
+      args?: Subset<T, itmatriz$itavaliadoArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$itavaliadoPayload<ExtArgs>,
@@ -39718,7 +39716,7 @@ export namespace Prisma {
       | Null
     >;
     matriz<T extends matrizDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, matrizDefaultArgs<ExtArgs>>,
+      args?: Subset<T, matrizDefaultArgs<ExtArgs>>
     ): Prisma__matrizClient<
       | $Result.GetResult<
           Prisma.$matrizPayload<ExtArgs>,
@@ -39745,7 +39743,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -39756,7 +39754,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -40546,7 +40544,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends layoutFindUniqueArgs>(
-      args: SelectSubset<T, layoutFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, layoutFindUniqueArgs<ExtArgs>>
     ): Prisma__layoutClient<
       $Result.GetResult<
         Prisma.$layoutPayload<ExtArgs>,
@@ -40572,7 +40570,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends layoutFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, layoutFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, layoutFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__layoutClient<
       $Result.GetResult<
         Prisma.$layoutPayload<ExtArgs>,
@@ -40599,7 +40597,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends layoutFindFirstArgs>(
-      args?: SelectSubset<T, layoutFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, layoutFindFirstArgs<ExtArgs>>
     ): Prisma__layoutClient<
       $Result.GetResult<
         Prisma.$layoutPayload<ExtArgs>,
@@ -40627,7 +40625,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends layoutFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, layoutFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, layoutFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__layoutClient<
       $Result.GetResult<
         Prisma.$layoutPayload<ExtArgs>,
@@ -40657,7 +40655,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends layoutFindManyArgs>(
-      args?: SelectSubset<T, layoutFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, layoutFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$layoutPayload<ExtArgs>,
@@ -40680,7 +40678,7 @@ export namespace Prisma {
      *
      */
     create<T extends layoutCreateArgs>(
-      args: SelectSubset<T, layoutCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, layoutCreateArgs<ExtArgs>>
     ): Prisma__layoutClient<
       $Result.GetResult<
         Prisma.$layoutPayload<ExtArgs>,
@@ -40706,7 +40704,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends layoutCreateManyArgs>(
-      args?: SelectSubset<T, layoutCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, layoutCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -40732,7 +40730,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends layoutCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, layoutCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, layoutCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$layoutPayload<ExtArgs>,
@@ -40755,7 +40753,7 @@ export namespace Prisma {
      *
      */
     delete<T extends layoutDeleteArgs>(
-      args: SelectSubset<T, layoutDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, layoutDeleteArgs<ExtArgs>>
     ): Prisma__layoutClient<
       $Result.GetResult<
         Prisma.$layoutPayload<ExtArgs>,
@@ -40784,7 +40782,7 @@ export namespace Prisma {
      *
      */
     update<T extends layoutUpdateArgs>(
-      args: SelectSubset<T, layoutUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, layoutUpdateArgs<ExtArgs>>
     ): Prisma__layoutClient<
       $Result.GetResult<
         Prisma.$layoutPayload<ExtArgs>,
@@ -40810,7 +40808,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends layoutDeleteManyArgs>(
-      args?: SelectSubset<T, layoutDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, layoutDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -40831,7 +40829,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends layoutUpdateManyArgs>(
-      args: SelectSubset<T, layoutUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, layoutUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -40863,7 +40861,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends layoutUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, layoutUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, layoutUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$layoutPayload<ExtArgs>,
@@ -40891,7 +40889,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends layoutUpsertArgs>(
-      args: SelectSubset<T, layoutUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, layoutUpsertArgs<ExtArgs>>
     ): Prisma__layoutClient<
       $Result.GetResult<
         Prisma.$layoutPayload<ExtArgs>,
@@ -40918,7 +40916,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends layoutCountArgs>(
-      args?: Subset<T, layoutCountArgs>,
+      args?: Subset<T, layoutCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -40952,7 +40950,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends LayoutAggregateArgs>(
-      args: Subset<T, LayoutAggregateArgs>,
+      args: Subset<T, LayoutAggregateArgs>
     ): Prisma.PrismaPromise<GetLayoutAggregateType<T>>;
 
     /**
@@ -41033,7 +41031,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, layoutGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, layoutGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetLayoutGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -41070,7 +41068,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -41081,7 +41079,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -41957,7 +41955,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends listaFindUniqueArgs>(
-      args: SelectSubset<T, listaFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, listaFindUniqueArgs<ExtArgs>>
     ): Prisma__listaClient<
       $Result.GetResult<
         Prisma.$listaPayload<ExtArgs>,
@@ -41983,7 +41981,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends listaFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, listaFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, listaFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__listaClient<
       $Result.GetResult<
         Prisma.$listaPayload<ExtArgs>,
@@ -42010,7 +42008,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends listaFindFirstArgs>(
-      args?: SelectSubset<T, listaFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, listaFindFirstArgs<ExtArgs>>
     ): Prisma__listaClient<
       $Result.GetResult<
         Prisma.$listaPayload<ExtArgs>,
@@ -42038,7 +42036,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends listaFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, listaFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, listaFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__listaClient<
       $Result.GetResult<
         Prisma.$listaPayload<ExtArgs>,
@@ -42068,7 +42066,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends listaFindManyArgs>(
-      args?: SelectSubset<T, listaFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, listaFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$listaPayload<ExtArgs>,
@@ -42091,7 +42089,7 @@ export namespace Prisma {
      *
      */
     create<T extends listaCreateArgs>(
-      args: SelectSubset<T, listaCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, listaCreateArgs<ExtArgs>>
     ): Prisma__listaClient<
       $Result.GetResult<
         Prisma.$listaPayload<ExtArgs>,
@@ -42117,7 +42115,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends listaCreateManyArgs>(
-      args?: SelectSubset<T, listaCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, listaCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -42143,7 +42141,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends listaCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, listaCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, listaCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$listaPayload<ExtArgs>,
@@ -42166,7 +42164,7 @@ export namespace Prisma {
      *
      */
     delete<T extends listaDeleteArgs>(
-      args: SelectSubset<T, listaDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, listaDeleteArgs<ExtArgs>>
     ): Prisma__listaClient<
       $Result.GetResult<
         Prisma.$listaPayload<ExtArgs>,
@@ -42195,7 +42193,7 @@ export namespace Prisma {
      *
      */
     update<T extends listaUpdateArgs>(
-      args: SelectSubset<T, listaUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, listaUpdateArgs<ExtArgs>>
     ): Prisma__listaClient<
       $Result.GetResult<
         Prisma.$listaPayload<ExtArgs>,
@@ -42221,7 +42219,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends listaDeleteManyArgs>(
-      args?: SelectSubset<T, listaDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, listaDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -42242,7 +42240,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends listaUpdateManyArgs>(
-      args: SelectSubset<T, listaUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, listaUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -42274,7 +42272,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends listaUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, listaUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, listaUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$listaPayload<ExtArgs>,
@@ -42302,7 +42300,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends listaUpsertArgs>(
-      args: SelectSubset<T, listaUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, listaUpsertArgs<ExtArgs>>
     ): Prisma__listaClient<
       $Result.GetResult<
         Prisma.$listaPayload<ExtArgs>,
@@ -42329,7 +42327,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends listaCountArgs>(
-      args?: Subset<T, listaCountArgs>,
+      args?: Subset<T, listaCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -42363,7 +42361,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends ListaAggregateArgs>(
-      args: Subset<T, ListaAggregateArgs>,
+      args: Subset<T, ListaAggregateArgs>
     ): Prisma.PrismaPromise<GetListaAggregateType<T>>;
 
     /**
@@ -42444,7 +42442,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, listaGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, listaGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetListaGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -42481,7 +42479,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -42492,7 +42490,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -43205,7 +43203,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends matrizFindUniqueArgs>(
-      args: SelectSubset<T, matrizFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, matrizFindUniqueArgs<ExtArgs>>
     ): Prisma__matrizClient<
       $Result.GetResult<
         Prisma.$matrizPayload<ExtArgs>,
@@ -43231,7 +43229,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends matrizFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, matrizFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, matrizFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__matrizClient<
       $Result.GetResult<
         Prisma.$matrizPayload<ExtArgs>,
@@ -43258,7 +43256,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends matrizFindFirstArgs>(
-      args?: SelectSubset<T, matrizFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, matrizFindFirstArgs<ExtArgs>>
     ): Prisma__matrizClient<
       $Result.GetResult<
         Prisma.$matrizPayload<ExtArgs>,
@@ -43286,7 +43284,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends matrizFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, matrizFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, matrizFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__matrizClient<
       $Result.GetResult<
         Prisma.$matrizPayload<ExtArgs>,
@@ -43316,7 +43314,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends matrizFindManyArgs>(
-      args?: SelectSubset<T, matrizFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, matrizFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$matrizPayload<ExtArgs>,
@@ -43339,7 +43337,7 @@ export namespace Prisma {
      *
      */
     create<T extends matrizCreateArgs>(
-      args: SelectSubset<T, matrizCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, matrizCreateArgs<ExtArgs>>
     ): Prisma__matrizClient<
       $Result.GetResult<
         Prisma.$matrizPayload<ExtArgs>,
@@ -43365,7 +43363,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends matrizCreateManyArgs>(
-      args?: SelectSubset<T, matrizCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, matrizCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -43391,7 +43389,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends matrizCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, matrizCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, matrizCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$matrizPayload<ExtArgs>,
@@ -43414,7 +43412,7 @@ export namespace Prisma {
      *
      */
     delete<T extends matrizDeleteArgs>(
-      args: SelectSubset<T, matrizDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, matrizDeleteArgs<ExtArgs>>
     ): Prisma__matrizClient<
       $Result.GetResult<
         Prisma.$matrizPayload<ExtArgs>,
@@ -43443,7 +43441,7 @@ export namespace Prisma {
      *
      */
     update<T extends matrizUpdateArgs>(
-      args: SelectSubset<T, matrizUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, matrizUpdateArgs<ExtArgs>>
     ): Prisma__matrizClient<
       $Result.GetResult<
         Prisma.$matrizPayload<ExtArgs>,
@@ -43469,7 +43467,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends matrizDeleteManyArgs>(
-      args?: SelectSubset<T, matrizDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, matrizDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -43490,7 +43488,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends matrizUpdateManyArgs>(
-      args: SelectSubset<T, matrizUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, matrizUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -43522,7 +43520,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends matrizUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, matrizUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, matrizUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$matrizPayload<ExtArgs>,
@@ -43550,7 +43548,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends matrizUpsertArgs>(
-      args: SelectSubset<T, matrizUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, matrizUpsertArgs<ExtArgs>>
     ): Prisma__matrizClient<
       $Result.GetResult<
         Prisma.$matrizPayload<ExtArgs>,
@@ -43577,7 +43575,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends matrizCountArgs>(
-      args?: Subset<T, matrizCountArgs>,
+      args?: Subset<T, matrizCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -43611,7 +43609,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends MatrizAggregateArgs>(
-      args: Subset<T, MatrizAggregateArgs>,
+      args: Subset<T, MatrizAggregateArgs>
     ): Prisma.PrismaPromise<GetMatrizAggregateType<T>>;
 
     /**
@@ -43692,7 +43690,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, matrizGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, matrizGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetMatrizGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -43716,7 +43714,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     itmatriz<T extends matriz$itmatrizArgs<ExtArgs> = {}>(
-      args?: Subset<T, matriz$itmatrizArgs<ExtArgs>>,
+      args?: Subset<T, matriz$itmatrizArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$itmatrizPayload<ExtArgs>,
@@ -43740,7 +43738,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -43751,7 +43749,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -44492,7 +44490,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends mensagemFindUniqueArgs>(
-      args: SelectSubset<T, mensagemFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, mensagemFindUniqueArgs<ExtArgs>>
     ): Prisma__mensagemClient<
       $Result.GetResult<
         Prisma.$mensagemPayload<ExtArgs>,
@@ -44518,7 +44516,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends mensagemFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, mensagemFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, mensagemFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__mensagemClient<
       $Result.GetResult<
         Prisma.$mensagemPayload<ExtArgs>,
@@ -44545,7 +44543,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends mensagemFindFirstArgs>(
-      args?: SelectSubset<T, mensagemFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, mensagemFindFirstArgs<ExtArgs>>
     ): Prisma__mensagemClient<
       $Result.GetResult<
         Prisma.$mensagemPayload<ExtArgs>,
@@ -44573,7 +44571,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends mensagemFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, mensagemFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, mensagemFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__mensagemClient<
       $Result.GetResult<
         Prisma.$mensagemPayload<ExtArgs>,
@@ -44603,7 +44601,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends mensagemFindManyArgs>(
-      args?: SelectSubset<T, mensagemFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, mensagemFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$mensagemPayload<ExtArgs>,
@@ -44626,7 +44624,7 @@ export namespace Prisma {
      *
      */
     create<T extends mensagemCreateArgs>(
-      args: SelectSubset<T, mensagemCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, mensagemCreateArgs<ExtArgs>>
     ): Prisma__mensagemClient<
       $Result.GetResult<
         Prisma.$mensagemPayload<ExtArgs>,
@@ -44652,7 +44650,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends mensagemCreateManyArgs>(
-      args?: SelectSubset<T, mensagemCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, mensagemCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -44678,7 +44676,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends mensagemCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, mensagemCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, mensagemCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$mensagemPayload<ExtArgs>,
@@ -44701,7 +44699,7 @@ export namespace Prisma {
      *
      */
     delete<T extends mensagemDeleteArgs>(
-      args: SelectSubset<T, mensagemDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, mensagemDeleteArgs<ExtArgs>>
     ): Prisma__mensagemClient<
       $Result.GetResult<
         Prisma.$mensagemPayload<ExtArgs>,
@@ -44730,7 +44728,7 @@ export namespace Prisma {
      *
      */
     update<T extends mensagemUpdateArgs>(
-      args: SelectSubset<T, mensagemUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, mensagemUpdateArgs<ExtArgs>>
     ): Prisma__mensagemClient<
       $Result.GetResult<
         Prisma.$mensagemPayload<ExtArgs>,
@@ -44756,7 +44754,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends mensagemDeleteManyArgs>(
-      args?: SelectSubset<T, mensagemDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, mensagemDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -44777,7 +44775,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends mensagemUpdateManyArgs>(
-      args: SelectSubset<T, mensagemUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, mensagemUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -44809,7 +44807,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends mensagemUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, mensagemUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, mensagemUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$mensagemPayload<ExtArgs>,
@@ -44837,7 +44835,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends mensagemUpsertArgs>(
-      args: SelectSubset<T, mensagemUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, mensagemUpsertArgs<ExtArgs>>
     ): Prisma__mensagemClient<
       $Result.GetResult<
         Prisma.$mensagemPayload<ExtArgs>,
@@ -44864,7 +44862,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends mensagemCountArgs>(
-      args?: Subset<T, mensagemCountArgs>,
+      args?: Subset<T, mensagemCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -44898,7 +44896,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends MensagemAggregateArgs>(
-      args: Subset<T, MensagemAggregateArgs>,
+      args: Subset<T, MensagemAggregateArgs>
     ): Prisma.PrismaPromise<GetMensagemAggregateType<T>>;
 
     /**
@@ -44979,8 +44977,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, mensagemGroupByArgs, OrderByArg> &
-        InputErrors,
+      args: SubsetIntersection<T, mensagemGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetMensagemGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -45017,7 +45014,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -45028,7 +45025,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -45798,7 +45795,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends metaFindUniqueArgs>(
-      args: SelectSubset<T, metaFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, metaFindUniqueArgs<ExtArgs>>
     ): Prisma__metaClient<
       $Result.GetResult<
         Prisma.$metaPayload<ExtArgs>,
@@ -45824,7 +45821,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends metaFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, metaFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, metaFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__metaClient<
       $Result.GetResult<
         Prisma.$metaPayload<ExtArgs>,
@@ -45851,7 +45848,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends metaFindFirstArgs>(
-      args?: SelectSubset<T, metaFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, metaFindFirstArgs<ExtArgs>>
     ): Prisma__metaClient<
       $Result.GetResult<
         Prisma.$metaPayload<ExtArgs>,
@@ -45879,7 +45876,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends metaFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, metaFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, metaFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__metaClient<
       $Result.GetResult<
         Prisma.$metaPayload<ExtArgs>,
@@ -45909,7 +45906,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends metaFindManyArgs>(
-      args?: SelectSubset<T, metaFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, metaFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$metaPayload<ExtArgs>,
@@ -45932,7 +45929,7 @@ export namespace Prisma {
      *
      */
     create<T extends metaCreateArgs>(
-      args: SelectSubset<T, metaCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, metaCreateArgs<ExtArgs>>
     ): Prisma__metaClient<
       $Result.GetResult<
         Prisma.$metaPayload<ExtArgs>,
@@ -45958,7 +45955,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends metaCreateManyArgs>(
-      args?: SelectSubset<T, metaCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, metaCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -45984,7 +45981,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends metaCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, metaCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, metaCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$metaPayload<ExtArgs>,
@@ -46007,7 +46004,7 @@ export namespace Prisma {
      *
      */
     delete<T extends metaDeleteArgs>(
-      args: SelectSubset<T, metaDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, metaDeleteArgs<ExtArgs>>
     ): Prisma__metaClient<
       $Result.GetResult<
         Prisma.$metaPayload<ExtArgs>,
@@ -46036,7 +46033,7 @@ export namespace Prisma {
      *
      */
     update<T extends metaUpdateArgs>(
-      args: SelectSubset<T, metaUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, metaUpdateArgs<ExtArgs>>
     ): Prisma__metaClient<
       $Result.GetResult<
         Prisma.$metaPayload<ExtArgs>,
@@ -46062,7 +46059,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends metaDeleteManyArgs>(
-      args?: SelectSubset<T, metaDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, metaDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -46083,7 +46080,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends metaUpdateManyArgs>(
-      args: SelectSubset<T, metaUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, metaUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -46115,7 +46112,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends metaUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, metaUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, metaUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$metaPayload<ExtArgs>,
@@ -46143,7 +46140,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends metaUpsertArgs>(
-      args: SelectSubset<T, metaUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, metaUpsertArgs<ExtArgs>>
     ): Prisma__metaClient<
       $Result.GetResult<
         Prisma.$metaPayload<ExtArgs>,
@@ -46170,7 +46167,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends metaCountArgs>(
-      args?: Subset<T, metaCountArgs>,
+      args?: Subset<T, metaCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -46204,7 +46201,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends MetaAggregateArgs>(
-      args: Subset<T, MetaAggregateArgs>,
+      args: Subset<T, MetaAggregateArgs>
     ): Prisma.PrismaPromise<GetMetaAggregateType<T>>;
 
     /**
@@ -46285,7 +46282,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, metaGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, metaGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetMetaGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -46309,7 +46306,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     area<T extends areaDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, areaDefaultArgs<ExtArgs>>,
+      args?: Subset<T, areaDefaultArgs<ExtArgs>>
     ): Prisma__areaClient<
       | $Result.GetResult<
           Prisma.$areaPayload<ExtArgs>,
@@ -46323,7 +46320,7 @@ export namespace Prisma {
       GlobalOmitOptions
     >;
     fase<T extends faseDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, faseDefaultArgs<ExtArgs>>,
+      args?: Subset<T, faseDefaultArgs<ExtArgs>>
     ): Prisma__faseClient<
       | $Result.GetResult<
           Prisma.$fasePayload<ExtArgs>,
@@ -46337,7 +46334,7 @@ export namespace Prisma {
       GlobalOmitOptions
     >;
     projeto<T extends projetoDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, projetoDefaultArgs<ExtArgs>>,
+      args?: Subset<T, projetoDefaultArgs<ExtArgs>>
     ): Prisma__projetoClient<
       | $Result.GetResult<
           Prisma.$projetoPayload<ExtArgs>,
@@ -46364,7 +46361,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -46375,7 +46372,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -47123,7 +47120,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends modulo_sistemaFindUniqueArgs>(
-      args: SelectSubset<T, modulo_sistemaFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, modulo_sistemaFindUniqueArgs<ExtArgs>>
     ): Prisma__modulo_sistemaClient<
       $Result.GetResult<
         Prisma.$modulo_sistemaPayload<ExtArgs>,
@@ -47149,7 +47146,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends modulo_sistemaFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, modulo_sistemaFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, modulo_sistemaFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__modulo_sistemaClient<
       $Result.GetResult<
         Prisma.$modulo_sistemaPayload<ExtArgs>,
@@ -47176,7 +47173,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends modulo_sistemaFindFirstArgs>(
-      args?: SelectSubset<T, modulo_sistemaFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, modulo_sistemaFindFirstArgs<ExtArgs>>
     ): Prisma__modulo_sistemaClient<
       $Result.GetResult<
         Prisma.$modulo_sistemaPayload<ExtArgs>,
@@ -47204,7 +47201,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends modulo_sistemaFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, modulo_sistemaFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, modulo_sistemaFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__modulo_sistemaClient<
       $Result.GetResult<
         Prisma.$modulo_sistemaPayload<ExtArgs>,
@@ -47234,7 +47231,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends modulo_sistemaFindManyArgs>(
-      args?: SelectSubset<T, modulo_sistemaFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, modulo_sistemaFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$modulo_sistemaPayload<ExtArgs>,
@@ -47257,7 +47254,7 @@ export namespace Prisma {
      *
      */
     create<T extends modulo_sistemaCreateArgs>(
-      args: SelectSubset<T, modulo_sistemaCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, modulo_sistemaCreateArgs<ExtArgs>>
     ): Prisma__modulo_sistemaClient<
       $Result.GetResult<
         Prisma.$modulo_sistemaPayload<ExtArgs>,
@@ -47283,7 +47280,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends modulo_sistemaCreateManyArgs>(
-      args?: SelectSubset<T, modulo_sistemaCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, modulo_sistemaCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -47309,7 +47306,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends modulo_sistemaCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, modulo_sistemaCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, modulo_sistemaCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$modulo_sistemaPayload<ExtArgs>,
@@ -47332,7 +47329,7 @@ export namespace Prisma {
      *
      */
     delete<T extends modulo_sistemaDeleteArgs>(
-      args: SelectSubset<T, modulo_sistemaDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, modulo_sistemaDeleteArgs<ExtArgs>>
     ): Prisma__modulo_sistemaClient<
       $Result.GetResult<
         Prisma.$modulo_sistemaPayload<ExtArgs>,
@@ -47361,7 +47358,7 @@ export namespace Prisma {
      *
      */
     update<T extends modulo_sistemaUpdateArgs>(
-      args: SelectSubset<T, modulo_sistemaUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, modulo_sistemaUpdateArgs<ExtArgs>>
     ): Prisma__modulo_sistemaClient<
       $Result.GetResult<
         Prisma.$modulo_sistemaPayload<ExtArgs>,
@@ -47387,7 +47384,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends modulo_sistemaDeleteManyArgs>(
-      args?: SelectSubset<T, modulo_sistemaDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, modulo_sistemaDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -47408,7 +47405,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends modulo_sistemaUpdateManyArgs>(
-      args: SelectSubset<T, modulo_sistemaUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, modulo_sistemaUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -47440,7 +47437,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends modulo_sistemaUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, modulo_sistemaUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, modulo_sistemaUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$modulo_sistemaPayload<ExtArgs>,
@@ -47468,7 +47465,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends modulo_sistemaUpsertArgs>(
-      args: SelectSubset<T, modulo_sistemaUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, modulo_sistemaUpsertArgs<ExtArgs>>
     ): Prisma__modulo_sistemaClient<
       $Result.GetResult<
         Prisma.$modulo_sistemaPayload<ExtArgs>,
@@ -47495,7 +47492,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends modulo_sistemaCountArgs>(
-      args?: Subset<T, modulo_sistemaCountArgs>,
+      args?: Subset<T, modulo_sistemaCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -47529,7 +47526,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends Modulo_sistemaAggregateArgs>(
-      args: Subset<T, Modulo_sistemaAggregateArgs>,
+      args: Subset<T, Modulo_sistemaAggregateArgs>
     ): Prisma.PrismaPromise<GetModulo_sistemaAggregateType<T>>;
 
     /**
@@ -47611,7 +47608,7 @@ export namespace Prisma {
                   }[OrderFields],
     >(
       args: SubsetIntersection<T, modulo_sistemaGroupByArgs, OrderByArg> &
-        InputErrors,
+        InputErrors
     ): {} extends InputErrors
       ? GetModulo_sistemaGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -47635,7 +47632,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     acesso_sistema<T extends modulo_sistema$acesso_sistemaArgs<ExtArgs> = {}>(
-      args?: Subset<T, modulo_sistema$acesso_sistemaArgs<ExtArgs>>,
+      args?: Subset<T, modulo_sistema$acesso_sistemaArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$acesso_sistemaPayload<ExtArgs>,
@@ -47646,7 +47643,7 @@ export namespace Prisma {
       | Null
     >;
     tela_sistema<T extends modulo_sistema$tela_sistemaArgs<ExtArgs> = {}>(
-      args?: Subset<T, modulo_sistema$tela_sistemaArgs<ExtArgs>>,
+      args?: Subset<T, modulo_sistema$tela_sistemaArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$tela_sistemaPayload<ExtArgs>,
@@ -47670,7 +47667,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -47681,7 +47678,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -49022,7 +49019,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends nfseFindUniqueArgs>(
-      args: SelectSubset<T, nfseFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, nfseFindUniqueArgs<ExtArgs>>
     ): Prisma__nfseClient<
       $Result.GetResult<
         Prisma.$nfsePayload<ExtArgs>,
@@ -49048,7 +49045,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends nfseFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, nfseFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, nfseFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__nfseClient<
       $Result.GetResult<
         Prisma.$nfsePayload<ExtArgs>,
@@ -49075,7 +49072,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends nfseFindFirstArgs>(
-      args?: SelectSubset<T, nfseFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, nfseFindFirstArgs<ExtArgs>>
     ): Prisma__nfseClient<
       $Result.GetResult<
         Prisma.$nfsePayload<ExtArgs>,
@@ -49103,7 +49100,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends nfseFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, nfseFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, nfseFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__nfseClient<
       $Result.GetResult<
         Prisma.$nfsePayload<ExtArgs>,
@@ -49133,7 +49130,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends nfseFindManyArgs>(
-      args?: SelectSubset<T, nfseFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, nfseFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$nfsePayload<ExtArgs>,
@@ -49156,7 +49153,7 @@ export namespace Prisma {
      *
      */
     create<T extends nfseCreateArgs>(
-      args: SelectSubset<T, nfseCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, nfseCreateArgs<ExtArgs>>
     ): Prisma__nfseClient<
       $Result.GetResult<
         Prisma.$nfsePayload<ExtArgs>,
@@ -49182,7 +49179,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends nfseCreateManyArgs>(
-      args?: SelectSubset<T, nfseCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, nfseCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -49208,7 +49205,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends nfseCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, nfseCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, nfseCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$nfsePayload<ExtArgs>,
@@ -49231,7 +49228,7 @@ export namespace Prisma {
      *
      */
     delete<T extends nfseDeleteArgs>(
-      args: SelectSubset<T, nfseDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, nfseDeleteArgs<ExtArgs>>
     ): Prisma__nfseClient<
       $Result.GetResult<
         Prisma.$nfsePayload<ExtArgs>,
@@ -49260,7 +49257,7 @@ export namespace Prisma {
      *
      */
     update<T extends nfseUpdateArgs>(
-      args: SelectSubset<T, nfseUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, nfseUpdateArgs<ExtArgs>>
     ): Prisma__nfseClient<
       $Result.GetResult<
         Prisma.$nfsePayload<ExtArgs>,
@@ -49286,7 +49283,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends nfseDeleteManyArgs>(
-      args?: SelectSubset<T, nfseDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, nfseDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -49307,7 +49304,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends nfseUpdateManyArgs>(
-      args: SelectSubset<T, nfseUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, nfseUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -49339,7 +49336,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends nfseUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, nfseUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, nfseUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$nfsePayload<ExtArgs>,
@@ -49367,7 +49364,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends nfseUpsertArgs>(
-      args: SelectSubset<T, nfseUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, nfseUpsertArgs<ExtArgs>>
     ): Prisma__nfseClient<
       $Result.GetResult<
         Prisma.$nfsePayload<ExtArgs>,
@@ -49394,7 +49391,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends nfseCountArgs>(
-      args?: Subset<T, nfseCountArgs>,
+      args?: Subset<T, nfseCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -49428,7 +49425,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends NfseAggregateArgs>(
-      args: Subset<T, NfseAggregateArgs>,
+      args: Subset<T, NfseAggregateArgs>
     ): Prisma.PrismaPromise<GetNfseAggregateType<T>>;
 
     /**
@@ -49509,7 +49506,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, nfseGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, nfseGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetNfseGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -49546,7 +49543,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -49557,7 +49554,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -50295,7 +50292,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends nivelFindUniqueArgs>(
-      args: SelectSubset<T, nivelFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, nivelFindUniqueArgs<ExtArgs>>
     ): Prisma__nivelClient<
       $Result.GetResult<
         Prisma.$nivelPayload<ExtArgs>,
@@ -50321,7 +50318,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends nivelFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, nivelFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, nivelFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__nivelClient<
       $Result.GetResult<
         Prisma.$nivelPayload<ExtArgs>,
@@ -50348,7 +50345,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends nivelFindFirstArgs>(
-      args?: SelectSubset<T, nivelFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, nivelFindFirstArgs<ExtArgs>>
     ): Prisma__nivelClient<
       $Result.GetResult<
         Prisma.$nivelPayload<ExtArgs>,
@@ -50376,7 +50373,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends nivelFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, nivelFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, nivelFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__nivelClient<
       $Result.GetResult<
         Prisma.$nivelPayload<ExtArgs>,
@@ -50406,7 +50403,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends nivelFindManyArgs>(
-      args?: SelectSubset<T, nivelFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, nivelFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$nivelPayload<ExtArgs>,
@@ -50429,7 +50426,7 @@ export namespace Prisma {
      *
      */
     create<T extends nivelCreateArgs>(
-      args: SelectSubset<T, nivelCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, nivelCreateArgs<ExtArgs>>
     ): Prisma__nivelClient<
       $Result.GetResult<
         Prisma.$nivelPayload<ExtArgs>,
@@ -50455,7 +50452,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends nivelCreateManyArgs>(
-      args?: SelectSubset<T, nivelCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, nivelCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -50481,7 +50478,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends nivelCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, nivelCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, nivelCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$nivelPayload<ExtArgs>,
@@ -50504,7 +50501,7 @@ export namespace Prisma {
      *
      */
     delete<T extends nivelDeleteArgs>(
-      args: SelectSubset<T, nivelDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, nivelDeleteArgs<ExtArgs>>
     ): Prisma__nivelClient<
       $Result.GetResult<
         Prisma.$nivelPayload<ExtArgs>,
@@ -50533,7 +50530,7 @@ export namespace Prisma {
      *
      */
     update<T extends nivelUpdateArgs>(
-      args: SelectSubset<T, nivelUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, nivelUpdateArgs<ExtArgs>>
     ): Prisma__nivelClient<
       $Result.GetResult<
         Prisma.$nivelPayload<ExtArgs>,
@@ -50559,7 +50556,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends nivelDeleteManyArgs>(
-      args?: SelectSubset<T, nivelDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, nivelDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -50580,7 +50577,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends nivelUpdateManyArgs>(
-      args: SelectSubset<T, nivelUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, nivelUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -50612,7 +50609,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends nivelUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, nivelUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, nivelUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$nivelPayload<ExtArgs>,
@@ -50640,7 +50637,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends nivelUpsertArgs>(
-      args: SelectSubset<T, nivelUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, nivelUpsertArgs<ExtArgs>>
     ): Prisma__nivelClient<
       $Result.GetResult<
         Prisma.$nivelPayload<ExtArgs>,
@@ -50667,7 +50664,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends nivelCountArgs>(
-      args?: Subset<T, nivelCountArgs>,
+      args?: Subset<T, nivelCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -50701,7 +50698,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends NivelAggregateArgs>(
-      args: Subset<T, NivelAggregateArgs>,
+      args: Subset<T, NivelAggregateArgs>
     ): Prisma.PrismaPromise<GetNivelAggregateType<T>>;
 
     /**
@@ -50782,7 +50779,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, nivelGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, nivelGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetNivelGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -50806,7 +50803,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     recurso<T extends nivel$recursoArgs<ExtArgs> = {}>(
-      args?: Subset<T, nivel$recursoArgs<ExtArgs>>,
+      args?: Subset<T, nivel$recursoArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$recursoPayload<ExtArgs>,
@@ -50830,7 +50827,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -50841,7 +50838,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -51907,7 +51904,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends osFindUniqueArgs>(
-      args: SelectSubset<T, osFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, osFindUniqueArgs<ExtArgs>>
     ): Prisma__osClient<
       $Result.GetResult<
         Prisma.$osPayload<ExtArgs>,
@@ -51933,7 +51930,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends osFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, osFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, osFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__osClient<
       $Result.GetResult<
         Prisma.$osPayload<ExtArgs>,
@@ -51960,7 +51957,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends osFindFirstArgs>(
-      args?: SelectSubset<T, osFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, osFindFirstArgs<ExtArgs>>
     ): Prisma__osClient<
       $Result.GetResult<
         Prisma.$osPayload<ExtArgs>,
@@ -51988,7 +51985,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends osFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, osFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, osFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__osClient<
       $Result.GetResult<
         Prisma.$osPayload<ExtArgs>,
@@ -52018,7 +52015,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends osFindManyArgs>(
-      args?: SelectSubset<T, osFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, osFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$osPayload<ExtArgs>,
@@ -52041,7 +52038,7 @@ export namespace Prisma {
      *
      */
     create<T extends osCreateArgs>(
-      args: SelectSubset<T, osCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, osCreateArgs<ExtArgs>>
     ): Prisma__osClient<
       $Result.GetResult<
         Prisma.$osPayload<ExtArgs>,
@@ -52067,7 +52064,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends osCreateManyArgs>(
-      args?: SelectSubset<T, osCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, osCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -52093,7 +52090,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends osCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, osCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, osCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$osPayload<ExtArgs>,
@@ -52116,7 +52113,7 @@ export namespace Prisma {
      *
      */
     delete<T extends osDeleteArgs>(
-      args: SelectSubset<T, osDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, osDeleteArgs<ExtArgs>>
     ): Prisma__osClient<
       $Result.GetResult<
         Prisma.$osPayload<ExtArgs>,
@@ -52145,7 +52142,7 @@ export namespace Prisma {
      *
      */
     update<T extends osUpdateArgs>(
-      args: SelectSubset<T, osUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, osUpdateArgs<ExtArgs>>
     ): Prisma__osClient<
       $Result.GetResult<
         Prisma.$osPayload<ExtArgs>,
@@ -52171,7 +52168,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends osDeleteManyArgs>(
-      args?: SelectSubset<T, osDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, osDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -52192,7 +52189,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends osUpdateManyArgs>(
-      args: SelectSubset<T, osUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, osUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -52224,7 +52221,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends osUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, osUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, osUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$osPayload<ExtArgs>,
@@ -52252,7 +52249,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends osUpsertArgs>(
-      args: SelectSubset<T, osUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, osUpsertArgs<ExtArgs>>
     ): Prisma__osClient<
       $Result.GetResult<
         Prisma.$osPayload<ExtArgs>,
@@ -52279,7 +52276,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends osCountArgs>(
-      args?: Subset<T, osCountArgs>,
+      args?: Subset<T, osCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -52313,7 +52310,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends OsAggregateArgs>(
-      args: Subset<T, OsAggregateArgs>,
+      args: Subset<T, OsAggregateArgs>
     ): Prisma.PrismaPromise<GetOsAggregateType<T>>;
 
     /**
@@ -52394,7 +52391,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, osGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, osGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetOsGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -52418,7 +52415,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     tarefa<T extends tarefaDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, tarefaDefaultArgs<ExtArgs>>,
+      args?: Subset<T, tarefaDefaultArgs<ExtArgs>>
     ): Prisma__tarefaClient<
       | $Result.GetResult<
           Prisma.$tarefaPayload<ExtArgs>,
@@ -52445,7 +52442,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -52456,7 +52453,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -53213,7 +53210,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends parametrosFindUniqueArgs>(
-      args: SelectSubset<T, parametrosFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, parametrosFindUniqueArgs<ExtArgs>>
     ): Prisma__parametrosClient<
       $Result.GetResult<
         Prisma.$parametrosPayload<ExtArgs>,
@@ -53239,7 +53236,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends parametrosFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, parametrosFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, parametrosFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__parametrosClient<
       $Result.GetResult<
         Prisma.$parametrosPayload<ExtArgs>,
@@ -53266,7 +53263,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends parametrosFindFirstArgs>(
-      args?: SelectSubset<T, parametrosFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, parametrosFindFirstArgs<ExtArgs>>
     ): Prisma__parametrosClient<
       $Result.GetResult<
         Prisma.$parametrosPayload<ExtArgs>,
@@ -53294,7 +53291,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends parametrosFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, parametrosFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, parametrosFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__parametrosClient<
       $Result.GetResult<
         Prisma.$parametrosPayload<ExtArgs>,
@@ -53324,7 +53321,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends parametrosFindManyArgs>(
-      args?: SelectSubset<T, parametrosFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, parametrosFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$parametrosPayload<ExtArgs>,
@@ -53347,7 +53344,7 @@ export namespace Prisma {
      *
      */
     create<T extends parametrosCreateArgs>(
-      args: SelectSubset<T, parametrosCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, parametrosCreateArgs<ExtArgs>>
     ): Prisma__parametrosClient<
       $Result.GetResult<
         Prisma.$parametrosPayload<ExtArgs>,
@@ -53373,7 +53370,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends parametrosCreateManyArgs>(
-      args?: SelectSubset<T, parametrosCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, parametrosCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -53399,7 +53396,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends parametrosCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, parametrosCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, parametrosCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$parametrosPayload<ExtArgs>,
@@ -53422,7 +53419,7 @@ export namespace Prisma {
      *
      */
     delete<T extends parametrosDeleteArgs>(
-      args: SelectSubset<T, parametrosDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, parametrosDeleteArgs<ExtArgs>>
     ): Prisma__parametrosClient<
       $Result.GetResult<
         Prisma.$parametrosPayload<ExtArgs>,
@@ -53451,7 +53448,7 @@ export namespace Prisma {
      *
      */
     update<T extends parametrosUpdateArgs>(
-      args: SelectSubset<T, parametrosUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, parametrosUpdateArgs<ExtArgs>>
     ): Prisma__parametrosClient<
       $Result.GetResult<
         Prisma.$parametrosPayload<ExtArgs>,
@@ -53477,7 +53474,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends parametrosDeleteManyArgs>(
-      args?: SelectSubset<T, parametrosDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, parametrosDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -53498,7 +53495,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends parametrosUpdateManyArgs>(
-      args: SelectSubset<T, parametrosUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, parametrosUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -53530,7 +53527,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends parametrosUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, parametrosUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, parametrosUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$parametrosPayload<ExtArgs>,
@@ -53558,7 +53555,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends parametrosUpsertArgs>(
-      args: SelectSubset<T, parametrosUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, parametrosUpsertArgs<ExtArgs>>
     ): Prisma__parametrosClient<
       $Result.GetResult<
         Prisma.$parametrosPayload<ExtArgs>,
@@ -53585,7 +53582,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends parametrosCountArgs>(
-      args?: Subset<T, parametrosCountArgs>,
+      args?: Subset<T, parametrosCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -53619,7 +53616,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends ParametrosAggregateArgs>(
-      args: Subset<T, ParametrosAggregateArgs>,
+      args: Subset<T, ParametrosAggregateArgs>
     ): Prisma.PrismaPromise<GetParametrosAggregateType<T>>;
 
     /**
@@ -53701,7 +53698,7 @@ export namespace Prisma {
                   }[OrderFields],
     >(
       args: SubsetIntersection<T, parametrosGroupByArgs, OrderByArg> &
-        InputErrors,
+        InputErrors
     ): {} extends InputErrors
       ? GetParametrosGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -53738,7 +53735,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -53749,7 +53746,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -54572,7 +54569,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends parcelaFindUniqueArgs>(
-      args: SelectSubset<T, parcelaFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, parcelaFindUniqueArgs<ExtArgs>>
     ): Prisma__parcelaClient<
       $Result.GetResult<
         Prisma.$parcelaPayload<ExtArgs>,
@@ -54598,7 +54595,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends parcelaFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, parcelaFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, parcelaFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__parcelaClient<
       $Result.GetResult<
         Prisma.$parcelaPayload<ExtArgs>,
@@ -54625,7 +54622,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends parcelaFindFirstArgs>(
-      args?: SelectSubset<T, parcelaFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, parcelaFindFirstArgs<ExtArgs>>
     ): Prisma__parcelaClient<
       $Result.GetResult<
         Prisma.$parcelaPayload<ExtArgs>,
@@ -54653,7 +54650,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends parcelaFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, parcelaFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, parcelaFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__parcelaClient<
       $Result.GetResult<
         Prisma.$parcelaPayload<ExtArgs>,
@@ -54683,7 +54680,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends parcelaFindManyArgs>(
-      args?: SelectSubset<T, parcelaFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, parcelaFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$parcelaPayload<ExtArgs>,
@@ -54706,7 +54703,7 @@ export namespace Prisma {
      *
      */
     create<T extends parcelaCreateArgs>(
-      args: SelectSubset<T, parcelaCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, parcelaCreateArgs<ExtArgs>>
     ): Prisma__parcelaClient<
       $Result.GetResult<
         Prisma.$parcelaPayload<ExtArgs>,
@@ -54732,7 +54729,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends parcelaCreateManyArgs>(
-      args?: SelectSubset<T, parcelaCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, parcelaCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -54758,7 +54755,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends parcelaCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, parcelaCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, parcelaCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$parcelaPayload<ExtArgs>,
@@ -54781,7 +54778,7 @@ export namespace Prisma {
      *
      */
     delete<T extends parcelaDeleteArgs>(
-      args: SelectSubset<T, parcelaDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, parcelaDeleteArgs<ExtArgs>>
     ): Prisma__parcelaClient<
       $Result.GetResult<
         Prisma.$parcelaPayload<ExtArgs>,
@@ -54810,7 +54807,7 @@ export namespace Prisma {
      *
      */
     update<T extends parcelaUpdateArgs>(
-      args: SelectSubset<T, parcelaUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, parcelaUpdateArgs<ExtArgs>>
     ): Prisma__parcelaClient<
       $Result.GetResult<
         Prisma.$parcelaPayload<ExtArgs>,
@@ -54836,7 +54833,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends parcelaDeleteManyArgs>(
-      args?: SelectSubset<T, parcelaDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, parcelaDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -54857,7 +54854,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends parcelaUpdateManyArgs>(
-      args: SelectSubset<T, parcelaUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, parcelaUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -54889,7 +54886,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends parcelaUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, parcelaUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, parcelaUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$parcelaPayload<ExtArgs>,
@@ -54917,7 +54914,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends parcelaUpsertArgs>(
-      args: SelectSubset<T, parcelaUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, parcelaUpsertArgs<ExtArgs>>
     ): Prisma__parcelaClient<
       $Result.GetResult<
         Prisma.$parcelaPayload<ExtArgs>,
@@ -54944,7 +54941,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends parcelaCountArgs>(
-      args?: Subset<T, parcelaCountArgs>,
+      args?: Subset<T, parcelaCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -54978,7 +54975,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends ParcelaAggregateArgs>(
-      args: Subset<T, ParcelaAggregateArgs>,
+      args: Subset<T, ParcelaAggregateArgs>
     ): Prisma.PrismaPromise<GetParcelaAggregateType<T>>;
 
     /**
@@ -55059,7 +55056,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, parcelaGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, parcelaGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetParcelaGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -55096,7 +55093,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -55107,7 +55104,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -55862,7 +55859,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends pautaFindUniqueArgs>(
-      args: SelectSubset<T, pautaFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, pautaFindUniqueArgs<ExtArgs>>
     ): Prisma__pautaClient<
       $Result.GetResult<
         Prisma.$pautaPayload<ExtArgs>,
@@ -55888,7 +55885,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends pautaFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, pautaFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, pautaFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__pautaClient<
       $Result.GetResult<
         Prisma.$pautaPayload<ExtArgs>,
@@ -55915,7 +55912,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends pautaFindFirstArgs>(
-      args?: SelectSubset<T, pautaFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, pautaFindFirstArgs<ExtArgs>>
     ): Prisma__pautaClient<
       $Result.GetResult<
         Prisma.$pautaPayload<ExtArgs>,
@@ -55943,7 +55940,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends pautaFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, pautaFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, pautaFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__pautaClient<
       $Result.GetResult<
         Prisma.$pautaPayload<ExtArgs>,
@@ -55973,7 +55970,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends pautaFindManyArgs>(
-      args?: SelectSubset<T, pautaFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, pautaFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$pautaPayload<ExtArgs>,
@@ -55996,7 +55993,7 @@ export namespace Prisma {
      *
      */
     create<T extends pautaCreateArgs>(
-      args: SelectSubset<T, pautaCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, pautaCreateArgs<ExtArgs>>
     ): Prisma__pautaClient<
       $Result.GetResult<
         Prisma.$pautaPayload<ExtArgs>,
@@ -56022,7 +56019,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends pautaCreateManyArgs>(
-      args?: SelectSubset<T, pautaCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, pautaCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -56048,7 +56045,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends pautaCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, pautaCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, pautaCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$pautaPayload<ExtArgs>,
@@ -56071,7 +56068,7 @@ export namespace Prisma {
      *
      */
     delete<T extends pautaDeleteArgs>(
-      args: SelectSubset<T, pautaDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, pautaDeleteArgs<ExtArgs>>
     ): Prisma__pautaClient<
       $Result.GetResult<
         Prisma.$pautaPayload<ExtArgs>,
@@ -56100,7 +56097,7 @@ export namespace Prisma {
      *
      */
     update<T extends pautaUpdateArgs>(
-      args: SelectSubset<T, pautaUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, pautaUpdateArgs<ExtArgs>>
     ): Prisma__pautaClient<
       $Result.GetResult<
         Prisma.$pautaPayload<ExtArgs>,
@@ -56126,7 +56123,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends pautaDeleteManyArgs>(
-      args?: SelectSubset<T, pautaDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, pautaDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -56147,7 +56144,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends pautaUpdateManyArgs>(
-      args: SelectSubset<T, pautaUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, pautaUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -56179,7 +56176,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends pautaUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, pautaUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, pautaUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$pautaPayload<ExtArgs>,
@@ -56207,7 +56204,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends pautaUpsertArgs>(
-      args: SelectSubset<T, pautaUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, pautaUpsertArgs<ExtArgs>>
     ): Prisma__pautaClient<
       $Result.GetResult<
         Prisma.$pautaPayload<ExtArgs>,
@@ -56234,7 +56231,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends pautaCountArgs>(
-      args?: Subset<T, pautaCountArgs>,
+      args?: Subset<T, pautaCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -56268,7 +56265,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends PautaAggregateArgs>(
-      args: Subset<T, PautaAggregateArgs>,
+      args: Subset<T, PautaAggregateArgs>
     ): Prisma.PrismaPromise<GetPautaAggregateType<T>>;
 
     /**
@@ -56349,7 +56346,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, pautaGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, pautaGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetPautaGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -56386,7 +56383,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -56397,7 +56394,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -57100,7 +57097,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends pontoFindUniqueArgs>(
-      args: SelectSubset<T, pontoFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, pontoFindUniqueArgs<ExtArgs>>
     ): Prisma__pontoClient<
       $Result.GetResult<
         Prisma.$pontoPayload<ExtArgs>,
@@ -57126,7 +57123,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends pontoFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, pontoFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, pontoFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__pontoClient<
       $Result.GetResult<
         Prisma.$pontoPayload<ExtArgs>,
@@ -57153,7 +57150,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends pontoFindFirstArgs>(
-      args?: SelectSubset<T, pontoFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, pontoFindFirstArgs<ExtArgs>>
     ): Prisma__pontoClient<
       $Result.GetResult<
         Prisma.$pontoPayload<ExtArgs>,
@@ -57181,7 +57178,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends pontoFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, pontoFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, pontoFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__pontoClient<
       $Result.GetResult<
         Prisma.$pontoPayload<ExtArgs>,
@@ -57211,7 +57208,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends pontoFindManyArgs>(
-      args?: SelectSubset<T, pontoFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, pontoFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$pontoPayload<ExtArgs>,
@@ -57234,7 +57231,7 @@ export namespace Prisma {
      *
      */
     create<T extends pontoCreateArgs>(
-      args: SelectSubset<T, pontoCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, pontoCreateArgs<ExtArgs>>
     ): Prisma__pontoClient<
       $Result.GetResult<
         Prisma.$pontoPayload<ExtArgs>,
@@ -57260,7 +57257,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends pontoCreateManyArgs>(
-      args?: SelectSubset<T, pontoCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, pontoCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -57286,7 +57283,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends pontoCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, pontoCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, pontoCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$pontoPayload<ExtArgs>,
@@ -57309,7 +57306,7 @@ export namespace Prisma {
      *
      */
     delete<T extends pontoDeleteArgs>(
-      args: SelectSubset<T, pontoDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, pontoDeleteArgs<ExtArgs>>
     ): Prisma__pontoClient<
       $Result.GetResult<
         Prisma.$pontoPayload<ExtArgs>,
@@ -57338,7 +57335,7 @@ export namespace Prisma {
      *
      */
     update<T extends pontoUpdateArgs>(
-      args: SelectSubset<T, pontoUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, pontoUpdateArgs<ExtArgs>>
     ): Prisma__pontoClient<
       $Result.GetResult<
         Prisma.$pontoPayload<ExtArgs>,
@@ -57364,7 +57361,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends pontoDeleteManyArgs>(
-      args?: SelectSubset<T, pontoDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, pontoDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -57385,7 +57382,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends pontoUpdateManyArgs>(
-      args: SelectSubset<T, pontoUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, pontoUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -57417,7 +57414,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends pontoUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, pontoUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, pontoUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$pontoPayload<ExtArgs>,
@@ -57445,7 +57442,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends pontoUpsertArgs>(
-      args: SelectSubset<T, pontoUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, pontoUpsertArgs<ExtArgs>>
     ): Prisma__pontoClient<
       $Result.GetResult<
         Prisma.$pontoPayload<ExtArgs>,
@@ -57472,7 +57469,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends pontoCountArgs>(
-      args?: Subset<T, pontoCountArgs>,
+      args?: Subset<T, pontoCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -57506,7 +57503,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends PontoAggregateArgs>(
-      args: Subset<T, PontoAggregateArgs>,
+      args: Subset<T, PontoAggregateArgs>
     ): Prisma.PrismaPromise<GetPontoAggregateType<T>>;
 
     /**
@@ -57587,7 +57584,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, pontoGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, pontoGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetPontoGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -57624,7 +57621,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -57635,7 +57632,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -58484,7 +58481,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends projetoFindUniqueArgs>(
-      args: SelectSubset<T, projetoFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, projetoFindUniqueArgs<ExtArgs>>
     ): Prisma__projetoClient<
       $Result.GetResult<
         Prisma.$projetoPayload<ExtArgs>,
@@ -58510,7 +58507,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends projetoFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, projetoFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, projetoFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__projetoClient<
       $Result.GetResult<
         Prisma.$projetoPayload<ExtArgs>,
@@ -58537,7 +58534,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends projetoFindFirstArgs>(
-      args?: SelectSubset<T, projetoFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, projetoFindFirstArgs<ExtArgs>>
     ): Prisma__projetoClient<
       $Result.GetResult<
         Prisma.$projetoPayload<ExtArgs>,
@@ -58565,7 +58562,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends projetoFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, projetoFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, projetoFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__projetoClient<
       $Result.GetResult<
         Prisma.$projetoPayload<ExtArgs>,
@@ -58595,7 +58592,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends projetoFindManyArgs>(
-      args?: SelectSubset<T, projetoFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, projetoFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$projetoPayload<ExtArgs>,
@@ -58618,7 +58615,7 @@ export namespace Prisma {
      *
      */
     create<T extends projetoCreateArgs>(
-      args: SelectSubset<T, projetoCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, projetoCreateArgs<ExtArgs>>
     ): Prisma__projetoClient<
       $Result.GetResult<
         Prisma.$projetoPayload<ExtArgs>,
@@ -58644,7 +58641,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends projetoCreateManyArgs>(
-      args?: SelectSubset<T, projetoCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, projetoCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -58670,7 +58667,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends projetoCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, projetoCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, projetoCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$projetoPayload<ExtArgs>,
@@ -58693,7 +58690,7 @@ export namespace Prisma {
      *
      */
     delete<T extends projetoDeleteArgs>(
-      args: SelectSubset<T, projetoDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, projetoDeleteArgs<ExtArgs>>
     ): Prisma__projetoClient<
       $Result.GetResult<
         Prisma.$projetoPayload<ExtArgs>,
@@ -58722,7 +58719,7 @@ export namespace Prisma {
      *
      */
     update<T extends projetoUpdateArgs>(
-      args: SelectSubset<T, projetoUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, projetoUpdateArgs<ExtArgs>>
     ): Prisma__projetoClient<
       $Result.GetResult<
         Prisma.$projetoPayload<ExtArgs>,
@@ -58748,7 +58745,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends projetoDeleteManyArgs>(
-      args?: SelectSubset<T, projetoDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, projetoDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -58769,7 +58766,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends projetoUpdateManyArgs>(
-      args: SelectSubset<T, projetoUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, projetoUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -58801,7 +58798,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends projetoUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, projetoUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, projetoUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$projetoPayload<ExtArgs>,
@@ -58829,7 +58826,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends projetoUpsertArgs>(
-      args: SelectSubset<T, projetoUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, projetoUpsertArgs<ExtArgs>>
     ): Prisma__projetoClient<
       $Result.GetResult<
         Prisma.$projetoPayload<ExtArgs>,
@@ -58856,7 +58853,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends projetoCountArgs>(
-      args?: Subset<T, projetoCountArgs>,
+      args?: Subset<T, projetoCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -58890,7 +58887,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends ProjetoAggregateArgs>(
-      args: Subset<T, ProjetoAggregateArgs>,
+      args: Subset<T, ProjetoAggregateArgs>
     ): Prisma.PrismaPromise<GetProjetoAggregateType<T>>;
 
     /**
@@ -58971,7 +58968,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, projetoGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, projetoGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetProjetoGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -58995,7 +58992,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     avaliacao<T extends projeto$avaliacaoArgs<ExtArgs> = {}>(
-      args?: Subset<T, projeto$avaliacaoArgs<ExtArgs>>,
+      args?: Subset<T, projeto$avaliacaoArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$avaliacaoPayload<ExtArgs>,
@@ -59006,7 +59003,7 @@ export namespace Prisma {
       | Null
     >;
     meta<T extends projeto$metaArgs<ExtArgs> = {}>(
-      args?: Subset<T, projeto$metaArgs<ExtArgs>>,
+      args?: Subset<T, projeto$metaArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$metaPayload<ExtArgs>,
@@ -59017,7 +59014,7 @@ export namespace Prisma {
       | Null
     >;
     cliente<T extends clienteDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, clienteDefaultArgs<ExtArgs>>,
+      args?: Subset<T, clienteDefaultArgs<ExtArgs>>
     ): Prisma__clienteClient<
       | $Result.GetResult<
           Prisma.$clientePayload<ExtArgs>,
@@ -59031,7 +59028,7 @@ export namespace Prisma {
       GlobalOmitOptions
     >;
     recurso<T extends recursoDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, recursoDefaultArgs<ExtArgs>>,
+      args?: Subset<T, recursoDefaultArgs<ExtArgs>>
     ): Prisma__recursoClient<
       | $Result.GetResult<
           Prisma.$recursoPayload<ExtArgs>,
@@ -59045,7 +59042,7 @@ export namespace Prisma {
       GlobalOmitOptions
     >;
     tarefa<T extends projeto$tarefaArgs<ExtArgs> = {}>(
-      args?: Subset<T, projeto$tarefaArgs<ExtArgs>>,
+      args?: Subset<T, projeto$tarefaArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$tarefaPayload<ExtArgs>,
@@ -59056,7 +59053,7 @@ export namespace Prisma {
       | Null
     >;
     valor<T extends projeto$valorArgs<ExtArgs> = {}>(
-      args?: Subset<T, projeto$valorArgs<ExtArgs>>,
+      args?: Subset<T, projeto$valorArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$valorPayload<ExtArgs>,
@@ -59080,7 +59077,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -59091,7 +59088,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -60198,7 +60195,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends recursoFindUniqueArgs>(
-      args: SelectSubset<T, recursoFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, recursoFindUniqueArgs<ExtArgs>>
     ): Prisma__recursoClient<
       $Result.GetResult<
         Prisma.$recursoPayload<ExtArgs>,
@@ -60224,7 +60221,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends recursoFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, recursoFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, recursoFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__recursoClient<
       $Result.GetResult<
         Prisma.$recursoPayload<ExtArgs>,
@@ -60251,7 +60248,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends recursoFindFirstArgs>(
-      args?: SelectSubset<T, recursoFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, recursoFindFirstArgs<ExtArgs>>
     ): Prisma__recursoClient<
       $Result.GetResult<
         Prisma.$recursoPayload<ExtArgs>,
@@ -60279,7 +60276,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends recursoFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, recursoFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, recursoFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__recursoClient<
       $Result.GetResult<
         Prisma.$recursoPayload<ExtArgs>,
@@ -60309,7 +60306,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends recursoFindManyArgs>(
-      args?: SelectSubset<T, recursoFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, recursoFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$recursoPayload<ExtArgs>,
@@ -60332,7 +60329,7 @@ export namespace Prisma {
      *
      */
     create<T extends recursoCreateArgs>(
-      args: SelectSubset<T, recursoCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, recursoCreateArgs<ExtArgs>>
     ): Prisma__recursoClient<
       $Result.GetResult<
         Prisma.$recursoPayload<ExtArgs>,
@@ -60358,7 +60355,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends recursoCreateManyArgs>(
-      args?: SelectSubset<T, recursoCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, recursoCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -60384,7 +60381,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends recursoCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, recursoCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, recursoCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$recursoPayload<ExtArgs>,
@@ -60407,7 +60404,7 @@ export namespace Prisma {
      *
      */
     delete<T extends recursoDeleteArgs>(
-      args: SelectSubset<T, recursoDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, recursoDeleteArgs<ExtArgs>>
     ): Prisma__recursoClient<
       $Result.GetResult<
         Prisma.$recursoPayload<ExtArgs>,
@@ -60436,7 +60433,7 @@ export namespace Prisma {
      *
      */
     update<T extends recursoUpdateArgs>(
-      args: SelectSubset<T, recursoUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, recursoUpdateArgs<ExtArgs>>
     ): Prisma__recursoClient<
       $Result.GetResult<
         Prisma.$recursoPayload<ExtArgs>,
@@ -60462,7 +60459,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends recursoDeleteManyArgs>(
-      args?: SelectSubset<T, recursoDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, recursoDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -60483,7 +60480,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends recursoUpdateManyArgs>(
-      args: SelectSubset<T, recursoUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, recursoUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -60515,7 +60512,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends recursoUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, recursoUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, recursoUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$recursoPayload<ExtArgs>,
@@ -60543,7 +60540,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends recursoUpsertArgs>(
-      args: SelectSubset<T, recursoUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, recursoUpsertArgs<ExtArgs>>
     ): Prisma__recursoClient<
       $Result.GetResult<
         Prisma.$recursoPayload<ExtArgs>,
@@ -60570,7 +60567,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends recursoCountArgs>(
-      args?: Subset<T, recursoCountArgs>,
+      args?: Subset<T, recursoCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -60604,7 +60601,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends RecursoAggregateArgs>(
-      args: Subset<T, RecursoAggregateArgs>,
+      args: Subset<T, RecursoAggregateArgs>
     ): Prisma.PrismaPromise<GetRecursoAggregateType<T>>;
 
     /**
@@ -60685,7 +60682,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, recursoGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, recursoGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetRecursoGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -60709,7 +60706,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     agenrec<T extends recurso$agenrecArgs<ExtArgs> = {}>(
-      args?: Subset<T, recurso$agenrecArgs<ExtArgs>>,
+      args?: Subset<T, recurso$agenrecArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$agenrecPayload<ExtArgs>,
@@ -60720,7 +60717,7 @@ export namespace Prisma {
       | Null
     >;
     avaliado<T extends recurso$avaliadoArgs<ExtArgs> = {}>(
-      args?: Subset<T, recurso$avaliadoArgs<ExtArgs>>,
+      args?: Subset<T, recurso$avaliadoArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$avaliadoPayload<ExtArgs>,
@@ -60731,7 +60728,7 @@ export namespace Prisma {
       | Null
     >;
     projeto<T extends recurso$projetoArgs<ExtArgs> = {}>(
-      args?: Subset<T, recurso$projetoArgs<ExtArgs>>,
+      args?: Subset<T, recurso$projetoArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$projetoPayload<ExtArgs>,
@@ -60742,7 +60739,7 @@ export namespace Prisma {
       | Null
     >;
     nivel<T extends nivelDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, nivelDefaultArgs<ExtArgs>>,
+      args?: Subset<T, nivelDefaultArgs<ExtArgs>>
     ): Prisma__nivelClient<
       | $Result.GetResult<
           Prisma.$nivelPayload<ExtArgs>,
@@ -60756,7 +60753,7 @@ export namespace Prisma {
       GlobalOmitOptions
     >;
     usuario<T extends usuarioDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, usuarioDefaultArgs<ExtArgs>>,
+      args?: Subset<T, usuarioDefaultArgs<ExtArgs>>
     ): Prisma__usuarioClient<
       | $Result.GetResult<
           Prisma.$usuarioPayload<ExtArgs>,
@@ -60776,7 +60773,7 @@ export namespace Prisma {
       args?: Subset<
         T,
         recurso$tarefa_tarefa_codrecresp_tarefaTorecursoArgs<ExtArgs>
-      >,
+      >
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$tarefaPayload<ExtArgs>,
@@ -60792,7 +60789,7 @@ export namespace Prisma {
       args?: Subset<
         T,
         recurso$tarefa_tarefa_codrec_tarefaTorecursoArgs<ExtArgs>
-      >,
+      >
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$tarefaPayload<ExtArgs>,
@@ -60803,7 +60800,7 @@ export namespace Prisma {
       | Null
     >;
     chamado<T extends recurso$chamadoArgs<ExtArgs> = {}>(
-      args?: Subset<T, recurso$chamadoArgs<ExtArgs>>,
+      args?: Subset<T, recurso$chamadoArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$chamadoPayload<ExtArgs>,
@@ -60827,7 +60824,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -60838,7 +60835,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -62017,7 +62014,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends resconFindUniqueArgs>(
-      args: SelectSubset<T, resconFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, resconFindUniqueArgs<ExtArgs>>
     ): Prisma__resconClient<
       $Result.GetResult<
         Prisma.$resconPayload<ExtArgs>,
@@ -62043,7 +62040,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends resconFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, resconFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, resconFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__resconClient<
       $Result.GetResult<
         Prisma.$resconPayload<ExtArgs>,
@@ -62070,7 +62067,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends resconFindFirstArgs>(
-      args?: SelectSubset<T, resconFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, resconFindFirstArgs<ExtArgs>>
     ): Prisma__resconClient<
       $Result.GetResult<
         Prisma.$resconPayload<ExtArgs>,
@@ -62098,7 +62095,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends resconFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, resconFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, resconFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__resconClient<
       $Result.GetResult<
         Prisma.$resconPayload<ExtArgs>,
@@ -62128,7 +62125,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends resconFindManyArgs>(
-      args?: SelectSubset<T, resconFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, resconFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$resconPayload<ExtArgs>,
@@ -62151,7 +62148,7 @@ export namespace Prisma {
      *
      */
     create<T extends resconCreateArgs>(
-      args: SelectSubset<T, resconCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, resconCreateArgs<ExtArgs>>
     ): Prisma__resconClient<
       $Result.GetResult<
         Prisma.$resconPayload<ExtArgs>,
@@ -62177,7 +62174,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends resconCreateManyArgs>(
-      args?: SelectSubset<T, resconCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, resconCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -62203,7 +62200,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends resconCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, resconCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, resconCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$resconPayload<ExtArgs>,
@@ -62226,7 +62223,7 @@ export namespace Prisma {
      *
      */
     delete<T extends resconDeleteArgs>(
-      args: SelectSubset<T, resconDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, resconDeleteArgs<ExtArgs>>
     ): Prisma__resconClient<
       $Result.GetResult<
         Prisma.$resconPayload<ExtArgs>,
@@ -62255,7 +62252,7 @@ export namespace Prisma {
      *
      */
     update<T extends resconUpdateArgs>(
-      args: SelectSubset<T, resconUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, resconUpdateArgs<ExtArgs>>
     ): Prisma__resconClient<
       $Result.GetResult<
         Prisma.$resconPayload<ExtArgs>,
@@ -62281,7 +62278,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends resconDeleteManyArgs>(
-      args?: SelectSubset<T, resconDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, resconDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -62302,7 +62299,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends resconUpdateManyArgs>(
-      args: SelectSubset<T, resconUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, resconUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -62334,7 +62331,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends resconUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, resconUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, resconUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$resconPayload<ExtArgs>,
@@ -62362,7 +62359,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends resconUpsertArgs>(
-      args: SelectSubset<T, resconUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, resconUpsertArgs<ExtArgs>>
     ): Prisma__resconClient<
       $Result.GetResult<
         Prisma.$resconPayload<ExtArgs>,
@@ -62389,7 +62386,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends resconCountArgs>(
-      args?: Subset<T, resconCountArgs>,
+      args?: Subset<T, resconCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -62423,7 +62420,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends ResconAggregateArgs>(
-      args: Subset<T, ResconAggregateArgs>,
+      args: Subset<T, ResconAggregateArgs>
     ): Prisma.PrismaPromise<GetResconAggregateType<T>>;
 
     /**
@@ -62504,7 +62501,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, resconGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, resconGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetResconGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -62541,7 +62538,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -62552,7 +62549,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -63238,7 +63235,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends statusFindUniqueArgs>(
-      args: SelectSubset<T, statusFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, statusFindUniqueArgs<ExtArgs>>
     ): Prisma__statusClient<
       $Result.GetResult<
         Prisma.$statusPayload<ExtArgs>,
@@ -63264,7 +63261,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends statusFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, statusFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, statusFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__statusClient<
       $Result.GetResult<
         Prisma.$statusPayload<ExtArgs>,
@@ -63291,7 +63288,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends statusFindFirstArgs>(
-      args?: SelectSubset<T, statusFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, statusFindFirstArgs<ExtArgs>>
     ): Prisma__statusClient<
       $Result.GetResult<
         Prisma.$statusPayload<ExtArgs>,
@@ -63319,7 +63316,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends statusFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, statusFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, statusFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__statusClient<
       $Result.GetResult<
         Prisma.$statusPayload<ExtArgs>,
@@ -63349,7 +63346,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends statusFindManyArgs>(
-      args?: SelectSubset<T, statusFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, statusFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$statusPayload<ExtArgs>,
@@ -63372,7 +63369,7 @@ export namespace Prisma {
      *
      */
     create<T extends statusCreateArgs>(
-      args: SelectSubset<T, statusCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, statusCreateArgs<ExtArgs>>
     ): Prisma__statusClient<
       $Result.GetResult<
         Prisma.$statusPayload<ExtArgs>,
@@ -63398,7 +63395,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends statusCreateManyArgs>(
-      args?: SelectSubset<T, statusCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, statusCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -63424,7 +63421,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends statusCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, statusCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, statusCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$statusPayload<ExtArgs>,
@@ -63447,7 +63444,7 @@ export namespace Prisma {
      *
      */
     delete<T extends statusDeleteArgs>(
-      args: SelectSubset<T, statusDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, statusDeleteArgs<ExtArgs>>
     ): Prisma__statusClient<
       $Result.GetResult<
         Prisma.$statusPayload<ExtArgs>,
@@ -63476,7 +63473,7 @@ export namespace Prisma {
      *
      */
     update<T extends statusUpdateArgs>(
-      args: SelectSubset<T, statusUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, statusUpdateArgs<ExtArgs>>
     ): Prisma__statusClient<
       $Result.GetResult<
         Prisma.$statusPayload<ExtArgs>,
@@ -63502,7 +63499,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends statusDeleteManyArgs>(
-      args?: SelectSubset<T, statusDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, statusDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -63523,7 +63520,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends statusUpdateManyArgs>(
-      args: SelectSubset<T, statusUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, statusUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -63555,7 +63552,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends statusUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, statusUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, statusUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$statusPayload<ExtArgs>,
@@ -63583,7 +63580,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends statusUpsertArgs>(
-      args: SelectSubset<T, statusUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, statusUpsertArgs<ExtArgs>>
     ): Prisma__statusClient<
       $Result.GetResult<
         Prisma.$statusPayload<ExtArgs>,
@@ -63610,7 +63607,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends statusCountArgs>(
-      args?: Subset<T, statusCountArgs>,
+      args?: Subset<T, statusCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -63644,7 +63641,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends StatusAggregateArgs>(
-      args: Subset<T, StatusAggregateArgs>,
+      args: Subset<T, StatusAggregateArgs>
     ): Prisma.PrismaPromise<GetStatusAggregateType<T>>;
 
     /**
@@ -63725,7 +63722,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, statusGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, statusGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetStatusGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -63762,7 +63759,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -63773,7 +63770,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -64949,7 +64946,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends tarefaFindUniqueArgs>(
-      args: SelectSubset<T, tarefaFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, tarefaFindUniqueArgs<ExtArgs>>
     ): Prisma__tarefaClient<
       $Result.GetResult<
         Prisma.$tarefaPayload<ExtArgs>,
@@ -64975,7 +64972,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends tarefaFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, tarefaFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, tarefaFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__tarefaClient<
       $Result.GetResult<
         Prisma.$tarefaPayload<ExtArgs>,
@@ -65002,7 +64999,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends tarefaFindFirstArgs>(
-      args?: SelectSubset<T, tarefaFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, tarefaFindFirstArgs<ExtArgs>>
     ): Prisma__tarefaClient<
       $Result.GetResult<
         Prisma.$tarefaPayload<ExtArgs>,
@@ -65030,7 +65027,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends tarefaFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, tarefaFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, tarefaFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__tarefaClient<
       $Result.GetResult<
         Prisma.$tarefaPayload<ExtArgs>,
@@ -65060,7 +65057,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends tarefaFindManyArgs>(
-      args?: SelectSubset<T, tarefaFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, tarefaFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$tarefaPayload<ExtArgs>,
@@ -65083,7 +65080,7 @@ export namespace Prisma {
      *
      */
     create<T extends tarefaCreateArgs>(
-      args: SelectSubset<T, tarefaCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, tarefaCreateArgs<ExtArgs>>
     ): Prisma__tarefaClient<
       $Result.GetResult<
         Prisma.$tarefaPayload<ExtArgs>,
@@ -65109,7 +65106,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends tarefaCreateManyArgs>(
-      args?: SelectSubset<T, tarefaCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, tarefaCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -65135,7 +65132,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends tarefaCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, tarefaCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, tarefaCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$tarefaPayload<ExtArgs>,
@@ -65158,7 +65155,7 @@ export namespace Prisma {
      *
      */
     delete<T extends tarefaDeleteArgs>(
-      args: SelectSubset<T, tarefaDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, tarefaDeleteArgs<ExtArgs>>
     ): Prisma__tarefaClient<
       $Result.GetResult<
         Prisma.$tarefaPayload<ExtArgs>,
@@ -65187,7 +65184,7 @@ export namespace Prisma {
      *
      */
     update<T extends tarefaUpdateArgs>(
-      args: SelectSubset<T, tarefaUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, tarefaUpdateArgs<ExtArgs>>
     ): Prisma__tarefaClient<
       $Result.GetResult<
         Prisma.$tarefaPayload<ExtArgs>,
@@ -65213,7 +65210,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends tarefaDeleteManyArgs>(
-      args?: SelectSubset<T, tarefaDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, tarefaDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -65234,7 +65231,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends tarefaUpdateManyArgs>(
-      args: SelectSubset<T, tarefaUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, tarefaUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -65266,7 +65263,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends tarefaUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, tarefaUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, tarefaUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$tarefaPayload<ExtArgs>,
@@ -65294,7 +65291,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends tarefaUpsertArgs>(
-      args: SelectSubset<T, tarefaUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, tarefaUpsertArgs<ExtArgs>>
     ): Prisma__tarefaClient<
       $Result.GetResult<
         Prisma.$tarefaPayload<ExtArgs>,
@@ -65321,7 +65318,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends tarefaCountArgs>(
-      args?: Subset<T, tarefaCountArgs>,
+      args?: Subset<T, tarefaCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -65355,7 +65352,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends TarefaAggregateArgs>(
-      args: Subset<T, TarefaAggregateArgs>,
+      args: Subset<T, TarefaAggregateArgs>
     ): Prisma.PrismaPromise<GetTarefaAggregateType<T>>;
 
     /**
@@ -65436,7 +65433,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, tarefaGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, tarefaGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetTarefaGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -65460,7 +65457,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     os<T extends tarefa$osArgs<ExtArgs> = {}>(
-      args?: Subset<T, tarefa$osArgs<ExtArgs>>,
+      args?: Subset<T, tarefa$osArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$osPayload<ExtArgs>,
@@ -65471,7 +65468,7 @@ export namespace Prisma {
       | Null
     >;
     area<T extends areaDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, areaDefaultArgs<ExtArgs>>,
+      args?: Subset<T, areaDefaultArgs<ExtArgs>>
     ): Prisma__areaClient<
       | $Result.GetResult<
           Prisma.$areaPayload<ExtArgs>,
@@ -65485,7 +65482,7 @@ export namespace Prisma {
       GlobalOmitOptions
     >;
     fase<T extends faseDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, faseDefaultArgs<ExtArgs>>,
+      args?: Subset<T, faseDefaultArgs<ExtArgs>>
     ): Prisma__faseClient<
       | $Result.GetResult<
           Prisma.$fasePayload<ExtArgs>,
@@ -65499,7 +65496,7 @@ export namespace Prisma {
       GlobalOmitOptions
     >;
     projeto<T extends projetoDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, projetoDefaultArgs<ExtArgs>>,
+      args?: Subset<T, projetoDefaultArgs<ExtArgs>>
     ): Prisma__projetoClient<
       | $Result.GetResult<
           Prisma.$projetoPayload<ExtArgs>,
@@ -65515,7 +65512,7 @@ export namespace Prisma {
     recurso_tarefa_codrecresp_tarefaTorecurso<
       T extends recursoDefaultArgs<ExtArgs> = {},
     >(
-      args?: Subset<T, recursoDefaultArgs<ExtArgs>>,
+      args?: Subset<T, recursoDefaultArgs<ExtArgs>>
     ): Prisma__recursoClient<
       | $Result.GetResult<
           Prisma.$recursoPayload<ExtArgs>,
@@ -65531,7 +65528,7 @@ export namespace Prisma {
     recurso_tarefa_codrec_tarefaTorecurso<
       T extends recursoDefaultArgs<ExtArgs> = {},
     >(
-      args?: Subset<T, recursoDefaultArgs<ExtArgs>>,
+      args?: Subset<T, recursoDefaultArgs<ExtArgs>>
     ): Prisma__recursoClient<
       | $Result.GetResult<
           Prisma.$recursoPayload<ExtArgs>,
@@ -65558,7 +65555,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -65569,7 +65566,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -66390,7 +66387,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends tela_sistemaFindUniqueArgs>(
-      args: SelectSubset<T, tela_sistemaFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, tela_sistemaFindUniqueArgs<ExtArgs>>
     ): Prisma__tela_sistemaClient<
       $Result.GetResult<
         Prisma.$tela_sistemaPayload<ExtArgs>,
@@ -66416,7 +66413,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends tela_sistemaFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, tela_sistemaFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, tela_sistemaFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__tela_sistemaClient<
       $Result.GetResult<
         Prisma.$tela_sistemaPayload<ExtArgs>,
@@ -66443,7 +66440,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends tela_sistemaFindFirstArgs>(
-      args?: SelectSubset<T, tela_sistemaFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, tela_sistemaFindFirstArgs<ExtArgs>>
     ): Prisma__tela_sistemaClient<
       $Result.GetResult<
         Prisma.$tela_sistemaPayload<ExtArgs>,
@@ -66471,7 +66468,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends tela_sistemaFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, tela_sistemaFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, tela_sistemaFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__tela_sistemaClient<
       $Result.GetResult<
         Prisma.$tela_sistemaPayload<ExtArgs>,
@@ -66501,7 +66498,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends tela_sistemaFindManyArgs>(
-      args?: SelectSubset<T, tela_sistemaFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, tela_sistemaFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$tela_sistemaPayload<ExtArgs>,
@@ -66524,7 +66521,7 @@ export namespace Prisma {
      *
      */
     create<T extends tela_sistemaCreateArgs>(
-      args: SelectSubset<T, tela_sistemaCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, tela_sistemaCreateArgs<ExtArgs>>
     ): Prisma__tela_sistemaClient<
       $Result.GetResult<
         Prisma.$tela_sistemaPayload<ExtArgs>,
@@ -66550,7 +66547,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends tela_sistemaCreateManyArgs>(
-      args?: SelectSubset<T, tela_sistemaCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, tela_sistemaCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -66576,7 +66573,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends tela_sistemaCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, tela_sistemaCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, tela_sistemaCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$tela_sistemaPayload<ExtArgs>,
@@ -66599,7 +66596,7 @@ export namespace Prisma {
      *
      */
     delete<T extends tela_sistemaDeleteArgs>(
-      args: SelectSubset<T, tela_sistemaDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, tela_sistemaDeleteArgs<ExtArgs>>
     ): Prisma__tela_sistemaClient<
       $Result.GetResult<
         Prisma.$tela_sistemaPayload<ExtArgs>,
@@ -66628,7 +66625,7 @@ export namespace Prisma {
      *
      */
     update<T extends tela_sistemaUpdateArgs>(
-      args: SelectSubset<T, tela_sistemaUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, tela_sistemaUpdateArgs<ExtArgs>>
     ): Prisma__tela_sistemaClient<
       $Result.GetResult<
         Prisma.$tela_sistemaPayload<ExtArgs>,
@@ -66654,7 +66651,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends tela_sistemaDeleteManyArgs>(
-      args?: SelectSubset<T, tela_sistemaDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, tela_sistemaDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -66675,7 +66672,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends tela_sistemaUpdateManyArgs>(
-      args: SelectSubset<T, tela_sistemaUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, tela_sistemaUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -66707,7 +66704,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends tela_sistemaUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, tela_sistemaUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, tela_sistemaUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$tela_sistemaPayload<ExtArgs>,
@@ -66735,7 +66732,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends tela_sistemaUpsertArgs>(
-      args: SelectSubset<T, tela_sistemaUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, tela_sistemaUpsertArgs<ExtArgs>>
     ): Prisma__tela_sistemaClient<
       $Result.GetResult<
         Prisma.$tela_sistemaPayload<ExtArgs>,
@@ -66762,7 +66759,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends tela_sistemaCountArgs>(
-      args?: Subset<T, tela_sistemaCountArgs>,
+      args?: Subset<T, tela_sistemaCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -66796,7 +66793,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends Tela_sistemaAggregateArgs>(
-      args: Subset<T, Tela_sistemaAggregateArgs>,
+      args: Subset<T, Tela_sistemaAggregateArgs>
     ): Prisma.PrismaPromise<GetTela_sistemaAggregateType<T>>;
 
     /**
@@ -66878,7 +66875,7 @@ export namespace Prisma {
                   }[OrderFields],
     >(
       args: SubsetIntersection<T, tela_sistemaGroupByArgs, OrderByArg> &
-        InputErrors,
+        InputErrors
     ): {} extends InputErrors
       ? GetTela_sistemaGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -66902,7 +66899,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     acesso_sistema<T extends tela_sistema$acesso_sistemaArgs<ExtArgs> = {}>(
-      args?: Subset<T, tela_sistema$acesso_sistemaArgs<ExtArgs>>,
+      args?: Subset<T, tela_sistema$acesso_sistemaArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$acesso_sistemaPayload<ExtArgs>,
@@ -66913,7 +66910,7 @@ export namespace Prisma {
       | Null
     >;
     modulo_sistema<T extends modulo_sistemaDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, modulo_sistemaDefaultArgs<ExtArgs>>,
+      args?: Subset<T, modulo_sistemaDefaultArgs<ExtArgs>>
     ): Prisma__modulo_sistemaClient<
       | $Result.GetResult<
           Prisma.$modulo_sistemaPayload<ExtArgs>,
@@ -66940,7 +66937,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -66951,7 +66948,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -67756,7 +67753,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends telefoneFindUniqueArgs>(
-      args: SelectSubset<T, telefoneFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, telefoneFindUniqueArgs<ExtArgs>>
     ): Prisma__telefoneClient<
       $Result.GetResult<
         Prisma.$telefonePayload<ExtArgs>,
@@ -67782,7 +67779,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends telefoneFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, telefoneFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, telefoneFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__telefoneClient<
       $Result.GetResult<
         Prisma.$telefonePayload<ExtArgs>,
@@ -67809,7 +67806,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends telefoneFindFirstArgs>(
-      args?: SelectSubset<T, telefoneFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, telefoneFindFirstArgs<ExtArgs>>
     ): Prisma__telefoneClient<
       $Result.GetResult<
         Prisma.$telefonePayload<ExtArgs>,
@@ -67837,7 +67834,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends telefoneFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, telefoneFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, telefoneFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__telefoneClient<
       $Result.GetResult<
         Prisma.$telefonePayload<ExtArgs>,
@@ -67867,7 +67864,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends telefoneFindManyArgs>(
-      args?: SelectSubset<T, telefoneFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, telefoneFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$telefonePayload<ExtArgs>,
@@ -67890,7 +67887,7 @@ export namespace Prisma {
      *
      */
     create<T extends telefoneCreateArgs>(
-      args: SelectSubset<T, telefoneCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, telefoneCreateArgs<ExtArgs>>
     ): Prisma__telefoneClient<
       $Result.GetResult<
         Prisma.$telefonePayload<ExtArgs>,
@@ -67916,7 +67913,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends telefoneCreateManyArgs>(
-      args?: SelectSubset<T, telefoneCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, telefoneCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -67942,7 +67939,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends telefoneCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, telefoneCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, telefoneCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$telefonePayload<ExtArgs>,
@@ -67965,7 +67962,7 @@ export namespace Prisma {
      *
      */
     delete<T extends telefoneDeleteArgs>(
-      args: SelectSubset<T, telefoneDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, telefoneDeleteArgs<ExtArgs>>
     ): Prisma__telefoneClient<
       $Result.GetResult<
         Prisma.$telefonePayload<ExtArgs>,
@@ -67994,7 +67991,7 @@ export namespace Prisma {
      *
      */
     update<T extends telefoneUpdateArgs>(
-      args: SelectSubset<T, telefoneUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, telefoneUpdateArgs<ExtArgs>>
     ): Prisma__telefoneClient<
       $Result.GetResult<
         Prisma.$telefonePayload<ExtArgs>,
@@ -68020,7 +68017,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends telefoneDeleteManyArgs>(
-      args?: SelectSubset<T, telefoneDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, telefoneDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -68041,7 +68038,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends telefoneUpdateManyArgs>(
-      args: SelectSubset<T, telefoneUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, telefoneUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -68073,7 +68070,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends telefoneUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, telefoneUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, telefoneUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$telefonePayload<ExtArgs>,
@@ -68101,7 +68098,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends telefoneUpsertArgs>(
-      args: SelectSubset<T, telefoneUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, telefoneUpsertArgs<ExtArgs>>
     ): Prisma__telefoneClient<
       $Result.GetResult<
         Prisma.$telefonePayload<ExtArgs>,
@@ -68128,7 +68125,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends telefoneCountArgs>(
-      args?: Subset<T, telefoneCountArgs>,
+      args?: Subset<T, telefoneCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -68162,7 +68159,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends TelefoneAggregateArgs>(
-      args: Subset<T, TelefoneAggregateArgs>,
+      args: Subset<T, TelefoneAggregateArgs>
     ): Prisma.PrismaPromise<GetTelefoneAggregateType<T>>;
 
     /**
@@ -68243,8 +68240,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, telefoneGroupByArgs, OrderByArg> &
-        InputErrors,
+      args: SubsetIntersection<T, telefoneGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetTelefoneGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -68281,7 +68277,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -68292,7 +68288,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -68995,7 +68991,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends tipotrfFindUniqueArgs>(
-      args: SelectSubset<T, tipotrfFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, tipotrfFindUniqueArgs<ExtArgs>>
     ): Prisma__tipotrfClient<
       $Result.GetResult<
         Prisma.$tipotrfPayload<ExtArgs>,
@@ -69021,7 +69017,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends tipotrfFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, tipotrfFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, tipotrfFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__tipotrfClient<
       $Result.GetResult<
         Prisma.$tipotrfPayload<ExtArgs>,
@@ -69048,7 +69044,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends tipotrfFindFirstArgs>(
-      args?: SelectSubset<T, tipotrfFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, tipotrfFindFirstArgs<ExtArgs>>
     ): Prisma__tipotrfClient<
       $Result.GetResult<
         Prisma.$tipotrfPayload<ExtArgs>,
@@ -69076,7 +69072,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends tipotrfFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, tipotrfFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, tipotrfFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__tipotrfClient<
       $Result.GetResult<
         Prisma.$tipotrfPayload<ExtArgs>,
@@ -69106,7 +69102,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends tipotrfFindManyArgs>(
-      args?: SelectSubset<T, tipotrfFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, tipotrfFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$tipotrfPayload<ExtArgs>,
@@ -69129,7 +69125,7 @@ export namespace Prisma {
      *
      */
     create<T extends tipotrfCreateArgs>(
-      args: SelectSubset<T, tipotrfCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, tipotrfCreateArgs<ExtArgs>>
     ): Prisma__tipotrfClient<
       $Result.GetResult<
         Prisma.$tipotrfPayload<ExtArgs>,
@@ -69155,7 +69151,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends tipotrfCreateManyArgs>(
-      args?: SelectSubset<T, tipotrfCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, tipotrfCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -69181,7 +69177,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends tipotrfCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, tipotrfCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, tipotrfCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$tipotrfPayload<ExtArgs>,
@@ -69204,7 +69200,7 @@ export namespace Prisma {
      *
      */
     delete<T extends tipotrfDeleteArgs>(
-      args: SelectSubset<T, tipotrfDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, tipotrfDeleteArgs<ExtArgs>>
     ): Prisma__tipotrfClient<
       $Result.GetResult<
         Prisma.$tipotrfPayload<ExtArgs>,
@@ -69233,7 +69229,7 @@ export namespace Prisma {
      *
      */
     update<T extends tipotrfUpdateArgs>(
-      args: SelectSubset<T, tipotrfUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, tipotrfUpdateArgs<ExtArgs>>
     ): Prisma__tipotrfClient<
       $Result.GetResult<
         Prisma.$tipotrfPayload<ExtArgs>,
@@ -69259,7 +69255,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends tipotrfDeleteManyArgs>(
-      args?: SelectSubset<T, tipotrfDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, tipotrfDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -69280,7 +69276,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends tipotrfUpdateManyArgs>(
-      args: SelectSubset<T, tipotrfUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, tipotrfUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -69312,7 +69308,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends tipotrfUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, tipotrfUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, tipotrfUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$tipotrfPayload<ExtArgs>,
@@ -69340,7 +69336,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends tipotrfUpsertArgs>(
-      args: SelectSubset<T, tipotrfUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, tipotrfUpsertArgs<ExtArgs>>
     ): Prisma__tipotrfClient<
       $Result.GetResult<
         Prisma.$tipotrfPayload<ExtArgs>,
@@ -69367,7 +69363,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends tipotrfCountArgs>(
-      args?: Subset<T, tipotrfCountArgs>,
+      args?: Subset<T, tipotrfCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -69401,7 +69397,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends TipotrfAggregateArgs>(
-      args: Subset<T, TipotrfAggregateArgs>,
+      args: Subset<T, TipotrfAggregateArgs>
     ): Prisma.PrismaPromise<GetTipotrfAggregateType<T>>;
 
     /**
@@ -69482,7 +69478,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, tipotrfGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, tipotrfGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetTipotrfGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -69506,7 +69502,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     valor<T extends tipotrf$valorArgs<ExtArgs> = {}>(
-      args?: Subset<T, tipotrf$valorArgs<ExtArgs>>,
+      args?: Subset<T, tipotrf$valorArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$valorPayload<ExtArgs>,
@@ -69530,7 +69526,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -69541,7 +69537,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -70283,7 +70279,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends tpdespFindUniqueArgs>(
-      args: SelectSubset<T, tpdespFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, tpdespFindUniqueArgs<ExtArgs>>
     ): Prisma__tpdespClient<
       $Result.GetResult<
         Prisma.$tpdespPayload<ExtArgs>,
@@ -70309,7 +70305,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends tpdespFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, tpdespFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, tpdespFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__tpdespClient<
       $Result.GetResult<
         Prisma.$tpdespPayload<ExtArgs>,
@@ -70336,7 +70332,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends tpdespFindFirstArgs>(
-      args?: SelectSubset<T, tpdespFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, tpdespFindFirstArgs<ExtArgs>>
     ): Prisma__tpdespClient<
       $Result.GetResult<
         Prisma.$tpdespPayload<ExtArgs>,
@@ -70364,7 +70360,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends tpdespFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, tpdespFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, tpdespFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__tpdespClient<
       $Result.GetResult<
         Prisma.$tpdespPayload<ExtArgs>,
@@ -70394,7 +70390,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends tpdespFindManyArgs>(
-      args?: SelectSubset<T, tpdespFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, tpdespFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$tpdespPayload<ExtArgs>,
@@ -70417,7 +70413,7 @@ export namespace Prisma {
      *
      */
     create<T extends tpdespCreateArgs>(
-      args: SelectSubset<T, tpdespCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, tpdespCreateArgs<ExtArgs>>
     ): Prisma__tpdespClient<
       $Result.GetResult<
         Prisma.$tpdespPayload<ExtArgs>,
@@ -70443,7 +70439,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends tpdespCreateManyArgs>(
-      args?: SelectSubset<T, tpdespCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, tpdespCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -70469,7 +70465,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends tpdespCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, tpdespCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, tpdespCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$tpdespPayload<ExtArgs>,
@@ -70492,7 +70488,7 @@ export namespace Prisma {
      *
      */
     delete<T extends tpdespDeleteArgs>(
-      args: SelectSubset<T, tpdespDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, tpdespDeleteArgs<ExtArgs>>
     ): Prisma__tpdespClient<
       $Result.GetResult<
         Prisma.$tpdespPayload<ExtArgs>,
@@ -70521,7 +70517,7 @@ export namespace Prisma {
      *
      */
     update<T extends tpdespUpdateArgs>(
-      args: SelectSubset<T, tpdespUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, tpdespUpdateArgs<ExtArgs>>
     ): Prisma__tpdespClient<
       $Result.GetResult<
         Prisma.$tpdespPayload<ExtArgs>,
@@ -70547,7 +70543,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends tpdespDeleteManyArgs>(
-      args?: SelectSubset<T, tpdespDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, tpdespDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -70568,7 +70564,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends tpdespUpdateManyArgs>(
-      args: SelectSubset<T, tpdespUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, tpdespUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -70600,7 +70596,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends tpdespUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, tpdespUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, tpdespUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$tpdespPayload<ExtArgs>,
@@ -70628,7 +70624,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends tpdespUpsertArgs>(
-      args: SelectSubset<T, tpdespUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, tpdespUpsertArgs<ExtArgs>>
     ): Prisma__tpdespClient<
       $Result.GetResult<
         Prisma.$tpdespPayload<ExtArgs>,
@@ -70655,7 +70651,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends tpdespCountArgs>(
-      args?: Subset<T, tpdespCountArgs>,
+      args?: Subset<T, tpdespCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -70689,7 +70685,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends TpdespAggregateArgs>(
-      args: Subset<T, TpdespAggregateArgs>,
+      args: Subset<T, TpdespAggregateArgs>
     ): Prisma.PrismaPromise<GetTpdespAggregateType<T>>;
 
     /**
@@ -70770,7 +70766,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, tpdespGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, tpdespGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetTpdespGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -70807,7 +70803,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -70818,7 +70814,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -71673,7 +71669,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends usuarioFindUniqueArgs>(
-      args: SelectSubset<T, usuarioFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, usuarioFindUniqueArgs<ExtArgs>>
     ): Prisma__usuarioClient<
       $Result.GetResult<
         Prisma.$usuarioPayload<ExtArgs>,
@@ -71699,7 +71695,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends usuarioFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, usuarioFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, usuarioFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__usuarioClient<
       $Result.GetResult<
         Prisma.$usuarioPayload<ExtArgs>,
@@ -71726,7 +71722,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends usuarioFindFirstArgs>(
-      args?: SelectSubset<T, usuarioFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, usuarioFindFirstArgs<ExtArgs>>
     ): Prisma__usuarioClient<
       $Result.GetResult<
         Prisma.$usuarioPayload<ExtArgs>,
@@ -71754,7 +71750,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends usuarioFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, usuarioFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, usuarioFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__usuarioClient<
       $Result.GetResult<
         Prisma.$usuarioPayload<ExtArgs>,
@@ -71784,7 +71780,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends usuarioFindManyArgs>(
-      args?: SelectSubset<T, usuarioFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, usuarioFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$usuarioPayload<ExtArgs>,
@@ -71807,7 +71803,7 @@ export namespace Prisma {
      *
      */
     create<T extends usuarioCreateArgs>(
-      args: SelectSubset<T, usuarioCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, usuarioCreateArgs<ExtArgs>>
     ): Prisma__usuarioClient<
       $Result.GetResult<
         Prisma.$usuarioPayload<ExtArgs>,
@@ -71833,7 +71829,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends usuarioCreateManyArgs>(
-      args?: SelectSubset<T, usuarioCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, usuarioCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -71859,7 +71855,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends usuarioCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, usuarioCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, usuarioCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$usuarioPayload<ExtArgs>,
@@ -71882,7 +71878,7 @@ export namespace Prisma {
      *
      */
     delete<T extends usuarioDeleteArgs>(
-      args: SelectSubset<T, usuarioDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, usuarioDeleteArgs<ExtArgs>>
     ): Prisma__usuarioClient<
       $Result.GetResult<
         Prisma.$usuarioPayload<ExtArgs>,
@@ -71911,7 +71907,7 @@ export namespace Prisma {
      *
      */
     update<T extends usuarioUpdateArgs>(
-      args: SelectSubset<T, usuarioUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, usuarioUpdateArgs<ExtArgs>>
     ): Prisma__usuarioClient<
       $Result.GetResult<
         Prisma.$usuarioPayload<ExtArgs>,
@@ -71937,7 +71933,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends usuarioDeleteManyArgs>(
-      args?: SelectSubset<T, usuarioDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, usuarioDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -71958,7 +71954,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends usuarioUpdateManyArgs>(
-      args: SelectSubset<T, usuarioUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, usuarioUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -71990,7 +71986,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends usuarioUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, usuarioUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, usuarioUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$usuarioPayload<ExtArgs>,
@@ -72018,7 +72014,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends usuarioUpsertArgs>(
-      args: SelectSubset<T, usuarioUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, usuarioUpsertArgs<ExtArgs>>
     ): Prisma__usuarioClient<
       $Result.GetResult<
         Prisma.$usuarioPayload<ExtArgs>,
@@ -72045,7 +72041,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends usuarioCountArgs>(
-      args?: Subset<T, usuarioCountArgs>,
+      args?: Subset<T, usuarioCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -72079,7 +72075,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends UsuarioAggregateArgs>(
-      args: Subset<T, UsuarioAggregateArgs>,
+      args: Subset<T, UsuarioAggregateArgs>
     ): Prisma.PrismaPromise<GetUsuarioAggregateType<T>>;
 
     /**
@@ -72160,7 +72156,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, usuarioGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, usuarioGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetUsuarioGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -72184,7 +72180,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     acesso_sistema<T extends usuario$acesso_sistemaArgs<ExtArgs> = {}>(
-      args?: Subset<T, usuario$acesso_sistemaArgs<ExtArgs>>,
+      args?: Subset<T, usuario$acesso_sistemaArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$acesso_sistemaPayload<ExtArgs>,
@@ -72195,7 +72191,7 @@ export namespace Prisma {
       | Null
     >;
     recurso<T extends usuario$recursoArgs<ExtArgs> = {}>(
-      args?: Subset<T, usuario$recursoArgs<ExtArgs>>,
+      args?: Subset<T, usuario$recursoArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       | $Result.GetResult<
           Prisma.$recursoPayload<ExtArgs>,
@@ -72219,7 +72215,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -72230,7 +72226,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
@@ -73060,7 +73056,7 @@ export namespace Prisma {
      * })
      */
     findUnique<T extends valorFindUniqueArgs>(
-      args: SelectSubset<T, valorFindUniqueArgs<ExtArgs>>,
+      args: SelectSubset<T, valorFindUniqueArgs<ExtArgs>>
     ): Prisma__valorClient<
       $Result.GetResult<
         Prisma.$valorPayload<ExtArgs>,
@@ -73086,7 +73082,7 @@ export namespace Prisma {
      * })
      */
     findUniqueOrThrow<T extends valorFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, valorFindUniqueOrThrowArgs<ExtArgs>>,
+      args: SelectSubset<T, valorFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__valorClient<
       $Result.GetResult<
         Prisma.$valorPayload<ExtArgs>,
@@ -73113,7 +73109,7 @@ export namespace Prisma {
      * })
      */
     findFirst<T extends valorFindFirstArgs>(
-      args?: SelectSubset<T, valorFindFirstArgs<ExtArgs>>,
+      args?: SelectSubset<T, valorFindFirstArgs<ExtArgs>>
     ): Prisma__valorClient<
       $Result.GetResult<
         Prisma.$valorPayload<ExtArgs>,
@@ -73141,7 +73137,7 @@ export namespace Prisma {
      * })
      */
     findFirstOrThrow<T extends valorFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, valorFindFirstOrThrowArgs<ExtArgs>>,
+      args?: SelectSubset<T, valorFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__valorClient<
       $Result.GetResult<
         Prisma.$valorPayload<ExtArgs>,
@@ -73171,7 +73167,7 @@ export namespace Prisma {
      *
      */
     findMany<T extends valorFindManyArgs>(
-      args?: SelectSubset<T, valorFindManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, valorFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$valorPayload<ExtArgs>,
@@ -73194,7 +73190,7 @@ export namespace Prisma {
      *
      */
     create<T extends valorCreateArgs>(
-      args: SelectSubset<T, valorCreateArgs<ExtArgs>>,
+      args: SelectSubset<T, valorCreateArgs<ExtArgs>>
     ): Prisma__valorClient<
       $Result.GetResult<
         Prisma.$valorPayload<ExtArgs>,
@@ -73220,7 +73216,7 @@ export namespace Prisma {
      *
      */
     createMany<T extends valorCreateManyArgs>(
-      args?: SelectSubset<T, valorCreateManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, valorCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -73246,7 +73242,7 @@ export namespace Prisma {
      *
      */
     createManyAndReturn<T extends valorCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, valorCreateManyAndReturnArgs<ExtArgs>>,
+      args?: SelectSubset<T, valorCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$valorPayload<ExtArgs>,
@@ -73269,7 +73265,7 @@ export namespace Prisma {
      *
      */
     delete<T extends valorDeleteArgs>(
-      args: SelectSubset<T, valorDeleteArgs<ExtArgs>>,
+      args: SelectSubset<T, valorDeleteArgs<ExtArgs>>
     ): Prisma__valorClient<
       $Result.GetResult<
         Prisma.$valorPayload<ExtArgs>,
@@ -73298,7 +73294,7 @@ export namespace Prisma {
      *
      */
     update<T extends valorUpdateArgs>(
-      args: SelectSubset<T, valorUpdateArgs<ExtArgs>>,
+      args: SelectSubset<T, valorUpdateArgs<ExtArgs>>
     ): Prisma__valorClient<
       $Result.GetResult<
         Prisma.$valorPayload<ExtArgs>,
@@ -73324,7 +73320,7 @@ export namespace Prisma {
      *
      */
     deleteMany<T extends valorDeleteManyArgs>(
-      args?: SelectSubset<T, valorDeleteManyArgs<ExtArgs>>,
+      args?: SelectSubset<T, valorDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -73345,7 +73341,7 @@ export namespace Prisma {
      *
      */
     updateMany<T extends valorUpdateManyArgs>(
-      args: SelectSubset<T, valorUpdateManyArgs<ExtArgs>>,
+      args: SelectSubset<T, valorUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
 
     /**
@@ -73377,7 +73373,7 @@ export namespace Prisma {
      *
      */
     updateManyAndReturn<T extends valorUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, valorUpdateManyAndReturnArgs<ExtArgs>>,
+      args: SelectSubset<T, valorUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
       $Result.GetResult<
         Prisma.$valorPayload<ExtArgs>,
@@ -73405,7 +73401,7 @@ export namespace Prisma {
      * })
      */
     upsert<T extends valorUpsertArgs>(
-      args: SelectSubset<T, valorUpsertArgs<ExtArgs>>,
+      args: SelectSubset<T, valorUpsertArgs<ExtArgs>>
     ): Prisma__valorClient<
       $Result.GetResult<
         Prisma.$valorPayload<ExtArgs>,
@@ -73432,7 +73428,7 @@ export namespace Prisma {
      * })
      **/
     count<T extends valorCountArgs>(
-      args?: Subset<T, valorCountArgs>,
+      args?: Subset<T, valorCountArgs>
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -73466,7 +73462,7 @@ export namespace Prisma {
      * })
      **/
     aggregate<T extends ValorAggregateArgs>(
-      args: Subset<T, ValorAggregateArgs>,
+      args: Subset<T, ValorAggregateArgs>
     ): Prisma.PrismaPromise<GetValorAggregateType<T>>;
 
     /**
@@ -73547,7 +73543,7 @@ export namespace Prisma {
                       : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
                   }[OrderFields],
     >(
-      args: SubsetIntersection<T, valorGroupByArgs, OrderByArg> & InputErrors,
+      args: SubsetIntersection<T, valorGroupByArgs, OrderByArg> & InputErrors
     ): {} extends InputErrors
       ? GetValorGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
@@ -73571,7 +73567,7 @@ export namespace Prisma {
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     projeto<T extends projetoDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, projetoDefaultArgs<ExtArgs>>,
+      args?: Subset<T, projetoDefaultArgs<ExtArgs>>
     ): Prisma__projetoClient<
       | $Result.GetResult<
           Prisma.$projetoPayload<ExtArgs>,
@@ -73585,7 +73581,7 @@ export namespace Prisma {
       GlobalOmitOptions
     >;
     tipotrf<T extends tipotrfDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, tipotrfDefaultArgs<ExtArgs>>,
+      args?: Subset<T, tipotrfDefaultArgs<ExtArgs>>
     ): Prisma__tipotrfClient<
       | $Result.GetResult<
           Prisma.$tipotrfPayload<ExtArgs>,
@@ -73612,7 +73608,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult2 | PromiseLike<TResult2>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
@@ -73623,7 +73619,7 @@ export namespace Prisma {
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
-        | null,
+        | null
     ): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The

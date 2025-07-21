@@ -13,7 +13,7 @@ export const firebirdOptions: Firebird.Options = {
 
 export function queryFirebird<T = any>(
   sql: string,
-  params: any[] = [],
+  params: any[] = []
 ): Promise<T[]> {
   return new Promise((resolve, reject) => {
     Firebird.attach(firebirdOptions, (err, db) => {

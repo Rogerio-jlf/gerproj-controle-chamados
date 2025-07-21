@@ -14,7 +14,7 @@ export const useSharedFilters = () => {
       status: query.status ?? '',
       resource: query.resource ?? '',
     }),
-    [query],
+    [query]
   );
 
   const updateFilters = (newFilters: Partial<typeof filters>) => {
@@ -24,7 +24,7 @@ export const useSharedFilters = () => {
         query: { ...query, ...newFilters },
       },
       undefined,
-      { shallow: true },
+      { shallow: true }
     );
   };
 

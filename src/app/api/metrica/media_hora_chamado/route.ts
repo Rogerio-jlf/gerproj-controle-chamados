@@ -33,7 +33,7 @@ export async function GET(request: Request) {
       // Valida o parâmetro 'mes'
       return NextResponse.json(
         { error: "Parâmetro 'mes' deve ser um número entre 1 e 12" }, // Retorna erro se inválido
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -41,7 +41,7 @@ export async function GET(request: Request) {
       // Valida o parâmetro 'ano'
       return NextResponse.json(
         { error: "Parâmetro 'ano' deve ser um número válido" }, // Retorna erro se inválido
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
         {
           error: "Parâmetro 'codCliente' é obrigatório para usuários não admin", // Retorna erro se faltar
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -106,7 +106,7 @@ export async function GET(request: Request) {
       }
       const duracao = calcularDuracaoHoras(
         apontamento.hrini_os.slice(0, 5),
-        apontamento.hrfim_os.slice(0, 5),
+        apontamento.hrfim_os.slice(0, 5)
       );
       return total + duracao; // Soma a duração de cada apontamento
     }, 0);
@@ -120,11 +120,11 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error(
       'Erro ao tentar calcular a média de horas por chamado:',
-      error,
+      error
     ); // Loga o erro no console
     return NextResponse.json(
       { error: 'Erro interno do servidor' }, // Retorna mensagem de erro
-      { status: 500 }, // Retorna status 500 (erro interno do servidor)
+      { status: 500 } // Retorna status 500 (erro interno do servidor)
     );
   }
 }

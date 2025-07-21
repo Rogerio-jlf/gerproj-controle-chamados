@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     if (!mesParam || mesParam < 1 || mesParam > 12) {
       return NextResponse.json(
         { error: "Parâmetro 'mes' deve ser um número entre 1 e 12" }, // Retorna erro se inválido
-        { status: 400 }, // Código de erro HTTP 400
+        { status: 400 } // Código de erro HTTP 400
       );
     }
 
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     if (!anoParam || anoParam < 2000 || anoParam > 3000) {
       return NextResponse.json(
         { error: "Parâmetro 'ano' deve ser um número válido" }, // Retorna erro se inválido
-        { status: 400 }, // Código de erro HTTP 400
+        { status: 400 } // Código de erro HTTP 400
       );
     }
 
@@ -45,7 +45,7 @@ export async function GET(request: Request) {
         {
           error: "Parâmetro 'codCliente' é obrigatório para usuários não admin", // Mensagem de erro
         },
-        { status: 400 }, // Código de erro HTTP 400
+        { status: 400 } // Código de erro HTTP 400
       );
     }
 
@@ -105,7 +105,7 @@ export async function GET(request: Request) {
     // Mapeia os dados para adicionar o campo total_horas
     let totalMsGeral = 0; // Acumulador de milissegundos
 
-    const apontamentosComTotalHoras = apontamentos.map((apontamento) => {
+    const apontamentosComTotalHoras = apontamentos.map(apontamento => {
       const inicio = apontamento.dthrini_apont
         ? new Date(apontamento.dthrini_apont)
         : null;
@@ -146,7 +146,7 @@ export async function GET(request: Request) {
     console.error('Erro na API:', error); // Exibe o erro no console
     return NextResponse.json(
       { error: 'Erro interno do servidor' }, // Retorna mensagem de erro genérica
-      { status: 500 }, // Código de erro HTTP 500
+      { status: 500 } // Código de erro HTTP 500
     );
   }
 }

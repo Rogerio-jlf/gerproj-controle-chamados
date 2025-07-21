@@ -16,14 +16,14 @@ export async function GET(request: Request) {
     if (!mesParam || isNaN(mes) || mes < 1 || mes > 12) {
       return NextResponse.json(
         { error: "Parâmetro 'mes' deve ser um número entre 1 e 12" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (!anoParam || isNaN(ano) || ano < 2000 || ano > 3000) {
       return NextResponse.json(
         { error: "Parâmetro 'ano' deve ser um número válido" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
         {
           error: "Parâmetro 'codCliente' é obrigatório para usuários não admin",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -60,7 +60,7 @@ export async function GET(request: Request) {
     });
 
     const nomesClientes = clientes
-      .map((item) => item.nome_cliente)
+      .map(item => item.nome_cliente)
       .filter((nome): nome is string => nome != null && nome.trim() !== '')
       .sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
 
@@ -76,13 +76,13 @@ export async function GET(request: Request) {
           message: error.message,
           timestamp: new Date().toISOString(),
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

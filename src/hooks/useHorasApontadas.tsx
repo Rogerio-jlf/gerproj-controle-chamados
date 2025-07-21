@@ -1,5 +1,5 @@
 // src/hooks/useHorasApontadasPorAno.ts
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 

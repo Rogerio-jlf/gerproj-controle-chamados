@@ -16,14 +16,14 @@ export async function GET(request: Request) {
     if (!mesParam || mesParam < 1 || mesParam > 12) {
       return NextResponse.json(
         { error: "Parâmetro 'mes' deve ser um número entre 1 e 12" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (!anoParam || anoParam < 2000 || anoParam > 3000) {
       return NextResponse.json(
         { error: "Parâmetro 'ano' deve ser um número válido" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
         {
           error: "Parâmetro 'codCliente' é obrigatório para usuários não admin",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -83,7 +83,7 @@ export async function GET(request: Request) {
     // Calcular total de horas do mês
     let totalHorasMes = 0;
 
-    apontamentos.forEach((apontamento) => {
+    apontamentos.forEach(apontamento => {
       if (apontamento.dthrini_apont && apontamento.dthrfim_apont) {
         const inicio = new Date(apontamento.dthrini_apont);
         const fim = new Date(apontamento.dthrfim_apont);
@@ -116,7 +116,7 @@ export async function GET(request: Request) {
       ? (() => {
           const clienteHoras: Record<string, number> = {};
 
-          apontamentos.forEach((apontamento) => {
+          apontamentos.forEach(apontamento => {
             const cliente = apontamento.nome_cliente || 'Sem cliente';
 
             if (apontamento.dthrini_apont && apontamento.dthrfim_apont) {
@@ -144,7 +144,7 @@ export async function GET(request: Request) {
     const breakdownPorRecurso = (() => {
       const recursoHoras: Record<string, number> = {};
 
-      apontamentos.forEach((apontamento) => {
+      apontamentos.forEach(apontamento => {
         const recurso = apontamento.nome_recurso || 'Sem recurso';
 
         if (apontamento.dthrini_apont && apontamento.dthrfim_apont) {
@@ -181,7 +181,7 @@ export async function GET(request: Request) {
     console.error('Erro ao calcular horas do mês:', error);
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -133,7 +133,7 @@ export async function POST(request: Request) {
     if (!codChamadoNum || !codClienteNum || !codRecursoNum) {
       return NextResponse.json(
         { error: 'Parâmetros obrigatórios ausentes ou inválidos' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -159,7 +159,7 @@ export async function POST(request: Request) {
     if (enviarEmailCliente) {
       const clienteResult = await firebirdQuery(
         `SELECT FIRST 1 NOME_CLIENTE, EMAIL_CLIENTE FROM CLIENTE WHERE COD_CLIENTE = ?`,
-        [codClienteNum],
+        [codClienteNum]
       );
       if (clienteResult[0]?.EMAIL_CLIENTE) {
         emailCliente = clienteResult[0].EMAIL_CLIENTE;
@@ -171,7 +171,7 @@ export async function POST(request: Request) {
     if (enviarEmailRecurso) {
       const recursoResult = await firebirdQuery(
         `SELECT FIRST 1 NOME_RECURSO, EMAIL_RECURSO FROM RECURSO WHERE COD_RECURSO = ?`,
-        [codRecursoNum],
+        [codRecursoNum]
       );
       if (recursoResult[0]?.EMAIL_RECURSO) {
         emailRecurso = recursoResult[0].EMAIL_RECURSO;
@@ -197,7 +197,7 @@ export async function POST(request: Request) {
       } else {
         console.log(
           '[TEST MODE] E-mail não enviado. Destinatários:',
-          destinatarios,
+          destinatarios
         );
       }
     }
@@ -212,7 +212,7 @@ export async function POST(request: Request) {
         error: 'Erro interno ao configurar notificações',
         message: error instanceof Error ? error.message : 'Erro desconhecido',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

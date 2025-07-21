@@ -19,7 +19,7 @@ export async function GET(request: Request) {
       // Valida o parâmetro 'mes'
       return NextResponse.json(
         { error: "Parâmetro 'mes' deve ser um número entre 1 e 12" }, // Retorna erro se inválido
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       // Valida o parâmetro 'ano'
       return NextResponse.json(
         { error: "Parâmetro 'ano' deve ser um número válido" }, // Retorna erro se inválido
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
         {
           error: "Parâmetro 'codCliente' é obrigatório para usuários não admin", // Retorna erro se faltar
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -82,7 +82,7 @@ export async function GET(request: Request) {
       // Se não encontrar registros
       return NextResponse.json(
         { totalChamados: 0 }, // Retorna total 0
-        { status: 200 },
+        { status: 200 }
       );
     }
 
@@ -95,7 +95,7 @@ export async function GET(request: Request) {
     console.error('Erro ao tentar calcular o total de chamados:', error); // Loga o erro no console
     return NextResponse.json(
       { error: 'Erro interno do servidor' }, // Retorna erro 500
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

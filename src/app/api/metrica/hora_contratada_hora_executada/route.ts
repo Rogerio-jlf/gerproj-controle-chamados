@@ -32,7 +32,7 @@ export async function GET(request: Request) {
       // Valida o parâmetro 'mes'
       return NextResponse.json(
         { error: "Parâmetro 'mes' deve ser um número entre 1 e 12" }, // Retorna erro se inválido
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -40,7 +40,7 @@ export async function GET(request: Request) {
       // Valida o parâmetro 'ano'
       return NextResponse.json(
         { error: "Parâmetro 'ano' deve ser um número válido" }, // Retorna erro se inválido
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -50,7 +50,7 @@ export async function GET(request: Request) {
         {
           error: "Parâmetro 'codCliente' é obrigatório para usuários não admin", // Retorna erro se faltar
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -112,7 +112,7 @@ export async function GET(request: Request) {
     >();
 
     // Processa cada apontamento
-    apontamentos.forEach((apontamento) => {
+    apontamentos.forEach(apontamento => {
       // Itera sobre cada apontamento retornado do banco
       const codCliente = apontamento.cod_cliente || 'SEM_CODIGO'; // Usa o código do cliente ou 'SEM_CODIGO' se não existir
 
@@ -179,7 +179,7 @@ export async function GET(request: Request) {
           horasExecutadas: horasExecutadasCliente, // Horas executadas para o cliente
           totalLimmesTarefas: dados.limmes_tarefas.length, // Quantidade de tarefas com limite de horas para o cliente
         };
-      },
+      }
     );
 
     // Arredonda totais para 2 casas decimais
@@ -198,7 +198,7 @@ export async function GET(request: Request) {
         percentualExecucao:
           totalHorasContratadas > 0
             ? Math.round(
-                (totalHorasExecutadas / totalHorasContratadas) * 100 * 100,
+                (totalHorasExecutadas / totalHorasContratadas) * 100 * 100
               ) / 100
             : 0,
       },
@@ -207,7 +207,7 @@ export async function GET(request: Request) {
     console.error('Erro ao calcular horas contratadas vs executadas:', error);
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

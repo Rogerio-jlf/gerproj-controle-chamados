@@ -17,7 +17,7 @@ const options: Firebird.Options = {
 export function firebirdQuery<T = any>(
   sql: string,
   params: any[] = [],
-  testMode = false,
+  testMode = false
 ): Promise<T[]> {
   return new Promise((resolve, reject) => {
     Firebird.attach(options, (err, db) => {

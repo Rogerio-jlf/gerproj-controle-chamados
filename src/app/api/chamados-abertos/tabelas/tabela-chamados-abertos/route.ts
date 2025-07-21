@@ -16,14 +16,14 @@ export async function GET(request: Request) {
     if (!mesParam || mesParam < 1 || mesParam > 12) {
       return NextResponse.json(
         { error: "Parâmetro 'mês' inválido" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (!anoParam || anoParam < 2000 || anoParam > 3000) {
       return NextResponse.json(
         { error: "Parâmetro 'ano' inválido" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
         {
           error: "Parâmetro 'codRecurso' é obrigatório para usuários não admin",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -43,7 +43,7 @@ export async function GET(request: Request) {
     const params: any[] = [];
 
     whereConditions.push(
-      'Chamado.DATA_CHAMADO >= ? AND Chamado.DATA_CHAMADO < ?',
+      'Chamado.DATA_CHAMADO >= ? AND Chamado.DATA_CHAMADO < ?'
     );
     params.push(dataInicio);
     params.push(dataFim);
@@ -100,7 +100,7 @@ export async function GET(request: Request) {
     console.error('Erro ao tentar buscar os chamados abertos:', error);
     return NextResponse.json(
       { error: 'Erro interno no servidor' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
