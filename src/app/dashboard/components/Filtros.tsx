@@ -1,10 +1,9 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
-import { useFilters } from '@/contexts/FiltersContext';
+import { useAuth } from '@/contexts/Auth_Context';
+import { useFiltersDashboard } from '@/contexts/Filters_Dashboard_Context';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { Filter } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 
@@ -25,7 +24,7 @@ interface FiltersProps {
   }) => void;
 }
 
-// Fetchers
+// FETCH CLIENTES
 const fetchClientes = async ({ ano, mes, isAdmin, codCliente }: any) => {
   const params = new URLSearchParams({
     ano: ano.toString(),
@@ -38,6 +37,7 @@ const fetchClientes = async ({ ano, mes, isAdmin, codCliente }: any) => {
   return data;
 };
 
+// FETCH RECURSOS
 const fetchRecursos = async ({
   ano,
   mes,
@@ -58,6 +58,7 @@ const fetchRecursos = async ({
   return data;
 };
 
+// FETCH STATUS
 const fetchStatus = async ({
   ano,
   mes,
@@ -80,9 +81,9 @@ const fetchStatus = async ({
   return data;
 };
 
-export default function Filtros({ onFiltersChange }: FiltersProps) {
+export default function Filtros({}: FiltersProps) {
   const hoje = new Date();
-  const { filters, setFilters } = useFilters();
+  const { filters, setFilters } = useFiltersDashboard();
   const { isAdmin, codCliente } = useAuth();
 
   const [ano, setAno] = useState(filters.ano || hoje.getFullYear());
@@ -156,16 +157,8 @@ export default function Filtros({ onFiltersChange }: FiltersProps) {
     setStatusSelecionado('');
   }, [statusList]);
 
-  // Atualiza contexto e callback externo
   useEffect(() => {
     setFilters({
-      ano: debouncedAno,
-      mes: debouncedMes,
-      cliente: debouncedClienteSelecionado,
-      recurso: debouncedRecursoSelecionado,
-      status: debouncedStatusSelecionado,
-    });
-    onFiltersChange({
       ano: debouncedAno,
       mes: debouncedMes,
       cliente: debouncedClienteSelecionado,
@@ -178,22 +171,14 @@ export default function Filtros({ onFiltersChange }: FiltersProps) {
     debouncedClienteSelecionado,
     debouncedRecursoSelecionado,
     debouncedStatusSelecionado,
-    onFiltersChange,
     setFilters,
   ]);
 
   return (
-    <div className="mb-4">
-      {/* Filtros para desktop */}
+    <div className="">
       <div className="hidden lg:block">
         <div className="relative z-10">
-          <div className="grid grid-cols-[70px_1fr_1fr_1fr_1fr_1fr] items-end gap-2">
-            {/* Ícone de filtro fixo */}
-            <div className="flex h-[64px] w-[64px] items-center justify-center rounded-lg bg-gradient-to-br from-blue-700 via-purple-700 to-blue-700 shadow-md shadow-black">
-              <Filter className="h-8 w-8 text-white" />
-            </div>
-
-            {/* Componentes de Select */}
+          <div className="flex items-center gap-2">
             <SelectAno value={ano} onChange={setAno} />
 
             <SelectMes value={mes} onChange={setMes} />

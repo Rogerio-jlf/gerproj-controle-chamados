@@ -1,8 +1,8 @@
 'use client';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { useAuth } from '@/contexts/AuthContext';
-import { useChamadosAbertosFilters } from '@/contexts/Chamados_Abertos_Filters_Context';
+import { useAuth } from '@/contexts/Auth_Context';
+import { useFiltersTabelaChamadosAbertos } from '@/contexts/Filters_Tabela_Chamados_Abertos_Context';
 import { useQuery } from '@tanstack/react-query';
 import {
   flexRender,
@@ -26,7 +26,7 @@ async function fetchChamados(
 }
 
 export default function Tabela() {
-  const { filters } = useChamadosAbertosFilters();
+  const { filters } = useFiltersTabelaChamadosAbertos();
   const { ano, mes, cliente, recurso, status } = filters;
   const { isAdmin, codRecurso, isLoading: authLoading } = useAuth();
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/Auth_Context';
 import { formatHorasDecimalParaHHMM } from '@/functions/formatarHoras';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
@@ -16,7 +16,7 @@ interface FiltersProps {
   };
 }
 
-interface ApiResponse {
+interface ApiResponseProps {
   totalHorasContratadas: number;
   totalHorasExecutadas: number;
 }
@@ -26,7 +26,7 @@ export default function CardHorasContratadasHorasExecutadas({
 }: FiltersProps) {
   const { isAdmin, codCliente } = useAuth();
 
-  const fetchData = async (): Promise<ApiResponse> => {
+  const fetchData = async (): Promise<ApiResponseProps> => {
     const params = new URLSearchParams();
     params.append('mes', filters.mes.toString());
     params.append('ano', filters.ano.toString());
@@ -40,7 +40,7 @@ export default function CardHorasContratadasHorasExecutadas({
     if (filters.recurso) params.append('recurso', filters.recurso);
     if (filters.status) params.append('status', filters.status);
 
-    const res = await axios.get<ApiResponse>(
+    const res = await axios.get<ApiResponseProps>(
       `/api/metrica/hora_contratada_hora_executada?${params.toString()}`
     );
     return res.data;
@@ -99,104 +99,108 @@ export default function CardHorasContratadasHorasExecutadas({
   const diferenca = totalHorasExecutadas - totalHorasContratadas;
 
   const getStatusIcon = () => {
-    if (diferenca > 0.5) return <TrendingUp className="h-4 w-4" />;
-    if (diferenca < -0.5) return <TrendingDown className="h-4 w-4" />;
-    return <Minus className="h-4 w-4" />;
+    if (diferenca > 0.5)
+      return <TrendingUp className="h-7 w-7 animate-pulse" />;
+    if (diferenca < -0.5)
+      return <TrendingDown className="h-7 w-7 animate-pulse" />;
+    return <Minus className="h-7 w-7 animate-pulse" />;
   };
 
   const getThemeColors = () => {
     if (diferenca > 0.5)
       return {
-        primary: 'from-red-200 to-rose-200',
-        secondary: 'from-red-500 to-rose-500',
-        accent: 'text-red-600',
+        secondary: 'bg-red-500',
+        accent: 'text-red-800',
         border: 'border-red-200',
-        bg: 'bg-red-500',
         label: 'Excedeu',
+        bgColor: 'bg-red-200',
       };
     if (diferenca < -0.5)
       return {
-        primary: 'from-emerald-200 to-green-200',
-        secondary: 'from-emerald-50 to-green-50',
-        accent: 'text-emerald-600',
-        border: 'border-emerald-200',
-        bg: 'bg-emerald-500',
+        secondary: 'bg-green-500',
+        accent: 'text-green-800',
+        border: 'border-green-200',
         label: 'Restante',
+        bgColor: 'bg-green-200',
       };
     return {
-      primary: 'from-blue-200 to-indigo-200',
-      secondary: 'from-blue-50 to-indigo-50',
-      accent: 'text-blue-600',
+      secondary: 'bg-blue-500',
+      accent: 'text-blue-500',
       border: 'border-blue-200',
-      bg: 'bg-blue-500',
       label: 'Equilibrado',
+      bgColor: 'bg-blue-200',
     };
   };
 
   const theme = getThemeColors();
 
   return (
-    <div className="group relative h-56 overflow-hidden rounded-xl border border-gray-300 px-6 py-3 shadow-md shadow-black">
+    <div className="group relative h-60 overflow-hidden rounded-lg border border-gray-300 p-6 shadow-md shadow-black">
       <div className="relative z-10 h-full">
-        {/* Header */}
+        {/* HEADER */}
         <div className="mb-4 text-center">
-          <h3 className="text-lg font-bold text-gray-900">
+          <h3 className="text-xl font-extrabold tracking-wider text-black italic">
             Horas Contratadas x Executadas
           </h3>
         </div>
 
-        {/* Main metrics */}
+        {/* MÉTRICAS */}
         <div className="mb-4 grid grid-cols-3 gap-3">
-          <div className="text-center">
-            <div className="mb-1 text-xs font-semibold tracking-wider text-gray-500 uppercase">
+          {/* HORAS CONTRATADAS */}
+          <div className="rounded-lg bg-yellow-200 p-1 text-center">
+            <div className="text-base font-semibold tracking-wider text-yellow-800 italic">
               Contratadas
             </div>
-            <div className="text-lg font-black text-gray-800">
+            <div className="text-xl font-extrabold tracking-wider text-yellow-800">
               {formatHorasDecimalParaHHMM(totalHorasContratadas)}
             </div>
           </div>
-          <div className="text-center">
-            <div className="mb-1 text-xs font-semibold tracking-wider text-gray-500 uppercase">
+
+          {/* HORAS EXECUTADAS */}
+          <div className="rounded-lg bg-blue-200 p-1 text-center">
+            <div className="text-base font-semibold tracking-wider text-blue-800 italic">
               Executadas
             </div>
-            <div className="text-lg font-black text-gray-800">
+            <div className="text-xl font-extrabold tracking-wider text-blue-800">
               {formatHorasDecimalParaHHMM(totalHorasExecutadas)}
             </div>
           </div>
-          <div className="text-center">
+
+          {/* DIFERENÇA */}
+          <div className={`rounded-lg p-1 text-center ${theme.bgColor}`}>
             <div
-              className={`mb-1 text-xs font-semibold tracking-wider uppercase ${theme.accent}`}
+              className={`text-base font-extrabold tracking-wider italic ${theme.accent}`}
             >
               Diferença
             </div>
-            <div className={`text-lg font-black ${theme.accent}`}>
+            <div
+              className={`text-xl font-extrabold tracking-wider ${theme.accent}`}
+            >
               {diferenca > 0 ? '+' : ''}
               {formatHorasDecimalParaHHMM(Math.abs(diferenca))}
             </div>
           </div>
         </div>
 
-        {/* Progress visualization */}
-        <div className="mb-4 space-y-2">
-          <div className="flex items-center justify-between text-xs font-medium text-gray-600">
+        {/* BARRA PROGRESSO */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between text-sm font-semibold tracking-wider text-gray-700 italic">
             <span>Progresso</span>
             <span>{percentual.toFixed(0)}%</span>
           </div>
-          <div className="relative h-2 overflow-hidden rounded-full bg-gray-100">
+
+          <div className="relative h-2 overflow-hidden rounded-full bg-black">
             <div
-              className={`h-full bg-gradient-to-r ${theme.secondary} transition-all duration-1000 ease-out`}
+              className={`h-full ${theme.secondary}`}
               style={{ width: `${Math.min(percentual, 100)}%` }}
             />
-            {percentual > 100 && (
-              <div className="absolute top-0 right-0 h-full w-0.5 animate-pulse bg-red-400" />
-            )}
           </div>
         </div>
 
-        {/* Status indicator */}
+        {/* INDICADOR STATUS */}
         <div className="flex justify-center">
           <div
-            className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold ${theme.border} ${theme.accent} bg-white/60 backdrop-blur-sm`}
+            className={`inline-flex items-center gap-2 rounded-full border p-1 text-lg font-extrabold tracking-wider ${theme.border} ${theme.accent} bg-white`}
           >
             {getStatusIcon()}
             <span>
@@ -207,9 +211,6 @@ export default function CardHorasContratadasHorasExecutadas({
           </div>
         </div>
       </div>
-
-      {/* Subtle border glow */}
-      <div className={`absolute inset-0 bg-gradient-to-r ${theme.primary}`} />
     </div>
   );
 }

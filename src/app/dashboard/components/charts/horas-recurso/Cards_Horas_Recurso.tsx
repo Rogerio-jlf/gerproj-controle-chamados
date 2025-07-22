@@ -1,11 +1,10 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/Auth_Context';
 import { formatHorasDecimalParaHHMM } from '@/functions/formatarHoras';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { CircleFadingPlus, CircleX, Clock, Users2 } from 'lucide-react';
-import HeaderComponente from './Header';
 
 interface FiltersProps {
   filters: {
@@ -56,9 +55,6 @@ export default function CardsHorasRecurso({ filters }: FiltersProps) {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <HeaderComponente />
-
       {/* Cards de métricas */}
       {isLoading ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
@@ -100,21 +96,19 @@ export default function CardsHorasRecurso({ filters }: FiltersProps) {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-          {/* Total de Horas executadas */}
-          <div className="group relative min-h-[60px] overflow-hidden rounded-xl bg-gradient-to-br from-purple-300 via-slate-900 to-purple-300 p-3 shadow-md shadow-black">
+        <div className="grid grid-cols-3 gap-4">
+          {/* TOTAL HORAS EXECUTADAS */}
+          <div className="group relative min-h-[60px] overflow-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md shadow-black">
             <div className="relative flex items-center gap-4">
-              <div className="relative transition-transform duration-400">
-                <div className="relative -top-3 left-0 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-black via-purple-500 to-black">
-                  <Clock className="absolute h-6 w-6 animate-pulse text-white" />
-                </div>
+              <div className="relative -top-6 left-0 flex h-10 w-10 items-center justify-center rounded-lg bg-purple-800">
+                <Clock className="absolute h-5 w-5 animate-pulse text-white" />
               </div>
 
               <div className="flex-1">
-                <p className="mb-1 text-[13px] font-bold text-white">
-                  Total de horas executadas
+                <p className="mb-4 text-sm font-semibold tracking-wider text-black italic">
+                  QTD. de horas executadas no mês
                 </p>
-                <p className="items-center text-[22px] font-extrabold text-white italic">
+                <p className="items-center text-2xl font-extrabold text-black italic">
                   {formatHorasDecimalParaHHMM(data.totalHorasExecutadas)}
                 </p>
               </div>
@@ -122,19 +116,17 @@ export default function CardsHorasRecurso({ filters }: FiltersProps) {
           </div>
 
           {/* Número de Recursos */}
-          <div className="group relative min-h-[60px] overflow-hidden rounded-xl bg-gradient-to-br from-teal-300 via-slate-900 to-teal-300 p-3 shadow-md shadow-black">
-            {/* Background effects */}
+          <div className="group relative min-h-[60px] overflow-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md shadow-black">
             <div className="relative flex items-center gap-4">
-              <div className="relative transition-transform duration-400">
-                <div className="relative -top-3 left-0 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-black via-teal-500 to-black">
-                  <Users2 className="absolute h-6 w-6 animate-pulse text-white" />
-                </div>
+              <div className="relative -top-6 left-0 flex h-10 w-10 items-center justify-center rounded-lg bg-purple-800">
+                <Users2 className="absolute h-5 w-5 animate-pulse text-white" />
               </div>
+
               <div className="flex-1">
-                <p className="mb-1 text-[13px] font-bold text-white">
-                  Total de recursos utilizados
+                <p className="mb-4 text-sm font-semibold tracking-wider text-black italic">
+                  Número de recursos utilizados
                 </p>
-                <p className="items-center text-[22px] font-extrabold text-white italic">
+                <p className="items-center text-2xl font-extrabold text-black italic">
                   {data.numeroDeRecursos}
                 </p>
               </div>
@@ -142,18 +134,17 @@ export default function CardsHorasRecurso({ filters }: FiltersProps) {
           </div>
 
           {/* Média por Recurso */}
-          <div className="group relative min-h-[60px] overflow-hidden rounded-xl bg-gradient-to-br from-pink-300 via-slate-600 to-pink-300 p-3 shadow-md shadow-black">
+          <div className="group relative min-h-[60px] overflow-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md shadow-black">
             <div className="relative flex items-center gap-4">
-              <div className="relative transition-transform duration-400">
-                <div className="relative -top-5 left-0 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-black via-pink-500 to-black">
-                  <CircleFadingPlus className="absolute h-6 w-6 animate-pulse text-white" />
-                </div>
+              <div className="relative -top-6 left-0 flex h-10 w-10 items-center justify-center rounded-lg bg-purple-800">
+                <CircleFadingPlus className="absolute h-5 w-5 animate-pulse text-white" />
               </div>
+
               <div className="flex-1">
-                <p className="mb-1 text-sm font-bold text-white italic">
+                <p className="mb-4 text-sm font-semibold tracking-wider text-black italic">
                   Média de horas por recurso
                 </p>
-                <p className="items-center text-2xl font-extrabold text-white italic">
+                <p className="items-center text-2xl font-extrabold text-black italic">
                   {formatHorasDecimalParaHHMM(data.mediaHorasPorCliente)}
                 </p>
               </div>

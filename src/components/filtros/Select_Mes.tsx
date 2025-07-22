@@ -5,7 +5,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CalendarDays } from 'lucide-react';
+import { Filter } from 'lucide-react';
+import { Label } from '../ui/label';
 
 interface SelectMesProps {
   value: number;
@@ -13,7 +14,7 @@ interface SelectMesProps {
 }
 
 export default function SelectMes({ value, onChange }: SelectMesProps) {
-  const months = [
+  const arrayMeses = [
     'Janeiro',
     'Fevereiro',
     'Março',
@@ -30,26 +31,27 @@ export default function SelectMes({ value, onChange }: SelectMesProps) {
 
   return (
     <div className="group w-full">
-      <label className="mb-2 flex items-center space-x-2 text-base font-bold text-black">
-        <CalendarDays className="h-5 w-5" />
-        <span>Mês</span>
-      </label>
+      <Label className="mb-1 flex items-center gap-2 text-xl font-semibold tracking-wider text-black italic">
+        <Filter className="h-7 w-7" />
+        Ano
+      </Label>
 
       <Select
         value={value.toString()}
         onValueChange={val => onChange(Number(val))}
       >
-        <SelectTrigger className="w-full cursor-pointer rounded-lg border border-gray-300 bg-white p-2 text-base font-semibold text-black shadow-md shadow-black transition-all duration-200 hover:border-purple-500 hover:shadow-lg hover:shadow-black focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none active:scale-90 data-[state=open]:border-purple-500 data-[state=open]:ring-1 data-[state=open]:ring-purple-500">
+        <SelectTrigger className="w-full cursor-pointer rounded-lg bg-white p-4 text-lg font-semibold tracking-wider text-black shadow-md shadow-black hover:shadow-lg hover:shadow-black">
           <SelectValue placeholder="Selecione o mês" />
         </SelectTrigger>
-        <SelectContent className="z-50 rounded-lg border border-gray-300 bg-white p-1 shadow-lg shadow-black/20">
-          {months.map((monthName, i) => (
+
+        <SelectContent className="z-50 rounded-lg bg-white p-2 shadow-md shadow-black">
+          {arrayMeses.map((mes, i) => (
             <SelectItem
               key={i}
               value={(i + 1).toString()}
-              className="cursor-pointer rounded-md px-3 py-2 text-base font-semibold text-black transition-colors duration-150 hover:bg-gray-100 focus:bg-purple-500 focus:text-white data-[highlighted]:bg-purple-500 data-[highlighted]:text-white"
+              className="cursor-pointer rounded-lg p-4 text-lg font-semibold tracking-wider text-black transition-colors duration-150 hover:bg-gray-100 focus:bg-purple-500 focus:text-white data-[highlighted]:bg-purple-500 data-[highlighted]:text-white"
             >
-              {monthName}
+              {mes}
             </SelectItem>
           ))}
         </SelectContent>

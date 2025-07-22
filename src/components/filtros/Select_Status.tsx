@@ -5,7 +5,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { BarChart3, Loader2 } from 'lucide-react';
+import { Filter, Loader2 } from 'lucide-react';
+import { Label } from '../ui/label';
 
 interface SelectStatusProps {
   value: string;
@@ -46,19 +47,27 @@ export default function SelectStatus({
   isLoading,
   disabled = false,
 }: SelectStatusProps) {
+  const handleChange = (val: string) => {
+    if (val === 'all') {
+      onChange('');
+    } else {
+      onChange(val);
+    }
+  };
+
   return (
     <div className="group w-full">
-      <label className="mb-2 flex items-center space-x-2 text-base font-bold text-black">
-        <BarChart3 className="h-5 w-5" />
-        <span>Status</span>
-      </label>
+      <Label className="mb-1 flex items-center gap-2 text-xl font-semibold tracking-wider text-black italic">
+        <Filter className="h-7 w-7" />
+        Status
+      </Label>
 
       <Select
-        value={value}
-        onValueChange={onChange}
+        value={value || 'all'}
+        onValueChange={handleChange}
         disabled={disabled || !statusList.length || isLoading}
       >
-        <SelectTrigger className="w-full cursor-pointer rounded-lg border border-gray-300 bg-white p-2 text-base font-semibold text-black shadow-md shadow-black transition-all duration-200 hover:border-purple-500 hover:shadow-lg hover:shadow-black focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none active:scale-90 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-gray-300 disabled:hover:shadow-md disabled:active:scale-100 data-[state=open]:border-purple-500 data-[state=open]:ring-1 data-[state=open]:ring-purple-500">
+        <SelectTrigger className="w-full cursor-pointer rounded-lg bg-white p-4 text-lg font-semibold tracking-wider text-black shadow-md shadow-black hover:shadow-lg hover:shadow-black">
           <SelectValue
             placeholder={
               isLoading ? (
@@ -74,18 +83,20 @@ export default function SelectStatus({
             }
           />
         </SelectTrigger>
-        <SelectContent className="z-50 rounded-lg border border-gray-300 bg-white p-1 shadow-lg shadow-black/20">
+
+        <SelectContent className="z-50 rounded-lg bg-white p-2 shadow-md shadow-black">
           <SelectItem
             value="all"
-            className="cursor-pointer rounded-md px-3 py-2 text-base font-semibold text-black transition-colors duration-150 hover:bg-gray-100 focus:bg-purple-500 focus:text-white data-[highlighted]:bg-purple-500 data-[highlighted]:text-white"
+            className="cursor-pointer rounded-lg p-4 text-lg font-semibold tracking-wider text-black transition-colors duration-150 hover:bg-gray-100 focus:bg-purple-500 focus:text-white data-[highlighted]:bg-purple-500 data-[highlighted]:text-white"
           >
             Todos status
           </SelectItem>
+
           {statusList.map(status => (
             <SelectItem
               key={status}
               value={status}
-              className="cursor-pointer rounded-md px-3 py-2 text-base font-semibold text-black transition-colors duration-150 hover:bg-gray-100 focus:bg-purple-500 focus:text-white data-[highlighted]:bg-purple-500 data-[highlighted]:text-white"
+              className="cursor-pointer rounded-lg p-4 text-lg font-semibold tracking-wider text-black transition-colors duration-150 hover:bg-gray-100 focus:bg-purple-500 focus:text-white data-[highlighted]:bg-purple-500 data-[highlighted]:text-white"
             >
               {status}
             </SelectItem>

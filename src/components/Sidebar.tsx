@@ -1,4 +1,4 @@
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/Auth_Context';
 import {
   BarChart3,
   LayoutDashboard,
@@ -166,21 +166,21 @@ export default function Sidebar({
       label: 'Dashboard',
       icon: LayoutDashboard,
       variant: 'primary' as const,
-      path: '/testes',
+      path: '/dashboard',
     },
     {
       id: 'called',
       label: 'Chamados',
       icon: BarChart3,
       variant: 'primary' as const,
-      path: '/testes/tabela-chamados',
+      path: '/tabela-chamados',
     },
     {
       id: 'called-abertos',
       label: 'Chamados Abertos',
       icon: BarChart3,
       variant: 'primary' as const,
-      path: '/testes/tabela-chamados-abertos',
+      path: '/tabela-chamados-abertos',
     },
     {
       id: 'users',

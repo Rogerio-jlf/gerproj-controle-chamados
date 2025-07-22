@@ -1,9 +1,9 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/Auth_Context';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { CircleX, Database, DatabaseBackup } from 'lucide-react';
+import { CircleX, Database } from 'lucide-react';
 import {
   Bar,
   BarChart,
@@ -344,18 +344,6 @@ export default function ChartHorasRecurso({ filters }: FiltersProps) {
             </ResponsiveContainer>
           </div>
         )}
-      </div>
-
-      {/* Footer com informações adicionais */}
-      <div className="relative z-10 border-t border-gray-900 pt-2">
-        <div className="flex items-center justify-between text-sm text-gray-600">
-          <div className="flex items-center gap-2">
-            <DatabaseBackup className="h-8 w-8 animate-pulse text-gray-600" />
-            <span className="font-semibold">
-              Dados atualizados em tempo real
-            </span>
-          </div>
-        </div>
       </div>
     </div>
   );

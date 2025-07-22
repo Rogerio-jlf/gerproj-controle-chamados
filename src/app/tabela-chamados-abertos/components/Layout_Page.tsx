@@ -4,7 +4,7 @@ import Filtros from '@/app/tabela-chamados-abertos/components/Filtros';
 import Tabela from '@/app/tabela-chamados-abertos/components/Tabela';
 import ProtecaoRotas from '@/components/ProtecaoRotas';
 import Sidebar from '@/components/Sidebar';
-import { ChamadosAbertosFiltersProvider } from '@/contexts/Chamados_Abertos_Filters_Context';
+import { FiltersTabelaChamadosAbertosProvider } from '@/contexts/Filters_Tabela_Chamados_Abertos_Context';
 import { useState } from 'react';
 
 export default function LayoutPage() {
@@ -30,7 +30,7 @@ export default function LayoutPage() {
 
   return (
     <ProtecaoRotas>
-      <ChamadosAbertosFiltersProvider>
+      <FiltersTabelaChamadosAbertosProvider>
         <div className="flex h-screen w-screen overflow-hidden bg-gray-50">
           <Sidebar
             collapsed={collapsed}
@@ -54,7 +54,7 @@ export default function LayoutPage() {
             </div>
           </main>
         </div>
-      </ChamadosAbertosFiltersProvider>
+      </FiltersTabelaChamadosAbertosProvider>
     </ProtecaoRotas>
   );
 }

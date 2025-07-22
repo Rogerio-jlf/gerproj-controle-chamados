@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/Auth_Context';
 import { corrigirTextoCorrompido } from '@/utils/corrigirTextoCorrompido';
 import { useQuery } from '@tanstack/react-query';
 import {

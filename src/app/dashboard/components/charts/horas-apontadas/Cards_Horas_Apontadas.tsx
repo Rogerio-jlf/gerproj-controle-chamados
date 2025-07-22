@@ -1,11 +1,10 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/Auth_Context';
 import { formatHorasDecimalParaHHMM } from '@/functions/formatarHoras';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { CircleX, Clock, Users } from 'lucide-react';
-import HeaderComponente from './Header';
+import { Calendar, CircleFadingPlus, CircleX, Clock } from 'lucide-react';
 
 interface FiltersProps {
   filters: {
@@ -72,8 +71,6 @@ export default function CardsHoraApontadas({ filters }: FiltersProps) {
 
   return (
     <div className="space-y-4">
-      <HeaderComponente />
-
       {isLoading ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
           {[1, 2, 3].map(index => (
@@ -114,61 +111,55 @@ export default function CardsHoraApontadas({ filters }: FiltersProps) {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-          {/* Total de Horas executadas */}
-          <div className="group relative min-h-[60px] overflow-hidden rounded-xl bg-gradient-to-br from-blue-300 via-slate-600 to-blue-300 p-3 shadow-md shadow-black">
+        <div className="grid grid-cols-3 gap-4">
+          {/* TOTAL HORAS EXECUTADAS */}
+          <div className="group relative min-h-[60px] overflow-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md shadow-black">
             <div className="relative flex items-center gap-4">
-              <div className="relative transition-transform duration-400">
-                <div className="relative -top-5 left-0 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-black via-blue-500 to-black">
-                  <Clock className="absolute h-6 w-6 animate-pulse text-white" />
-                </div>
+              <div className="relative -top-6 left-0 flex h-10 w-10 items-center justify-center rounded-lg bg-purple-800">
+                <Clock className="absolute h-5 w-5 animate-pulse text-white" />
               </div>
 
               <div className="flex-1">
-                <p className="mb-1 text-sm font-bold text-white">
-                  Total de horas executadas
+                <p className="mb-4 text-sm font-semibold tracking-wider text-black italic">
+                  QTD. de horas executadas no ano
                 </p>
-                <p className="items-center text-2xl font-extrabold text-white italic">
+                <p className="items-center text-2xl font-extrabold text-black italic">
                   {formatHorasDecimalParaHHMM(totalHoras)}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Número de Recursos (meses com dados) */}
-          <div className="group relative min-h-[60px] overflow-hidden rounded-xl bg-gradient-to-br from-yellow-300 via-slate-600 to-yellow-300 p-3 shadow-md shadow-black">
+          {/* NÚMERO MESES DADOS */}
+          <div className="group relative min-h-[60px] overflow-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md shadow-black">
             <div className="relative flex items-center gap-4">
-              <div className="relative transition-transform duration-400">
-                <div className="relative -top-5 left-0 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-black via-yellow-500 to-black">
-                  <Users className="absolute h-6 w-6 animate-pulse text-white" />
-                </div>
+              <div className="relative -top-6 left-0 flex h-10 w-10 items-center justify-center rounded-lg bg-purple-800">
+                <Calendar className="absolute h-5 w-5 animate-pulse text-white" />
               </div>
 
               <div className="flex-1">
-                <p className="mb-1 text-sm font-bold text-white italic">
-                  Total de recursos utilizados
+                <p className="mb-4 text-sm font-semibold tracking-wider text-black italic">
+                  Número de meses com dados
                 </p>
-                <p className="items-center text-2xl font-extrabold text-white italic">
+                <p className="items-center text-2xl font-extrabold text-black italic">
                   {mesesComDados}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Média de Horas */}
-          <div className="group relative min-h-[60px] overflow-hidden rounded-xl bg-gradient-to-br from-lime-300 via-slate-600 to-lime-300 p-3 shadow-md shadow-black">
+          {/* MÉDIA HORAS MÊS */}
+          <div className="group relative min-h-[60px] overflow-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md shadow-black">
             <div className="relative flex items-center gap-4">
-              <div className="relative transition-transform duration-400">
-                <div className="relative -top-5 left-0 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-black via-lime-500 to-black">
-                  <Clock className="absolute h-6 w-6 animate-pulse text-white" />
-                </div>
+              <div className="relative -top-6 left-0 flex h-10 w-10 items-center justify-center rounded-lg bg-purple-800">
+                <CircleFadingPlus className="absolute h-5 w-5 animate-pulse text-white" />
               </div>
 
               <div className="flex-1">
-                <p className="mb-1 text-sm font-bold text-white italic">
+                <p className="mb-4 text-sm font-semibold tracking-wider text-black italic">
                   Média de horas por mês
                 </p>
-                <p className="items-center text-2xl font-extrabold text-white italic">
+                <p className="items-center text-2xl font-extrabold text-black italic">
                   {formatHorasDecimalParaHHMM(mediaHoras)}
                 </p>
               </div>

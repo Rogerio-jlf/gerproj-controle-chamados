@@ -5,7 +5,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, User } from 'lucide-react';
+import { Filter, Loader2 } from 'lucide-react';
+import { Label } from '../ui/label';
 
 interface SelectClienteProps {
   value: string;
@@ -46,18 +47,27 @@ export default function SelectCliente({
   isLoading,
   disabled = false,
 }: SelectClienteProps) {
+  const handleChange = (val: string) => {
+    if (val === 'all') {
+      onChange('');
+    } else {
+      onChange(val);
+    }
+  };
+
   return (
     <div className="group w-full">
-      <label className="mb-2 flex items-center space-x-2 text-base font-bold text-black">
-        <User className="h-5 w-5" />
-        <span>Cliente</span>
-      </label>
+      <Label className="mb-1 flex items-center gap-2 text-xl font-semibold tracking-wider text-black italic">
+        <Filter className="h-7 w-7" />
+        Clientes
+      </Label>
+
       <Select
-        value={value}
-        onValueChange={onChange}
-        disabled={disabled || !clientes.length}
+        value={value || 'all'}
+        onValueChange={handleChange}
+        disabled={disabled || !clientes.length || isLoading}
       >
-        <SelectTrigger className="w-full cursor-pointer rounded-lg border border-gray-300 bg-white p-2 text-base font-semibold text-black shadow-md shadow-black transition-all duration-200 hover:border-purple-500 hover:shadow-lg hover:shadow-black focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none active:scale-90 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-gray-300 disabled:hover:shadow-md disabled:active:scale-100 data-[state=open]:border-purple-500 data-[state=open]:ring-1 data-[state=open]:ring-purple-500">
+        <SelectTrigger className="w-full cursor-pointer rounded-lg bg-white p-4 text-lg font-semibold tracking-wider text-black shadow-md shadow-black hover:shadow-lg hover:shadow-black">
           <SelectValue
             placeholder={
               isLoading ? (
@@ -73,18 +83,20 @@ export default function SelectCliente({
             }
           />
         </SelectTrigger>
-        <SelectContent className="z-50 rounded-lg border border-gray-300 bg-white p-1 shadow-lg shadow-black/20">
+
+        <SelectContent className="z-50 rounded-lg bg-white p-2 shadow-md shadow-black">
           <SelectItem
             value="all"
-            className="cursor-pointer rounded-md px-3 py-2 text-base font-semibold text-black transition-colors duration-150 hover:bg-gray-100 focus:bg-purple-500 focus:text-white data-[highlighted]:bg-purple-500 data-[highlighted]:text-white"
+            className="cursor-pointer rounded-lg p-4 text-lg font-semibold tracking-wider text-black transition-colors duration-150 hover:bg-gray-100 focus:bg-purple-500 focus:text-white data-[highlighted]:bg-purple-500 data-[highlighted]:text-white"
           >
             Todos clientes
           </SelectItem>
+
           {clientes.map(nomeCliente => (
             <SelectItem
               key={nomeCliente}
               value={nomeCliente}
-              className="cursor-pointer rounded-md px-3 py-2 text-base font-semibold text-black transition-colors duration-150 hover:bg-gray-100 focus:bg-purple-500 focus:text-white data-[highlighted]:bg-purple-500 data-[highlighted]:text-white"
+              className="cursor-pointer rounded-lg p-4 text-lg font-semibold tracking-wider text-black transition-colors duration-150 hover:bg-gray-100 focus:bg-purple-500 focus:text-white data-[highlighted]:bg-purple-500 data-[highlighted]:text-white"
             >
               {nomeCliente}
             </SelectItem>

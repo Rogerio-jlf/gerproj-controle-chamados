@@ -1,7 +1,7 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
-import { useChamadosAbertosFilters } from '@/contexts/Chamados_Abertos_Filters_Context';
+import { useAuth } from '@/contexts/Auth_Context';
+import { useFiltersTabelaChamadosAbertos } from '@/contexts/Filters_Tabela_Chamados_Abertos_Context';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -88,7 +88,7 @@ const fetchStatus = async ({
 
 export default function Filtros({ onFiltersChange }: FiltersProps) {
   const hoje = new Date();
-  const { filters, setFilters } = useChamadosAbertosFilters();
+  const { filters, setFilters } = useFiltersTabelaChamadosAbertos();
   const { isAdmin, codRecurso } = useAuth();
 
   // Estados locais

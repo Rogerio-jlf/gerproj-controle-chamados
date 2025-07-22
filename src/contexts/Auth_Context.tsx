@@ -8,25 +8,27 @@ import {
   useState,
 } from 'react';
 
-type UserData = {
+// Define a interface para o estado do usuário
+interface UserProps {
   isAdmin: boolean;
   codCliente: string | null;
   codRecurso: string | null;
   nomeRecurso: string | null;
-};
+}
 
-type AuthContextType = {
+// Define a interface para o contexto de autenticação
+interface AuthContextProps {
   isLoggedIn: boolean;
   isLoading: boolean;
   isAdmin: boolean;
   codCliente: string | null;
   codRecurso: string | null;
   nomeRecurso: string | null;
-  login: (email: string, password: string) => Promise<UserData | null>;
+  login: (email: string, password: string) => Promise<UserProps | null>;
   logout: () => void;
-};
+}
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -59,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (
     email: string,
     password: string
-  ): Promise<UserData | null> => {
+  ): Promise<UserProps | null> => {
     try {
       const res = await fetch('/api/login', {
         method: 'POST',
@@ -70,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        const userData: UserData = {
+        const userData: UserProps = {
           isAdmin: data.isAdmin ?? false,
           codCliente: data.codCliente ?? null,
           codRecurso: data.codRecOS ?? null,

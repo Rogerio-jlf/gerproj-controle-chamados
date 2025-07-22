@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/Auth_Context';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { CircleX } from 'lucide-react';
@@ -15,14 +15,14 @@ interface FilterProps {
   };
 }
 
-interface ApiResponse {
+interface ApiResponseProps {
   totalChamados: number;
 }
 
 export default function CardTotalChamados({ filters }: FilterProps) {
   const { isAdmin, codCliente } = useAuth();
 
-  const fetchData = async (): Promise<ApiResponse> => {
+  const fetchData = async (): Promise<ApiResponseProps> => {
     const params = new URLSearchParams();
     params.append('mes', filters.mes.toString());
     params.append('ano', filters.ano.toString());
@@ -36,7 +36,7 @@ export default function CardTotalChamados({ filters }: FilterProps) {
     if (filters.recurso) params.append('recurso', filters.recurso);
     if (filters.status) params.append('status', filters.status);
 
-    const res = await axios.get<ApiResponse>(
+    const res = await axios.get<ApiResponseProps>(
       `/api/metrica/total_chamados?${params.toString()}`
     );
     return res.data;
@@ -88,21 +88,19 @@ export default function CardTotalChamados({ filters }: FilterProps) {
   }
 
   return (
-    <div className="group relative h-56 overflow-hidden rounded-lg border border-gray-400 p-6 shadow-md shadow-black">
+    <div className="group relative h-60 overflow-hidden rounded-lg border border-gray-300 p-6 shadow-md shadow-black">
       <div className="relative z-10 h-full">
-        {/* Conteúdo centralizado */}
-        <div className="flex h-full flex-col items-center justify-center text-center">
-          <h3 className="mb-4 text-xl font-bold text-gray-700">
-            Total de Chamados
+        <div className="flex h-full flex-col items-center justify-center space-y-2 text-center">
+          {/* HEADER */}
+          <h3 className="text-xl font-extrabold tracking-wider text-black italic">
+            Total Chamados
           </h3>
-          <div className="text-6xl font-black text-purple-800 italic">
+          {/* TOTAL CHAMADOS */}
+          <div className="text-7xl font-extrabold tracking-wider text-black">
             {data.totalChamados.toLocaleString('pt-BR')}
           </div>
         </div>
       </div>
-
-      {/* Subtle border glow */}
-      <div className="absolute inset-0 bg-white" />
     </div>
   );
 }

@@ -2,9 +2,9 @@
 
 import Filtros from '@/app/dashboard/components/Filtros';
 import Sidebar from '@/components/Sidebar';
-import { useAuth } from '@/contexts/AuthContext';
-import { useFilters } from '@/contexts/FiltersContext';
-import { useCallback, useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/Auth_Context';
+import { useFiltersDashboard } from '@/contexts/Filters_Dashboard_Context';
+import { useCallback, useState } from 'react';
 import CardHorasContratadasHorasExecutadas from './cards/Card_Horas_Contratadas_vs_Horas_Executadas';
 import CardMediaHorasChamado from './cards/Card_Media_Horas_Chamado';
 import CardTotalChamados from './cards/Card_Total_Chamados';
@@ -12,12 +12,20 @@ import CardsHorasApontadas from './charts/horas-apontadas/Cards_Horas_Apontadas'
 import ChartHorasApontadas from './charts/horas-apontadas/Chart_Horas_Apontadas';
 import CardsHorasRecurso from './charts/horas-recurso/Cards_Horas_Recurso';
 import ChartHorasRecurso from './charts/horas-recurso/Chart_Horas_Recurso';
+import ProtecaoRotas from '../../../components/ProtecaoRotas';
+import Footer from './Footer';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from '../../../components/ui/card';
+import Header from './Header';
 
 export default function LayoutDashboard() {
   const { isAdmin, codCliente } = useAuth();
-  const { filters, setFilters } = useFilters();
+  const { filters, setFilters } = useFiltersDashboard();
   const [collapsed, setCollapsed] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
 
   const handleFiltersChange = useCallback(
     (newFilters: typeof filters) => {
@@ -32,121 +40,127 @@ export default function LayoutDashboard() {
   const handleToggleSidebar = () => setCollapsed(prev => !prev);
 
   const handleLogout = () => {
-    console.log('logout');
-    // Aqui você pode chamar sua função de logout do AuthContext
+    window.location.href = '/login';
   };
 
-  // Detecta o scroll para aplicar efeitos visuais
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      setIsScrolled(scrollTop > 20);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <Sidebar
-        collapsed={collapsed}
-        onToggle={handleToggleSidebar}
-        onLogout={handleLogout}
-      />
-      {/* -------------------- */}
+    <ProtecaoRotas>
+      <div className="flex h-screen w-screen overflow-hidden">
+        {/* SIDEBAR */}
+        <Sidebar
+          collapsed={collapsed}
+          onToggle={handleToggleSidebar}
+          onLogout={handleLogout}
+        />
 
-      {/* Conteúdo principal */}
-      <main
-        className={`flex-1 transition-all duration-300 ease-in-out ${
-          collapsed ? 'ml-20' : 'ml-80'
-        }`}
-      >
-        {/* Filtros */}
-        <div
-          className={`sticky top-0 z-30 transition-all duration-300 ease-in-out ${
-            isScrolled ? 'bg-white shadow-sm shadow-black' : 'bg-gray-100'
-          }`}
+        <main
+          className={`flex flex-1 flex-col space-y-6 overflow-auto transition-all duration-300 ${
+            collapsed ? 'ml-20' : 'ml-80'
+          } p-4`}
         >
-          <div
-            className={`px-8 transition-all duration-300 ${isScrolled ? 'py-2' : 'py-6'}`}
-          >
-            <div className="group relative w-full">
-              {/* Container dos filtros com transições suaves */}
-              <div
-                className={`relative transition-all duration-300 ${
-                  isScrolled
-                    ? 'scale-[0.95] transform rounded-xl bg-white p-4'
-                    : 'rounded-lg bg-white p-4 shadow-sm shadow-black'
-                }`}
-              >
-                <Filtros onFiltersChange={handleFiltersChange} />
-              </div>
-            </div>
+          {/* HEADER */}
+          <header className="flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-5xl font-bold tracking-wider text-black italic">
+              Dashboard
+            </h2>
+          </header>
+
+          {/* FILTROS */}
+          <div className="max-w-full">
+            <Filtros onFiltersChange={handleFiltersChange} />
           </div>
 
-          {/* Indicador visual de scroll ativo */}
-          {isScrolled && (
-            <div className="absolute bottom-0 left-1/2 h-1 w-40 -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-violet-500" />
-          )}
-        </div>
-
-        {/* Conteúdo com padding adequado */}
-        <div className="px-8 pb-8">
-          {/* Cards principais */}
-          <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <CardTotalChamados filters={filters} />
-            <CardHorasContratadasHorasExecutadas filters={filters} />
-            <CardMediaHorasChamado filters={filters} />
-          </div>
-
-          {/* Gráficos */}
-          <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div className="group relative w-full">
-              <div className="relative min-h-70 rounded-lg border border-gray-300 bg-white p-6 shadow-md shadow-black">
-                <div className="space-y-6">
-                  <CardsHorasRecurso
-                    filters={{
-                      ...filters,
-                      mes: filters.mes?.toString() ?? '',
-                      ano: filters.ano?.toString() ?? '',
-                    }}
-                  />
-                  <ChartHorasRecurso
-                    filters={{
-                      ...filters,
-                      mes: filters.mes?.toString() ?? '',
-                      ano: filters.ano?.toString() ?? '',
-                    }}
-                  />
-                </div>
-              </div>
+          <div className="space-y-6">
+            {/* MÉTRICAS PRINCIPAIS */}
+            <div className="grid grid-cols-3 gap-6">
+              <CardTotalChamados filters={filters} />
+              <CardHorasContratadasHorasExecutadas filters={filters} />
+              <CardMediaHorasChamado filters={filters} />
             </div>
+            {/* ---------- */}
 
-            <div className="group relative w-full">
-              <div className="relative min-h-70 rounded-lg border border-gray-300 bg-white p-6 shadow-md shadow-black">
-                <div className="space-y-6">
-                  <CardsHorasApontadas
-                    filters={{
-                      ...filters,
-                      mes: filters.mes?.toString() ?? '',
-                      ano: filters.ano?.toString() ?? '',
-                    }}
-                  />
-                  <ChartHorasApontadas
-                    filters={{
-                      ...filters,
-                      mes: filters.mes?.toString() ?? '',
-                      ano: filters.ano?.toString() ?? '',
-                    }}
-                  />
-                </div>
+            <div className="grid grid-cols-2 gap-6 space-y-6">
+              {/* CARDS RECURSOS / GRÁFICO RECURSOS */}
+              <div className="group relative w-full">
+                <Card className="relative rounded-lg border border-gray-300 bg-white p-6 shadow-md shadow-black">
+                  {/* HEADER */}
+                  <CardHeader className="p-0">
+                    <Header
+                      titulo="Horas Recurso"
+                      subtitulo="Distribuição das horas por recurso ao longo do mês"
+                    />
+                  </CardHeader>
+
+                  {/* CARDS E GRÁFICO */}
+                  <CardContent className="space-y-6 p-0">
+                    <CardsHorasRecurso
+                      filters={{
+                        ...filters,
+                        mes: filters.mes?.toString() ?? '',
+                        ano: filters.ano?.toString() ?? '',
+                      }}
+                    />
+
+                    <ChartHorasRecurso
+                      filters={{
+                        ...filters,
+                        mes: filters.mes?.toString() ?? '',
+                        ano: filters.ano?.toString() ?? '',
+                      }}
+                    />
+                  </CardContent>
+
+                  {/* FOOTER */}
+                  <CardFooter className="p-0 pt-4">
+                    <Footer />
+                  </CardFooter>
+                </Card>
               </div>
+              {/* ---------- */}
+
+              {/* CARDS HORAS APONTADAS / GRÁFICO HORAS APONTADAS */}
+              <div className="group relative w-full">
+                <Card className="relative rounded-lg border border-gray-300 bg-white p-6 shadow-md shadow-black">
+                  {/* HEADER */}
+                  <CardHeader className="p-0">
+                    <Header
+                      titulo="Horas Apontadas"
+                      subtitulo="Distribuição das horas apontadas ao longo do ano"
+                    />
+                  </CardHeader>
+
+                  {/* CARDS E GRÁFICO */}
+                  <CardContent className="space-y-6 p-0">
+                    <CardsHorasApontadas
+                      filters={{
+                        ...filters,
+                        mes: filters.mes?.toString() ?? '',
+                        ano: filters.ano?.toString() ?? '',
+                      }}
+                    />
+
+                    <ChartHorasApontadas
+                      filters={{
+                        ...filters,
+                        mes: filters.mes?.toString() ?? '',
+                        ano: filters.ano?.toString() ?? '',
+                      }}
+                    />
+                  </CardContent>
+
+                  {/* FOOTER */}
+                  <CardFooter className="p-0 pt-4">
+                    <Footer />
+                  </CardFooter>
+                </Card>
+              </div>
+              {/* ---------- */}
+              {/* ---------- */}
             </div>
+            {/* ---------- */}
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </ProtecaoRotas>
   );
 }

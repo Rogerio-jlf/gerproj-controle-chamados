@@ -1,7 +1,7 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
-import { useFilters } from '@/contexts/FiltersContext';
+import { useAuth } from '@/contexts/Auth_Context';
+import { useFiltersDashboard } from '@/contexts/Filters_Dashboard_Context';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { Filter } from 'lucide-react';
@@ -82,7 +82,7 @@ const fetchStatus = async ({
 
 export default function Filtros({ onFiltersChange }: FiltersProps) {
   const hoje = new Date();
-  const { filters, setFilters } = useFilters();
+  const { filters, setFilters } = useFiltersDashboard();
   const { isAdmin, codCliente } = useAuth();
 
   const [ano, setAno] = useState(filters.ano || hoje.getFullYear());
@@ -165,20 +165,12 @@ export default function Filtros({ onFiltersChange }: FiltersProps) {
       recurso: debouncedRecursoSelecionado,
       status: debouncedStatusSelecionado,
     });
-    onFiltersChange({
-      ano: debouncedAno,
-      mes: debouncedMes,
-      cliente: debouncedClienteSelecionado,
-      recurso: debouncedRecursoSelecionado,
-      status: debouncedStatusSelecionado,
-    });
   }, [
     debouncedAno,
     debouncedMes,
     debouncedClienteSelecionado,
     debouncedRecursoSelecionado,
     debouncedStatusSelecionado,
-    onFiltersChange,
     setFilters,
   ]);
 

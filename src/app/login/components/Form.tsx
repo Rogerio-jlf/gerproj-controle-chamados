@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/Auth_Context';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import EmailField from './Email';

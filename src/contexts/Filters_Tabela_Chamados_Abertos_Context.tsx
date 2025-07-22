@@ -3,7 +3,7 @@
 import { createContext, useContext, useState } from 'react';
 
 // Define a interface para o estado dos filtros de chamados abertos
-interface ChamadosAbertosFiltersState {
+interface FiltersProps {
   ano: number;
   mes: number;
   cliente: string;
@@ -12,19 +12,19 @@ interface ChamadosAbertosFiltersState {
 }
 
 // Define a interface para o contexto dos filtros de chamados abertos
-interface ChamadosAbertosFiltersContextType {
-  filters: ChamadosAbertosFiltersState;
-  setFilters: (filters: ChamadosAbertosFiltersState) => void;
+interface FiltersContextProps {
+  filters: FiltersProps;
+  setFilters: (filters: FiltersProps) => void;
   clearFilters: () => void;
 }
 
 // Cria o contexto dos filtros de chamados abertos, inicialmente indefinido
-const ChamadosAbertosFiltersContext = createContext<
-  ChamadosAbertosFiltersContextType | undefined
+const FiltersTabelaChamadosAbertosContext = createContext<
+  FiltersContextProps | undefined
 >(undefined);
 
 // Função auxiliar para obter o estado inicial dos filtros (ano e mês atuais)
-const getInitialFilters = (): ChamadosAbertosFiltersState => {
+const getInitialFilters = (): FiltersProps => {
   const hoje = new Date();
   return {
     ano: hoje.getFullYear(),
@@ -36,34 +36,33 @@ const getInitialFilters = (): ChamadosAbertosFiltersState => {
 };
 
 // Componente provedor do contexto dos filtros de chamados abertos
-export function ChamadosAbertosFiltersProvider({
+export function FiltersTabelaChamadosAbertosProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
   // Estado dos filtros e função para atualizá-lo
-  const [filters, setFilters] =
-    useState<ChamadosAbertosFiltersState>(getInitialFilters());
+  const [filters, setFilters] = useState<FiltersProps>(getInitialFilters());
 
   // Função para limpar os filtros (voltar ao estado inicial)
   const clearFilters = () => setFilters(getInitialFilters());
 
   // Retorna o provedor do contexto, disponibilizando os valores e funções
   return (
-    <ChamadosAbertosFiltersContext.Provider
+    <FiltersTabelaChamadosAbertosContext.Provider
       value={{ filters, setFilters, clearFilters }}
     >
       {children}
-    </ChamadosAbertosFiltersContext.Provider>
+    </FiltersTabelaChamadosAbertosContext.Provider>
   );
 }
 
 // Hook customizado para acessar o contexto dos filtros de chamados abertos
-export function useChamadosAbertosFilters() {
-  const context = useContext(ChamadosAbertosFiltersContext);
+export function useFiltersTabelaChamadosAbertos() {
+  const context = useContext(FiltersTabelaChamadosAbertosContext);
   if (context === undefined) {
     throw new Error(
-      'useChamadosAbertosFilters must be used within a ChamadosAbertosFiltersProvider'
+      'useFiltersTabelaChamadosAbertos deve ser chamado dentro de um FiltersTabelaChamadosAbertosProvider'
     );
   }
   return context;
