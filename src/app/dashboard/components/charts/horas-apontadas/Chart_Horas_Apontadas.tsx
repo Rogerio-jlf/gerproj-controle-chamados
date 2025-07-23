@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/Auth_Context';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { CircleX, Database, DatabaseBackup } from 'lucide-react';
+import { CircleX, Database } from 'lucide-react';
 import {
   Bar,
   BarChart,
@@ -15,7 +15,7 @@ import {
   YAxis,
 } from 'recharts';
 
-const meses = [
+const arrayMeses = [
   'Jan',
   'Fev',
   'Mar',
@@ -30,7 +30,7 @@ const meses = [
   'Dez',
 ];
 
-const cores = [
+const arrayCoresBarras = [
   '#8B5CF6', // Purple
   '#06B6D4', // Cyan
   '#10B981', // Emerald
@@ -45,7 +45,8 @@ const cores = [
   '#A855F7', // Violet
 ];
 
-interface Filters {
+//
+interface FiltersProps {
   ano: string;
   mes?: string;
   cliente?: string;
@@ -63,7 +64,7 @@ interface DadosGraficoProps {
 }
 
 interface GraficoProps {
-  filters: Filters;
+  filters: FiltersProps;
   altura?: string;
 }
 
@@ -94,7 +95,6 @@ export default function ChartHorasApontadas({ filters }: GraficoProps) {
         return (res.data as { dados_grafico: DadosGraficoProps }).dados_grafico;
       });
 
-      // Garante que se QUALQUER chamada falhar, o erro será lançado
       return Promise.all(promises);
     },
     enabled: isLoggedIn && !!filters.ano,
@@ -103,10 +103,10 @@ export default function ChartHorasApontadas({ filters }: GraficoProps) {
   // Formata os dados para o gráfico
   const dadosFormatados =
     dados?.map((item, idx) => ({
-      mes: meses[item.mes - 1] ?? `M${item.mes}`,
+      mes: arrayMeses[item.mes - 1] ?? `M${item.mes}`,
       horas: item.total_horas ?? 0,
       apontamentos: item.total_apontamentos ?? 0,
-      label_mes: item.label_mes ?? meses[item.mes - 1] ?? `M${item.mes}`,
+      label_mes: item.label_mes ?? arrayMeses[item.mes - 1] ?? `M${item.mes}`,
       periodo: item.periodo,
       ano: item.ano,
     })) ?? [];
@@ -126,8 +126,8 @@ export default function ChartHorasApontadas({ filters }: GraficoProps) {
 
   return (
     <div className="relative overflow-hidden">
-      {/* Conteúdo do gráfico */}
       <div className="relative z-10" style={{ height: `${alturaGrafico}px` }}>
+        {/* LOADING */}
         {isLoading ? (
           <div className="h-48 overflow-hidden rounded-xl border-2 border-dashed border-gray-400 bg-gray-200">
             <div className="flex h-full flex-col items-center justify-center">
@@ -139,27 +139,28 @@ export default function ChartHorasApontadas({ filters }: GraficoProps) {
                     <div className="absolute inset-2 animate-spin rounded-full border-2 border-transparent border-t-blue-500 border-l-blue-500 [animation-direction:reverse] [animation-duration:1.5s]" />
                     <div className="absolute inset-4 animate-spin rounded-full border-2 border-transparent border-t-purple-600 border-r-purple-600 [animation-duration:1s]" />
 
-                    {/* Ícone do banco de dados no centro */}
+                    {/* ÍCONE */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <Database
                         size={20}
-                        className="animate-pulse text-gray-600"
+                        className="animate-pulse text-black"
                         strokeWidth={2}
                       />
                     </div>
                   </div>
                 </div>
 
+                {/* TEXTO DE CARREGAMENTO */}
                 <div className="space-y-1">
-                  <p className="text-md font-semibold text-gray-700">
+                  <p className="text-md font-semibold text-black">
                     Carregando dados...
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-black">
                     Conectando ao banco de dados
                   </p>
                 </div>
 
-                {/* Barra de progresso animada */}
+                {/* BOLINHAS DE CARREGAMENTO */}
                 <div className="flex justify-center space-x-1">
                   <div className="h-2 w-2 animate-bounce rounded-full bg-purple-600 [animation-delay:-0.3s]"></div>
                   <div className="h-2 w-2 animate-bounce rounded-full bg-blue-600 [animation-delay:-0.15s]"></div>
@@ -168,7 +169,8 @@ export default function ChartHorasApontadas({ filters }: GraficoProps) {
               </div>
             </div>
           </div>
-        ) : isError || dadosFormatados.length === 0 ? (
+        ) : // ERRO
+        isError || dadosFormatados.length === 0 ? (
           <div className="relative h-48 overflow-hidden rounded-xl border-2 border-dashed border-red-300 bg-red-100">
             <div className="flex h-full items-center justify-center">
               <div className="space-y-3 text-center">
@@ -187,6 +189,7 @@ export default function ChartHorasApontadas({ filters }: GraficoProps) {
             </div>
           </div>
         ) : (
+          // GRÁFICO
           <div className="relative h-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -205,7 +208,12 @@ export default function ChartHorasApontadas({ filters }: GraficoProps) {
                   dataKey="mes"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12, fill: '#000', fontWeight: 600 }}
+                  tick={{
+                    fontSize: 12,
+                    fill: '#000',
+                    fontWeight: 600,
+                    letterSpacing: '1.5px',
+                  }}
                   height={50}
                   interval={0}
                   textAnchor="middle"
@@ -219,7 +227,7 @@ export default function ChartHorasApontadas({ filters }: GraficoProps) {
                 />
                 <Bar
                   dataKey="horas"
-                  barSize={35}
+                  barSize={30}
                   radius={[8, 8, 0, 0]}
                   stroke="rgba(255, 255, 255)"
                   strokeWidth={1}
@@ -229,7 +237,7 @@ export default function ChartHorasApontadas({ filters }: GraficoProps) {
                       key={`cell-${index}`}
                       fill={
                         entry.horas > 0
-                          ? cores[index % cores.length]
+                          ? arrayCoresBarras[index % arrayCoresBarras.length]
                           : '#e5e7eb'
                       }
                       className="cursor-pointer transition-all duration-300 hover:opacity-80"
@@ -241,27 +249,24 @@ export default function ChartHorasApontadas({ filters }: GraficoProps) {
                   <LabelList
                     dataKey="horas"
                     position="top"
-                    offset={8}
-                    angle={-60}
+                    offset={10}
+                    angle={-45}
                     formatter={(value: number) => {
                       if (value === 0) return '';
                       const horas = Math.floor(value);
                       const minutos = Math.round((value - horas) * 60);
-                      return minutos > 0 ? `${horas}h${minutos}` : `${horas}h`;
+                      return minutos > 0 ? `${horas}h:${minutos}` : `${horas}h`;
                     }}
                     style={{
-                      fill: '#1e293b',
+                      fill: '#000',
                       fontSize: 12,
                       fontWeight: 600,
                       textAnchor: 'start',
-                      fontFamily: 'Kodchasan',
-                      fontStyle: 'italic',
-                      color: '#000',
+                      letterSpacing: '1.5px',
                     }}
                   />
                 </Bar>
 
-                {/* Gradiente do grid */}
                 <defs>
                   <linearGradient id="gridGradient" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="#e2e8f0" stopOpacity={0.1} />

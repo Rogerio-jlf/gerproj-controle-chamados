@@ -62,7 +62,7 @@ export default function CardHorasContratadasHorasExecutadas({
               <div className="absolute inset-2 animate-spin rounded-full border-2 border-transparent border-t-blue-600 border-l-blue-600 [animation-direction:reverse] [animation-duration:1.5s]" />
               <div className="absolute inset-4 animate-spin rounded-full border-2 border-transparent border-t-purple-600 border-r-purple-600" />
             </div>
-            <p className="text-md font-semibold text-gray-600">Carregando...</p>
+            <p className="text-md font-semibold text-black">Carregando...</p>
           </div>
         </div>
       </div>
@@ -184,7 +184,7 @@ export default function CardHorasContratadasHorasExecutadas({
 
         {/* BARRA PROGRESSO */}
         <div className="mb-4">
-          <div className="flex items-center justify-between text-sm font-semibold tracking-wider text-gray-700 italic">
+          <div className="flex items-center justify-between text-sm font-semibold tracking-wider text-black italic">
             <span>Progresso</span>
             <span>{percentual.toFixed(0)}%</span>
           </div>
@@ -200,7 +200,7 @@ export default function CardHorasContratadasHorasExecutadas({
         {/* INDICADOR STATUS */}
         <div className="flex justify-center">
           <div
-            className={`inline-flex items-center gap-2 rounded-full border p-1 text-lg font-extrabold tracking-wider ${theme.border} ${theme.accent} bg-white`}
+            className={`inline-flex items-center gap-2 rounded-lg border px-4 py-1 text-lg font-extrabold tracking-wider ${theme.border} ${theme.accent} ${theme.bgColor}`}
           >
             {getStatusIcon()}
             <span>

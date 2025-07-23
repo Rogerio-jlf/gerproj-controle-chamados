@@ -94,7 +94,6 @@ function CustomBottomLabels({
         height={16}
         rx={8}
         fill="rgba(255, 255, 255)"
-        // stroke="rgba(148, 163, 184)"
         strokeWidth={1}
       />
       <text
@@ -104,7 +103,7 @@ function CustomBottomLabels({
         fontSize={12}
         fill="#000"
         fontWeight="600"
-        className="kodchasan italic"
+        letterSpacing={0.5}
       >
         {hhmm} = {percentual.toFixed(1)}%
       </text>
@@ -168,24 +167,24 @@ export default function ChartHorasRecurso({ filters }: FiltersProps) {
 
   return (
     <div className="relative overflow-hidden">
-      {/* Conteúdo do gráfico */}
       <div className="relative z-10" style={{ height: `${alturaGrafico}px` }}>
+        {/* CARREGANDO */}
         {query.isLoading ? (
           <div className="h-48 overflow-hidden rounded-xl border-2 border-dashed border-gray-400 bg-gray-200">
             <div className="flex h-full flex-col items-center justify-center">
               <div className="space-y-4 text-center">
                 <div className="relative mx-auto flex items-center justify-center">
-                  {/* Círculos animados de fundo */}
+                  {/* CÍCULOS ANIMADOS DE FUNDO */}
                   <div className="relative flex h-16 w-16 items-center justify-center">
                     <div className="absolute inset-0 animate-spin rounded-full border-3 border-transparent border-t-purple-600 border-r-purple-600 [animation-duration:2s]" />
                     <div className="absolute inset-2 animate-spin rounded-full border-2 border-transparent border-t-blue-500 border-l-blue-500 [animation-direction:reverse] [animation-duration:1.5s]" />
                     <div className="absolute inset-4 animate-spin rounded-full border-2 border-transparent border-t-purple-600 border-r-purple-600 [animation-duration:1s]" />
 
-                    {/* Ícone do banco de dados no centro */}
+                    {/* ÍCONE */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <Database
                         size={20}
-                        className="animate-pulse text-gray-600"
+                        className="animate-pulse text-black"
                         strokeWidth={2}
                       />
                     </div>
@@ -193,15 +192,15 @@ export default function ChartHorasRecurso({ filters }: FiltersProps) {
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-md font-semibold text-gray-700">
+                  <p className="text-md font-semibold text-black">
                     Carregando dados...
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-black">
                     Conectando ao banco de dados
                   </p>
                 </div>
 
-                {/* Barra de progresso animada */}
+                {/* BARRA DE CARREGAMENTO */}
                 <div className="flex justify-center space-x-1">
                   <div className="h-2 w-2 animate-bounce rounded-full bg-purple-600 [animation-delay:-0.3s]"></div>
                   <div className="h-2 w-2 animate-bounce rounded-full bg-blue-600 [animation-delay:-0.15s]"></div>
@@ -210,7 +209,8 @@ export default function ChartHorasRecurso({ filters }: FiltersProps) {
               </div>
             </div>
           </div>
-        ) : query.isError ? (
+        ) : // ERRO
+        query.isError ? (
           <div className="relative h-48 overflow-hidden rounded-xl border-2 border-dashed border-red-300 bg-red-100">
             <div className="flex h-full items-center justify-center">
               <div className="space-y-3 text-center">
@@ -229,6 +229,7 @@ export default function ChartHorasRecurso({ filters }: FiltersProps) {
             </div>
           </div>
         ) : (
+          // GRÁFICO
           <div className="relative h-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -278,8 +279,9 @@ export default function ChartHorasRecurso({ filters }: FiltersProps) {
                         textAnchor="start"
                         fill="#000"
                         fontWeight={600}
-                        fontSize={10}
-                        className="kodchasan italic"
+                        fontSize={9}
+                        letterSpacing={0.5}
+                        fontStyle={'italic'}
                       >
                         {payload.value}
                       </text>
@@ -332,8 +334,8 @@ export default function ChartHorasRecurso({ filters }: FiltersProps) {
                     }}
                   />
                 </Bar>
+
                 <defs>
-                  {/* Gradiente para o grid */}
                   <linearGradient id="gridGradient" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="#e2e8f0" stopOpacity={0.1} />
                     <stop offset="50%" stopColor="#cbd5e1" stopOpacity={0.3} />

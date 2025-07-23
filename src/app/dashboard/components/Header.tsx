@@ -25,7 +25,7 @@ export default function Header({ titulo, subtitulo }: HeaderProps) {
                 {titulo}
               </h2>
               {/* SUBTÍTULO */}
-              <p className="text-base font-semibold tracking-wider text-gray-800 italic">
+              <p className="text-base font-semibold tracking-wider text-black italic">
                 {subtitulo}
               </p>
             </div>

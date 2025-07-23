@@ -59,7 +59,7 @@ export default function CardMediaHorasChamado({ filters }: FilterProps) {
               <div className="absolute inset-2 animate-spin rounded-full border-2 border-transparent border-t-blue-600 border-l-blue-600 [animation-direction:reverse] [animation-duration:1.5s]" />
               <div className="absolute inset-4 animate-spin rounded-full border-2 border-transparent border-t-purple-600 border-r-purple-600" />
             </div>
-            <p className="text-md font-semibold text-gray-600">Carregando...</p>
+            <p className="text-md font-semibold text-black">Carregando...</p>
           </div>
         </div>
       </div>
