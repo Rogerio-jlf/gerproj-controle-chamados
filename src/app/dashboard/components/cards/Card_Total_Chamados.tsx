@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/Auth_Context';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { CircleX } from 'lucide-react';
+import { Card, CardHeader, CardTitle } from '../../../../components/ui/card';
 
 interface FilterProps {
   filters: {
@@ -88,19 +89,17 @@ export default function CardTotalChamados({ filters }: FilterProps) {
   }
 
   return (
-    <div className="group relative h-60 overflow-hidden rounded-lg border border-gray-300 p-6 shadow-md shadow-black">
-      <div className="relative z-10 h-full">
-        <div className="flex h-full flex-col items-center justify-center space-y-2 text-center">
-          {/* HEADER */}
-          <h3 className="text-xl font-extrabold tracking-wider text-black italic">
-            Total Chamados
-          </h3>
-          {/* TOTAL CHAMADOS */}
-          <div className="text-7xl font-extrabold tracking-wider text-black">
-            {data.totalChamados.toLocaleString('pt-BR')}
-          </div>
+    <Card className="group relative h-60 overflow-hidden rounded-lg border border-gray-300 p-6 shadow-md shadow-black">
+      <CardHeader className="flex h-full flex-col items-center justify-center space-y-2 text-center">
+        {/* HEADER */}
+        <CardTitle className="text-xl font-extrabold tracking-wider text-black italic">
+          Total Chamados
+        </CardTitle>
+        {/* TOTAL CHAMADOS */}
+        <div className="text-7xl font-extrabold tracking-wider text-black">
+          {data.totalChamados.toLocaleString('pt-BR')}
         </div>
-      </div>
-    </div>
+      </CardHeader>
+    </Card>
   );
 }

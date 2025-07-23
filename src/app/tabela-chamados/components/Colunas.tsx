@@ -20,7 +20,7 @@ export const colunasTabela: ColumnDef<TableRowProps>[] = [
     accessorKey: 'chamado_os',
     header: 'CÓD.',
     cell: ({ getValue }) => (
-      <div className="text-center font-medium">{getValue() as string}</div>
+      <div className="text-center">{getValue() as string}</div>
     ),
   },
   // Coluna para a data, com formatação condicional
@@ -61,7 +61,7 @@ export const colunasTabela: ColumnDef<TableRowProps>[] = [
     accessorKey: 'status_chamado', // Alterado para corresponder à API
     header: 'Status',
     cell: ({ getValue }) => (
-      <div className="text-left font-medium">{getValue() as string}</div>
+      <div className="text-left">{getValue() as string}</div>
     ),
   },
   // Coluna para o nome do recurso
@@ -77,7 +77,7 @@ export const colunasTabela: ColumnDef<TableRowProps>[] = [
     accessorKey: 'hrini_os',
     header: 'Hora Início',
     cell: ({ getValue }) => (
-      <div className="text-center">{getValue() as string}</div>
+      <div className="text-left">{getValue() as string}</div>
     ),
   },
   // Coluna para a hora de fim
@@ -85,7 +85,7 @@ export const colunasTabela: ColumnDef<TableRowProps>[] = [
     accessorKey: 'hrfim_os',
     header: 'Hora Fim',
     cell: ({ getValue }) => (
-      <div className="text-center">{getValue() as string}</div>
+      <div className="text-left">{getValue() as string}</div>
     ),
   },
   // Coluna para o tempo total, com destaque na cor azul
@@ -93,9 +93,7 @@ export const colunasTabela: ColumnDef<TableRowProps>[] = [
     accessorKey: 'total_horas', // Alterado para corresponder à API
     header: 'Tempo Total',
     cell: ({ getValue }) => (
-      <div className="text-center font-semibold text-blue-600">
-        {getValue() as string}
-      </div>
+      <div className="text-left">{getValue() as string}</div>
     ),
   },
   // Coluna para observações, com truncamento e tooltip

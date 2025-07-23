@@ -1,18 +1,29 @@
 'use client';
 
 import {
-  // AlertCircle,
-  // AlertTriangle,
+  AlertCircle,
+  AlertTriangle,
   CheckCircle,
   Clock,
   FileText,
   PlayCircle,
+  Timer,
+  MessageSquare,
   X,
 } from 'lucide-react';
-// Importação de hooks do React.
 import { useEffect, useState } from 'react';
-// Importação do tipo de props da tabela.
-import { TableRowProps } from './Colunas';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 
 // Interface para os dados do modal (estado interno).
 interface ModalDataProps {
@@ -27,6 +38,18 @@ interface ModalProps {
   onClose: () => void;
 }
 
+// Interface do tipo de props da tabela.
+interface TableRowProps {
+  chamado_os: string;
+  nome_cliente: string;
+  status_chamado: string;
+  dtini_os: string;
+  hrini_os: string;
+  hrfim_os: string;
+  total_horas: string;
+  obs: string;
+}
+
 // Função utilitária para retornar o ícone e cores de acordo com o status do chamado.
 const getStatusIcon = (status: string) => {
   const statusLower = status?.toLowerCase() || '';
@@ -34,69 +57,74 @@ const getStatusIcon = (status: string) => {
   const statusConfig = {
     finalizado: {
       icon: CheckCircle,
-      color: 'text-green-700',
-      bg: 'bg-green-200',
+      color: 'text-emerald-700',
+      bg: 'bg-emerald-50',
+      border: 'border-emerald-200',
     },
     'aguardando validacao': {
       icon: PlayCircle,
-      color: 'text-purple-700',
-      bg: 'bg-purple-50',
+      color: 'text-violet-700',
+      bg: 'bg-violet-50',
+      border: 'border-violet-200',
     },
     atribuido: {
       icon: CheckCircle,
-      color: 'text-pink-600',
-      bg: 'bg-pink-200',
+      color: 'text-rose-700',
+      bg: 'bg-rose-50',
+      border: 'border-rose-200',
     },
     standby: {
       icon: Clock,
-      color: 'text-yellow-700',
-      bg: 'bg-yellow-200',
+      color: 'text-amber-700',
+      bg: 'bg-amber-50',
+      border: 'border-amber-200',
     },
     'em atendimento': {
-      icon: Clock,
-      color: 'text-blue-600',
+      icon: Timer,
+      color: 'text-blue-700',
       bg: 'bg-blue-50',
+      border: 'border-blue-200',
     },
   };
 
-  // Busca o status correspondente na configuração.
   const matchedStatus = Object.keys(statusConfig).find(
     key => statusLower.includes(key) || key.includes(statusLower)
   );
 
-  // Retorna o ícone e cores do status, ou padrão se não encontrar.
   return matchedStatus
     ? statusConfig[matchedStatus as keyof typeof statusConfig]
-    : { icon: FileText, color: 'text-gray-500', bg: 'bg-gray-50' };
+    : {
+        icon: FileText,
+        color: 'text-slate-600',
+        bg: 'bg-slate-50',
+        border: 'border-slate-200',
+      };
 };
 
 // Componente visual para exibir o status do chamado com ícone e cor.
 const StatusBadge = ({ status }: { status: string }) => {
-  const { icon: Icon, color, bg } = getStatusIcon(status);
+  const { icon: Icon, color, bg, border } = getStatusIcon(status);
 
   return (
-    <div
-      className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium ${bg} ${color}`}
+    <Badge
+      variant="outline"
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 font-medium ${bg} ${color} ${border}`}
     >
-      <Icon className="mr-1.5 h-3.5 w-3.5" />
+      <Icon className="h-3 w-3" />
       {status}
-    </div>
+    </Badge>
   );
 };
 
 // Componente principal do modal de chamado.
 export default function Modal({ isOpen, selectedRow, onClose }: ModalProps) {
-  // Estado para os dados do formulário do modal.
   const [modalData, setModalData] = useState<ModalDataProps>({
     concordaPagar: true,
     observacao: '',
   });
 
-  // Estado para mensagem de erro de validação.
   const [validationError, setValidationError] = useState('');
-  // Estado para controlar se os dados já foram carregados.
   const [dataLoaded, setDataLoaded] = useState(false);
-  // Estado para indicar se está enviando dados.
   const [isSending, setIsSending] = useState(false);
 
   // Função para carregar dados salvos do localStorage para o modal.
@@ -177,7 +205,7 @@ export default function Modal({ isOpen, selectedRow, onClose }: ModalProps) {
     chamado: TableRowProps,
     observacao: string
   ) => {
-    const phoneNumber = '5531999635544'; // Substitua pelo número correto
+    const phoneNumber = '5531999635544';
     const message =
       `🚨 *Discordância no Chamado ${chamado.chamado_os}*\n\n` +
       `*Cliente:* ${chamado.nome_cliente}\n` +
@@ -190,7 +218,6 @@ export default function Modal({ isOpen, selectedRow, onClose }: ModalProps) {
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
 
-    // Abre em nova aba
     window.open(whatsappUrl, '_blank');
   };
 
@@ -248,209 +275,227 @@ export default function Modal({ isOpen, selectedRow, onClose }: ModalProps) {
     }
   }, [isOpen, selectedRow, dataLoaded]);
 
-  // Se o modal não estiver aberto ou não houver linha selecionada, não renderiza nada.
-  if (!isOpen || !selectedRow) return null;
+  if (!selectedRow) return null;
 
-  // Renderização do modal propriamente dito.
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-      aria-modal="true"
-      role="dialog"
-    >
-      <div className="animate-fadeIn relative mx-4 w-full max-w-lg rounded-2xl border border-indigo-100 bg-white p-8 shadow-2xl">
-        {/* Botão para fechar o modal */}
-        <button
-          aria-label="Fechar"
-          className="absolute top-4 right-4 text-indigo-400 transition hover:text-indigo-700"
-          onClick={handleClose}
-        >
-          <X className="h-6 w-6" />
-        </button>
-
-        {/* Título do modal */}
-        <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold text-indigo-800">
-          <FileText className="h-6 w-6 text-indigo-400" />
-          Detalhes do Chamado
-        </h2>
-
-        {/* Exibição dos detalhes do chamado selecionado */}
-        <div className="mb-6 grid grid-cols-1 gap-x-6 gap-y-2 text-gray-800 sm:grid-cols-2">
-          <div>
-            <span className="block text-xs text-gray-500">OS</span>
-            <span className="font-semibold">
-              {selectedRow.chamado_os || 'N/A'}
-            </span>
-          </div>
-          <div>
-            <span className="block text-xs text-gray-500">Cliente</span>
-            <span className="font-semibold">
-              {selectedRow.nome_cliente || 'N/A'}
-            </span>
-          </div>
-          <div>
-            <span className="block text-xs text-gray-500">Status</span>
-            <span>
-              <StatusBadge status={selectedRow.status_chamado || 'N/A'} />
-            </span>
-          </div>
-          <div>
-            <span className="block text-xs text-gray-500">Data</span>
-            <span className="font-semibold">
-              {selectedRow.dtini_os || 'N/A'}
-            </span>
-          </div>
-          <div>
-            <span className="block text-xs text-gray-500">Hora Início</span>
-            <span className="font-semibold">
-              {selectedRow.hrini_os || 'N/A'}
-            </span>
-          </div>
-          <div>
-            <span className="block text-xs text-gray-500">Hora Fim</span>
-            <span className="font-semibold">
-              {selectedRow.hrfim_os || 'N/A'}
-            </span>
-          </div>
-          <div>
-            <span className="block text-xs text-gray-500">Tempo Total</span>
-            <span className="font-semibold">
-              {selectedRow.total_horas || 'N/A'}
-            </span>
-          </div>
-          <div className="sm:col-span-2">
-            <span className="block text-xs text-gray-500">Observação</span>
-            <span className="font-semibold">{selectedRow.obs || 'N/A'}</span>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-lg overflow-y-auto bg-white p-0">
+        {/* Botão de Fechar */}
+        <DialogClose className="absolute top-4 right-4 rounded-full p-1 text-indigo-200 transition-colors hover:bg-indigo-500 hover:text-white">
+          <X className="h-5 w-5" />
+        </DialogClose>
+        {/* Header do formulário */}
+        <div className="relative bg-indigo-600 p-6 text-white">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/30">
+              <FileText className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <DialogTitle className="text-xl font-extrabold tracking-wider text-white italic">
+                Aprovar Chamado
+              </DialogTitle>
+            </div>
           </div>
         </div>
 
-        {/* Formulário para aceitar ou discordar do chamado */}
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-            saveModalData();
-          }}
-          className="space-y-5"
-        >
-          {/* Checkbox de concordância */}
-          {/* <label className="flex cursor-pointer items-center gap-3 select-none">
-            <input
-              type="checkbox"
-              checked={modalData.concordaPagar}
-              onChange={(e) => handleCheckboxChange(e.target.checked)}
-              className="form-checkbox h-5 w-5 rounded-md border-gray-300 text-indigo-600 transition focus:ring-indigo-500"
-            />
-            <span className="font-medium text-indigo-700">Chamado aceito</span>
-          </label> */}
+        {/* Corpo do formulário */}
+        <div className="space-y-2 p-4">
+          {/* Resumo do chamado */}
+          <div className="space-y-4 rounded-lg bg-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold tracking-wider text-black italic">
+                Chamado:
+              </span>
+              <span className="ml-2 text-sm font-semibold tracking-wider">
+                {selectedRow.chamado_os || 'N/A'}
+              </span>
+            </div>
 
-          {/* Alerta caso o usuário desmarque a concordância */}
-          {/* {!modalData.concordaPagar && (
-            <div className="flex items-start gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
-              <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-600" />
-              <div className="text-sm text-yellow-800">
-                <p className="font-medium">Atenção!</p>
-                <p>
-                  Ao desmarcar a concordância, você deve informar o motivo na observação abaixo.
-                  Será enviado um e-mail e mensagem no WhatsApp automaticamente.
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold tracking-wider text-black italic">
+                Status:
+              </span>
+              <StatusBadge status={selectedRow.status_chamado || 'N/A'} />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold tracking-wider text-black italic">
+                Data:
+              </span>
+              <span className="ml-2 text-sm font-semibold tracking-wider">
+                {selectedRow.dtini_os || 'N/A'}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold tracking-wider text-black italic">
+                Tempo:
+              </span>
+              <span className="ml-2 text-sm font-semibold tracking-wider">
+                {selectedRow.total_horas || 'N/A'}
+              </span>
+            </div>
+
+            {selectedRow.obs && (
+              <div>
+                <span className="mb-2 text-sm font-semibold tracking-wider text-black italic">
+                  Observação:
+                </span>
+                <p className="text-xs tracking-wider text-gray-800 italic">
+                  {selectedRow.obs}
                 </p>
               </div>
-            </div>
-          )} */}
-
-          {/* Campo de observação adicional */}
-          <div>
-            {/* <label
-              htmlFor="observacao"
-              className="mb-1 block text-sm font-semibold text-indigo-700"
-            >
-              Observação Adicional
-              {!modalData.concordaPagar && <span className="ml-1 text-red-500">*</span>}
-            </label> */}
-            {/* <textarea
-              id="observacao"
-              value={modalData.observacao}
-              onChange={(e) =>
-                setModalData((old) => ({
-                  ...old,
-                  observacao: e.target.value,
-                }))
-              }
-              rows={3}
-              className={`w-full rounded-lg border shadow-sm transition focus:ring-2 ${
-                !modalData.concordaPagar
-                  ? 'border-red-300 focus:border-red-400 focus:ring-red-100'
-                  : 'border-indigo-200 focus:border-indigo-400 focus:ring-indigo-100'
-              }`}
-              placeholder={
-                !modalData.concordaPagar
-                  ? 'Por favor, informe o motivo da discordância...'
-                  : 'Digite uma observação, se necessário...'
-              }
-              required={!modalData.concordaPagar}
-            /> */}
-            {/* Mensagem de obrigatoriedade do campo de observação */}
-            {/* {!modalData.concordaPagar && (
-              <p className="mt-1 text-xs text-red-600">
-                Este campo é obrigatório quando você não concorda em pagar pelo chamado. Uma
-                notificação será enviada automaticamente.
-              </p>
-            )} */}
+            )}
           </div>
 
-          {/* Exibe mensagem de erro de validação, se houver */}
-          {/* {validationError && (
-            <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3">
-              <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
-              <p className="text-sm text-red-800">{validationError}</p>
-            </div>
-          )} */}
+          {/* Formulário */}
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              saveModalData();
+            }}
+            className="space-y-6"
+          >
+            {/* Campo de aprovação */}
+            <div className="space-y-2">
+              <Label className="text-base font-semibold tracking-wider text-black">
+                Aprovação do Chamado
+              </Label>
 
-          {/* Botões de ação do formulário */}
-          {/* <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="rounded-lg border border-gray-200 bg-gray-50 px-5 py-2 font-medium text-gray-600 transition hover:bg-gray-100"
-              disabled={isSending}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="rounded-lg bg-gradient-to-r from-indigo-500 to-blue-500 px-5 py-2 font-semibold text-white shadow transition hover:from-indigo-600 hover:to-blue-600 disabled:cursor-not-allowed disabled:opacity-70"
-              disabled={isSending}
-            >
-              {isSending ? (
-                <span className="flex items-center justify-center">
-                  <svg
-                    className="mr-2 -ml-1 h-4 w-4 animate-spin text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Processando...
-                </span>
-              ) : (
-                'Salvar'
-              )}
-            </button>
-          </div> */}
-        </form>
-      </div>
-    </div>
+              <div className="space-y-6">
+                <div className="flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                  <Checkbox
+                    id="aprovar"
+                    checked={modalData.concordaPagar}
+                    onCheckedChange={handleCheckboxChange}
+                    className="mt-2 h-5 w-5 cursor-pointer"
+                  />
+                  <div className="">
+                    <Label
+                      htmlFor="aprovar"
+                      className="text-sm font-semibold tracking-wider text-emerald-800 italic"
+                    >
+                      Aprovar este chamado para pagamento
+                    </Label>
+                    <p className="text-xs tracking-wider text-emerald-700 italic">
+                      Confirmo que os serviços foram executados corretamente
+                    </p>
+                  </div>
+                </div>
+
+                {!modalData.concordaPagar && (
+                  <Alert className="border-amber-200 bg-amber-100 p-4">
+                    <AlertTriangle className="h-4 w-4 text-amber-600" />
+                    <AlertDescription>
+                      <span className="text-sm font-semibold tracking-wider text-amber-800 italic">
+                        Reprovação ativada!
+                      </span>
+                      <p className="text-xs tracking-wider text-amber-700 italic">
+                        Você deve informar o motivo abaixo. Notificações
+                        automáticas serão enviadas.
+                      </p>
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            </div>
+
+            {/* Campo de observação */}
+            <div className="space-y-2">
+              <Label htmlFor="observacao" className="flex items-center gap-3">
+                {!modalData.concordaPagar ? (
+                  <>
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <span className="text-sm font-semibold tracking-wider text-red-800 italic">
+                      Motivo da Reprovação
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <MessageSquare className="h-4 w-4 text-black" />
+                    Observações Adicionais
+                  </>
+                )}
+              </Label>
+
+              <Textarea
+                id="observacao"
+                value={modalData.observacao}
+                onChange={e =>
+                  setModalData(old => ({
+                    ...old,
+                    observacao: e.target.value,
+                  }))
+                }
+                rows={4}
+                className={`resize-none text-xs text-red-800 transition-all ${
+                  !modalData.concordaPagar
+                    ? 'border-red-200 bg-red-50 focus-visible:ring-red-500'
+                    : 'border-gray-300'
+                }`}
+                placeholder={
+                  !modalData.concordaPagar
+                    ? 'Descreva detalhadamente o motivo da reprovação. Seja específico sobre a discordância...'
+                    : 'Adicione observações sobre o chamado, se necessário...'
+                }
+                required={!modalData.concordaPagar}
+              />
+            </div>
+
+            {/* Erro de validação */}
+            {validationError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{validationError}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* BOTÕES AÇÃO */}
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                disabled={isSending}
+                className="flex-1 border border-gray-400 bg-white text-base font-semibold tracking-wider text-black italic hover:bg-gray-100"
+              >
+                Cancelar
+              </Button>
+
+              <Button
+                type="submit"
+                disabled={isSending}
+                className={`flex-1 border text-base font-semibold tracking-normal text-white active:scale-90 ${
+                  modalData.concordaPagar
+                    ? 'border-emerald-900 bg-emerald-600 hover:bg-emerald-800'
+                    : 'border-red-800 bg-red-500 hover:bg-red-700'
+                }`}
+              >
+                {isSending ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border border-white" />
+                    Processando...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    {modalData.concordaPagar ? (
+                      <>
+                        <CheckCircle className="h-4 w-4 text-white" />
+                        Aprovar
+                      </>
+                    ) : (
+                      <>
+                        <AlertTriangle className="h-4 w-4 text-white" />
+                        Reprovar
+                      </>
+                    )}
+                  </div>
+                )}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

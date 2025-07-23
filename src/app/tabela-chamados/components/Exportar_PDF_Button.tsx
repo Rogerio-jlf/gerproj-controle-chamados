@@ -2,7 +2,7 @@
 
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { FileText } from 'lucide-react';
+import { AiOutlineFilePdf } from 'react-icons/ai';
 
 // Define as propriedades aceitas pelo componente ExportaPDFButton.
 interface ExportaPDFButtonProps<T> {
@@ -25,7 +25,7 @@ interface ExportaPDFButtonProps<T> {
 export default function ExportaPDFButton<T extends Record<string, any>>({
   data,
   fileName,
-  buttonText = 'Exportar para PDF',
+  buttonText = 'PDF',
   disabled = false,
   className = '',
   title = 'Relatório',
@@ -160,13 +160,13 @@ export default function ExportaPDFButton<T extends Record<string, any>>({
     <button
       onClick={exportToPdf}
       disabled={disabled || data.length === 0}
-      className={`flex items-center rounded-md px-4 py-2 text-sm font-medium ${
+      className={`group flex items-center rounded-lg px-4 py-2 text-sm font-medium ${
         disabled || data.length === 0
-          ? 'cursor-not-allowed bg-gray-200 text-gray-500'
-          : 'bg-blue-600 text-white hover:bg-blue-700'
-      } ${className}`}
+          ? 'cursor-not-allowed text-indigo-500'
+          : 'bg-red-500 text-white hover:bg-red-600 active:scale-90'
+      } transition-colors duration-200 ${className}`}
     >
-      <FileText className="mr-2 h-4 w-4" /> {/* Ícone do botão */}
+      <AiOutlineFilePdf className="mr-2 h-4 w-4 text-red-500 group-hover:text-white" />
       {buttonText}
     </button>
   );

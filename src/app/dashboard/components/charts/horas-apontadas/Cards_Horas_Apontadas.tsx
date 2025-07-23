@@ -5,7 +5,11 @@ import { formatHorasDecimalParaHHMM } from '@/functions/formatarHoras';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { Calendar, CircleFadingPlus, CircleX, Clock } from 'lucide-react';
-
+import {
+  Card,
+  CardContent,
+  CardHeader,
+} from '../../../../../components/ui/card';
 interface FiltersProps {
   filters: {
     ano: string;
@@ -71,6 +75,7 @@ export default function CardsHoraApontadas({ filters }: FiltersProps) {
 
   return (
     <div className="space-y-4">
+      {/* LOADING CARREGAMENTO */}
       {isLoading ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
           {[1, 2, 3].map(index => (
@@ -93,7 +98,8 @@ export default function CardsHoraApontadas({ filters }: FiltersProps) {
             </div>
           ))}
         </div>
-      ) : isError || !data ? (
+      ) : // ERRO CARREGAMENTO
+      isError || !data ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
           <div className="group relative col-span-full min-h-[60px] overflow-hidden rounded-xl border-2 border-dashed border-red-300 bg-red-100 p-8 text-center shadow-xl">
             <div className="space-y-3">
@@ -111,28 +117,30 @@ export default function CardsHoraApontadas({ filters }: FiltersProps) {
           </div>
         </div>
       ) : (
+        // CARDS MÉTRICAS
         <div className="grid grid-cols-3 gap-4">
           {/* TOTAL HORAS EXECUTADAS */}
-          <div className="group relative min-h-[60px] overflow-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md shadow-black">
-            <div className="relative flex items-center gap-4">
+          <Card className="group relative min-h-[60px] overflow-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md shadow-black">
+            <CardHeader className="relative flex flex-row items-center gap-4 p-0">
               <div className="relative -top-6 left-0 flex h-10 w-10 items-center justify-center rounded-lg bg-purple-800">
                 <Clock className="absolute h-5 w-5 animate-pulse text-white" />
               </div>
 
               <div className="flex-1">
                 <p className="mb-4 text-sm font-semibold tracking-wider text-black italic">
-                  QTD. de horas executadas no ano
+                  QTD. horas executadas ano
                 </p>
                 <p className="items-center text-2xl font-extrabold text-black italic">
                   {formatHorasDecimalParaHHMM(totalHoras)}
                 </p>
               </div>
-            </div>
-          </div>
+            </CardHeader>
+            <CardContent className="hidden" />{' '}
+          </Card>
 
-          {/* NÚMERO MESES DADOS */}
-          <div className="group relative min-h-[60px] overflow-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md shadow-black">
-            <div className="relative flex items-center gap-4">
+          {/* NÚMERO MESES */}
+          <Card className="group relative min-h-[60px] overflow-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md shadow-black">
+            <CardHeader className="relative flex flex-row items-center gap-4 p-0">
               <div className="relative -top-6 left-0 flex h-10 w-10 items-center justify-center rounded-lg bg-purple-800">
                 <Calendar className="absolute h-5 w-5 animate-pulse text-white" />
               </div>
@@ -145,12 +153,13 @@ export default function CardsHoraApontadas({ filters }: FiltersProps) {
                   {mesesComDados}
                 </p>
               </div>
-            </div>
-          </div>
+            </CardHeader>
+            <CardContent className="hidden" />{' '}
+          </Card>
 
           {/* MÉDIA HORAS MÊS */}
-          <div className="group relative min-h-[60px] overflow-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md shadow-black">
-            <div className="relative flex items-center gap-4">
+          <Card className="group relative min-h-[60px] overflow-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md shadow-black">
+            <CardHeader className="relative flex flex-row items-center gap-4 p-0">
               <div className="relative -top-6 left-0 flex h-10 w-10 items-center justify-center rounded-lg bg-purple-800">
                 <CircleFadingPlus className="absolute h-5 w-5 animate-pulse text-white" />
               </div>
@@ -163,8 +172,9 @@ export default function CardsHoraApontadas({ filters }: FiltersProps) {
                   {formatHorasDecimalParaHHMM(mediaHoras)}
                 </p>
               </div>
-            </div>
-          </div>
+            </CardHeader>
+            <CardContent className="hidden" />{' '}
+          </Card>
         </div>
       )}
     </div>

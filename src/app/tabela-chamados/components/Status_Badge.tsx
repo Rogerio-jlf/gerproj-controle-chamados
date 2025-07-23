@@ -57,7 +57,7 @@ export default function StatusBadge({ status }: StatusBadgeProps) {
 
   return (
     <div
-      className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium ${bg} ${color}`}
+      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold italic ${bg} ${color}`}
     >
       <Icon className="mr-1.5 h-3.5 w-3.5" />{' '}
       {/* Renderiza o ícone à esquerda do texto */}

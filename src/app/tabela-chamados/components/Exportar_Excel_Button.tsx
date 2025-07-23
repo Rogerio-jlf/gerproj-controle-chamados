@@ -2,7 +2,7 @@
 
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { Download } from 'lucide-react';
+import { RiFileExcel2Line } from 'react-icons/ri';
 
 interface ExportaExcelButtonProps<T> {
   data: T[];
@@ -21,7 +21,7 @@ interface ExportaExcelButtonProps<T> {
 export default function ExportaExcelButton<T>({
   data,
   fileName,
-  buttonText = 'Exportar para Excel',
+  buttonText = 'Excel',
   disabled = false,
   className = '',
   columns,
@@ -86,13 +86,13 @@ export default function ExportaExcelButton<T>({
     <button
       onClick={exportToExcel}
       disabled={disabled || data.length === 0}
-      className={`flex items-center rounded-md px-4 py-2 text-sm font-medium ${
+      className={`group flex items-center rounded-lg px-4 py-2 text-sm font-medium ${
         disabled || data.length === 0
-          ? 'cursor-not-allowed bg-gray-200 text-gray-500'
-          : 'bg-green-600 text-white hover:bg-green-700'
+          ? 'cursor-not-allowed text-indigo-500'
+          : 'bg-green-500 text-white hover:bg-green-600 active:scale-90'
       } transition-colors duration-200 ${className}`}
     >
-      <Download className="mr-2 h-4 w-4" />
+      <RiFileExcel2Line className="mr-2 h-4 w-4 text-green-500 group-hover:text-white" />
       {buttonText}
     </button>
   );

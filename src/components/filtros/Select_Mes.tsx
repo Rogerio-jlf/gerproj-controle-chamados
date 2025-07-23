@@ -33,7 +33,7 @@ export default function SelectMes({ value, onChange }: SelectMesProps) {
     <div className="group w-full">
       <Label className="mb-1 flex items-center gap-2 text-xl font-semibold tracking-wider text-black italic">
         <Filter className="h-7 w-7" />
-        Ano
+        Mês
       </Label>
 
       <Select

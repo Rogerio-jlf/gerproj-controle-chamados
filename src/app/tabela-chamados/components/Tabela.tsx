@@ -16,6 +16,8 @@ import ExportaExcelButton from './Exportar_Excel_Button';
 import ExportaPDFButton from './Exportar_PDF_Button';
 import Modal from './Modal';
 import StatusBadge from './Status_Badge';
+import Cards from './Cards';
+import { ObservacaoCell } from './Tooltip';
 
 // Interface para os filtros recebidos como props.
 interface FiltersProps {
@@ -249,128 +251,89 @@ export default function Tabela({
   // Renderiza a tabela de chamados, exportações e modal.
   return (
     <>
-      {/* Container principal com design moderno */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
-        {/* Header com gradiente e estatísticas */}
-        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 px-8 py-6">
+      {/* CONTAINER PRINCIPAL */}
+      <div className="overflow-hidden rounded-lg border border-gray-300 bg-white">
+        {/* CONTAINER */}
+        <div className="bg-indigo-950 p-6">
+          {/* HEADER / CARDS / EXCEL / PDF */}
           <div className="flex items-start justify-between">
-            {/* Título e estatísticas */}
+            {/* TÍTULO / CARDS */}
             <div className="space-y-4">
+              {/* TÍTULO */}
               <div>
-                <h2 className="mb-1 text-2xl font-bold text-white">
-                  Relatório de Chamados
-                </h2>
-                <p className="text-lg text-indigo-100">
-                  {mes}/{ano}
-                </p>
+                <h1 className="text-2xl font-extrabold tracking-wider text-white italic">
+                  Tabela de Chamados - {mes}/{ano}
+                </h1>
               </div>
 
-              {/* Cards de estatísticas */}
+              {/* CARDS MÉTRICAS */}
               {data.length > 0 && (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  <div className="rounded-xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
-                    <div className="flex items-center space-x-3">
-                      <div className="rounded-lg bg-white/20 p-2">
-                        <Database className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-xs tracking-wide text-indigo-100 uppercase">
-                          Total Chamados
-                        </p>
-                        <p className="text-xl font-bold text-white">
-                          {stats.totalChamados}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
-                    <div className="flex items-center space-x-3">
-                      <div className="rounded-lg bg-white/20 p-2">
-                        <Users className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-xs tracking-wide text-indigo-100 uppercase">
-                          Recursos
-                        </p>
-                        <p className="text-xl font-bold text-white">
-                          {stats.totalRecursos}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
-                    <div className="flex items-center space-x-3">
-                      <div className="rounded-lg bg-white/20 p-2">
-                        <Clock className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-xs tracking-wide text-indigo-100 uppercase">
-                          Horas Totais
-                        </p>
-                        <p className="text-xl font-bold text-white">
-                          {totalHorasGeral || '0h'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                <div className="grid grid-cols-3 gap-5">
+                  {/* TOTAL CHAMADOS */}
+                  <Cards
+                    icon={Database}
+                    title="Chamados"
+                    value={stats.totalChamados}
+                  />
+                  {/* TOTAL RECURSOS */}
+                  <Cards
+                    icon={Users}
+                    title="Recursos"
+                    value={stats.totalRecursos}
+                  />
+                  {/* HORAS TOTAIS */}
+                  <Cards
+                    icon={Clock}
+                    title="Horas"
+                    value={totalHorasGeral || '0h'}
+                  />
                 </div>
               )}
             </div>
 
-            {/* Botões de exportação e status do usuário */}
-            <div className="flex flex-col items-end space-y-4">
-              {/* Status do usuário */}
-              <div className="flex items-center space-x-2 rounded-full border border-white/30 bg-white/20 px-4 py-2 backdrop-blur-sm">
-                <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-400"></div>
-                <span className="text-sm font-medium text-white">
-                  {isAdmin ? 'Administrador' : 'Usuário'}
-                </span>
-              </div>
+            {/* EXCEL / PDF */}
+            <div className="flex flex-col gap-5">
+              {/* EXCEL */}
+              <ExportaExcelButton
+                data={data}
+                fileName={`relatorio_${mes}_${ano}`}
+                columns={[
+                  { key: 'chamado_os', label: 'N° OS' },
+                  { key: 'nome_cliente', label: 'Nome Completo' },
+                  { key: 'dtini_os', label: 'Data' },
+                  { key: 'status_chamado', label: 'Status' },
+                  { key: 'hrini_os', label: 'Hora Início' },
+                  { key: 'hrfim_os', label: 'Hora Fim' },
+                  { key: 'total_horas', label: 'Duração' },
+                  { key: 'obs', label: 'Observação' },
+                ]}
+                autoFilter={true}
+                freezeHeader={true}
+                className="border border-white/20 bg-white/10 text-white"
+              />
 
-              {/* Botões de exportação */}
-              <div className="flex space-x-3">
-                <ExportaExcelButton
-                  data={data}
-                  fileName={`relatorio_${mes}_${ano}`}
-                  buttonText="Excel"
-                  columns={[
-                    { key: 'chamado_os', label: 'N° OS' },
-                    { key: 'nome_cliente', label: 'Nome Completo' },
-                    { key: 'dtini_os', label: 'Data' },
-                    { key: 'status_chamado', label: 'Status' },
-                    { key: 'hrini_os', label: 'Hora Início' },
-                    { key: 'hrfim_os', label: 'Hora Fim' },
-                    { key: 'total_horas', label: 'Duração' },
-                    { key: 'obs', label: 'Observação' },
-                  ]}
-                  className="border-white/30 bg-white/20 text-white backdrop-blur-sm transition-all duration-200 hover:border-white/50 hover:bg-white/30"
-                  autoFilter={true}
-                  freezeHeader={true}
-                />
-
-                <ExportaPDFButton
-                  data={data}
-                  fileName={`relatorio_chamados_${mes}_${ano}`}
-                  title={`Relatório de Chamados - ${mes}/${ano}`}
-                  columns={[
-                    { key: 'chamado_os', label: 'N° OS' },
-                    { key: 'nome_cliente', label: 'Cliente' },
-                    { key: 'dtini_os', label: 'Data' },
-                    { key: 'status_chamado', label: 'Status' },
-                    { key: 'hrini_os', label: 'Hora Início' },
-                    { key: 'hrfim_os', label: 'Hora Fim' },
-                    { key: 'total_horas', label: 'Duração' },
-                    { key: 'obs', label: 'Observação' },
-                  ]}
-                  logoUrl="/caminho/para/logo.png"
-                  footerText="Gerado pelo sistema em"
-                  className="border-white/30 bg-white/20 text-white backdrop-blur-sm transition-all duration-200 hover:border-white/50 hover:bg-white/30"
-                />
-              </div>
+              {/* PDF */}
+              <ExportaPDFButton
+                data={data}
+                fileName={`relatorio_chamados_${mes}_${ano}`}
+                title={`Relatório de Chamados - ${mes}/${ano}`}
+                columns={[
+                  { key: 'chamado_os', label: 'N° OS' },
+                  { key: 'nome_cliente', label: 'Cliente' },
+                  { key: 'dtini_os', label: 'Data' },
+                  { key: 'status_chamado', label: 'Status' },
+                  { key: 'hrini_os', label: 'Hora Início' },
+                  { key: 'hrfim_os', label: 'Hora Fim' },
+                  { key: 'total_horas', label: 'Duração' },
+                  { key: 'obs', label: 'Observação' },
+                ]}
+                footerText="Gerado pelo sistema em"
+                className="border border-white/20 bg-white/10 text-white"
+              />
             </div>
+            {/* ---------- */}
           </div>
+          {/* ---------- */}
         </div>
 
         {/* Tabela com scroll customizado */}
@@ -387,9 +350,9 @@ export default function Tabela({
                     {headerGroup.headers.map((header, index) => (
                       <th
                         key={header.id}
-                        className={`border-b-2 border-slate-300 bg-gradient-to-r from-slate-100 to-slate-200 px-6 py-4 text-left font-semibold text-slate-700 shadow-sm backdrop-blur-sm ${index === 0 ? 'pl-8' : ''} ${index === headerGroup.headers.length - 1 ? 'pr-8' : ''} `}
+                        className="border-b border-gray-300 bg-teal-700 p-2 text-left font-semibold text-white"
                       >
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center">
                           {header.isPlaceholder
                             ? null
                             : flexRender(
@@ -408,21 +371,21 @@ export default function Tabela({
                 {table.getRowModel().rows.map((row, rowIndex) => (
                   <tr
                     key={row.id}
-                    className={`group cursor-pointer border-b border-slate-100 transition-all duration-300 ease-out hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:shadow-lg hover:shadow-blue-100/50 ${
-                      rowIndex % 2 === 0
-                        ? 'bg-white'
-                        : 'bg-gradient-to-r from-slate-50/50 to-slate-50/30'
+                    className={`group cursor-pointer border-b border-gray-300 transition-all duration-300 ease-out hover:bg-orange-200 ${
+                      rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'
                     } `}
                     onClick={() => openModal(row.original)}
                   >
                     {row.getVisibleCells().map((cell, cellIndex) => (
                       <td
                         key={cell.id}
-                        className={`px-6 py-4 text-slate-700 transition-all duration-300 group-hover:text-slate-900 ${cellIndex === 0 ? 'pl-8' : ''} ${cellIndex === row.getVisibleCells().length - 1 ? 'pr-8' : ''} `}
+                        className="p-2 text-sm text-indigo-500 transition-all duration-100 group-hover:text-black hover:italic"
                       >
                         {/* Renderiza badge de status ou valor padrão da célula */}
-                        {cell.column.id === 'status' ? (
+                        {cell.column.id === 'status_chamado' ? (
                           <StatusBadge status={cell.getValue() as string} />
+                        ) : cell.column.id === 'obs' ? (
+                          <ObservacaoCell value={cell.getValue() as string} />
                         ) : (
                           <div className="whitespace-nowrap">
                             {flexRender(
@@ -442,16 +405,16 @@ export default function Tabela({
 
         {/* Footer com informações adicionais */}
         {data.length === 0 && !isLoading && (
-          <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-12 text-center">
+          <div className="bg-white p-12 text-center">
             <div className="space-y-4">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-slate-200 to-slate-300">
-                <TrendingUp className="h-8 w-8 text-slate-400" />
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-200">
+                <TrendingUp className="h-8 w-8 text-red-500" />
               </div>
               <div>
-                <h3 className="mb-2 text-lg font-semibold text-slate-600">
+                <h3 className="mb-2 text-lg font-bold text-black">
                   Nenhum chamado encontrado
                 </h3>
-                <p className="text-slate-500">
+                <p className="text-black">
                   Não há registros para o período {mes}/{ano} com os filtros
                   selecionados.
                 </p>
