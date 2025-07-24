@@ -188,16 +188,9 @@ export default function Filtros({ onFiltersChange }: FiltersProps) {
     }
   }, [statusList, statusSelecionado]);
 
-  // Atualiza o contexto global de filtros quando os valores debounced mudam
+  // Atualiza contexto e callback externo
   useEffect(() => {
     setFilters({
-      ano: debouncedAno,
-      mes: debouncedMes,
-      cliente: debouncedClienteSelecionado,
-      recurso: debouncedRecursoSelecionado,
-      status: debouncedStatusSelecionado,
-    });
-    onFiltersChange({
       ano: debouncedAno,
       mes: debouncedMes,
       cliente: debouncedClienteSelecionado,
@@ -210,22 +203,15 @@ export default function Filtros({ onFiltersChange }: FiltersProps) {
     debouncedClienteSelecionado,
     debouncedRecursoSelecionado,
     debouncedStatusSelecionado,
-    onFiltersChange,
     setFilters,
   ]);
 
   return (
-    <div className="mb-4">
+    <div className="">
       {/* Filtros para desktop */}
       <div className="hidden lg:block">
         <div className="relative z-10">
-          <div className="grid grid-cols-[70px_1fr_1fr_1fr_1fr_1fr] items-end gap-2">
-            {/* Ícone de filtro fixo */}
-            <div className="flex h-[64px] w-[64px] items-center justify-center rounded-lg bg-gradient-to-br from-blue-700 via-purple-700 to-blue-700 shadow-md shadow-black">
-              <Filter className="h-8 w-8 text-white" />
-            </div>
-
-            {/* Componentes de Select */}
+          <div className="flex items-center gap-2">
             <SelectAno value={ano} onChange={setAno} />
 
             <SelectMes value={mes} onChange={setMes} />

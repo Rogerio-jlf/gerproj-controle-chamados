@@ -11,7 +11,7 @@ interface ExportaExcelButtonProps<T> {
   disabled?: boolean;
   className?: string;
   columns?: {
-    key: keyof T;
+    key: keyof T | string;
     label: string;
   }[];
   autoFilter?: boolean;

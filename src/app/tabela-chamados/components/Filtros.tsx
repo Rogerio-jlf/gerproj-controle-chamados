@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/Auth_Context';
 import { useFiltersTabelaChamados } from '@/contexts/Filters_Tabela_Chamados_Context';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { Filter } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 

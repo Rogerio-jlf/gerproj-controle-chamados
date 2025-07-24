@@ -13,7 +13,7 @@ interface ExportaPDFButtonProps<T> {
   className?: string; // Classe CSS opcional para customização.
   title?: string; // Título do relatório.
   columns?: {
-    key: keyof T; // Chave do dado a ser exibido.
+    key: keyof T | string; // Chave do dado a ser exibido.
     label: string; // Rótulo da coluna.
   }[];
   orientation?: 'portrait' | 'landscape'; // Orientação do PDF.

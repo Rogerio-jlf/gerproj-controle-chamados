@@ -4,11 +4,25 @@ import Filtros from '@/app/tabela-chamados-abertos/components/Filtros';
 import Tabela from '@/app/tabela-chamados-abertos/components/Tabela';
 import ProtecaoRotas from '@/components/ProtecaoRotas';
 import Sidebar from '@/components/Sidebar';
-import { FiltersTabelaChamadosAbertosProvider } from '@/contexts/Filters_Tabela_Chamados_Abertos_Context';
-import { useState } from 'react';
+import { useFiltersTabelaChamadosAbertos } from '@/contexts/Filters_Tabela_Chamados_Abertos_Context';
+import { useCallback, useState } from 'react';
+import { useAuth } from '../../../contexts/Auth_Context';
+import Header from './Header';
 
 export default function LayoutPage() {
+  const { isAdmin, codCliente } = useAuth();
+  const { filters, setFilters } = useFiltersTabelaChamadosAbertos();
   const [collapsed, setCollapsed] = useState(false);
+
+  const handleFiltersChange = useCallback(
+    (newFilters: typeof filters) => {
+      const updatedFilters = !isAdmin
+        ? { ...newFilters, cliente: codCliente || '' }
+        : newFilters;
+      setFilters(updatedFilters);
+    },
+    [isAdmin, codCliente, setFilters]
+  );
 
   const handleToggleSidebar = () => {
     setCollapsed(prev => !prev);
@@ -18,43 +32,38 @@ export default function LayoutPage() {
     window.location.href = '/login';
   };
 
-  const handleFiltersChange = (filters: {
-    ano: number;
-    mes: number;
-    cliente: string;
-    recurso: string;
-    status: string;
-  }) => {
-    console.log('Filtros atualizados:', filters);
-  };
-
   return (
     <ProtecaoRotas>
-      <FiltersTabelaChamadosAbertosProvider>
-        <div className="flex h-screen w-screen overflow-hidden bg-gray-50">
-          <Sidebar
-            collapsed={collapsed}
-            onToggle={handleToggleSidebar}
-            onLogout={handleLogout}
-          />
+      <div className="flex h-screen w-screen overflow-hidden">
+        {/* Sidebar */}
+        <Sidebar
+          collapsed={collapsed}
+          onToggle={handleToggleSidebar}
+          onLogout={handleLogout}
+        />
 
-          <main
-            className={`flex flex-1 flex-col overflow-auto transition-all duration-300 ${
-              collapsed ? 'ml-20' : 'ml-80'
-            } p-4`}
-          >
+        <main
+          className={`flex flex-1 flex-col transition-all duration-300 ${
+            collapsed ? 'ml-20' : 'ml-80'
+          }`}
+        >
+          {/* CONTEÚDO FIXO NO TOPO */}
+          <div className="flex flex-col space-y-6 p-4">
+            {/* HEADER */}
+            <Header />
+
+            {/* FILTROS */}
             <div className="max-w-full">
               <Filtros onFiltersChange={handleFiltersChange} />
             </div>
+          </div>
 
-            <div className="mt-4 flex-1 overflow-hidden">
-              <div className="h-full w-full overflow-x-auto">
-                <Tabela />
-              </div>
-            </div>
-          </main>
-        </div>
-      </FiltersTabelaChamadosAbertosProvider>
+          {/* TABELA COM SCROLL */}
+          <div className="flex-1 p-4">
+            <Tabela />
+          </div>
+        </main>
+      </div>
     </ProtecaoRotas>
   );
 }

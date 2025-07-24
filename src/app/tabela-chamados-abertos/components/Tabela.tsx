@@ -12,6 +12,10 @@ import {
 import { useMemo, useState } from 'react';
 import { ChamadosProps, colunasTabela } from './Colunas';
 import Modal from './Modal';
+import { AlertCircle, Clock, Database, TrendingUp, Users } from 'lucide-react';
+import ExportaExcelButton from '../../tabela-chamados/components/Exportar_Excel_Button';
+import ExportaPDFButton from '../../tabela-chamados/components/Exportar_PDF_Button';
+import Cards from './Cards';
 
 async function fetchChamados(
   params: URLSearchParams
@@ -82,40 +86,98 @@ export default function Tabela() {
     getCoreRowModel: getCoreRowModel(),
   });
 
+  const stats = useMemo(() => {
+    const chamadosArray = Array.isArray(data) ? data : [];
+    const totalChamados = chamadosArray.length;
+
+    return {
+      totalChamados,
+    };
+  }, [data]);
+
   if (!enabled || authLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="flex items-center space-x-2">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
-          <p className="text-gray-600 dark:text-gray-400">
-            Carregando autenticação...
-          </p>
+      <div className="min-h-[500px] rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
+        <div className="flex h-full items-center justify-center p-12">
+          <div className="space-y-6 text-center">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-red-200 bg-gradient-to-br from-red-50 to-red-100">
+              <svg
+                className="h-10 w-10 text-red-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 className="mb-2 text-xl font-bold text-slate-800">
+                Acesso Restrito
+              </h3>
+              <p className="mx-auto max-w-md text-slate-600">
+                Você precisa estar logado para visualizar os chamados do
+                sistema.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
+  // Renderiza indicador de carregamento enquanto busca dados.
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="flex items-center space-x-2">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
-          <p className="text-gray-600 dark:text-gray-400">
-            Carregando chamados...
-          </p>
+      <div className="min-h-[500px] rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
+        <div className="flex h-full items-center justify-center p-12">
+          <div className="space-y-6 text-center">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-100">
+              <div className="relative">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"></div>
+                <Database
+                  className="absolute inset-0 h-8 w-8 animate-pulse text-blue-400"
+                  style={{ animationDelay: '0.5s' }}
+                />
+              </div>
+            </div>
+            <div>
+              <h3 className="mb-2 text-xl font-semibold text-slate-800">
+                Carregando Dados
+              </h3>
+              <p className="text-slate-600">
+                Buscando informações dos chamados...
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
+  // Renderiza mensagem de erro caso ocorra algum problema na requisição.
   if (isError) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Erro ao carregar chamados';
+
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
-          <p className="text-red-600 dark:text-red-400">
-            <span className="font-medium">Erro ao carregar dados:</span>{' '}
-            {error?.message}
-          </p>
+      <div className="min-h-[500px] rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 to-red-100 shadow-xl">
+        <div className="flex h-full items-center justify-center p-12">
+          <div className="space-y-6 text-center">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-red-300 bg-gradient-to-br from-red-100 to-red-200">
+              <AlertCircle className="h-10 w-10 text-red-500" />
+            </div>
+            <div>
+              <h3 className="mb-2 text-xl font-bold text-red-800">
+                Erro ao Carregar
+              </h3>
+              <p className="mx-auto max-w-md text-red-600">{errorMessage}</p>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -124,125 +186,159 @@ export default function Tabela() {
   return (
     <>
       <TooltipProvider>
-        <div className="relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
-          {/* Header da tabela com informações */}
-          <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Chamados Abertos
-              </h3>
-              <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
-                <span>Total: {data?.length || 0} chamados</span>
-                <span>•</span>
-                <span>
-                  {mes}/{ano}
-                </span>
+        {/* CONTAINER PRINCIPAL */}
+        <div className="overflow-hidden rounded-lg border border-gray-300 bg-slate-900">
+          {/* CONTAINER */}
+          <div className="bg-slate-900 p-6">
+            {/* HEADER / CARDS / EXCEL / PDF */}
+            <div className="flex items-start justify-between">
+              {/* TÍTULO / CARDS */}
+              <div className="space-y-4">
+                {/* TÍTULO */}
+                <div>
+                  <h1 className="text-2xl font-extrabold tracking-wider text-white italic">
+                    Tabela de Chamados - {mes}/{ano}
+                  </h1>
+                </div>
+
+                {/* CARDS MÉTRICAS */}
+                {Array.isArray(data) && data.length > 0 && (
+                  <div className="grid grid-cols-3 gap-5">
+                    {/* TOTAL CHAMADOS */}
+                    <Cards
+                      icon={Database}
+                      title="Chamados"
+                      value={stats.totalChamados}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* EXCEL / PDF */}
+              <div className="flex flex-col gap-5">
+                {/* EXCEL */}
+                <ExportaExcelButton
+                  data={data ?? []}
+                  fileName={`relatorio_${mes}_${ano}`}
+                  columns={[
+                    { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
+                    { key: 'COD_CHAMADO', label: 'N° OS' },
+                    { key: 'DATA_CHAMADO', label: 'Data' },
+                    { key: 'HORA_CHAMADO', label: 'Hora' },
+                    { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
+                    { key: 'STATUS_CHAMADO', label: 'Status' },
+                    { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
+                    { key: 'RECURSO.NOME_RECURSO', label: 'Recurso' },
+                    { key: 'CLIENTE.NOME_CLIENTE', label: 'Cliente' },
+                    { key: 'CODTRF_CHAMADO', label: 'Código TRF' },
+                    { key: 'EMAIL_CHAMADO', label: 'Email' },
+                    { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
+                  ]}
+                  autoFilter={true}
+                  freezeHeader={true}
+                  className="border border-white/20 bg-white/10 text-white"
+                />
+
+                {/* PDF */}
+                <ExportaPDFButton
+                  data={data ?? []}
+                  fileName={`relatorio_chamados_${mes}_${ano}`}
+                  title={`Relatório de Chamados - ${mes}/${ano}`}
+                  columns={[
+                    { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
+                    { key: 'COD_CHAMADO', label: 'N° OS' },
+                    { key: 'DATA_CHAMADO', label: 'Data' },
+                    { key: 'HORA_CHAMADO', label: 'Hora' },
+                    { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
+                    { key: 'STATUS_CHAMADO', label: 'Status' },
+                    { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
+                    { key: 'RECURSO.NOME_RECURSO', label: 'Recurso' },
+                    { key: 'CLIENTE.NOME_CLIENTE', label: 'Cliente' },
+                    { key: 'CODTRF_CHAMADO', label: 'Código TRF' },
+                    { key: 'EMAIL_CHAMADO', label: 'Email' },
+                    { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
+                  ]}
+                  footerText="Gerado pelo sistema em"
+                  className="border border-white/20 bg-white/10 text-white"
+                />
               </div>
             </div>
           </div>
 
-          {/* Container da tabela com scroll */}
-          <div className="relative max-h-[calc(100vh-300px)] overflow-auto">
-            <div className="min-w-[1200px]">
-              <table className="w-full table-fixed">
-                <thead>
+          {/* Tabela com scroll customizado */}
+          <div className="overflow-hidden">
+            <div
+              className="scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 overflow-y-auto"
+              style={{ maxHeight: 'calc(100vh - 424px)' }}
+            >
+              <table className="w-full">
+                {/* Cabeçalho da tabela com efeito glassmorphism */}
+                <thead className="sticky top-0 z-20">
                   {table.getHeaderGroups().map(headerGroup => (
-                    <tr
-                      key={headerGroup.id}
-                      className="border-b border-gray-200 dark:border-gray-700"
-                    >
-                      {headerGroup.headers.map((header, index) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map(header => (
                         <th
                           key={header.id}
-                          className={`sticky top-0 z-20 border-r border-gray-200 bg-gray-100 px-4 py-3 text-left text-sm font-semibold text-gray-700 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 ${index === headerGroup.headers.length - 1 ? 'border-r-0' : ''} `}
-                          style={{
-                            width: getColumnWidth(header.column.id),
-                          }}
+                          className="border-b border-gray-300 bg-teal-700 p-2 text-left font-semibold text-white"
                         >
-                          <div className="flex items-center space-x-1">
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
+                          <div className="flex items-center">
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
                           </div>
                         </th>
                       ))}
                     </tr>
                   ))}
                 </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                  {table.getRowModel().rows.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={colunasTabela.length}
-                        className="p-12 text-center"
-                      >
-                        <div className="flex flex-col items-center space-y-2">
-                          <div className="rounded-full bg-gray-100 p-3 dark:bg-gray-800">
-                            <svg
-                              className="h-6 w-6 text-gray-400"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={1.5}
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                              />
-                            </svg>
+
+                {/* Corpo da tabela com hover effects modernos */}
+                <tbody>
+                  {table.getRowModel().rows.map(row => (
+                    <tr
+                      key={row.id}
+                      className="group cursor-pointer border-b border-slate-700 transition-all duration-100 hover:bg-white/90"
+                      onClick={() => handleRowClick(row.original)}
+                    >
+                      {row.getVisibleCells().map(cell => (
+                        <td
+                          key={cell.id}
+                          className="group-transition-all group-duration-100 p-3 text-sm text-white group-hover:text-base group-hover:font-semibold group-hover:text-black group-hover:italic"
+                        >
+                          <div className="overflow-hidden">
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
                           </div>
-                          <p className="text-gray-500 dark:text-gray-400">
-                            Nenhum chamado encontrado para os filtros aplicados
-                          </p>
-                          <p className="text-sm text-gray-400 dark:text-gray-500">
-                            Tente ajustar os filtros para ver mais resultados
-                          </p>
-                        </div>
-                      </td>
+                        </td>
+                      ))}
                     </tr>
-                  ) : (
-                    table.getRowModel().rows.map((row, rowIndex) => (
-                      <tr
-                        key={row.id}
-                        onClick={() => handleRowClick(row.original)}
-                        className={`group cursor-pointer transition-colors duration-150 hover:bg-blue-50 dark:hover:bg-blue-900/20 ${rowIndex % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50/50 dark:bg-gray-800/20'} `}
-                      >
-                        {row.getVisibleCells().map((cell, cellIndex) => (
-                          <td
-                            key={cell.id}
-                            className={`border-r border-gray-100 px-4 py-3 text-sm text-gray-800 dark:border-gray-800 dark:text-gray-200 ${cellIndex === row.getVisibleCells().length - 1 ? 'border-r-0' : ''} `}
-                            style={{
-                              width: getColumnWidth(cell.column.id),
-                            }}
-                          >
-                            <div className="overflow-hidden">
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext()
-                              )}
-                            </div>
-                          </td>
-                        ))}
-                      </tr>
-                    ))
-                  )}
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Footer da tabela */}
-          {data && data.length > 0 && (
-            <div className="border-t border-gray-200 bg-gray-50 px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
-              <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                <span>
-                  Mostrando {data.length} registro{data.length !== 1 ? 's' : ''}
-                </span>
-                <span>
-                  Última atualização: {new Date().toLocaleTimeString('pt-BR')}
-                </span>
+          {/* Footer com informações adicionais */}
+          {Array.isArray(data) && data.length === 0 && !isLoading && (
+            <div className="bg-white p-12 text-center">
+              <div className="space-y-4">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-200">
+                  <TrendingUp className="h-8 w-8 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="mb-2 text-lg font-bold text-black">
+                    Nenhum chamado encontrado
+                  </h3>
+                  <p className="text-black">
+                    Não há registros para o período {mes}/{ano} com os filtros
+                    selecionados.
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -257,24 +353,4 @@ export default function Tabela() {
       />
     </>
   );
-}
-
-// Função para definir larguras das colunas
-function getColumnWidth(columnId: string): string {
-  const widthMap: Record<string, string> = {
-    prior_chamado: '120px',
-    cod_chamado: '100px',
-    data_chamado: '110px',
-    hora_chamado: '80px',
-    assunto_chamado: '200px',
-    status_chamado: '130px',
-    cod_classificacao: '140px',
-    'recurso.nome_recurso': '180px',
-    'cliente.nome_cliente': '180px',
-    codtrf_chamado: '150px',
-    email_chamado: '200px',
-    conclusao_chamado: '150px',
-  };
-
-  return widthMap[columnId] || '150px';
 }

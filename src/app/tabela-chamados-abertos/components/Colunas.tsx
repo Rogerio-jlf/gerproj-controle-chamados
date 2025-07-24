@@ -4,6 +4,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { ColumnDef } from '@tanstack/react-table';
+import Link from 'next/link';
 
 export interface ChamadosProps {
   COD_CHAMADO: number;
@@ -34,12 +35,12 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
     cell: ({ getValue }) => {
       const value = getValue() as string;
       return (
-        <div className="flex justify-center text-center">
+        <div className="flex items-center justify-center">
           <span
-            className={`flex w-full items-center justify-center rounded-lg p-2 text-xs font-medium ${
+            className={`w-full rounded-lg p-1 text-center tracking-wider ${
               value === 'Alta'
-                ? 'bg-red-100 text-red-800 ring-1 ring-red-600/20 dark:bg-red-900/20 dark:text-red-400 dark:ring-red-400/20'
-                : 'bg-green-100 text-green-800 ring-1 ring-green-600/20 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-400/20'
+                ? 'bg-red-100 text-red-800 ring-1 ring-red-600/20'
+                : 'bg-green-800/50 text-green-400 ring-1 ring-green-400'
             }`}
           >
             {value}
@@ -53,9 +54,9 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
     accessorKey: 'COD_CHAMADO',
     header: () => <div className="w-full text-center">Número</div>,
     cell: ({ getValue }) => (
-      <div className="flex justify-center text-center">
-        <span className="flex w-full items-center justify-center rounded-lg bg-blue-50 p-2 text-xs font-medium text-blue-700 ring-1 ring-blue-600/20 dark:bg-blue-900/20 dark:text-blue-400 dark:ring-blue-400/20">
-          #{getValue() as string}
+      <div className="flex items-center justify-center">
+        <span className="w-full rounded-lg bg-blue-800/50 p-1 text-center tracking-wider text-blue-400 ring-1 ring-blue-400">
+          {getValue() as string}
         </span>
       </div>
     ),
@@ -70,7 +71,9 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
       if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
         return (
           <div className="flex items-center justify-center">
-            <span className="font-mono text-sm">{dateString}</span>
+            <span className="w-full text-center tracking-wider text-white">
+              {dateString}
+            </span>
           </div>
         );
       }
@@ -80,14 +83,18 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
         const formattedDate = `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
         return (
           <div className="flex items-center justify-center">
-            <span className="font-mono text-sm">{formattedDate}</span>
+            <span className="w-full text-left tracking-wider text-white">
+              {formattedDate}
+            </span>
           </div>
         );
       } catch {
         console.warn('Formato de data não reconhecido:', dateString);
         return (
           <div className="flex items-center justify-center">
-            <span className="font-mono text-sm text-red-500">{dateString}</span>
+            <span className="w-full text-left tracking-wider text-red-500">
+              {dateString}
+            </span>
           </div>
         );
       }
@@ -103,7 +110,7 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
       if (!raw) {
         return (
           <div className="flex items-center justify-center">
-            <span className="text-muted-foreground text-sm">–</span>
+            <span className="text-muted-foreground tracking-wider">–</span>
           </div>
         );
       }
@@ -114,7 +121,7 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
 
       return (
         <div className="flex items-center justify-center">
-          <span className="font-mono text-sm">{`${hh}:${mm}`}</span>
+          <span className="w-full text-center tracking-wider text-white">{`${hh}:${mm}`}</span>
         </div>
       );
     },
@@ -128,17 +135,19 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
       return (
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="group cursor-help">
-              <span className="block truncate text-left text-sm leading-5 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+            <div className="group cursor-pointer">
+              <span className="block w-full text-left tracking-wider text-white">
                 {value}
               </span>
             </div>
           </TooltipTrigger>
           <TooltipContent
             side="top"
-            className="z-50 max-w-sm border border-gray-600 bg-gray-800 p-3 text-white shadow-lg"
+            className="z-50 w-full border border-slate-500 bg-slate-950 p-4 text-left tracking-wider text-white"
           >
-            <p className="text-sm leading-relaxed">{value}</p>
+            <p className="w-full text-left text-sm tracking-wider text-white">
+              {value}
+            </p>
           </TooltipContent>
         </Tooltip>
       );
@@ -156,34 +165,34 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
 
         switch (statusUpper) {
           case 'NAO FINALIZADO':
-            return 'bg-yellow-100 text-yellow-800 ring-1 ring-yellow-600/20 dark:bg-yellow-900/20 dark:text-yellow-400 dark:ring-yellow-400/20';
+            return 'bg-yellow-800/50 text-yellow-400 ring-1 ring-yellow-400';
 
           case 'EM ATENDIMENTO':
-            return 'bg-blue-100 text-blue-800 ring-1 ring-blue-600/20 dark:bg-blue-900/20 dark:text-blue-400 dark:ring-blue-400/20';
+            return 'bg-blue-800/50 text-blue-400 ring-1 ring-blue-400';
 
           case 'FINALIZADO':
-            return 'bg-green-100 text-green-800 ring-1 ring-green-600/20 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-400/20';
+            return 'bg-green-800/50 text-green-400 ring-1 ring-green-400';
 
           case 'NAO INICIADO':
-            return 'bg-gray-100 text-gray-800 ring-1 ring-gray-600/20 dark:bg-gray-900/20 dark:text-gray-400 dark:ring-gray-400/20';
+            return 'bg-gray-800/50 text-gray-400 ring-1 ring-gray-400';
 
           case 'STANDBY':
-            return 'bg-orange-100 text-orange-800 ring-1 ring-orange-600/20 dark:bg-orange-900/20 dark:text-orange-400 dark:ring-orange-400/20';
+            return 'bg-orange-800/50 text-orange-400 ring-1 ring-orange-400';
 
           case 'ATRIBUIDO':
-            return 'bg-sky-100 text-sky-800 ring-1 ring-sky-600/20 dark:bg-sky-900/20 dark:text-sky-400 dark:ring-sky-400/20';
+            return 'bg-sky-800/50 text-sky-400 ring-1 ring-sky-400';
 
           case 'AGUARDANDO VALIDACAO':
-            return 'bg-purple-100 text-purple-800 ring-1 ring-purple-600/20 dark:bg-purple-900/20 dark:text-purple-400 dark:ring-purple-400/20';
+            return 'bg-purple-800/50 text-purple-400 ring-1 ring-purple-400';
 
           default:
-            return 'bg-gray-100 text-gray-800 ring-1 ring-gray-600/20 dark:bg-gray-900/20 dark:text-gray-400 dark:ring-gray-400/20';
+            return 'bg-gray-800/50 text-gray-400 ring-1 ring-gray-400';
         }
       };
 
       return (
         <span
-          className={`flex w-full items-center justify-center rounded-lg p-2 text-xs font-medium ${getStatusStyle(
+          className={`flex w-full items-center justify-center rounded-lg p-1 text-center tracking-wider ${getStatusStyle(
             value
           )}`}
         >
@@ -199,14 +208,14 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
     cell: ({ getValue }) => {
       const value = getValue() as number;
       return (
-        <div className="text-left">
+        <div className="flex items-center justify-center">
           {value ? (
-            <span className="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-purple-600/20 dark:bg-purple-900/20 dark:text-purple-400 dark:ring-purple-400/20">
-              Classificação {value}
+            <span className="w-full rounded-lg bg-purple-800/50 p-1 text-center tracking-wider text-purple-400 ring-1 ring-purple-400">
+              {value}
             </span>
           ) : (
-            <span className="text-gray-400 dark:text-gray-500">
-              Não informada
+            <span className="w-full text-center tracking-wider text-gray-400">
+              Não informado
             </span>
           )}
         </div>
@@ -220,23 +229,31 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
       <div className="w-full text-center">Consultor responsável</div>
     ),
     cell: ({ getValue }) => {
-      const value = getValue() as string | undefined;
+      const value = getValue() as string | null;
       return (
-        <div className="text-left">
-          {value ? (
-            <div className="flex items-center space-x-2">
-              <div className="h-2 w-2 rounded-full bg-green-400"></div>
-              <span className="truncate font-medium">{value}</span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center justify-center">
+              {value ? (
+                <span className="w-full text-left tracking-wider text-white">
+                  {value}
+                </span>
+              ) : (
+                <span className="w-full text-center tracking-wider text-gray-400">
+                  Não informado
+                </span>
+              )}
             </div>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <div className="h-2 w-2 rounded-full bg-gray-300"></div>
-              <span className="text-gray-400 dark:text-gray-500">
-                Não informado
-              </span>
-            </div>
-          )}
-        </div>
+          </TooltipTrigger>
+          <TooltipContent
+            side="top"
+            className="z-50 w-full border border-slate-500 bg-slate-950 p-4 text-left tracking-wider text-white"
+          >
+            <p className="w-full text-left text-sm tracking-wider text-white">
+              {value ?? 'Não informado'}
+            </p>
+          </TooltipContent>
+        </Tooltip>
       );
     },
   },
@@ -247,21 +264,29 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
     cell: ({ getValue }) => {
       const value = getValue() as string | undefined;
       return (
-        <div className="text-left">
-          {value ? (
-            <div className="flex items-center space-x-2">
-              <div className="h-2 w-2 rounded-full bg-blue-400"></div>
-              <span className="truncate font-medium">{value}</span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center justify-center">
+              {value ? (
+                <span className="w-full text-left tracking-wider text-white">
+                  {value}
+                </span>
+              ) : (
+                <span className="w-full text-center tracking-wider text-gray-400">
+                  Não informado
+                </span>
+              )}
             </div>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <div className="h-2 w-2 rounded-full bg-gray-300"></div>
-              <span className="text-gray-400 dark:text-gray-500">
-                Não informado
-              </span>
-            </div>
-          )}
-        </div>
+          </TooltipTrigger>
+          <TooltipContent
+            side="top"
+            className="z-50 w-full border border-slate-500 bg-slate-950 p-4 text-left tracking-wider text-white"
+          >
+            <p className="w-full text-left text-sm tracking-wider text-white">
+              {value ?? 'Não informado'}
+            </p>
+          </TooltipContent>
+        </Tooltip>
       );
     },
   },
@@ -272,13 +297,13 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
     cell: ({ getValue }) => {
       const value = getValue() as string | null;
       return (
-        <div className="text-left">
+        <div className="flex items-center justify-center">
           {value ? (
-            <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-indigo-600/20 dark:bg-indigo-900/20 dark:text-indigo-400 dark:ring-indigo-400/20">
+            <span className="w-full rounded-lg bg-indigo-800/50 p-1 text-center tracking-wider text-indigo-400 ring-1 ring-indigo-400">
               {value}
             </span>
           ) : (
-            <span className="text-gray-400 dark:text-gray-500">
+            <span className="w-full text-center tracking-wider text-gray-400">
               Não informada
             </span>
           )}
@@ -293,16 +318,16 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
     cell: ({ getValue }) => {
       const value = getValue() as string;
       return (
-        <div className="text-left">
+        <div className="flex items-center justify-center">
           {value ? (
-            <a
+            <Link
               href={`mailto:${value}`}
-              className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+              className="w-full text-left text-blue-500 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
             >
-              <span className="truncate">{value}</span>
-            </a>
+              <span className="w-full text-left">{value}</span>
+            </Link>
           ) : (
-            <span className="text-gray-400 dark:text-gray-500">
+            <span className="w-full text-left tracking-wider text-gray-400">
               Não informado
             </span>
           )}
@@ -317,13 +342,13 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
     cell: ({ getValue }) => {
       const value = getValue() as string | null;
       return (
-        <div className="text-left">
+        <div className="flex items-center justify-center">
           {value ? (
-            <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-green-600/20 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-400/20">
+            <span className="w-full rounded-lg bg-green-800/50 p-1 text-center tracking-wider text-green-400 ring-1 ring-green-400">
               {value}
             </span>
           ) : (
-            <span className="inline-flex items-center rounded-md bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 ring-1 ring-orange-600/20 dark:bg-orange-900/20 dark:text-orange-400 dark:ring-orange-400/20">
+            <span className="w-full rounded-lg bg-orange-800/50 p-1 text-center tracking-wider text-orange-400 ring-1 ring-orange-400">
               Em andamento
             </span>
           )}

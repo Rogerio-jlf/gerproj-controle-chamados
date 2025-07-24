@@ -7,6 +7,7 @@ import Sidebar from '@/components/Sidebar';
 import { useFiltersTabelaChamados } from '@/contexts/Filters_Tabela_Chamados_Context';
 import { useCallback, useState } from 'react';
 import { useAuth } from '../../../contexts/Auth_Context';
+import Header from './Header';
 
 export default function LayoutPage() {
   const { isAdmin, codCliente } = useAuth();
@@ -40,24 +41,23 @@ export default function LayoutPage() {
         />
 
         <main
-          className={`flex flex-1 flex-col space-y-6 overflow-auto transition-all duration-300 ${
+          className={`flex flex-1 flex-col transition-all duration-300 ${
             collapsed ? 'ml-20' : 'ml-80'
-          } p-4`}
+          }`}
         >
-          {/* HEADER */}
-          <header className="flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-5xl font-bold tracking-wider text-black italic">
-              Chamados
-            </h2>
-          </header>
+          {/* CONTEÚDO FIXO NO TOPO */}
+          <div className="flex flex-col space-y-6 p-4">
+            {/* HEADER */}
+            <Header />
 
-          {/* FILTROS */}
-          <div className="max-w-full">
-            <Filtros onFiltersChange={handleFiltersChange} />
+            {/* FILTROS */}
+            <div className="max-w-full">
+              <Filtros onFiltersChange={handleFiltersChange} />
+            </div>
           </div>
 
           {/* TABELA */}
-          <div className="max-w-full overflow-auto">
+          <div className="flex-1 p-4">
             <Tabela_Chamados
               ano={filters.ano.toString()}
               mes={filters.mes.toString()}

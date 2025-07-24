@@ -18,6 +18,7 @@ import Modal from './Modal';
 import StatusBadge from './Status_Badge';
 import Cards from './Cards';
 import { ObservacaoCell } from './Tooltip';
+import { TooltipProvider } from '../../../components/ui/tooltip';
 
 // Interface para os filtros recebidos como props.
 interface FiltersProps {
@@ -251,178 +252,187 @@ export default function Tabela({
   // Renderiza a tabela de chamados, exportações e modal.
   return (
     <>
-      {/* CONTAINER PRINCIPAL */}
-      <div className="overflow-hidden rounded-lg border border-gray-300 bg-white">
-        {/* CONTAINER */}
-        <div className="bg-indigo-950 p-6">
-          {/* HEADER / CARDS / EXCEL / PDF */}
-          <div className="flex items-start justify-between">
-            {/* TÍTULO / CARDS */}
-            <div className="space-y-4">
-              {/* TÍTULO */}
-              <div>
-                <h1 className="text-2xl font-extrabold tracking-wider text-white italic">
-                  Tabela de Chamados - {mes}/{ano}
-                </h1>
+      <TooltipProvider>
+        {/* CONTAINER PRINCIPAL */}
+        <div className="overflow-hidden rounded-lg border border-gray-300 bg-slate-900">
+          {/* CONTAINER */}
+          <div className="bg-slate-900 p-6">
+            {/* HEADER / CARDS / EXCEL / PDF */}
+            <div className="flex items-start justify-between">
+              {/* TÍTULO / CARDS */}
+              <div className="space-y-4">
+                {/* TÍTULO */}
+                <div>
+                  <h1 className="text-2xl font-extrabold tracking-wider text-white italic">
+                    Tabela de Chamados - {mes}/{ano}
+                  </h1>
+                </div>
+
+                {/* CARDS MÉTRICAS */}
+                {data.length > 0 && (
+                  <div className="grid grid-cols-3 gap-5">
+                    {/* TOTAL CHAMADOS */}
+                    <Cards
+                      icon={Database}
+                      title="Chamados"
+                      value={stats.totalChamados}
+                    />
+                    {/* TOTAL RECURSOS */}
+                    <Cards
+                      icon={Users}
+                      title="Recursos"
+                      value={stats.totalRecursos}
+                    />
+                    {/* HORAS TOTAIS */}
+                    <Cards
+                      icon={Clock}
+                      title="Horas"
+                      value={totalHorasGeral || '0h'}
+                    />
+                  </div>
+                )}
               </div>
 
-              {/* CARDS MÉTRICAS */}
-              {data.length > 0 && (
-                <div className="grid grid-cols-3 gap-5">
-                  {/* TOTAL CHAMADOS */}
-                  <Cards
-                    icon={Database}
-                    title="Chamados"
-                    value={stats.totalChamados}
-                  />
-                  {/* TOTAL RECURSOS */}
-                  <Cards
-                    icon={Users}
-                    title="Recursos"
-                    value={stats.totalRecursos}
-                  />
-                  {/* HORAS TOTAIS */}
-                  <Cards
-                    icon={Clock}
-                    title="Horas"
-                    value={totalHorasGeral || '0h'}
-                  />
-                </div>
-              )}
-            </div>
+              {/* EXCEL / PDF */}
+              <div className="flex flex-col gap-5">
+                {/* EXCEL */}
+                <ExportaExcelButton
+                  data={data}
+                  fileName={`relatorio_${mes}_${ano}`}
+                  columns={[
+                    { key: 'chamado_os', label: 'N° OS' },
+                    { key: 'nome_cliente', label: 'Nome Completo' },
+                    { key: 'dtini_os', label: 'Data' },
+                    { key: 'status_chamado', label: 'Status' },
+                    { key: 'hrini_os', label: 'Hora Início' },
+                    { key: 'hrfim_os', label: 'Hora Fim' },
+                    { key: 'total_horas', label: 'Duração' },
+                    { key: 'obs', label: 'Observação' },
+                  ]}
+                  autoFilter={true}
+                  freezeHeader={true}
+                  className="border border-white/20 bg-white/10 text-white"
+                />
 
-            {/* EXCEL / PDF */}
-            <div className="flex flex-col gap-5">
-              {/* EXCEL */}
-              <ExportaExcelButton
-                data={data}
-                fileName={`relatorio_${mes}_${ano}`}
-                columns={[
-                  { key: 'chamado_os', label: 'N° OS' },
-                  { key: 'nome_cliente', label: 'Nome Completo' },
-                  { key: 'dtini_os', label: 'Data' },
-                  { key: 'status_chamado', label: 'Status' },
-                  { key: 'hrini_os', label: 'Hora Início' },
-                  { key: 'hrfim_os', label: 'Hora Fim' },
-                  { key: 'total_horas', label: 'Duração' },
-                  { key: 'obs', label: 'Observação' },
-                ]}
-                autoFilter={true}
-                freezeHeader={true}
-                className="border border-white/20 bg-white/10 text-white"
-              />
-
-              {/* PDF */}
-              <ExportaPDFButton
-                data={data}
-                fileName={`relatorio_chamados_${mes}_${ano}`}
-                title={`Relatório de Chamados - ${mes}/${ano}`}
-                columns={[
-                  { key: 'chamado_os', label: 'N° OS' },
-                  { key: 'nome_cliente', label: 'Cliente' },
-                  { key: 'dtini_os', label: 'Data' },
-                  { key: 'status_chamado', label: 'Status' },
-                  { key: 'hrini_os', label: 'Hora Início' },
-                  { key: 'hrfim_os', label: 'Hora Fim' },
-                  { key: 'total_horas', label: 'Duração' },
-                  { key: 'obs', label: 'Observação' },
-                ]}
-                footerText="Gerado pelo sistema em"
-                className="border border-white/20 bg-white/10 text-white"
-              />
+                {/* PDF */}
+                <ExportaPDFButton
+                  data={data}
+                  fileName={`relatorio_chamados_${mes}_${ano}`}
+                  title={`Relatório de Chamados - ${mes}/${ano}`}
+                  columns={[
+                    { key: 'chamado_os', label: 'N° OS' },
+                    { key: 'nome_cliente', label: 'Cliente' },
+                    { key: 'dtini_os', label: 'Data' },
+                    { key: 'status_chamado', label: 'Status' },
+                    { key: 'hrini_os', label: 'Hora Início' },
+                    { key: 'hrfim_os', label: 'Hora Fim' },
+                    { key: 'total_horas', label: 'Duração' },
+                    { key: 'obs', label: 'Observação' },
+                  ]}
+                  footerText="Gerado pelo sistema em"
+                  className="border border-white/20 bg-white/10 text-white"
+                />
+              </div>
+              {/* ---------- */}
             </div>
             {/* ---------- */}
           </div>
-          {/* ---------- */}
-        </div>
 
-        {/* Tabela com scroll customizado */}
-        <div className="overflow-hidden">
-          <div
-            className="scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 overflow-y-auto"
-            style={{ maxHeight: 'calc(100vh - 350px)' }}
-          >
-            <table className="w-full">
-              {/* Cabeçalho da tabela com efeito glassmorphism */}
-              <thead className="sticky top-0 z-20">
-                {table.getHeaderGroups().map(headerGroup => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map((header, index) => (
-                      <th
-                        key={header.id}
-                        className="border-b border-gray-300 bg-teal-700 p-2 text-left font-semibold text-white"
-                      >
-                        <div className="flex items-center">
+          {/* TABELA */}
+          <div className="h-full w-full overflow-hidden border border-white bg-slate-900">
+            <div
+              className="scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 h-full overflow-y-auto"
+              style={{ maxHeight: 'calc(100vh - 424px)' }}
+            >
+              {/* <table className="w-full border-collapse"> */}
+              <table className="w-full table-fixed border-collapse">
+                {/* HEADER */}
+                <thead className="sticky top-0 z-20">
+                  {table.getHeaderGroups().map(headerGroup => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map(header => (
+                        <th
+                          key={header.id}
+                          className="border-b border-gray-300 bg-teal-700 p-3 font-semibold text-white"
+                          style={{ width: getColumnWidth(header.column.id) }}
+                        >
                           {header.isPlaceholder
                             ? null
                             : flexRender(
                                 header.column.columnDef.header,
                                 header.getContext()
                               )}
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
 
-              {/* Corpo da tabela com hover effects modernos */}
-              <tbody>
-                {table.getRowModel().rows.map((row, rowIndex) => (
-                  <tr
-                    key={row.id}
-                    className={`group cursor-pointer border-b border-gray-300 transition-all duration-300 ease-out hover:bg-orange-200 ${
-                      rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'
-                    } `}
-                    onClick={() => openModal(row.original)}
-                  >
-                    {row.getVisibleCells().map((cell, cellIndex) => (
+                {/* Corpo */}
+                <tbody>
+                  {table.getRowModel().rows.length === 0 && !isLoading ? (
+                    <tr>
                       <td
-                        key={cell.id}
-                        className="p-2 text-sm text-indigo-500 transition-all duration-100 group-hover:text-black hover:italic"
+                        colSpan={table.getHeaderGroups()[0].headers.length}
+                        className="p-6 text-center text-sm text-gray-400"
                       >
-                        {/* Renderiza badge de status ou valor padrão da célula */}
-                        {cell.column.id === 'status_chamado' ? (
-                          <StatusBadge status={cell.getValue() as string} />
-                        ) : cell.column.id === 'obs' ? (
-                          <ObservacaoCell value={cell.getValue() as string} />
-                        ) : (
-                          <div className="whitespace-nowrap">
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </div>
-                        )}
+                        Nenhum chamado encontrado
                       </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Footer com informações adicionais */}
-        {data.length === 0 && !isLoading && (
-          <div className="bg-white p-12 text-center">
-            <div className="space-y-4">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-200">
-                <TrendingUp className="h-8 w-8 text-red-500" />
-              </div>
-              <div>
-                <h3 className="mb-2 text-lg font-bold text-black">
-                  Nenhum chamado encontrado
-                </h3>
-                <p className="text-black">
-                  Não há registros para o período {mes}/{ano} com os filtros
-                  selecionados.
-                </p>
-              </div>
+                    </tr>
+                  ) : (
+                    table.getRowModel().rows.map((row, rowIndex) => (
+                      <tr
+                        key={row.id}
+                        className={`group cursor-pointer border-b border-slate-700 transition-all duration-100 hover:bg-white/90 ${
+                          rowIndex % 2 === 0
+                            ? 'bg-slate-900'
+                            : 'bg-slate-800/30'
+                        }`}
+                        onClick={() => openModal(row.original)}
+                      >
+                        {row.getVisibleCells().map(cell => (
+                          <td
+                            key={cell.id}
+                            className="p-3 text-sm font-semibold tracking-wider text-white group-hover:text-black"
+                            style={{ width: getColumnWidth(cell.column.id) }}
+                          >
+                            <div className="overflow-hidden">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </div>
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
-        )}
-      </div>
+
+          {/* Footer com informações adicionais */}
+          {data.length === 0 && !isLoading && (
+            <div className="bg-white p-12 text-center">
+              <div className="space-y-4">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-200">
+                  <TrendingUp className="h-8 w-8 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="mb-2 text-lg font-bold text-black">
+                    Nenhum chamado encontrado
+                  </h3>
+                  <p className="text-black">
+                    Não há registros para o período {mes}/{ano} com os filtros
+                    selecionados.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </TooltipProvider>
 
       {/* Modal com design atualizado */}
       <Modal
@@ -432,4 +442,21 @@ export default function Tabela({
       />
     </>
   );
+}
+
+// Função para largura fixa por coluna
+function getColumnWidth(columnId: string): string {
+  const widthMap: Record<string, string> = {
+    chamado_os: '120px',
+    dtini_os: '110px',
+    nome_cliente: '230px',
+    status_chamado: '150px',
+    nome_recurso: '200px',
+    hrini_os: '100px',
+    hrfim_os: '100px',
+    total_horas: '120px',
+    obs: '300px',
+  };
+
+  return widthMap[columnId] || '150px';
 }

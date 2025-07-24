@@ -1,6 +1,11 @@
 import { ColumnDef } from '@tanstack/react-table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
-// Define o tipo das propriedades de cada linha da tabela
 export type TableRowProps = {
   chamado_os: string;
   dtini_os: string;
@@ -13,99 +18,151 @@ export type TableRowProps = {
   obs: string;
 };
 
-// Define as colunas da tabela, especificando como cada campo será exibido
 export const colunasTabela: ColumnDef<TableRowProps>[] = [
-  // Coluna para o código do chamado
   {
     accessorKey: 'chamado_os',
-    header: 'CÓD.',
+    header: () => <div className="text-center">Chamado</div>,
     cell: ({ getValue }) => (
-      <div className="text-center">{getValue() as string}</div>
-    ),
-  },
-  // Coluna para a data, com formatação condicional
-  {
-    accessorKey: 'dtini_os',
-    header: 'Data',
-    cell: ({ getValue }) => {
-      const dateString = getValue() as string;
-
-      // Se já estiver no formato dd/MM/yyyy, retorna como está
-      if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
-        return dateString;
-      }
-
-      // Tenta converter de yyyy-MM-dd para dd/MM/yyyy
-      try {
-        const [year, month, day] = dateString.split('T')[0].split('-');
-        return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
-      } catch {
-        // Se falhar, exibe o valor original e mostra um aviso no console
-        console.warn('Formato de data não reconhecido:', dateString);
-        return dateString;
-      }
-    },
-  },
-  // Coluna para o nome do cliente, com truncamento de texto
-  {
-    accessorKey: 'nome_cliente',
-    header: 'Cliente',
-    cell: ({ getValue }) => (
-      <div className="max-w-[180px] truncate text-left">
+      <div className="rounded-lg bg-green-800/50 p-2 text-center text-green-400 ring-1 ring-green-400">
         {getValue() as string}
       </div>
     ),
   },
-  // Coluna para o status do chamado
+  // ------------------------------
   {
-    accessorKey: 'status_chamado', // Alterado para corresponder à API
-    header: 'Status',
+    accessorKey: 'dtini_os',
+    header: () => <div className="text-center">Data</div>,
+    cell: ({ getValue }) => {
+      const dateString = getValue() as string;
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
+        return <div className="text-center">{dateString}</div>;
+      }
+      try {
+        const [year, month, day] = dateString.split('T')[0].split('-');
+        return (
+          <div className="text-center">
+            {`${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`}
+          </div>
+        );
+      } catch {
+        console.warn('Formato de data não reconhecido:', dateString);
+        return <div className="text-center">{dateString}</div>;
+      }
+    },
+  },
+  // ------------------------------
+  {
+    accessorKey: 'nome_cliente',
+    header: () => <div className="text-center">Cliente</div>,
     cell: ({ getValue }) => (
-      <div className="text-left">{getValue() as string}</div>
+      <div className="truncate text-left" title={getValue() as string}>
+        {getValue() as string}
+      </div>
     ),
   },
-  // Coluna para o nome do recurso
+  // ------------------------------
   {
-    accessorKey: 'nome_recurso', // Alterado para corresponder à API
-    header: 'Recurso',
+    accessorKey: 'status_chamado',
+    header: () => <div className="text-center">Status</div>,
+    cell: ({ getValue }) => {
+      const value = getValue() as string | undefined;
+      const getStatusStyle = (status: string | undefined) => {
+        switch (status?.toLowerCase()) {
+          case 'standby':
+            return 'bg-yellow-800/50 text-yellow-400 ring-1 ring-yellow-400';
+          case 'em atendimento':
+            return 'bg-blue-800/50 text-blue-400 ring-1 ring-blue-400';
+          case 'finalizado':
+            return 'bg-green-800/50 text-green-400 ring-1 ring-green-400';
+          case 'atribuido':
+            return 'bg-pink-800/50 text-pink-400 ring-1 ring-pink-400';
+          case 'aguardando validacao':
+            return 'bg-purple-800/50 text-purple-400 ring-1 ring-purple-400';
+          default:
+            return 'bg-gray-800/50 text-gray-400 ring-1 ring-gray-400';
+        }
+      };
+      return (
+        <div className="text-center">
+          <span
+            className={`block w-full rounded-lg p-2 ${getStatusStyle(value)}`}
+          >
+            {value ?? 'Sem status'}
+          </span>
+        </div>
+      );
+    },
+  },
+  // ------------------------------
+  {
+    accessorKey: 'nome_recurso',
+    header: () => <div className="text-center">Recurso</div>,
     cell: ({ getValue }) => (
-      <div className="text-left">{getValue() as string}</div>
+      <div className="truncate text-left" title={getValue() as string}>
+        {getValue() as string}
+      </div>
     ),
   },
-  // Coluna para a hora de início
+  // ------------------------------
   {
     accessorKey: 'hrini_os',
-    header: 'Hora Início',
-    cell: ({ getValue }) => (
-      <div className="text-left">{getValue() as string}</div>
-    ),
+    header: () => <div className="text-center">HR Início</div>,
+    cell: ({ getValue }) => {
+      const raw = getValue();
+      if (!raw) return <div className="text-center">–</div>;
+      const hora = raw.toString().padStart(3, '0');
+      const hh = hora.slice(0, 2);
+      const mm = hora.slice(2, 5);
+      return <div className="text-center">{`${hh}${mm}`}</div>;
+    },
   },
-  // Coluna para a hora de fim
+  // ------------------------------
   {
     accessorKey: 'hrfim_os',
-    header: 'Hora Fim',
-    cell: ({ getValue }) => (
-      <div className="text-left">{getValue() as string}</div>
-    ),
+    header: () => <div className="text-center">HR Fim</div>,
+    cell: ({ getValue }) => {
+      const raw = getValue();
+      if (!raw) return <div className="text-center">–</div>;
+      const hora = raw.toString().padStart(3, '0');
+      const hh = hora.slice(0, 2);
+      const mm = hora.slice(2, 5);
+      return <div className="text-center">{`${hh}${mm}`}</div>;
+    },
   },
-  // Coluna para o tempo total, com destaque na cor azul
+  // ------------------------------
   {
-    accessorKey: 'total_horas', // Alterado para corresponder à API
-    header: 'Tempo Total',
+    accessorKey: 'total_horas',
+    header: () => <div className="text-center">Total HR's</div>,
     cell: ({ getValue }) => (
-      <div className="text-left">{getValue() as string}</div>
+      <div className="rounded-lg bg-blue-800/50 p-2 text-center text-blue-400 ring-1 ring-blue-400">
+        {getValue() as string}
+      </div>
     ),
   },
-  // Coluna para observações, com truncamento e tooltip
+  // ------------------------------
   {
     accessorKey: 'obs',
-    header: 'Observação',
+    header: () => <div className="text-center">Observação</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string;
+
       return (
-        <div title={value} className="max-w-[200px] truncate text-left">
-          {value}
-        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="cursor-help truncate text-left">{value}</div>
+            </TooltipTrigger>
+
+            <TooltipContent
+              side="top" // (top, bottom, left, right) - aqui aparece acima
+              align="start" // start = esquerda, center = padrão, end = direita
+              sideOffset={10} // distância entre o trigger e o tooltip
+              className="max-w-md -translate-x-10 border border-slate-700 bg-slate-950 text-sm tracking-wider break-words text-white"
+            >
+              {value}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       );
     },
   },
