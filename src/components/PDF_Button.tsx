@@ -22,7 +22,7 @@ interface ExportaPDFButtonProps<T> {
 }
 
 // Componente principal que renderiza o botão de exportação para PDF.
-export default function ExportaPDFButton<T extends Record<string, any>>({
+export default function PDFButton<T extends Record<string, any>>({
   data,
   fileName,
   buttonText = 'PDF',
@@ -163,8 +163,8 @@ export default function ExportaPDFButton<T extends Record<string, any>>({
       className={`group flex items-center rounded-lg px-4 py-2 text-sm font-medium ${
         disabled || data.length === 0
           ? 'cursor-not-allowed text-indigo-500'
-          : 'bg-red-500 text-white hover:bg-red-600 active:scale-90'
-      } transition-colors duration-200 ${className}`}
+          : 'cursor-pointer bg-red-500 text-white hover:bg-red-600 active:scale-90'
+      } transition-all duration-100 ${className}`}
     >
       <AiOutlineFilePdf className="mr-2 h-4 w-4 text-red-500 group-hover:text-white" />
       {buttonText}

@@ -7,6 +7,7 @@ import { RiFileExcel2Line } from 'react-icons/ri';
 interface ExportaExcelButtonProps<T> {
   data: T[];
   fileName: string;
+  title?: string;
   buttonText?: string;
   disabled?: boolean;
   className?: string;
@@ -18,7 +19,7 @@ interface ExportaExcelButtonProps<T> {
   freezeHeader?: boolean;
 }
 
-export default function ExportaExcelButton<T>({
+export default function ExcelButton<T>({
   data,
   fileName,
   buttonText = 'Excel',
@@ -89,8 +90,8 @@ export default function ExportaExcelButton<T>({
       className={`group flex items-center rounded-lg px-4 py-2 text-sm font-medium ${
         disabled || data.length === 0
           ? 'cursor-not-allowed text-indigo-500'
-          : 'bg-green-500 text-white hover:bg-green-600 active:scale-90'
-      } transition-colors duration-200 ${className}`}
+          : 'cursor-pointer bg-green-500 text-white hover:bg-green-600 active:scale-90'
+      } transition-all duration-100 ${className}`}
     >
       <RiFileExcel2Line className="mr-2 h-4 w-4 text-green-500 group-hover:text-white" />
       {buttonText}

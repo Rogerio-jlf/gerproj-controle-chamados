@@ -156,8 +156,8 @@ export const colunasTabela: ColumnDef<TableRowProps>[] = [
             <TooltipContent
               side="top" // (top, bottom, left, right) - aqui aparece acima
               align="start" // start = esquerda, center = padrão, end = direita
-              sideOffset={10} // distância entre o trigger e o tooltip
-              className="max-w-md -translate-x-10 border border-slate-700 bg-slate-950 text-sm tracking-wider break-words text-white"
+              sideOffset={16} // distância entre o trigger e o tooltip
+              className="max-w-md -translate-x-10 border border-slate-700 bg-white text-sm tracking-wider break-words text-black"
             >
               {value}
             </TooltipContent>

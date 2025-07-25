@@ -12,15 +12,12 @@ import axios from 'axios';
 import { AlertCircle, Clock, Database, TrendingUp, Users } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { TableRowProps, colunasTabela } from './Colunas';
-import ExportaExcelButton from './Exportar_Excel_Button';
-import ExportaPDFButton from './Exportar_PDF_Button';
+import ExcelButton from '../../../components/Excel_Button';
+import PDFButton from '../../../components/PDF_Button';
 import Modal from './Modal';
-import StatusBadge from './Status_Badge';
 import Cards from './Cards';
-import { ObservacaoCell } from './Tooltip';
 import { TooltipProvider } from '../../../components/ui/tooltip';
 
-// Interface para os filtros recebidos como props.
 interface FiltersProps {
   ano: string;
   mes: string;
@@ -54,7 +51,6 @@ const fetchChamados = async (params: URLSearchParams) => {
   };
 };
 
-// Componente principal da tabela de chamados.
 export default function Tabela({
   ano,
   mes,
@@ -160,32 +156,22 @@ export default function Tabela({
     return { totalChamados, totalRecursos };
   }, [data]);
 
-  // Renderiza mensagem de acesso restrito se não estiver logado.
+  // -------------------------------------------------------------------
+
+  // IS LOGGED CHECK
   if (!isLoggedIn) {
     return (
       <div className="min-h-[500px] rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
         <div className="flex h-full items-center justify-center p-12">
           <div className="space-y-6 text-center">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-red-200 bg-gradient-to-br from-red-50 to-red-100">
-              <svg
-                className="h-10 w-10 text-red-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                />
-              </svg>
+              <AlertCircle className="h-10 w-10 text-red-400" />
             </div>
             <div>
-              <h3 className="mb-2 text-xl font-bold text-slate-800">
-                Acesso Restrito
+              <h3 className="mb-2 text-xl font-bold tracking-wider text-slate-800 select-none">
+                Acesso restrito!
               </h3>
-              <p className="mx-auto max-w-md text-slate-600">
+              <p className="mx-auto max-w-md tracking-wider text-slate-600 select-none">
                 Você precisa estar logado para visualizar os chamados do
                 sistema.
               </p>
@@ -196,7 +182,7 @@ export default function Tabela({
     );
   }
 
-  // Renderiza indicador de carregamento enquanto busca dados.
+  // LOADING CARREGAMENTO
   if (isLoading) {
     return (
       <div className="min-h-[500px] rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
@@ -212,11 +198,11 @@ export default function Tabela({
               </div>
             </div>
             <div>
-              <h3 className="mb-2 text-xl font-semibold text-slate-800">
-                Carregando Dados
+              <h3 className="mb-2 text-xl font-semibold tracking-wider text-slate-800 select-none">
+                Carregando os dados...
               </h3>
-              <p className="text-slate-600">
-                Buscando informações dos chamados...
+              <p className="tracking-wider text-slate-600 select-none">
+                Buscando informações dos chamados, aguarde...
               </p>
             </div>
           </div>
@@ -225,10 +211,12 @@ export default function Tabela({
     );
   }
 
-  // Renderiza mensagem de erro caso ocorra algum problema na requisição.
+  // ERRO MESSAGE
   if (isError) {
     const errorMessage =
-      error instanceof Error ? error.message : 'Erro ao carregar chamados';
+      error instanceof Error
+        ? error.message
+        : 'Não foi possível carregar os dados. Tente novamente mais tarde.';
 
     return (
       <div className="min-h-[500px] rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 to-red-100 shadow-xl">
@@ -238,10 +226,12 @@ export default function Tabela({
               <AlertCircle className="h-10 w-10 text-red-500" />
             </div>
             <div>
-              <h3 className="mb-2 text-xl font-bold text-red-800">
-                Erro ao Carregar
+              <h3 className="mb-2 text-xl font-bold tracking-wider text-red-800 select-none">
+                Oops... Algo deu errado!
               </h3>
-              <p className="mx-auto max-w-md text-red-600">{errorMessage}</p>
+              <p className="mx-auto max-w-md tracking-wider text-red-600 select-none">
+                {errorMessage}
+              </p>
             </div>
           </div>
         </div>
@@ -249,21 +239,19 @@ export default function Tabela({
     );
   }
 
-  // Renderiza a tabela de chamados, exportações e modal.
+  // -------------------------------------------------------------------
+
   return (
     <>
       <TooltipProvider>
-        {/* CONTAINER PRINCIPAL */}
         <div className="overflow-hidden rounded-lg border border-gray-300 bg-slate-900">
-          {/* CONTAINER */}
-          <div className="bg-slate-900 p-6">
-            {/* HEADER / CARDS / EXCEL / PDF */}
+          {/* ===== HEADER / CARDS / EXCEL / PDF ===== */}
+          <header className="bg-slate-900 p-6">
             <div className="flex items-start justify-between">
-              {/* TÍTULO / CARDS */}
               <div className="space-y-4">
                 {/* TÍTULO */}
                 <div>
-                  <h1 className="text-2xl font-extrabold tracking-wider text-white italic">
+                  <h1 className="text-2xl font-extrabold tracking-wider text-white italic select-none">
                     Tabela de Chamados - {mes}/{ano}
                   </h1>
                 </div>
@@ -296,17 +284,18 @@ export default function Tabela({
               {/* EXCEL / PDF */}
               <div className="flex flex-col gap-5">
                 {/* EXCEL */}
-                <ExportaExcelButton
+                <ExcelButton
                   data={data}
-                  fileName={`relatorio_${mes}_${ano}`}
+                  fileName={`relatorio_de_chamados_${mes}_${ano}`}
+                  title={`Relatório de Chamados - ${mes}/${ano}`}
                   columns={[
-                    { key: 'chamado_os', label: 'N° OS' },
-                    { key: 'nome_cliente', label: 'Nome Completo' },
+                    { key: 'chamado_os', label: 'Chamado' },
+                    { key: 'nome_cliente', label: 'Cliente' },
                     { key: 'dtini_os', label: 'Data' },
                     { key: 'status_chamado', label: 'Status' },
                     { key: 'hrini_os', label: 'Hora Início' },
                     { key: 'hrfim_os', label: 'Hora Fim' },
-                    { key: 'total_horas', label: 'Duração' },
+                    { key: 'total_horas', label: 'Total Horas' },
                     { key: 'obs', label: 'Observação' },
                   ]}
                   autoFilter={true}
@@ -315,30 +304,28 @@ export default function Tabela({
                 />
 
                 {/* PDF */}
-                <ExportaPDFButton
+                <PDFButton
                   data={data}
-                  fileName={`relatorio_chamados_${mes}_${ano}`}
+                  fileName={`relatorio_de_chamados_${mes}_${ano}`}
                   title={`Relatório de Chamados - ${mes}/${ano}`}
                   columns={[
-                    { key: 'chamado_os', label: 'N° OS' },
+                    { key: 'chamado_os', label: 'Chamado' },
                     { key: 'nome_cliente', label: 'Cliente' },
                     { key: 'dtini_os', label: 'Data' },
                     { key: 'status_chamado', label: 'Status' },
                     { key: 'hrini_os', label: 'Hora Início' },
                     { key: 'hrfim_os', label: 'Hora Fim' },
-                    { key: 'total_horas', label: 'Duração' },
+                    { key: 'total_horas', label: 'Total Horas' },
                     { key: 'obs', label: 'Observação' },
                   ]}
                   footerText="Gerado pelo sistema em"
                   className="border border-white/20 bg-white/10 text-white"
                 />
               </div>
-              {/* ---------- */}
             </div>
-            {/* ---------- */}
-          </div>
+          </header>
 
-          {/* TABELA */}
+          {/* ===== TABELA ===== */}
           <div className="h-full w-full overflow-hidden border border-white bg-slate-900">
             <div
               className="scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 h-full overflow-y-auto"
@@ -353,7 +340,7 @@ export default function Tabela({
                       {headerGroup.headers.map(header => (
                         <th
                           key={header.id}
-                          className="border-b border-gray-300 bg-teal-700 p-3 font-semibold text-white"
+                          className="border-b border-gray-300 bg-teal-800 p-3 font-semibold tracking-wider text-white select-none"
                           style={{ width: getColumnWidth(header.column.id) }}
                         >
                           {header.isPlaceholder
@@ -368,7 +355,7 @@ export default function Tabela({
                   ))}
                 </thead>
 
-                {/* Corpo */}
+                {/* BODY */}
                 <tbody>
                   {table.getRowModel().rows.length === 0 && !isLoading ? (
                     <tr>
@@ -383,10 +370,10 @@ export default function Tabela({
                     table.getRowModel().rows.map((row, rowIndex) => (
                       <tr
                         key={row.id}
-                        className={`group cursor-pointer border-b border-slate-700 transition-all duration-100 hover:bg-white/90 ${
+                        className={`group cursor-pointer border-b border-slate-700 transition-all duration-100 hover:bg-white/50 ${
                           rowIndex % 2 === 0
                             ? 'bg-slate-900'
-                            : 'bg-slate-800/30'
+                            : 'bg-slate-800/50'
                         }`}
                         onClick={() => openModal(row.original)}
                       >
@@ -412,7 +399,7 @@ export default function Tabela({
             </div>
           </div>
 
-          {/* Footer com informações adicionais */}
+          {/* MENSAGEM QUANDO NÃO HÁ DADOS */}
           {data.length === 0 && !isLoading && (
             <div className="bg-white p-12 text-center">
               <div className="space-y-4">
@@ -421,7 +408,7 @@ export default function Tabela({
                 </div>
                 <div>
                   <h3 className="mb-2 text-lg font-bold text-black">
-                    Nenhum chamado encontrado
+                    Nenhum chamado encontrado.
                   </h3>
                   <p className="text-black">
                     Não há registros para o período {mes}/{ano} com os filtros
@@ -434,7 +421,7 @@ export default function Tabela({
         </div>
       </TooltipProvider>
 
-      {/* Modal com design atualizado */}
+      {/* MODAL */}
       <Modal
         isOpen={isModalOpen}
         selectedRow={selectedRow}

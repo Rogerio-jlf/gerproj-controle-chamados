@@ -12,9 +12,9 @@ import {
 import { useMemo, useState } from 'react';
 import { ChamadosProps, colunasTabela } from './Colunas';
 import Modal from './Modal';
-import { AlertCircle, Clock, Database, TrendingUp, Users } from 'lucide-react';
-import ExportaExcelButton from '../../tabela-chamados/components/Exportar_Excel_Button';
-import ExportaPDFButton from '../../tabela-chamados/components/Exportar_PDF_Button';
+import { AlertCircle, Database, TrendingUp } from 'lucide-react';
+import ExcelButton from '../../../components/Excel_Button';
+import PDFButton from '../../../components/PDF_Button';
 import Cards from './Cards';
 
 async function fetchChamados(
@@ -95,31 +95,22 @@ export default function Tabela() {
     };
   }, [data]);
 
+  // -------------------------------------------------------------------
+
+  // IS LOGGED CHECK
   if (!enabled || authLoading) {
     return (
       <div className="min-h-[500px] rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
         <div className="flex h-full items-center justify-center p-12">
           <div className="space-y-6 text-center">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-red-200 bg-gradient-to-br from-red-50 to-red-100">
-              <svg
-                className="h-10 w-10 text-red-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                />
-              </svg>
+              <AlertCircle className="h-10 w-10 text-red-400" />
             </div>
             <div>
-              <h3 className="mb-2 text-xl font-bold text-slate-800">
-                Acesso Restrito
+              <h3 className="mb-2 text-xl font-bold tracking-wider text-slate-800 select-none">
+                Acesso restrito!
               </h3>
-              <p className="mx-auto max-w-md text-slate-600">
+              <p className="mx-auto max-w-md tracking-wider text-slate-600 select-none">
                 Você precisa estar logado para visualizar os chamados do
                 sistema.
               </p>
@@ -130,7 +121,7 @@ export default function Tabela() {
     );
   }
 
-  // Renderiza indicador de carregamento enquanto busca dados.
+  // LOADING CARREGAMENTO
   if (isLoading) {
     return (
       <div className="min-h-[500px] rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
@@ -146,11 +137,11 @@ export default function Tabela() {
               </div>
             </div>
             <div>
-              <h3 className="mb-2 text-xl font-semibold text-slate-800">
-                Carregando Dados
+              <h3 className="mb-2 text-xl font-semibold tracking-wider text-slate-800 select-none">
+                Carregando os dados...
               </h3>
-              <p className="text-slate-600">
-                Buscando informações dos chamados...
+              <p className="tracking-wider text-slate-600 select-none">
+                Buscando informações dos chamados, aguarde...
               </p>
             </div>
           </div>
@@ -159,10 +150,12 @@ export default function Tabela() {
     );
   }
 
-  // Renderiza mensagem de erro caso ocorra algum problema na requisição.
+  // ERRO MESSAGE
   if (isError) {
     const errorMessage =
-      error instanceof Error ? error.message : 'Erro ao carregar chamados';
+      error instanceof Error
+        ? error.message
+        : 'Não foi possível carregar os dados. Tente novamente mais tarde.';
 
     return (
       <div className="min-h-[500px] rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 to-red-100 shadow-xl">
@@ -172,10 +165,12 @@ export default function Tabela() {
               <AlertCircle className="h-10 w-10 text-red-500" />
             </div>
             <div>
-              <h3 className="mb-2 text-xl font-bold text-red-800">
-                Erro ao Carregar
+              <h3 className="mb-2 text-xl font-bold tracking-wider text-red-800 select-none">
+                Oops... Algo deu errado!
               </h3>
-              <p className="mx-auto max-w-md text-red-600">{errorMessage}</p>
+              <p className="mx-auto max-w-md tracking-wider text-red-600 select-none">
+                {errorMessage}
+              </p>
             </div>
           </div>
         </div>
@@ -183,20 +178,19 @@ export default function Tabela() {
     );
   }
 
+  // -------------------------------------------------------------------
+
   return (
     <>
       <TooltipProvider>
-        {/* CONTAINER PRINCIPAL */}
         <div className="overflow-hidden rounded-lg border border-gray-300 bg-slate-900">
-          {/* CONTAINER */}
-          <div className="bg-slate-900 p-6">
-            {/* HEADER / CARDS / EXCEL / PDF */}
+          {/* ===== HEADER / CARDS / EXCEL / PDF ===== */}
+          <header className="bg-slate-900 p-6">
             <div className="flex items-start justify-between">
-              {/* TÍTULO / CARDS */}
               <div className="space-y-4">
                 {/* TÍTULO */}
                 <div>
-                  <h1 className="text-2xl font-extrabold tracking-wider text-white italic">
+                  <h1 className="text-2xl font-extrabold tracking-wider text-white italic select-none">
                     Tabela de Chamados - {mes}/{ano}
                   </h1>
                 </div>
@@ -217,12 +211,13 @@ export default function Tabela() {
               {/* EXCEL / PDF */}
               <div className="flex flex-col gap-5">
                 {/* EXCEL */}
-                <ExportaExcelButton
+                <ExcelButton
                   data={data ?? []}
-                  fileName={`relatorio_${mes}_${ano}`}
+                  fileName={`relatorio_de_chamados_${mes}_${ano}`}
+                  title={`Relatório de Chamados - ${mes}/${ano}`}
                   columns={[
                     { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
-                    { key: 'COD_CHAMADO', label: 'N° OS' },
+                    { key: 'COD_CHAMADO', label: 'Chamado' },
                     { key: 'DATA_CHAMADO', label: 'Data' },
                     { key: 'HORA_CHAMADO', label: 'Hora' },
                     { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
@@ -230,7 +225,7 @@ export default function Tabela() {
                     { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
                     { key: 'RECURSO.NOME_RECURSO', label: 'Recurso' },
                     { key: 'CLIENTE.NOME_CLIENTE', label: 'Cliente' },
-                    { key: 'CODTRF_CHAMADO', label: 'Código TRF' },
+                    { key: 'CODTRF_CHAMADO', label: 'Código Tarefa' },
                     { key: 'EMAIL_CHAMADO', label: 'Email' },
                     { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
                   ]}
@@ -240,13 +235,13 @@ export default function Tabela() {
                 />
 
                 {/* PDF */}
-                <ExportaPDFButton
+                <PDFButton
                   data={data ?? []}
                   fileName={`relatorio_chamados_${mes}_${ano}`}
                   title={`Relatório de Chamados - ${mes}/${ano}`}
                   columns={[
                     { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
-                    { key: 'COD_CHAMADO', label: 'N° OS' },
+                    { key: 'COD_CHAMADO', label: 'Chamado' },
                     { key: 'DATA_CHAMADO', label: 'Data' },
                     { key: 'HORA_CHAMADO', label: 'Hora' },
                     { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
@@ -254,7 +249,7 @@ export default function Tabela() {
                     { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
                     { key: 'RECURSO.NOME_RECURSO', label: 'Recurso' },
                     { key: 'CLIENTE.NOME_CLIENTE', label: 'Cliente' },
-                    { key: 'CODTRF_CHAMADO', label: 'Código TRF' },
+                    { key: 'CODTRF_CHAMADO', label: 'Código Tarefa' },
                     { key: 'EMAIL_CHAMADO', label: 'Email' },
                     { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
                   ]}
@@ -263,67 +258,82 @@ export default function Tabela() {
                 />
               </div>
             </div>
-          </div>
+          </header>
 
-          {/* Tabela com scroll customizado */}
-          <div className="overflow-hidden">
+          {/* ===== TABELA ===== */}
+          <div className="h-full w-full overflow-hidden border border-white bg-slate-900">
             <div
-              className="scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 overflow-y-auto"
+              className="scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 h-full overflow-y-auto"
               style={{ maxHeight: 'calc(100vh - 424px)' }}
             >
-              <table className="w-full">
-                {/* Cabeçalho da tabela com efeito glassmorphism */}
+              <table className="w-full table-fixed border-collapse">
+                {/* HEADER */}
                 <thead className="sticky top-0 z-20">
                   {table.getHeaderGroups().map(headerGroup => (
                     <tr key={headerGroup.id}>
                       {headerGroup.headers.map(header => (
                         <th
                           key={header.id}
-                          className="border-b border-gray-300 bg-teal-700 p-2 text-left font-semibold text-white"
+                          className="border-b border-gray-300 bg-teal-800 p-3 font-semibold tracking-wider text-white select-none"
+                          style={{ width: getColumnWidth(header.column.id) }}
                         >
-                          <div className="flex items-center">
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )}
-                          </div>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
                         </th>
                       ))}
                     </tr>
                   ))}
                 </thead>
 
-                {/* Corpo da tabela com hover effects modernos */}
+                {/* BODY */}
                 <tbody>
-                  {table.getRowModel().rows.map(row => (
-                    <tr
-                      key={row.id}
-                      className="group cursor-pointer border-b border-slate-700 transition-all duration-100 hover:bg-white/90"
-                      onClick={() => handleRowClick(row.original)}
-                    >
-                      {row.getVisibleCells().map(cell => (
-                        <td
-                          key={cell.id}
-                          className="group-transition-all group-duration-100 p-3 text-sm text-white group-hover:text-base group-hover:font-semibold group-hover:text-black group-hover:italic"
-                        >
-                          <div className="overflow-hidden">
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </div>
-                        </td>
-                      ))}
+                  {table.getRowModel().rows.length === 0 && !isLoading ? (
+                    <tr>
+                      <td
+                        colSpan={table.getHeaderGroups()[0].headers.length}
+                        className="p-6 text-center text-sm text-gray-400"
+                      >
+                        Nenhum chamado encontrado
+                      </td>
                     </tr>
-                  ))}
+                  ) : (
+                    table.getRowModel().rows.map((row, rowIndex) => (
+                      <tr
+                        key={row.id}
+                        className={`group cursor-pointer border-b border-slate-700 transition-all duration-100 hover:bg-white/50 ${
+                          rowIndex % 2 === 0
+                            ? 'bg-slate-900'
+                            : 'bg-slate-800/50'
+                        }`}
+                        onClick={() => handleRowClick(row.original)}
+                      >
+                        {row.getVisibleCells().map(cell => (
+                          <td
+                            key={cell.id}
+                            className="p-3 text-sm font-semibold tracking-wider text-white group-hover:text-black"
+                            style={{ width: getColumnWidth(cell.column.id) }}
+                          >
+                            <div className="overflow-hidden">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </div>
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Footer com informações adicionais */}
+          {/* MENSAGEM QUANDO NÃO HÁ DADOS */}
           {Array.isArray(data) && data.length === 0 && !isLoading && (
             <div className="bg-white p-12 text-center">
               <div className="space-y-4">
@@ -332,7 +342,7 @@ export default function Tabela() {
                 </div>
                 <div>
                   <h3 className="mb-2 text-lg font-bold text-black">
-                    Nenhum chamado encontrado
+                    Nenhum chamado encontrado.
                   </h3>
                   <p className="text-black">
                     Não há registros para o período {mes}/{ano} com os filtros
@@ -353,4 +363,24 @@ export default function Tabela() {
       />
     </>
   );
+}
+
+// Função para largura fixa por coluna
+function getColumnWidth(columnId: string): string {
+  const widthMap: Record<string, string> = {
+    PRIOR_CHAMADO: '120px',
+    COD_CHAMADO: '110px',
+    DATA_CHAMADO: '230px',
+    HORA_CHAMADO: '150px',
+    ASSUNTO_CHAMADO: '200px',
+    STATUS_CHAMADO: '100px',
+    COD_CLASSIFICACAO: '100px',
+    'RECURSO.NOME_RECURSO': '120px',
+    'CLIENTE.NOME_CLIENTE': '300px',
+    CODTRF_CHAMADO: '300px',
+    EMAIL_CHAMADO: '300px',
+    CONCLUSAO_CHAMADO: '300px',
+  };
+
+  return widthMap[columnId] || '150px';
 }
