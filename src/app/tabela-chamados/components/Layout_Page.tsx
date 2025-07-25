@@ -7,7 +7,8 @@ import Sidebar from '@/components/Sidebar';
 import { useFiltersTabelaChamados } from '@/contexts/Filters_Tabela_Chamados_Context';
 import { useCallback, useState } from 'react';
 import { useAuth } from '../../../contexts/Auth_Context';
-import Header from './Header';
+import Header from '../../../components/Header';
+import { HiDocumentCheck } from 'react-icons/hi2';
 
 export default function LayoutPage() {
   const { isAdmin, codCliente } = useAuth();
@@ -48,7 +49,12 @@ export default function LayoutPage() {
           {/* CONTEÚDO FIXO NO TOPO */}
           <div className="flex flex-col space-y-6 p-4">
             {/* HEADER */}
-            <Header />
+            <Header
+              titulo="Chamados"
+              icon={
+                <HiDocumentCheck className="h-10 w-10 transition-all duration-300 hover:rotate-90" />
+              }
+            />
 
             {/* FILTROS */}
             <div className="max-w-full">

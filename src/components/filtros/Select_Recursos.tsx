@@ -87,7 +87,7 @@ export default function SelectRecurso({
         <SelectContent className="z-50 rounded-lg bg-white p-2 shadow-md shadow-black">
           <SelectItem
             value="all"
-            className="cursor-pointer rounded-lg p-4 text-lg font-semibold tracking-wider text-black transition-colors duration-150 hover:bg-gray-100 focus:bg-purple-500 focus:text-white data-[highlighted]:bg-purple-500 data-[highlighted]:text-white"
+            className="cursor-pointer rounded-lg p-4 text-lg font-semibold tracking-wider text-black transition-colors duration-300 hover:bg-gray-100 focus:bg-purple-500 focus:text-white data-[highlighted]:bg-purple-500 data-[highlighted]:text-white"
           >
             Todos recursos
           </SelectItem>
@@ -96,7 +96,7 @@ export default function SelectRecurso({
             <SelectItem
               key={NomeRecurso}
               value={NomeRecurso}
-              className="cursor-pointer rounded-lg p-4 text-lg font-semibold tracking-wider text-black transition-colors duration-150 hover:bg-gray-100 focus:bg-purple-500 focus:text-white data-[highlighted]:bg-purple-500 data-[highlighted]:text-white"
+              className="cursor-pointer rounded-lg p-4 text-lg font-semibold tracking-wider text-black transition-colors duration-300 hover:bg-gray-100 focus:bg-purple-500 focus:text-white data-[highlighted]:bg-purple-500 data-[highlighted]:text-white"
             >
               {NomeRecurso}
             </SelectItem>

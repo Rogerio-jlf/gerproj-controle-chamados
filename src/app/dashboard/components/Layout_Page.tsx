@@ -20,7 +20,9 @@ import {
   CardFooter,
   CardHeader,
 } from '../../../components/ui/card';
-import Header from './Header';
+import HeaderCardsChartsDashboard from './Header';
+import Header from '../../../components/Header';
+import { MdDashboard } from 'react-icons/md';
 
 export default function LayoutDashboard() {
   const { isAdmin, codCliente } = useAuth();
@@ -59,11 +61,12 @@ export default function LayoutDashboard() {
           } p-4`}
         >
           {/* HEADER */}
-          <header className="flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-5xl font-bold tracking-wider text-black italic">
-              Dashboard
-            </h2>
-          </header>
+          <Header
+            titulo="Dashboard"
+            icon={
+              <MdDashboard className="h-10 w-10 transition-all duration-300 hover:rotate-90" />
+            }
+          />
 
           {/* FILTROS */}
           <div className="max-w-full">
@@ -85,7 +88,7 @@ export default function LayoutDashboard() {
                 <Card className="relative rounded-lg border border-gray-300 bg-white p-6 shadow-md shadow-black">
                   {/* HEADER */}
                   <CardHeader className="p-0">
-                    <Header
+                    <HeaderCardsChartsDashboard
                       titulo="Horas Recurso"
                       subtitulo="Distribuição das horas por recurso ao longo do mês"
                     />
@@ -123,7 +126,7 @@ export default function LayoutDashboard() {
                 <Card className="relative rounded-lg border border-gray-300 bg-white p-6 shadow-md shadow-black">
                   {/* HEADER */}
                   <CardHeader className="p-0">
-                    <Header
+                    <HeaderCardsChartsDashboard
                       titulo="Horas Apontadas"
                       subtitulo="Distribuição das horas apontadas ao longo do ano"
                     />

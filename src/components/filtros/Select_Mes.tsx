@@ -49,7 +49,7 @@ export default function SelectMes({ value, onChange }: SelectMesProps) {
             <SelectItem
               key={i}
               value={(i + 1).toString()}
-              className="cursor-pointer rounded-lg p-4 text-lg font-semibold tracking-wider text-black transition-colors duration-150 hover:bg-gray-100 focus:bg-purple-500 focus:text-white data-[highlighted]:bg-purple-500 data-[highlighted]:text-white"
+              className="cursor-pointer rounded-lg p-4 text-lg font-semibold tracking-wider text-black transition-colors duration-300 hover:bg-gray-100 focus:bg-purple-500 focus:text-white data-[highlighted]:bg-purple-500 data-[highlighted]:text-white"
             >
               {mes}
             </SelectItem>

@@ -91,7 +91,7 @@ export default function ExcelButton<T>({
         disabled || data.length === 0
           ? 'cursor-not-allowed text-indigo-500'
           : 'cursor-pointer bg-green-500 text-white hover:bg-green-600 active:scale-90'
-      } transition-all duration-100 ${className}`}
+      } transition-all duration-300 ${className}`}
     >
       <RiFileExcel2Line className="mr-2 h-4 w-4 text-green-500 group-hover:text-white" />
       {buttonText}

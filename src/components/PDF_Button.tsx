@@ -164,7 +164,7 @@ export default function PDFButton<T extends Record<string, any>>({
         disabled || data.length === 0
           ? 'cursor-not-allowed text-indigo-500'
           : 'cursor-pointer bg-red-500 text-white hover:bg-red-600 active:scale-90'
-      } transition-all duration-100 ${className}`}
+      } transition-all duration-300 ${className}`}
     >
       <AiOutlineFilePdf className="mr-2 h-4 w-4 text-red-500 group-hover:text-white" />
       {buttonText}

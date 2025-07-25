@@ -241,7 +241,7 @@ export default function Modal({ isOpen, onClose, chamado }: ModalChamadoProps) {
                 {!showForm && (
                   <button
                     onClick={() => setShowForm(true)}
-                    className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-150 hover:bg-blue-700"
+                    className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-blue-700"
                   >
                     <Settings className="h-4 w-4" />
                     <span>Configurar Notificações</span>
@@ -386,7 +386,7 @@ export default function Modal({ isOpen, onClose, chamado }: ModalChamadoProps) {
                     </button>
                     <button
                       type="submit"
-                      className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-150 hover:bg-blue-700"
+                      className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-blue-700"
                     >
                       Salvar Configurações
                     </button>

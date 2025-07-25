@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/Auth_Context';
-import { corrigirTextoCorrompido } from '@/utils/corrigirTextoCorrompido';
+import { corrigirTextoCorrompido } from '@/lib/corrigirTextoCorrompido';
 import { useQuery } from '@tanstack/react-query';
 import {
   flexRender,
@@ -370,7 +370,7 @@ export default function Tabela({
                     table.getRowModel().rows.map((row, rowIndex) => (
                       <tr
                         key={row.id}
-                        className={`group cursor-pointer border-b border-slate-700 transition-all duration-100 hover:bg-white/50 ${
+                        className={`group cursor-pointer border-b border-slate-700 transition-all duration-300 hover:bg-white/50 ${
                           rowIndex % 2 === 0
                             ? 'bg-slate-900'
                             : 'bg-slate-800/50'

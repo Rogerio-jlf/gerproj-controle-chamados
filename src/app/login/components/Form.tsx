@@ -3,10 +3,10 @@
 import { useAuth } from '@/contexts/Auth_Context';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import EmailField from './Email';
-import PasswordField from './Password';
-import RememberChecked from './Remember';
-import SubmitButton from './Submit';
+import Email_Input from './Email_Input';
+import Password_Input from './Password_Input';
+import Remember_Check from './Remember_Check';
+import Button_Submit from './Button_Submit';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -80,26 +80,26 @@ export default function Form() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
-      <EmailField value={email} onChange={setEmail} />
-      <PasswordField
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <Email_Input value={email} onChange={setEmail} />
+      <Password_Input
         value={password}
         onChange={setPassword}
         showPassword={showPassword}
         toggleShowPassword={() => setShowPassword(!showPassword)}
       />
-      <RememberChecked
+      <Remember_Check
         rememberMe={rememberMe}
         onToggle={() => setRememberMe(!rememberMe)}
       />
       {error && (
-        <div className="rounded-xl border border-red-400/30 bg-red-500/20 p-3 backdrop-blur-sm">
-          <p className="text-center text-xs font-medium text-red-200 sm:text-sm">
+        <div className="rounded-lg border border-red-400/20 bg-red-400/10 p-3 backdrop-blur-sm">
+          <p className="text-center text-sm font-semibold text-red-200">
             {error}
           </p>
         </div>
       )}
-      <SubmitButton isLoading={isLoading} />
+      <Button_Submit isLoading={isLoading} />
     </form>
   );
 }

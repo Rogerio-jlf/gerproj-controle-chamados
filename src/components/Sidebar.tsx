@@ -7,10 +7,13 @@ import {
   MessageSquare,
   Settings,
   Users,
+  Loader2,
+  FileCheck,
+  FilePlus,
 } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface SidebarButtonProps {
   icon: React.ComponentType<{ className?: string }>;
@@ -19,6 +22,8 @@ interface SidebarButtonProps {
   onClick: () => void;
   variant?: 'primary' | 'secondary' | 'danger';
   collapsed?: boolean;
+  isLoading?: boolean;
+  isNavigating?: boolean;
 }
 
 function SidebarButton({
@@ -28,6 +33,8 @@ function SidebarButton({
   onClick,
   variant = 'primary',
   collapsed = false,
+  isLoading = false,
+  isNavigating = false,
 }: SidebarButtonProps) {
   const [isPressed, setIsPressed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -40,15 +47,18 @@ function SidebarButton({
     setIsPressed(false);
   };
 
-  const primaryStyles = isActive
-    ? `relative bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 text-white shadow-2xl shadow-blue-500/25 border border-blue-400/30 backdrop-blur-sm`
-    : `relative text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-cyan-400/20 hover:via-blue-500/20 hover:to-indigo-600/20 hover:border-blue-400/30 border border-transparent backdrop-blur-sm`;
+  // Se está navegando, usar estilos ativos temporariamente
+  const activeState = isActive || isNavigating;
 
-  const secondaryStyles = isActive
-    ? `relative bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-600 text-white shadow-2xl shadow-emerald-500/25 border border-emerald-400/30 backdrop-blur-sm`
+  const primaryStyles = activeState
+    ? `relative bg-gradient-to-r from-slate-800 via-blue-800 to-cyan-800 text-white shadow-2xl shadow-yellow-950 border border-blue-400/50 backdrop-blur-sm ${isNavigating ? 'animate-pulse' : ''}`
+    : `relative text-white hover:text-black hover:bg-cyan-500 hover:border-blue-400/50 border border-transparent backdrop-blur-sm`;
+
+  const secondaryStyles = activeState
+    ? `relative bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-600 text-white shadow-2xl shadow-emerald-500/25 border border-emerald-400/30 backdrop-blur-sm ${isNavigating ? 'animate-pulse' : ''}`
     : `relative text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-emerald-400/20 hover:via-teal-500/20 hover:to-cyan-600/20 hover:border-emerald-400/30 border border-transparent backdrop-blur-sm`;
 
-  const dangerStyles = `relative text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-red-500/20 hover:via-rose-500/20 hover:to-pink-600/20 hover:border-red-400/30 border border-transparent backdrop-blur-sm`;
+  const dangerStyles = `relative text-white hover:bg-gradient-to-r hover:from-red-500/50 hover:via-rose-500/50 hover:to-pink-500/50 hover:border-red-400/50 border border-transparent backdrop-blur-sm`;
 
   function getVariantStyles() {
     switch (variant) {
@@ -70,64 +80,91 @@ function SidebarButton({
       onMouseUp={handleMouseUp}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`group mb-3 flex w-full transform items-center gap-4 overflow-hidden rounded-2xl p-4 transition-all duration-300 ease-out select-none hover:scale-105 focus:outline-none active:scale-95 ${getVariantStyles()} ${collapsed ? 'justify-center px-3' : ''}`}
+      className={`group mb-3 flex w-full transform cursor-pointer items-center gap-4 overflow-hidden rounded-xl p-4 transition-all duration-300 ease-out select-none hover:scale-105 focus:outline-none active:scale-95 ${getVariantStyles()} ${collapsed ? 'justify-center px-3' : ''}`}
       type="button"
       title={collapsed ? label : undefined}
+      disabled={isLoading || isNavigating}
     >
       {/* Efeito de brilho deslizante */}
-      <div className="absolute inset-0 -translate-x-full rounded-2xl bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
+      <div className="absolute inset-0 -translate-x-full rounded-xl bg-gradient-to-r from-transparent via-black to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
 
       {/* Ondulação ao clicar */}
-      {isPressed && (
-        <div className="absolute inset-0 animate-ping rounded-2xl bg-current opacity-30" />
+      {isPressed && !isNavigating && (
+        <div className="absolute inset-0 animate-ping rounded-xl bg-current opacity-30" />
       )}
 
-      {/* Badge especial para mensagens colapsadas */}
-      {label === 'Mensagens' && collapsed ? (
-        <div className="relative z-10 flex h-8 w-8 animate-pulse items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-rose-600 shadow-lg shadow-red-500/25">
+      {/* Loading overlay */}
+      {(isLoading || isNavigating) && (
+        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-slate-800/30 via-blue-800/30 to-cyan-800/30 backdrop-blur-sm" />
+      )}
+
+      {/* BADGE */}
+      {label === 'Mensagens' && collapsed && !isNavigating ? (
+        <div className="relative z-10 flex h-8 w-8 animate-pulse items-center justify-center rounded-full bg-red-500">
           <span className="text-xs font-bold text-white">99</span>
         </div>
       ) : (
         <>
-          {/* Ícone com efeitos */}
+          {/* ÍCONE */}
           <div className="relative z-10 flex-shrink-0">
             <div
-              className={`rounded-xl p-2 transition-all duration-300 ${isActive ? 'bg-white/20 shadow-lg' : 'group-hover:bg-white/10'}`}
+              className={`rounded-md p-2 transition-all duration-300 ${activeState ? 'bg-white/20 shadow-md shadow-black' : 'group-hover:bg-white/20 group-hover:shadow-md group-hover:shadow-black'}`}
             >
-              <IconComponent
-                className={`h-5 w-5 transition-all duration-300 ${
-                  isActive ? 'scale-110 drop-shadow-lg' : ''
-                } ${isHovered ? 'scale-110 rotate-12' : ''}`}
-              />
+              {isLoading || isNavigating ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <IconComponent
+                  className={`h-5 w-5 transition-all duration-300 ${
+                    activeState ? 'scale-110 drop-shadow-lg' : ''
+                  } ${isHovered && !isNavigating ? 'scale-110 rotate-90' : ''}`}
+                />
+              )}
             </div>
           </div>
 
           {/* Label com efeito de digitação */}
           {!collapsed && (
             <div className="relative z-10 flex-1 items-start text-left">
-              <span className="block text-sm font-semibold tracking-wide transition-all duration-300 group-hover:translate-x-1">
-                {label}
+              <span
+                className={`block text-sm font-semibold tracking-wide transition-all duration-300 group-hover:translate-x-1 ${isNavigating ? 'opacity-75' : ''}`}
+              >
+                {isNavigating ? 'Carregando...' : label}
               </span>
-              {isActive && (
-                <div className="absolute -bottom-1 left-0 h-0.5 w-full rounded-full bg-gradient-to-r from-white via-blue-200 to-transparent" />
+              {activeState && (
+                <div
+                  className={`absolute -bottom-1 left-0 h-0.5 w-full rounded-full bg-gradient-to-r from-white to-transparent ${isNavigating ? 'animate-pulse' : ''}`}
+                />
               )}
             </div>
           )}
 
           {/* Badge de mensagens expandido */}
-          {label === 'Mensagens' && !collapsed && (
+          {label === 'Mensagens' && !collapsed && !isNavigating && (
             <div className="relative z-10">
-              <div className="flex h-7 w-7 animate-pulse items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-rose-600 shadow-lg shadow-red-500/25">
+              <div className="flex h-7 w-7 animate-pulse items-center justify-center rounded-full bg-red-500">
                 <span className="text-xs font-bold text-white">99</span>
               </div>
             </div>
           )}
-        </>
-      )}
 
-      {/* Efeito de borda neon */}
-      {isActive && (
-        <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-r from-cyan-400/20 via-blue-500/20 to-indigo-600/20 blur-xl" />
+          {/* Loading dots para versão colapsada */}
+          {collapsed && isNavigating && (
+            <div className="absolute -bottom-1 left-1/2 flex -translate-x-1/2 space-x-1">
+              <div
+                className="h-1 w-1 animate-bounce rounded-full bg-cyan-400"
+                style={{ animationDelay: '0ms' }}
+              />
+              <div
+                className="h-1 w-1 animate-bounce rounded-full bg-cyan-400"
+                style={{ animationDelay: '150ms' }}
+              />
+              <div
+                className="h-1 w-1 animate-bounce rounded-full bg-cyan-400"
+                style={{ animationDelay: '300ms' }}
+              />
+            </div>
+          )}
+        </>
       )}
     </button>
   );
@@ -147,6 +184,45 @@ export default function Sidebar({
   const router = useRouter();
   const pathname = usePathname();
   const { isAdmin, nomeRecurso } = useAuth();
+  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Limpar estado de navegação quando a rota mudar
+  useEffect(() => {
+    setNavigatingTo(null);
+  }, [pathname]);
+
+  // Função para lidar com navegação
+  const handleNavigation = async (path: string) => {
+    if (navigatingTo || pathname === path) return;
+
+    setNavigatingTo(path);
+
+    // Simular um pequeno delay para feedback visual
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    try {
+      router.push(path);
+    } catch (error) {
+      console.error('Erro na navegação:', error);
+      setNavigatingTo(null);
+    }
+  };
+
+  // Função para lidar com logout
+  const handleLogoutClick = async () => {
+    setIsLoggingOut(true);
+
+    // Simular delay para feedback visual
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    try {
+      onLogout();
+    } catch (error) {
+      console.error('Erro no logout:', error);
+      setIsLoggingOut(false);
+    }
+  };
 
   const getInitials = (nome: string | null) => {
     if (!nome) return '??';
@@ -169,61 +245,61 @@ export default function Sidebar({
       path: '/dashboard',
     },
     {
-      id: 'called',
+      id: 'tabela-chamados',
       label: 'Chamados',
-      icon: BarChart3,
+      icon: FileCheck,
       variant: 'primary' as const,
       path: '/tabela-chamados',
     },
     {
-      id: 'called-abertos',
+      id: 'tabela-chamados-abertos',
       label: 'Chamados Abertos',
-      icon: BarChart3,
+      icon: FilePlus,
       variant: 'primary' as const,
       path: '/tabela-chamados-abertos',
     },
     {
-      id: 'users',
+      id: 'usuarios',
       label: 'Usuários',
       icon: Users,
       variant: 'primary' as const,
       path: '/usuarios',
     },
     {
-      id: 'messages',
+      id: 'mensagens',
       label: 'Mensagens',
       icon: MessageSquare,
       variant: 'primary' as const,
       path: '/mensagens',
     },
     {
-      id: 'settings',
+      id: 'configuracoes',
       label: 'Configurações',
       icon: Settings,
-      variant: 'secondary' as const,
+      variant: 'primary' as const,
       path: '/configuracoes',
     },
   ];
 
   return (
     <div
-      className={`fixed top-0 left-0 z-50 h-full overflow-hidden transition-all duration-500 ease-out ${
+      className={`fixed top-0 left-0 z-50 h-full overflow-hidden transition-all duration-300 ease-out ${
         collapsed ? 'w-20' : 'w-80'
       }`}
     >
       {/* Fundo com efeito glassmorphism */}
-      <div className="absolute inset-0 border-r border-gray-700/50 bg-gradient-to-br from-slate-900/95 via-gray-900/95 to-slate-800/95 shadow-2xl backdrop-blur-xl" />
+      <div className="absolute inset-0 border-r border-gray-700/50 bg-gradient-to-br from-slate-950 via-teal-950 to-slate-950 shadow-2xl backdrop-blur-xl" />
 
       <div className="relative flex h-full flex-col overflow-hidden">
         {/* Header com efeitos */}
-        <div className="border-b border-gray-700/50 p-6 backdrop-blur-sm">
+        <div className="border-b border-slate-600 p-6 backdrop-blur-sm">
           <div
             className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}
           >
             {!collapsed && (
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 p-0.5 shadow-lg shadow-blue-500/25">
+                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-500 p-0.5">
                     <div className="flex h-full w-full items-center justify-center rounded-2xl bg-gray-900">
                       <Image
                         src="/logo-solutii.png"
@@ -236,25 +312,25 @@ export default function Sidebar({
                   </div>
                 </div>
                 <div>
-                  <h1 className="bg-gradient-to-r from-white via-blue-200 to-cyan-400 bg-clip-text text-2xl font-black text-transparent">
-                    Dashboard
+                  <h1 className="text-3xl font-bold tracking-wider text-white select-none">
+                    Solutii
                   </h1>
-                  <p className="mt-1 text-xs text-gray-400">
+                  <p className="text-xs font-semibold tracking-wider text-white italic select-none">
                     Sistema de Gestão
                   </p>
                 </div>
               </div>
             )}
+            {/* BOTÃO MENU */}
             <button
               onClick={onToggle}
-              className="group relative rounded-2xl border border-gray-600/50 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 p-3 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/25 active:scale-90"
+              className="group relative rounded-xl border border-slate-800 bg-gradient-to-br from-teal-600 via-slate-700 to-teal-600 p-3 shadow-md shadow-black transition-all duration-300 hover:scale-105 active:scale-95"
             >
               <Menu
-                className={`h-5 w-5 text-gray-300 transition-all duration-300 group-hover:text-white ${
-                  !collapsed ? 'rotate-90' : ''
+                className={`h-5 w-5 text-white transition-all duration-300 group-hover:rotate-90 ${
+                  !collapsed ? 'group-hover:rotate-90' : ''
                 }`}
               />
-              <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-r from-cyan-400/20 via-blue-500/20 to-indigo-600/20 opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-100" />
             </button>
           </div>
         </div>
@@ -262,43 +338,56 @@ export default function Sidebar({
         {/* Navegação principal */}
         <nav className="scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent flex-1 overflow-x-hidden overflow-y-auto p-6">
           <div className="space-y-2">
-            {menuItems.map(item => (
-              <SidebarButton
+            {menuItems.map((item, index) => (
+              <div
                 key={item.id}
-                icon={item.icon}
-                label={item.label}
-                isActive={pathname === item.path}
-                onClick={() => router.push(item.path)}
-                variant={item.variant}
-                collapsed={collapsed}
-              />
+                style={{
+                  animationDelay: `${index * 50}ms`,
+                }}
+                className="animate-fade-in"
+              >
+                <SidebarButton
+                  icon={item.icon}
+                  label={item.label}
+                  isActive={pathname === item.path}
+                  onClick={() => handleNavigation(item.path)}
+                  variant={item.variant}
+                  collapsed={collapsed}
+                  isNavigating={navigatingTo === item.path}
+                />
+              </div>
             ))}
           </div>
         </nav>
 
         {/* Footer com perfil do usuário */}
-        <div className="border-t border-gray-700/50 backdrop-blur-sm">
+        <div className="border-t border-slate-600 backdrop-blur-sm">
           {!collapsed ? (
             <div className="space-y-4 p-6">
               {/* Perfil do usuário */}
-              <div className="flex items-center gap-4 rounded-2xl border border-gray-600/30 bg-gradient-to-r from-gray-800/50 via-gray-700/50 to-gray-800/50 p-4 backdrop-blur-sm">
+              <div className="flex items-center gap-4 rounded-xl border border-slate-800 bg-white/10 p-4 backdrop-blur-sm transition-all duration-300 hover:bg-white/15">
                 <div className="relative">
-                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 p-0.5 shadow-lg shadow-blue-500/25">
+                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-500 p-0.5">
                     <div className="flex h-full w-full items-center justify-center rounded-2xl bg-gray-900">
-                      <span className="font-bold text-white">{initials}</span>
+                      <span className="font-bold tracking-wider text-white select-none">
+                        {initials}
+                      </span>
                     </div>
                   </div>
                 </div>
+
                 <div className="flex-1">
-                  <p className="font-semibold text-white">
+                  <p className="font-bold tracking-wider text-white select-none">
                     {isAdmin ? 'Administrador' : (nomeRecurso ?? 'Usuário')}
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs tracking-wider text-gray-400 select-none">
                     {isAdmin ? '' : 'Consultor'}
                   </p>
-                  <div className="mt-1 flex items-center gap-2">
-                    <div className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
-                    <span className="text-xs text-green-400">Online</span>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+                    <span className="text-xs font-semibold tracking-wider text-green-500 italic select-none">
+                      Online
+                    </span>
                   </div>
                 </div>
               </div>
@@ -308,9 +397,10 @@ export default function Sidebar({
                 icon={LogOut}
                 label="Sair"
                 isActive={false}
-                onClick={onLogout}
+                onClick={handleLogoutClick}
                 variant="danger"
                 collapsed={false}
+                isLoading={isLoggingOut}
               />
             </div>
           ) : (
@@ -318,12 +408,12 @@ export default function Sidebar({
             <div className="space-y-4 p-4">
               <div className="flex justify-center">
                 <div className="relative">
-                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 p-0.5 shadow-lg shadow-blue-500/25">
+                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-500 p-0.5 shadow-lg shadow-blue-500/25">
                     <div className="flex h-full w-full items-center justify-center rounded-2xl bg-gray-900">
                       <span className="font-bold text-white">{initials}</span>
                     </div>
                   </div>
-                  <div className="absolute -right-1 -bottom-1 h-4 w-4 animate-pulse rounded-full border-2 border-gray-900 bg-green-400" />
+                  <div className="absolute -right-1 -bottom-1 h-4 w-4 animate-pulse rounded-full border-2 border-slate-800 bg-green-500" />
                 </div>
               </div>
 
@@ -331,14 +421,50 @@ export default function Sidebar({
                 icon={LogOut}
                 label="Sair"
                 isActive={false}
-                onClick={onLogout}
+                onClick={handleLogoutClick}
                 variant="danger"
                 collapsed={true}
+                isLoading={isLoggingOut}
               />
             </div>
           )}
         </div>
       </div>
+
+      {/* Estilos CSS customizados */}
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out forwards;
+        }
+
+        .scrollbar-thin {
+          scrollbar-width: thin;
+        }
+
+        .scrollbar-thumb-gray-600::-webkit-scrollbar-thumb {
+          background-color: rgb(75, 85, 99);
+          border-radius: 9999px;
+        }
+
+        .scrollbar-track-transparent::-webkit-scrollbar-track {
+          background-color: transparent;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 4px;
+        }
+      `}</style>
     </div>
   );
 }

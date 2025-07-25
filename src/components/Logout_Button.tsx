@@ -1,6 +1,6 @@
 'use client';
 
-import { useFilters } from '@/contexts/Filters_Dashboard_Context';
+import { useFiltersDashboard } from '@/contexts/Filters_Dashboard_Context';
 import { useRouter } from 'next/navigation';
 import { IoLogOut } from 'react-icons/io5'; // Ícone de logout
 import { useAuth } from '../contexts/Auth_Context'; // Contexto de autenticação
@@ -15,7 +15,7 @@ export default function LogoutButton({
   isCollapsed = false,
 }: LogoutButtonProps) {
   const { logout } = useAuth(); // Obtém a função de logout do contexto de autenticação
-  const { clearFilters } = useFilters(); // Obtém a função para limpar filtros do contexto de filtros
+  const { clearFilters } = useFiltersDashboard(); // Obtém a função para limpar filtros do contexto de filtros
 
   const router = useRouter(); // Inicializa o hook de navegação para redirecionamento
 

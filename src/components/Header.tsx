@@ -5,15 +5,20 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-export default function Header() {
+interface HeaderProps {
+  titulo: string;
+  icon?: React.ReactNode;
+}
+
+export default function Header({ titulo, icon }: HeaderProps) {
   return (
     <header className="flex items-center justify-between border-b-2 border-red-500 bg-white p-4">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-4">
-          <div className="h-5 w-5 animate-pulse rounded-full bg-green-500"></div>
+          <div>{icon}</div>
           {/* TÍTULO */}
           <h2 className="text-4xl font-extrabold tracking-wider text-black italic select-none">
-            Chamados
+            {titulo}
           </h2>
         </div>
       </div>
@@ -33,10 +38,10 @@ export default function Header() {
 
         {/* BOTÃO DE ATUALIZAÇÃO */}
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <button
               onClick={() => window.location.reload()}
-              className="p-2 text-red-500 transition-all duration-200 hover:scale-110 hover:rotate-90 active:scale-90"
+              className="p-2 text-red-500 transition-all duration-300 hover:scale-110 hover:rotate-90 active:scale-90"
             >
               <RefreshCw className="h-10 w-10" />
             </button>
