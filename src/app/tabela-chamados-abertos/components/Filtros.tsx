@@ -13,7 +13,6 @@ import SelectCliente from '@/components/filtros/Select_Clientes';
 import SelectMes from '@/components/filtros/Select_Mes';
 import SelectRecurso from '@/components/filtros/Select_Recursos';
 import SelectStatus from '@/components/filtros/Select_Status';
-import { Filter } from 'lucide-react';
 
 interface FiltersProps {
   onFiltersChange: (filters: {
@@ -25,7 +24,7 @@ interface FiltersProps {
   }) => void;
 }
 
-// Fetchers
+// FETCH CLIENTE
 const fetchClientes = async ({ ano, mes, isAdmin, codRecurso }: any) => {
   const params = new URLSearchParams({
     ano: ano.toString(),
@@ -34,12 +33,13 @@ const fetchClientes = async ({ ano, mes, isAdmin, codRecurso }: any) => {
   });
   if (!isAdmin && codRecurso) params.append('codRecurso', codRecurso);
   const { data } = await axios.get(
-    `/api/chamados-abertos/filtros/clientes?${params}`
+    `/api/firebird/chamados-abertos/filtro/cliente?${params}`
   );
   if (!Array.isArray(data)) throw new Error('Resposta inesperada');
   return data;
 };
 
+// FETCH RECURSOS
 const fetchRecursos = async ({
   ano,
   mes,
@@ -56,12 +56,13 @@ const fetchRecursos = async ({
   if (isAdmin && clienteSelecionado)
     params.append('cliente', clienteSelecionado);
   const { data } = await axios.get(
-    `/api/chamados-abertos/filtros/recursos?${params}`
+    `/api/firebird/chamados-abertos/filtro/recurso?${params}`
   );
   if (!Array.isArray(data)) throw new Error('Resposta inesperada');
   return data;
 };
 
+// FETCH STATUS
 const fetchStatus = async ({
   ano,
   mes,
@@ -80,7 +81,7 @@ const fetchStatus = async ({
     params.append('cliente', clienteSelecionado);
   if (recursoSelecionado) params.append('recurso', recursoSelecionado);
   const { data } = await axios.get(
-    `/api/chamados-abertos/filtros/status?${params}`
+    `/api/firebird/chamados-abertos/filtro/status?${params}`
   );
   if (!Array.isArray(data)) throw new Error('Resposta inesperada');
   return data;

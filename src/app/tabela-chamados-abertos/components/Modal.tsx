@@ -12,7 +12,6 @@ import {
   FileText,
   Mail,
   MessageSquareDot,
-  Settings,
   Shapes,
   TrendingUp,
   User,

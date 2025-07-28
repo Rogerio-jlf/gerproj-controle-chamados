@@ -113,7 +113,7 @@ export async function POST(request: Request) {
 import transporter from '@/lib/email/transporter';
 import { gerarTemplateEmailChamado } from '@/lib/templates/email_atribuir_chamados';
 import { NextResponse } from 'next/server';
-import { firebirdQuery } from '../../../../lib/firebird/firebird-test-mode';
+import { firebirdQuery } from '../../../../../lib/firebird/firebird-test-mode';
 
 export async function POST(request: Request) {
   try {

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { firebirdQuery } from '../../../../../lib/firebird/firebird-client';
+import { firebirdQuery } from '../../../../../../lib/firebird/firebird-client';
 
 export async function GET(request: Request) {
   try {
@@ -9,6 +9,8 @@ export async function GET(request: Request) {
     const anoParam = searchParams.get('ano');
     const isAdmin = searchParams.get('isAdmin') === 'true';
     const codRecurso = searchParams.get('codRecurso');
+    const cliente = searchParams.get('cliente');
+    const recurso = searchParams.get('recurso');
 
     const mes = Number(mesParam);
     const ano = Number(anoParam);
@@ -51,33 +53,42 @@ export async function GET(request: Request) {
     if (!isAdmin && codRecurso) {
       whereConditions.push('Chamado.COD_RECURSO = ?');
       params.push(Number(codRecurso));
+    } else if (isAdmin && cliente) {
+      whereConditions.push('Cliente.NOME_CLIENTE = ?');
+      params.push(cliente);
+    }
+
+    if (recurso) {
+      whereConditions.push('Recurso.NOME_RECURSO = ?');
+      params.push(recurso);
     }
 
     const sql = `
-      SELECT DISTINCT Cliente.NOME_CLIENTE
+      SELECT DISTINCT Chamado.STATUS_CHAMADO
       FROM CHAMADO Chamado
       LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
+      LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = Chamado.COD_RECURSO
       ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
     `;
 
-    const results = await firebirdQuery<{ NOME_CLIENTE: string | null }>(
+    const statusList = await firebirdQuery<{ STATUS_CHAMADO: string | null }>(
       sql,
       params
     );
 
-    const nomesClientes = results
-      .map(row => row.NOME_CLIENTE?.trim())
-      .filter((nome): nome is string => !!nome && nome.length > 0)
+    const statusUnicos = statusList
+      .map(item => item.STATUS_CHAMADO?.trim())
+      .filter((status): status is string => !!status && status.length > 0)
       .sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
 
-    return NextResponse.json(nomesClientes);
+    return NextResponse.json(statusUnicos);
   } catch (error) {
-    console.error('Erro ao tentar buscar os clientes:', error);
+    console.error('Erro ao tentar buscar os status:', error);
 
     if (error instanceof Error) {
       return NextResponse.json(
         {
-          error: 'Erro ao buscar clientes',
+          error: 'Erro ao buscar status',
           message: error.message,
           timestamp: new Date().toISOString(),
         },

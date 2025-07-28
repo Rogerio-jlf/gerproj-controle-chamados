@@ -9,7 +9,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { ChamadosProps, colunasTabela } from './Colunas';
 import Modal from './Modal';
 import { AlertCircle, Database, TrendingUp } from 'lucide-react';
@@ -17,11 +17,14 @@ import ExcelButton from '../../../components/Excel_Button';
 import PDFButton from '../../../components/PDF_Button';
 import Cards from './Cards';
 
+// Novo componente Modal para OS
+import OSModal from '../components/OS_Modal';
+
 async function fetchChamados(
   params: URLSearchParams
 ): Promise<ChamadosProps[]> {
   const res = await fetch(
-    `/api/chamados-abertos/tabelas/tabela-chamados-abertos?${params}`
+    `/api/firebird/chamados-abertos/tabela-chamados-abertos?${params}`
   );
   if (!res.ok) throw new Error('Erro ao buscar chamados');
   const data = await res.json();
@@ -34,19 +37,28 @@ export default function Tabela() {
   const { ano, mes, cliente, recurso, status } = filters;
   const { isAdmin, codRecurso, isLoading: authLoading } = useAuth();
 
+  // Estados para modal do chamado
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedChamado, setSelectedChamado] = useState<ChamadosProps | null>(
     null
   );
 
-  const handleRowClick = (chamado: ChamadosProps) => {
-    setSelectedChamado(chamado);
-    setModalOpen(true);
-  };
+  // Estados para modal da OS
+  const [osModalOpen, setOsModalOpen] = useState(false);
+  const [selectedCodChamado, setSelectedCodChamado] = useState<number | null>(
+    null
+  );
+
+  // Removemos a função handleRowClick pois não será mais usada
 
   const handleCloseModal = () => {
     setModalOpen(false);
     setSelectedChamado(null);
+  };
+
+  const handleCloseOSModal = () => {
+    setOsModalOpen(false);
+    setSelectedCodChamado(null);
   };
 
   const enabled = !!ano && !!mes && !authLoading;
@@ -80,9 +92,37 @@ export default function Tabela() {
     retry: 2,
   });
 
+  // Funções para os botões de ação com useCallback para evitar re-renders desnecessários
+  const handleVisualizarChamado = useCallback(
+    (codChamado: number) => {
+      // Encontrar o chamado completo pelo código
+      const chamado = data?.find(c => c.COD_CHAMADO === codChamado);
+      if (chamado) {
+        setSelectedChamado(chamado);
+        setModalOpen(true);
+      }
+    },
+    [data]
+  );
+
+  const handleVisualizarOS = useCallback((codChamado: number) => {
+    setSelectedCodChamado(codChamado);
+    setOsModalOpen(true);
+  }, []);
+
+  // Colunas da tabela com as ações
+  const colunas = useMemo(
+    () =>
+      colunasTabela({
+        onVisualizarChamado: handleVisualizarChamado,
+        onVisualizarOS: handleVisualizarOS,
+      }),
+    [handleVisualizarChamado, handleVisualizarOS]
+  );
+
   const table = useReactTable({
     data: data ?? [],
-    columns: colunasTabela,
+    columns: colunas,
     getCoreRowModel: getCoreRowModel(),
   });
 
@@ -304,12 +344,11 @@ export default function Tabela() {
                     table.getRowModel().rows.map((row, rowIndex) => (
                       <tr
                         key={row.id}
-                        className={`group cursor-pointer border-b border-slate-700 transition-all duration-300 hover:bg-white/50 ${
+                        className={`group border-b border-slate-700 transition-all duration-300 hover:bg-white/50 ${
                           rowIndex % 2 === 0
                             ? 'bg-slate-900'
                             : 'bg-slate-800/50'
                         }`}
-                        onClick={() => handleRowClick(row.original)}
                       >
                         {row.getVisibleCells().map(cell => (
                           <td
@@ -355,17 +394,24 @@ export default function Tabela() {
         </div>
       </TooltipProvider>
 
-      {/* Modal */}
+      {/* Modal do Chamado */}
       <Modal
         isOpen={modalOpen}
         onClose={handleCloseModal}
         chamado={selectedChamado}
       />
+
+      {/* Modal da OS */}
+      <OSModal
+        isOpen={osModalOpen}
+        onClose={handleCloseOSModal}
+        codChamado={selectedCodChamado}
+      />
     </>
   );
 }
 
-// Função para largura fixa por coluna
+// Função para largura fixa por coluna (atualizada com a nova coluna)
 function getColumnWidth(columnId: string): string {
   const widthMap: Record<string, string> = {
     PRIOR_CHAMADO: '80px',
@@ -380,6 +426,7 @@ function getColumnWidth(columnId: string): string {
     CODTRF_CHAMADO: '90px',
     EMAIL_CHAMADO: '150px',
     CONCLUSAO_CHAMADO: '120px',
+    actions: '120px', // Nova coluna de ações
   };
 
   return widthMap[columnId] || '100px';

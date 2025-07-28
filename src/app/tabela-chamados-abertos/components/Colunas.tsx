@@ -4,6 +4,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { ColumnDef } from '@tanstack/react-table';
+import { Eye, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 export interface ChamadosProps {
@@ -28,7 +29,15 @@ export interface ChamadosProps {
   } | null;
 }
 
-export const colunasTabela: ColumnDef<ChamadosProps>[] = [
+// Tipos para as funções de callback dos botões
+export interface AcoesProps {
+  onVisualizarChamado: (codChamado: number) => void;
+  onVisualizarOS: (codChamado: number) => void;
+}
+
+export const colunasTabela = (
+  acoes: AcoesProps
+): ColumnDef<ChamadosProps>[] => [
   {
     accessorKey: 'PRIOR_CHAMADO',
     header: () => <div className="text-center">Prior.</div>,
@@ -317,6 +326,57 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
               Em andamento
             </div>
           )}
+        </div>
+      );
+    },
+  },
+  // --------------------
+  // NOVA COLUNA DE AÇÕES
+  {
+    id: 'actions',
+    header: () => <div className="text-center">Ações</div>,
+    cell: ({ row }) => {
+      const chamado = row.original;
+
+      return (
+        <div className="flex items-center justify-center gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => acoes.onVisualizarChamado(chamado.COD_CHAMADO)}
+                className="inline-flex items-center justify-center rounded-lg bg-blue-600/20 p-2 text-blue-400 ring-1 ring-blue-400 transition-colors hover:bg-blue-600/30 hover:ring-blue-300"
+              >
+                <Eye size={16} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="top"
+              align="center"
+              sideOffset={8}
+              className="border border-slate-700 bg-white text-sm text-black"
+            >
+              Visualizar Chamado
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => acoes.onVisualizarOS(chamado.COD_CHAMADO)}
+                className="inline-flex items-center justify-center rounded-lg bg-green-600/20 p-2 text-green-400 ring-1 ring-green-400 transition-colors hover:bg-green-600/30 hover:ring-green-300"
+              >
+                <FileText size={16} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="top"
+              align="center"
+              sideOffset={8}
+              className="border border-slate-700 bg-white text-sm text-black"
+            >
+              Visualizar OS
+            </TooltipContent>
+          </Tooltip>
         </div>
       );
     },

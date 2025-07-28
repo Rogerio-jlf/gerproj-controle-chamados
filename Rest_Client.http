@@ -105,3 +105,6 @@ Content-Type: application/json
 }
 
 # --------------------------------------------------------------------------------
+
+### Teste: atribuir chamado (modo teste, sem alterar o banco) - dados incompletos
+GET http://localhost:3000/api/firebird/os/13248

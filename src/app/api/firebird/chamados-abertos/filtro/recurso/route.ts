@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { firebirdQuery } from '../../../../../lib/firebird/firebird-client';
+import { firebirdQuery } from '../../../../../../lib/firebird/firebird-client';
 
 export async function GET(request: Request) {
   try {
@@ -10,7 +10,6 @@ export async function GET(request: Request) {
     const isAdmin = searchParams.get('isAdmin') === 'true';
     const codRecurso = searchParams.get('codRecurso');
     const cliente = searchParams.get('cliente');
-    const recurso = searchParams.get('recurso');
 
     const mes = Number(mesParam);
     const ano = Number(anoParam);
@@ -50,45 +49,40 @@ export async function GET(request: Request) {
     params.push(dataInicio);
     params.push(dataFim);
 
-    if (!isAdmin && codRecurso) {
-      whereConditions.push('Chamado.COD_RECURSO = ?');
-      params.push(Number(codRecurso));
-    } else if (isAdmin && cliente) {
+    if (isAdmin && cliente) {
       whereConditions.push('Cliente.NOME_CLIENTE = ?');
       params.push(cliente);
-    }
-
-    if (recurso) {
-      whereConditions.push('Recurso.NOME_RECURSO = ?');
-      params.push(recurso);
+    } else if (!isAdmin && codRecurso) {
+      whereConditions.push('Chamado.COD_RECURSO = ?');
+      params.push(Number(codRecurso));
     }
 
     const sql = `
-      SELECT DISTINCT Chamado.STATUS_CHAMADO
+      SELECT DISTINCT Recurso.NOME_RECURSO
       FROM CHAMADO Chamado
-      LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
       LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = Chamado.COD_RECURSO
+      LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
       ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
     `;
 
-    const statusList = await firebirdQuery<{ STATUS_CHAMADO: string | null }>(
+    const recursos = await firebirdQuery<{ NOME_RECURSO: string | null }>(
       sql,
       params
     );
 
-    const statusUnicos = statusList
-      .map(item => item.STATUS_CHAMADO?.trim())
-      .filter((status): status is string => !!status && status.length > 0)
+    const nomesRecursos = recursos
+      .map(item => item.NOME_RECURSO?.trim())
+      .filter((nome): nome is string => !!nome && nome.length > 0)
       .sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
 
-    return NextResponse.json(statusUnicos);
+    return NextResponse.json(nomesRecursos);
   } catch (error) {
-    console.error('Erro ao tentar buscar os status:', error);
+    console.error('Erro ao tentar buscar os recursos:', error);
 
     if (error instanceof Error) {
       return NextResponse.json(
         {
-          error: 'Erro ao buscar status',
+          error: 'Erro ao buscar recursos',
           message: error.message,
           timestamp: new Date().toISOString(),
         },

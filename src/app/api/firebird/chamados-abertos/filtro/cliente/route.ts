@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { firebirdQuery } from '../../../../../lib/firebird/firebird-client';
+import { firebirdQuery } from '../../../../../../lib/firebird/firebird-client';
 
 export async function GET(request: Request) {
   try {
@@ -9,7 +9,6 @@ export async function GET(request: Request) {
     const anoParam = searchParams.get('ano');
     const isAdmin = searchParams.get('isAdmin') === 'true';
     const codRecurso = searchParams.get('codRecurso');
-    const cliente = searchParams.get('cliente');
 
     const mes = Number(mesParam);
     const ano = Number(anoParam);
@@ -49,40 +48,36 @@ export async function GET(request: Request) {
     params.push(dataInicio);
     params.push(dataFim);
 
-    if (isAdmin && cliente) {
-      whereConditions.push('Cliente.NOME_CLIENTE = ?');
-      params.push(cliente);
-    } else if (!isAdmin && codRecurso) {
+    if (!isAdmin && codRecurso) {
       whereConditions.push('Chamado.COD_RECURSO = ?');
       params.push(Number(codRecurso));
     }
 
     const sql = `
-      SELECT DISTINCT Recurso.NOME_RECURSO
+      SELECT DISTINCT Cliente.NOME_CLIENTE
       FROM CHAMADO Chamado
-      LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = Chamado.COD_RECURSO
       LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
       ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
     `;
 
-    const recursos = await firebirdQuery<{ NOME_RECURSO: string | null }>(
+    const results = await firebirdQuery<{ NOME_CLIENTE: string | null }>(
       sql,
       params
     );
 
-    const nomesRecursos = recursos
-      .map(item => item.NOME_RECURSO?.trim())
+    const nomesClientes = results
+      .map(row => row.NOME_CLIENTE?.trim())
       .filter((nome): nome is string => !!nome && nome.length > 0)
       .sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
 
-    return NextResponse.json(nomesRecursos);
+    return NextResponse.json(nomesClientes);
   } catch (error) {
-    console.error('Erro ao tentar buscar os recursos:', error);
+    console.error('Erro ao tentar buscar os clientes:', error);
 
     if (error instanceof Error) {
       return NextResponse.json(
         {
-          error: 'Erro ao buscar recursos',
+          error: 'Erro ao buscar clientes',
           message: error.message,
           timestamp: new Date().toISOString(),
         },
