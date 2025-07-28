@@ -34,18 +34,19 @@ export const colunasTabela: ColumnDef<TableRowProps>[] = [
     header: () => <div className="text-center">Data</div>,
     cell: ({ getValue }) => {
       const dateString = getValue() as string;
+
       if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
         return <div className="text-center">{dateString}</div>;
       }
+
       try {
         const [year, month, day] = dateString.split('T')[0].split('-');
-        return (
-          <div className="text-center">
-            {`${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`}
-          </div>
-        );
+        const formattedDate = `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+
+        return <div className="text-center">{formattedDate}</div>;
       } catch {
         console.warn('Formato de data não reconhecido:', dateString);
+
         return <div className="text-center">{dateString}</div>;
       }
     },
@@ -66,6 +67,7 @@ export const colunasTabela: ColumnDef<TableRowProps>[] = [
     header: () => <div className="text-center">Status</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string | undefined;
+
       const getStatusStyle = (status: string | undefined) => {
         switch (status?.toLowerCase()) {
           case 'standby':
@@ -97,6 +99,7 @@ export const colunasTabela: ColumnDef<TableRowProps>[] = [
   {
     accessorKey: 'nome_recurso',
     header: () => <div className="text-center">Recurso</div>,
+
     cell: ({ getValue }) => (
       <div className="truncate text-left" title={getValue() as string}>
         {getValue() as string}
@@ -109,10 +112,12 @@ export const colunasTabela: ColumnDef<TableRowProps>[] = [
     header: () => <div className="text-center">HR Início</div>,
     cell: ({ getValue }) => {
       const raw = getValue();
+
       if (!raw) return <div className="text-center">–</div>;
       const hora = raw.toString().padStart(3, '0');
       const hh = hora.slice(0, 2);
       const mm = hora.slice(2, 5);
+
       return <div className="text-center">{`${hh}${mm}`}</div>;
     },
   },

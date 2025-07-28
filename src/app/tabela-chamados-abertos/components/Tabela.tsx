@@ -368,19 +368,19 @@ export default function Tabela() {
 // Função para largura fixa por coluna
 function getColumnWidth(columnId: string): string {
   const widthMap: Record<string, string> = {
-    PRIOR_CHAMADO: '120px',
-    COD_CHAMADO: '110px',
-    DATA_CHAMADO: '230px',
-    HORA_CHAMADO: '150px',
-    ASSUNTO_CHAMADO: '200px',
-    STATUS_CHAMADO: '100px',
+    PRIOR_CHAMADO: '80px',
+    COD_CHAMADO: '100px',
+    DATA_CHAMADO: '130px',
+    HORA_CHAMADO: '80px',
+    ASSUNTO_CHAMADO: '250px',
+    STATUS_CHAMADO: '140px',
     COD_CLASSIFICACAO: '100px',
-    'RECURSO.NOME_RECURSO': '120px',
-    'CLIENTE.NOME_CLIENTE': '300px',
-    CODTRF_CHAMADO: '300px',
-    EMAIL_CHAMADO: '300px',
-    CONCLUSAO_CHAMADO: '300px',
+    'RECURSO.NOME_RECURSO': '80px',
+    'CLIENTE.NOME_CLIENTE': '80px',
+    CODTRF_CHAMADO: '90px',
+    EMAIL_CHAMADO: '150px',
+    CONCLUSAO_CHAMADO: '120px',
   };
 
-  return widthMap[columnId] || '150px';
+  return widthMap[columnId] || '100px';
 }

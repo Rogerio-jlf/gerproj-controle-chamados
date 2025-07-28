@@ -87,7 +87,7 @@ export default function ExcelButton<T>({
     <button
       onClick={exportToExcel}
       disabled={disabled || data.length === 0}
-      className={`group flex items-center rounded-lg px-4 py-2 text-sm font-medium ${
+      className={`group flex items-center rounded-lg px-6 py-2 text-sm font-medium ${
         disabled || data.length === 0
           ? 'cursor-not-allowed text-indigo-500'
           : 'cursor-pointer bg-green-500 text-white hover:bg-green-600 active:scale-90'

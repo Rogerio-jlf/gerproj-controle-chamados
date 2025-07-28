@@ -31,20 +31,18 @@ export interface ChamadosProps {
 export const colunasTabela: ColumnDef<ChamadosProps>[] = [
   {
     accessorKey: 'PRIOR_CHAMADO',
-    header: () => <div className="w-full text-center">Prioridade</div>,
+    header: () => <div className="text-center">Prior.</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string;
       return (
-        <div className="flex items-center justify-center">
-          <span
-            className={`w-full rounded-lg p-1 text-center tracking-wider ${
-              value === 'Alta'
-                ? 'bg-red-100 text-red-800 ring-1 ring-red-600/20'
-                : 'bg-green-800/50 text-green-400 ring-1 ring-green-400'
-            }`}
-          >
-            {value}
-          </span>
+        <div
+          className={`rounded-lg p-2 text-center ${
+            value === 'Alta'
+              ? 'bg-red-800/50 text-red-400 ring-1 ring-red-400'
+              : 'bg-green-800/50 text-green-400 ring-1 ring-green-400'
+          }`}
+        >
+          {value}
         </div>
       );
     },
@@ -52,51 +50,33 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
   // --------------------
   {
     accessorKey: 'COD_CHAMADO',
-    header: () => <div className="w-full text-center">Número</div>,
+    header: () => <div className="text-center">Chamado</div>,
     cell: ({ getValue }) => (
-      <div className="flex items-center justify-center">
-        <span className="w-full rounded-lg bg-blue-800/50 p-1 text-center tracking-wider text-blue-400 ring-1 ring-blue-400">
-          {getValue() as string}
-        </span>
+      <div className="rounded-lg bg-blue-800/50 p-2 text-center text-blue-400 ring-1 ring-blue-400">
+        {getValue() as string}
       </div>
     ),
   },
   // --------------------
   {
     accessorKey: 'DATA_CHAMADO',
-    header: () => <div className="w-full text-center">Data</div>,
+    header: () => <div className="text-center">Data</div>,
     cell: ({ getValue }) => {
       const dateString = getValue() as string;
 
       if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
-        return (
-          <div className="flex items-center justify-center">
-            <span className="w-full text-center tracking-wider text-white">
-              {dateString}
-            </span>
-          </div>
-        );
+        return <div className="text-center">{dateString}</div>;
       }
 
       try {
         const [year, month, day] = dateString.split('T')[0].split('-');
         const formattedDate = `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
-        return (
-          <div className="flex items-center justify-center">
-            <span className="w-full text-left tracking-wider text-white">
-              {formattedDate}
-            </span>
-          </div>
-        );
+
+        return <div className="text-center">{formattedDate}</div>;
       } catch {
         console.warn('Formato de data não reconhecido:', dateString);
-        return (
-          <div className="flex items-center justify-center">
-            <span className="w-full text-left tracking-wider text-red-500">
-              {dateString}
-            </span>
-          </div>
-        );
+
+        return <div className="text-center">{dateString}</div>;
       }
     },
   },
@@ -104,50 +84,38 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
   {
     accessorKey: 'HORA_CHAMADO',
     header: () => <div className="w-full text-center">Hora</div>,
+
     cell: ({ getValue }) => {
       const raw = getValue();
 
-      if (!raw) {
-        return (
-          <div className="flex items-center justify-center">
-            <span className="text-muted-foreground tracking-wider">–</span>
-          </div>
-        );
-      }
-
+      if (!raw) return <div className="text-center">-</div>;
       const hora = raw.toString().padStart(4, '0');
       const hh = hora.slice(0, 2);
       const mm = hora.slice(2, 4);
 
-      return (
-        <div className="flex items-center justify-center">
-          <span className="w-full text-center tracking-wider text-white">{`${hh}:${mm}`}</span>
-        </div>
-      );
+      return <div className="text-center">{`${hh}:${mm}`}</div>;
     },
   },
   // --------------------
   {
     accessorKey: 'ASSUNTO_CHAMADO',
-    header: () => <div className="w-full text-center">Assunto email</div>,
+    header: () => <div className="text-center">Assunto</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string;
+
       return (
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="group cursor-pointer">
-              <span className="block w-full text-left tracking-wider text-white">
-                {value}
-              </span>
-            </div>
+            <div className="cursor-help truncate text-left">{value}</div>
           </TooltipTrigger>
+
           <TooltipContent
-            side="top"
-            className="z-50 w-full border border-slate-500 bg-slate-950 p-4 text-left tracking-wider text-white"
+            side="top" // (top, bottom, left, right) - aqui aparece acima
+            align="start" // start = esquerda, center = padrão, end = direita
+            sideOffset={16} // distância entre o trigger e o tooltip
+            className="max-w-md -translate-x-10 border border-slate-700 bg-white text-sm tracking-wider break-words text-black"
           >
-            <p className="w-full text-left text-sm tracking-wider text-white">
-              {value}
-            </p>
+            {value}
           </TooltipContent>
         </Tooltip>
       );
@@ -156,14 +124,13 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
   // --------------------
   {
     accessorKey: 'STATUS_CHAMADO',
-    header: () => <div className="w-full text-center">Status</div>,
+    header: () => <div className="text-center">Status</div>,
+
     cell: ({ getValue }) => {
       const value = getValue() as string | undefined;
 
       const getStatusStyle = (status: string | undefined) => {
-        const statusUpper = status?.toUpperCase() ?? '';
-
-        switch (statusUpper) {
+        switch (status?.toUpperCase()) {
           case 'NAO FINALIZADO':
             return 'bg-yellow-800/50 text-yellow-400 ring-1 ring-yellow-400';
 
@@ -191,32 +158,28 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
       };
 
       return (
-        <span
-          className={`flex w-full items-center justify-center rounded-lg p-1 text-center tracking-wider ${getStatusStyle(
-            value
-          )}`}
-        >
-          {value ?? 'Sem status'}
-        </span>
+        <div className="text-center">
+          <div className={`block rounded-lg p-2 ${getStatusStyle(value)}`}>
+            {value ?? 'Sem status'}
+          </div>
+        </div>
       );
     },
   },
   // --------------------
   {
     accessorKey: 'COD_CLASSIFICACAO',
-    header: () => <div className="w-full text-center">Classificação</div>,
+    header: () => <div className="text-center">Classif.</div>,
     cell: ({ getValue }) => {
       const value = getValue() as number;
       return (
-        <div className="flex items-center justify-center">
+        <div className="text-center">
           {value ? (
-            <span className="w-full rounded-lg bg-purple-800/50 p-1 text-center tracking-wider text-purple-400 ring-1 ring-purple-400">
+            <div className="rounded-lg bg-purple-800/50 p-2 text-purple-400 ring-1 ring-purple-400">
               {value}
-            </span>
+            </div>
           ) : (
-            <span className="w-full text-center tracking-wider text-gray-400">
-              Não informado
-            </span>
+            <div>Não informado</div>
           )}
         </div>
       );
@@ -225,33 +188,27 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
   // --------------------
   {
     accessorKey: 'RECURSO.NOME_RECURSO',
-    header: () => (
-      <div className="w-full text-center">Consultor responsável</div>
-    ),
+    header: () => <div className="text-center">Consultor</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string | null;
       return (
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="flex items-center justify-center">
+            <div className="cursor-help text-left">
               {value ? (
-                <span className="w-full text-left tracking-wider text-white">
-                  {value}
-                </span>
+                <div>{value}</div>
               ) : (
-                <span className="w-full text-center tracking-wider text-gray-400">
-                  Não informado
-                </span>
+                <div className="text-center">Não informado</div>
               )}
             </div>
           </TooltipTrigger>
           <TooltipContent
-            side="top"
-            className="z-50 w-full border border-slate-500 bg-slate-950 p-4 text-left tracking-wider text-white"
+            side="top" // (top, bottom, left, right) - aqui aparece acima
+            align="start" // start = esquerda, center = padrão, end = direita
+            sideOffset={16} // distância entre o trigger e o tooltip
+            className="max-w-md -translate-x-10 border border-slate-700 bg-white text-sm tracking-wider break-words text-black"
           >
-            <p className="w-full text-left text-sm tracking-wider text-white">
-              {value ?? 'Não informado'}
-            </p>
+            <p className="text-black">{value ?? 'Não informado'}</p>
           </TooltipContent>
         </Tooltip>
       );
@@ -260,31 +217,27 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
   // --------------------
   {
     accessorKey: 'CLIENTE.NOME_CLIENTE',
-    header: () => <div className="w-full text-center">Cliente</div>,
+    header: () => <div className="text-center">Cliente</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string | undefined;
       return (
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="flex items-center justify-center">
+            <div className="cursor-help text-left">
               {value ? (
-                <span className="w-full text-left tracking-wider text-white">
-                  {value}
-                </span>
+                <div>{value}</div>
               ) : (
-                <span className="w-full text-center tracking-wider text-gray-400">
-                  Não informado
-                </span>
+                <div className="text-center">Não informado</div>
               )}
             </div>
           </TooltipTrigger>
           <TooltipContent
-            side="top"
-            className="z-50 w-full border border-slate-500 bg-slate-950 p-4 text-left tracking-wider text-white"
+            side="top" // (top, bottom, left, right) - aqui aparece acima
+            align="start" // start = esquerda, center = padrão, end = direita
+            sideOffset={16} // distância entre o trigger e o tooltip
+            className="max-w-md -translate-x-10 border border-slate-700 bg-white text-sm tracking-wider break-words text-black"
           >
-            <p className="w-full text-left text-sm tracking-wider text-white">
-              {value ?? 'Não informado'}
-            </p>
+            <p className="text-black">{value ?? 'Não informado'}</p>
           </TooltipContent>
         </Tooltip>
       );
@@ -293,19 +246,17 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
   // --------------------
   {
     accessorKey: 'CODTRF_CHAMADO',
-    header: () => <div className="w-full text-center">Tarefa</div>,
+    header: () => <div className="text-center">Tarefa</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string | null;
       return (
-        <div className="flex items-center justify-center">
+        <div className="text-center">
           {value ? (
-            <span className="w-full rounded-lg bg-indigo-800/50 p-1 text-center tracking-wider text-indigo-400 ring-1 ring-indigo-400">
+            <div className="rounded-lg bg-indigo-800/50 p-2 text-indigo-400 ring-1 ring-indigo-400">
               {value}
-            </span>
+            </div>
           ) : (
-            <span className="w-full text-center tracking-wider text-gray-400">
-              Não informada
-            </span>
+            <div>Não informada</div>
           )}
         </div>
       );
@@ -314,43 +265,57 @@ export const colunasTabela: ColumnDef<ChamadosProps>[] = [
   // --------------------
   {
     accessorKey: 'EMAIL_CHAMADO',
-    header: () => <div className="w-full text-center">Email</div>,
+    header: () => <div className="text-center">Email</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string;
       return (
-        <div className="flex items-center justify-center">
-          {value ? (
-            <Link
-              href={`mailto:${value}`}
-              className="w-full text-left text-blue-500 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              <span className="w-full text-left">{value}</span>
-            </Link>
-          ) : (
-            <span className="w-full text-left tracking-wider text-gray-400">
-              Não informado
-            </span>
-          )}
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div>
+              {value ? (
+                <Link href={`mailto:${value}`} className="hover:underline">
+                  <div className="">{value}</div>
+                </Link>
+              ) : (
+                <div className="text-center">Não informado</div>
+              )}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent
+            side="top" // (top, bottom, left, right) - aqui aparece acima
+            align="start" // start = esquerda, center = padrão, end = direita
+            sideOffset={16} // distância entre o trigger e o tooltip
+            className="max-w-md -translate-x-10 border border-slate-700 bg-white text-sm tracking-wider break-words text-black"
+          >
+            <p className="text-center text-black">{value ?? 'Não informado'}</p>
+          </TooltipContent>
+        </Tooltip>
       );
     },
   },
   // --------------------
   {
     accessorKey: 'CONCLUSAO_CHAMADO',
-    header: () => <div className="w-full text-center">Finalização</div>,
+    header: () => <div className="text-center">Finalização</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string | null;
+
+      const formatarData = (dataISO: string) => {
+        const data = new Date(dataISO);
+        if (isNaN(data.getTime())) return 'Data inválida';
+        return data.toLocaleDateString('pt-BR');
+      };
+
       return (
-        <div className="flex items-center justify-center">
+        <div className="text-center">
           {value ? (
-            <span className="w-full rounded-lg bg-green-800/50 p-1 text-center tracking-wider text-green-400 ring-1 ring-green-400">
-              {value}
-            </span>
+            <div className="rounded-lg bg-green-800/50 p-2 text-green-400 ring-1 ring-green-400">
+              {formatarData(value)}
+            </div>
           ) : (
-            <span className="w-full rounded-lg bg-orange-800/50 p-1 text-center tracking-wider text-orange-400 ring-1 ring-orange-400">
+            <div className="rounded-lg bg-yellow-800/50 p-2 text-yellow-400 uppercase ring-1 ring-yellow-400">
               Em andamento
-            </span>
+            </div>
           )}
         </div>
       );

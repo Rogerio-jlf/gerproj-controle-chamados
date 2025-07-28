@@ -15,7 +15,7 @@ export default function Cards({
   iconBgColor = 'bg-white/30',
 }: CardsProps) {
   return (
-    <Card className="rounded-lg border border-white/20 bg-white/10 p-4 select-none">
+    <Card className="rounded-lg border border-white/20 bg-white/10 px-6 py-2 select-none">
       <div className="flex items-center gap-3">
         <div className={`rounded-lg ${iconBgColor} p-2`}>
           <Icon className="h-5 w-5 text-white" />

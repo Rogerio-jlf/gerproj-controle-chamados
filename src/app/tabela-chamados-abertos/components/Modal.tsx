@@ -5,19 +5,26 @@ import { useEmailAtribuirCahamados } from '@/hooks/useEmailAtribuirChamados';
 import { useRecursos } from '@/hooks/useRecursos';
 import {
   AlertCircle,
+  Binary,
+  Calendar,
+  CircleCheckBig,
   Clock,
   FileText,
   Mail,
+  MessageSquareDot,
   Settings,
+  Shapes,
+  TrendingUp,
   User,
+  UserCog,
 } from 'lucide-react';
 import { useState } from 'react';
-import { Chamado } from './Colunas';
+import { ChamadosProps } from './Colunas';
 
 interface ModalChamadoProps {
   isOpen: boolean;
   onClose: () => void;
-  chamado: Chamado | null;
+  chamado: ChamadosProps | null;
 }
 
 interface FormularioData {
@@ -50,7 +57,7 @@ export default function Modal({ isOpen, onClose, chamado }: ModalChamadoProps) {
 
     mutate(
       {
-        codChamado: chamado.cod_chamado,
+        codChamado: chamado.COD_CHAMADO,
         codCliente: Number(formData.cliente),
         codRecurso: Number(formData.recurso),
         enviarEmailCliente: formData.enviarEmailCliente,
@@ -82,202 +89,268 @@ export default function Modal({ isOpen, onClose, chamado }: ModalChamadoProps) {
     setShowForm(false);
   };
 
+  const formatarDataISO = (dataISO: string) => {
+    const data = new Date(dataISO);
+    if (isNaN(data.getTime())) return 'Data inválida';
+
+    return data.toLocaleDateString('pt-BR');
+  };
+
+  const formatarHorario = (horario: number | string) => {
+    const horarioFormatado = horario.toString().padStart(4, '0');
+    const horas = horarioFormatado.slice(0, 2);
+    const minutos = horarioFormatado.slice(2, 4);
+    return `${horas}:${minutos}`;
+  };
+
+  const getStatusStyle = (status: string | undefined) => {
+    switch (status?.toUpperCase()) {
+      case 'NAO FINALIZADO':
+        return 'bg-yellow-800/50 text-yellow-400 ring-1 ring-yellow-400';
+
+      case 'EM ATENDIMENTO':
+        return 'bg-blue-800/50 text-blue-400 ring-1 ring-blue-400';
+
+      case 'FINALIZADO':
+        return 'bg-green-800/50 text-green-400 ring-1 ring-green-400';
+
+      case 'NAO INICIADO':
+        return 'bg-gray-800/50 text-gray-400 ring-1 ring-gray-400';
+
+      case 'STANDBY':
+        return 'bg-orange-800/50 text-orange-400 ring-1 ring-orange-400';
+
+      case 'ATRIBUIDO':
+        return 'bg-sky-800/50 text-sky-400 ring-1 ring-sky-400';
+
+      case 'AGUARDANDO VALIDACAO':
+        return 'bg-purple-800/50 text-purple-400 ring-1 ring-purple-400';
+
+      default:
+        return 'bg-gray-800/50 text-gray-400 ring-1 ring-gray-400';
+    }
+  };
+
   if (!isOpen || !chamado) return null;
 
+  // ------------------------------------------------------------------------------
+
   return (
+    // ===== CONTAINER PRINCIPAL =====
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Overlay */}
+      {/* ===== OVERLAY ===== */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Modal */}
+      {/* ===== CONTAINER MODAL ===== */}
       <div
-        className={`relative z-10 mx-4 max-h-[90vh] w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-xl transition-all duration-300 dark:border-gray-700 dark:bg-gray-900 ${showForm ? 'max-w-7xl' : 'max-w-4xl'}`}
+        className={`relative z-10 mx-4 max-h-[90vh] w-full overflow-hidden rounded-lg border border-slate-600 bg-slate-950 ${showForm ? 'max-w-7xl' : 'max-w-4xl'}`}
       >
-        {/* Header */}
-        <div className="flex items-center border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800">
-          <div className="flex items-center space-x-3">
-            <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900">
-              <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+        {/* ===== CONATAINER HEADER ===== */}
+        <div className="flex items-center border-b border-slate-600 bg-slate-950 p-6">
+          {/* ===== CONTAINER ===== */}
+          <div className="flex items-center gap-4">
+            {/* ÍCONE */}
+            <div className="rounded-full bg-white p-3">
+              <FileText className="h-7 w-7 text-black" />
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Detalhes do Chamado
-              </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                #{chamado.cod_chamado}
-              </p>
-            </div>
+            {/* ---------- */}
+
+            {/* TÍTULO */}
+            <h1 className="text-3xl font-bold tracking-wider text-white italic">
+              Detalhes do Chamado: #{chamado.COD_CHAMADO}
+            </h1>
           </div>
         </div>
+        {/* ---------- */}
 
-        {/* Content */}
+        {/* ===== CONTAINER CARDS / FORMULÁRIO ===== */}
         <div className="flex max-h-[calc(90vh-140px)]">
-          {/* Detalhes do chamado - sempre visível */}
+          {/* ===== CONTAINER ===== */}
           <div
-            className={`transition-all duration-300 ${showForm ? 'w-1/2 border-r border-gray-200 dark:border-gray-700' : 'w-full'}`}
+            className={`transition-all duration-300 ${showForm ? 'w-1/2 border-r' : 'w-full'}`}
           >
             <div className="space-y-6 p-6">
-              {/* Informações principais */}
+              {/* ===== CONTAINER ===== */}
               <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-4">
-                  <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                    <h3 className="mb-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                  {/* ===== CARD 1 ===== */}
+                  <div className="rounded-lg bg-slate-800 p-4">
+                    {/* TÍTULO */}
+                    <h2 className="mb-3 text-lg font-bold tracking-wider text-white italic">
                       Informações do Chamado
-                    </h3>
+                    </h2>
+                    {/* --------- */}
+
                     <div className="space-y-3">
-                      <div className="flex items-center space-x-2">
-                        <AlertCircle className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                          <strong>Prioridade:</strong> {chamado.prior_chamado}
+                      <div className="flex items-center gap-4">
+                        <AlertCircle className="h-5 w-5 animate-pulse text-white" />
+                        <span className="text-sm font-semibold tracking-wider text-white italic">
+                          Prioridade: {chamado.PRIOR_CHAMADO}
                         </span>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                          <strong>Data/Hora:</strong> {chamado.data_chamado} às{' '}
-                          {chamado.hora_chamado}
+                      {/* ---------- */}
+
+                      <div className="flex items-center gap-4">
+                        <Calendar className="h-5 w-5 animate-pulse text-white" />
+                        <span className="text-sm font-semibold tracking-wider text-white italic">
+                          Data: {formatarDataISO(chamado.DATA_CHAMADO)}
                         </span>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      {/* ---------- */}
+
+                      <div className="flex items-center gap-4">
+                        <Clock className="h-5 w-5 animate-pulse text-white" />
+                        <span className="text-sm font-semibold tracking-wider text-white italic">
+                          Hora: {formatarHorario(chamado.HORA_CHAMADO)}
+                        </span>
+                      </div>
+                      {/* ---------- */}
+
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-4">
+                          <User className="h-5 w-5 animate-pulse text-white" />
+                          <span className="text-sm font-semibold tracking-wider text-white italic">
+                            Cliente: {chamado.CLIENTE?.NOME_CLIENTE || 'N/A'}
+                          </span>
+                        </div>
+                        {/* ---------- */}
+
+                        <div className="flex items-center gap-4">
+                          <UserCog className="h-5 w-5 animate-pulse text-white" />
+                          <span className="text-sm font-semibold tracking-wider text-white italic">
+                            Recurso: {chamado.RECURSO?.NOME_RECURSO || 'N/A'}
+                          </span>
+                        </div>
+                      </div>
+                      {/* ---------- */}
+
+                      <div className="flex items-center gap-4">
+                        <TrendingUp className="h-5 w-5 animate-pulse text-white" />
                         <div
-                          className={`h-2 w-2 rounded-full ${
-                            chamado.status_chamado === 'Aberto'
-                              ? 'bg-green-500'
-                              : chamado.status_chamado === 'Em Andamento'
-                                ? 'bg-yellow-500'
-                                : 'bg-red-500'
-                          }`}
-                        />
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                          <strong>Status:</strong> {chamado.status_chamado}
-                        </span>
+                          className={`block rounded-lg px-6 py-1 text-base font-semibold tracking-wider italic ${getStatusStyle(chamado.STATUS_CHAMADO)}`}
+                        >
+                          {chamado.STATUS_CHAMADO ?? 'Não atribuído'}
+                        </div>
                       </div>
                     </div>
                   </div>
+                  {/* ---------- */}
 
-                  <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                    <h3 className="mb-3 text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Cliente e Recurso
-                    </h3>
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                          <strong>Cliente:</strong>{' '}
-                          {chamado.cliente?.nome_cliente || 'N/A'}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Settings className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                          <strong>Recurso:</strong>{' '}
-                          {chamado.recurso?.nome_recurso || 'N/A'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                    <h3 className="mb-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                  {/* ===== CARD 2 ===== */}
+                  <div className="rounded-lg bg-slate-800 p-4">
+                    {/* TÍTULO */}
+                    <h2 className="mb-3 text-lg font-bold tracking-wider text-white italic">
                       Detalhes Técnicos
-                    </h3>
+                    </h2>
+                    {/* ---------- */}
+
                     <div className="space-y-3">
-                      <div>
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                          <strong>Classificação:</strong>{' '}
-                          {chamado.cod_classificacao}
+                      <div className="flex items-center gap-4">
+                        <Binary className="h-5 w-5 animate-pulse text-white" />
+                        <span className="text-sm font-semibold tracking-wider text-white italic">
+                          Classificação: {chamado.COD_CLASSIFICACAO}
                         </span>
                       </div>
-                      <div>
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                          <strong>Código TRF:</strong>{' '}
-                          {chamado.codtrf_chamado || 'N/A'}
+                      {/* ---------- */}
+
+                      <div className="flex items-center gap-4">
+                        <Shapes className="h-5 w-5 animate-pulse text-white" />
+                        <span className="text-sm font-semibold tracking-wider text-white italic">
+                          Código TRF: {chamado.CODTRF_CHAMADO || 'N/A'}
                         </span>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Mail className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                          <strong>Email:</strong>{' '}
-                          {chamado.email_chamado || 'N/A'}
+                      {/* ---------- */}
+
+                      <div className="flex items-center gap-4">
+                        <Mail className="h-5 w-5 animate-pulse text-white" />
+                        <span className="text-sm font-semibold tracking-wider text-white italic">
+                          Email: {chamado.EMAIL_CHAMADO || 'N/A'}
                         </span>
                       </div>
+                      {/* ---------- */}
+
+                      {chamado.CONCLUSAO_CHAMADO && (
+                        <div className="flex items-center gap-4">
+                          <CircleCheckBig className="h-5 w-5 animate-pulse text-white" />
+                          <span className="text-sm font-semibold tracking-wider text-white italic">
+                            Conclusão: {chamado.CONCLUSAO_CHAMADO || 'N/A'}
+                          </span>
+                        </div>
+                      )}
+                      {/* ---------- */}
+
+                      <div className="mb-1 flex flex-col">
+                        <div className="flex items-center gap-4">
+                          <MessageSquareDot className="h-5 w-5 animate-pulse text-white" />
+                          <span className="text-sm font-semibold tracking-wider text-white italic">
+                            Assunto:
+                          </span>
+                        </div>
+                        <span className="ml-8 text-sm font-semibold tracking-wider text-white italic">
+                          {chamado.ASSUNTO_CHAMADO}
+                        </span>
+                      </div>
+                      {/* ---------- */}
                     </div>
                   </div>
-
-                  {chamado.conclusao_chamado && (
-                    <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                      <h3 className="mb-3 text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Conclusão
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {chamado.conclusao_chamado}
-                      </p>
-                    </div>
-                  )}
                 </div>
               </div>
+              {/* ---------- */}
 
-              {/* Assunto */}
-              <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                <h3 className="mb-3 text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Assunto do Chamado
-                </h3>
-                <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-                  {chamado.assunto_chamado}
-                </p>
-              </div>
-
-              {/* Botões - sempre visíveis no final */}
-              <div className="flex justify-end space-x-3 border-t border-gray-200 pt-4 dark:border-gray-700">
+              {/* BOTÕES */}
+              <div className="flex justify-end gap-6 border-t border-slate-600 pt-4">
+                {/* CANCELAR */}
                 <button
                   onClick={onClose}
-                  className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                  className="rounded-lg bg-red-500 px-6 py-1 text-lg font-bold tracking-wider text-white italic transition-all duration-300 hover:scale-110 hover:bg-red-800 active:scale-90"
                 >
                   Cancelar
                 </button>
+                {/* ---------- */}
+
+                {/* ATRIBUIR CHAMADO */}
                 {!showForm && (
                   <button
                     onClick={() => setShowForm(true)}
-                    className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-blue-700"
+                    className="rounded-lg bg-blue-500 px-6 py-1 text-lg font-bold tracking-wider text-white italic transition-all duration-300 hover:scale-110 hover:bg-blue-800 active:scale-90"
                   >
-                    <Settings className="h-4 w-4" />
-                    <span>Configurar Notificações</span>
+                    Atribuir Chamado
                   </button>
                 )}
               </div>
             </div>
           </div>
+          {/* ---------- */}
 
-          {/* Formulário de configuração - aparece na lateral direita */}
+          {/* ===== CONTAINER FORMULÁRIO ===== */}
           {showForm && (
-            <div className="w-1/2 bg-gray-50 dark:bg-gray-800/50">
-              <div className="p-6">
-                <div className="mb-6">
-                  <div>
-                    <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
-                      Configurar Notificações
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Configure as notificações para este chamado
-                    </p>
-                  </div>
-                </div>
+            // ===== CONTAINER =====
+            <div className="w-1/2 border border-slate-600 bg-white">
+              {/* ===== CONTAINER ===== */}
+              <div className="space-y-6 p-6">
+                {/* TÍTULO */}
+                <h2 className="mb-3 text-lg font-bold tracking-wider text-black italic">
+                  Atribuir Chamado
+                </h2>
+                {/* ---------- */}
 
+                {/* FORMULÁRIO */}
                 <form onSubmit={handleSubmitForm} className="space-y-6">
-                  {/* Selecionar Cliente */}
+                  {/* SELECT CLIENTE */}
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label className="mb-1 block text-sm font-semibold tracking-wider text-black italic">
                       Selecionar Cliente
                     </label>
+
                     <select
                       value={formData.cliente}
                       onChange={e =>
                         setFormData({ ...formData, cliente: e.target.value })
                       }
-                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                      className="w-full rounded-lg border border-slate-600 bg-slate-800 p-4 text-white"
                       disabled={loadingClientes}
                       required
                     >
@@ -297,18 +370,20 @@ export default function Modal({ isOpen, onClose, chamado }: ModalChamadoProps) {
                       )}
                     </select>
                   </div>
+                  {/* ---------- */}
 
-                  {/* Selecionar Recurso */}
+                  {/* SELECT RECURSO */}
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label className="mb-1 block text-sm font-semibold tracking-wider text-black italic">
                       Selecionar Recurso
                     </label>
+
                     <select
                       value={formData.recurso}
                       onChange={e =>
                         setFormData({ ...formData, recurso: e.target.value })
                       }
-                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                      className="w-full rounded-lg border border-slate-600 bg-slate-800 p-4 text-white"
                       required
                     >
                       <option value="">Selecione um recurso</option>
@@ -327,10 +402,12 @@ export default function Modal({ isOpen, onClose, chamado }: ModalChamadoProps) {
                       )}
                     </select>
                   </div>
+                  {/* ---------- */}
 
-                  {/* Checkboxes */}
+                  {/* ===== CHECK BOXES ===== */}
                   <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
+                    {/* CHECK EMAIL CLIENTE */}
+                    <div className="flex items-center gap-4">
                       <input
                         type="checkbox"
                         id="emailCliente"
@@ -341,18 +418,21 @@ export default function Modal({ isOpen, onClose, chamado }: ModalChamadoProps) {
                             enviarEmailCliente: e.target.checked,
                           })
                         }
-                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600"
+                        className="h-5 w-5 cursor-pointer hover:scale-110 active:scale-90"
                       />
+
                       <label
                         htmlFor="emailCliente"
-                        className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300"
+                        className="flex cursor-pointer items-center gap-2 text-sm font-semibold tracking-wider text-black italic select-none"
                       >
-                        <Mail className="h-4 w-4 text-gray-400" />
+                        <Mail className="h-4 w-4 text-black" />
                         <span>Enviar email para o cliente</span>
                       </label>
                     </div>
+                    {/* ---------- */}
 
-                    <div className="flex items-center space-x-3">
+                    {/* CHECK EMAIL RECURSO */}
+                    <div className="flex items-center gap-4">
                       <input
                         type="checkbox"
                         id="emailRecurso"
@@ -363,32 +443,38 @@ export default function Modal({ isOpen, onClose, chamado }: ModalChamadoProps) {
                             enviarEmailRecurso: e.target.checked,
                           })
                         }
-                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600"
+                        className="h-5 w-5 cursor-pointer hover:scale-110 active:scale-90"
                       />
+
                       <label
                         htmlFor="emailRecurso"
-                        className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300"
+                        className="flex cursor-pointer items-center gap-2 text-sm font-semibold tracking-wider text-black italic select-none"
                       >
-                        <Mail className="h-4 w-4 text-gray-400" />
+                        <Mail className="h-4 w-4 text-black" />
                         <span>Enviar email para o recurso</span>
                       </label>
                     </div>
                   </div>
+                  {/* ---------- */}
 
-                  {/* Botações do formulário */}
-                  <div className="flex justify-end space-x-3 border-t border-gray-200 pt-6 dark:border-gray-700">
+                  {/* BOTÕES */}
+                  <div className="flex justify-end gap-6 border-t border-slate-600 pt-4">
+                    {/* CANCELAR */}
                     <button
                       type="button"
                       onClick={resetForm}
-                      className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                      className="rounded-lg bg-red-500 px-6 py-1 text-lg font-bold tracking-wider text-white italic shadow-md shadow-black transition-all duration-300 hover:scale-110 hover:bg-red-800 active:scale-90"
                     >
                       Cancelar
                     </button>
+                    {/* ---------- */}
+
+                    {/* SALVAR */}
                     <button
                       type="submit"
-                      className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-blue-700"
+                      className="rounded-lg bg-blue-500 px-6 py-1 text-lg font-bold tracking-wider text-white italic shadow-md shadow-black transition-all duration-300 hover:scale-110 hover:bg-blue-800 active:scale-90"
                     >
-                      Salvar Configurações
+                      Salvar
                     </button>
                   </div>
                 </form>
