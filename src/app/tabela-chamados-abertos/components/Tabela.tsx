@@ -12,13 +12,14 @@ import {
 import { useMemo, useState, useCallback } from 'react';
 import { ChamadosProps, colunasTabela } from './Colunas';
 import Modal from './Modal';
-import { AlertCircle, Database, TrendingUp } from 'lucide-react';
+import { AlertCircle, Database, Sigma, TrendingUp } from 'lucide-react';
 import ExcelButton from '../../../components/Excel_Button';
 import PDFButton from '../../../components/PDF_Button';
 import Cards from './Cards';
 
 // Novo componente Modal para OS
 import OSModal from '../components/OS_Modal';
+import FiltroNumeroChamado from './Filtro_Cod_Chamado';
 
 async function fetchChamados(
   params: URLSearchParams
@@ -34,7 +35,7 @@ async function fetchChamados(
 
 export default function Tabela() {
   const { filters } = useFiltersTabelaChamadosAbertos();
-  const { ano, mes, cliente, recurso, status } = filters;
+  const { ano, mes, cliente, recurso, status, codChamado } = filters;
   const { isAdmin, codRecurso, isLoading: authLoading } = useAuth();
 
   // Estados para modal do chamado
@@ -74,15 +75,18 @@ export default function Tabela() {
       if (cliente) params.append('cliente', cliente);
       if (recurso) params.append('recurso', recurso);
       if (status && status !== 'todos') params.append('status', status);
+      // ✅ ADICIONAR: Filtro por código do chamado para admin
+      if (codChamado) params.append('codChamado', codChamado);
     } else if (codRecurso) {
       params.append('codRecurso', codRecurso);
 
       if (cliente) params.append('cliente', cliente);
       if (status && status !== 'todos') params.append('status', status);
+      if (codChamado) params.append('codChamado', codChamado);
     }
 
     return params;
-  }, [ano, mes, cliente, recurso, status, isAdmin, codRecurso]);
+  }, [ano, mes, cliente, recurso, status, isAdmin, codRecurso, codChamado]);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['chamadosAbertos', queryParams.toString()],
@@ -223,88 +227,104 @@ export default function Tabela() {
   return (
     <>
       <TooltipProvider>
-        <div className="overflow-hidden rounded-lg border border-gray-300 bg-slate-900">
-          {/* ===== HEADER / CARDS / EXCEL / PDF ===== */}
-          <header className="bg-slate-900 p-6">
-            <div className="flex items-start justify-between">
-              <div className="space-y-4">
-                {/* TÍTULO */}
-                <div>
-                  <h1 className="text-2xl font-extrabold tracking-wider text-white italic select-none">
-                    Tabela de Chamados - {mes}/{ano}
-                  </h1>
+        <div className="overflow-hidden rounded-xl border border-black bg-slate-900">
+          {/* ===== HEADER ===== */}
+          <header className="bg-slate-950 p-6">
+            <div className="space-y-7">
+              {/* ===== ROW 1: TÍTULO E BOTÕES DE EXPORT ===== */}
+              <div className="flex items-center justify-between gap-8">
+                {/* Título com ícone */}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-center rounded-xl border border-white/30 bg-white/10 p-3 backdrop-blur-sm">
+                    <Database className="h-7 w-7 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-bold tracking-wider text-slate-200 select-none">
+                      Tabela de Chamados
+                    </h1>
+                    <span className="text-sm font-semibold tracking-wider text-slate-200 italic select-none">
+                      Período: {mes.toString().padStart(2, '0')}/{ano}
+                    </span>
+                  </div>
                 </div>
 
-                {/* CARDS MÉTRICAS */}
-                {Array.isArray(data) && data.length > 0 && (
-                  <div className="grid grid-cols-3 gap-5">
-                    {/* TOTAL CHAMADOS */}
-                    <Cards
-                      icon={Database}
-                      title="Chamados"
-                      value={stats.totalChamados}
-                    />
-                  </div>
-                )}
+                {/* Botões de Export */}
+                <div className="flex items-center gap-4">
+                  <ExcelButton
+                    data={data ?? []}
+                    fileName={`relatorio_de_chamados_${mes}_${ano}`}
+                    title={`Relatório de Chamados - ${mes}/${ano}`}
+                    columns={[
+                      { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
+                      { key: 'COD_CHAMADO', label: 'Chamado' },
+                      { key: 'DATA_CHAMADO', label: 'Data' },
+                      { key: 'HORA_CHAMADO', label: 'Hora' },
+                      { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
+                      { key: 'STATUS_CHAMADO', label: 'Status' },
+                      { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
+                      { key: 'RECURSO.NOME_RECURSO', label: 'Recurso' },
+                      { key: 'CLIENTE.NOME_CLIENTE', label: 'Cliente' },
+                      { key: 'CODTRF_CHAMADO', label: 'Código Tarefa' },
+                      { key: 'EMAIL_CHAMADO', label: 'Email' },
+                      { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
+                    ]}
+                    autoFilter={true}
+                    freezeHeader={true}
+                  />
+
+                  <PDFButton
+                    data={data ?? []}
+                    fileName={`relatorio_chamados_${mes}_${ano}`}
+                    title={`Relatório de Chamados - ${mes}/${ano}`}
+                    columns={[
+                      { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
+                      { key: 'COD_CHAMADO', label: 'Chamado' },
+                      { key: 'DATA_CHAMADO', label: 'Data' },
+                      { key: 'HORA_CHAMADO', label: 'Hora' },
+                      { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
+                      { key: 'STATUS_CHAMADO', label: 'Status' },
+                      { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
+                      { key: 'RECURSO.NOME_RECURSO', label: 'Recurso' },
+                      { key: 'CLIENTE.NOME_CLIENTE', label: 'Cliente' },
+                      { key: 'CODTRF_CHAMADO', label: 'Código Tarefa' },
+                      { key: 'EMAIL_CHAMADO', label: 'Email' },
+                      { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
+                    ]}
+                    footerText="Gerado pelo sistema em"
+                  />
+                </div>
               </div>
 
-              {/* EXCEL / PDF */}
-              <div className="flex flex-col gap-5">
-                {/* EXCEL */}
-                <ExcelButton
-                  data={data ?? []}
-                  fileName={`relatorio_de_chamados_${mes}_${ano}`}
-                  title={`Relatório de Chamados - ${mes}/${ano}`}
-                  columns={[
-                    { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
-                    { key: 'COD_CHAMADO', label: 'Chamado' },
-                    { key: 'DATA_CHAMADO', label: 'Data' },
-                    { key: 'HORA_CHAMADO', label: 'Hora' },
-                    { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
-                    { key: 'STATUS_CHAMADO', label: 'Status' },
-                    { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
-                    { key: 'RECURSO.NOME_RECURSO', label: 'Recurso' },
-                    { key: 'CLIENTE.NOME_CLIENTE', label: 'Cliente' },
-                    { key: 'CODTRF_CHAMADO', label: 'Código Tarefa' },
-                    { key: 'EMAIL_CHAMADO', label: 'Email' },
-                    { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
-                  ]}
-                  autoFilter={true}
-                  freezeHeader={true}
-                  className="border border-white/20 bg-white/10 text-white"
-                />
+              {/* ===== ROW 2: MÉTRICAS E FILTRO ===== */}
+              <div className="flex items-start justify-between gap-8">
+                {/* Métrica */}
+                {Array.isArray(data) && data.length > 0 && (
+                  <div className="flex-1">
+                    {/* <div className="mb-3"></div> */}
+                    <div className="grid grid-cols-3 gap-4">
+                      <Cards
+                        icon={Sigma}
+                        title="Total de Chamados"
+                        value={stats.totalChamados}
+                        className="w-[240px]"
+                      />
+                    </div>
+                  </div>
+                )}
 
-                {/* PDF */}
-                <PDFButton
-                  data={data ?? []}
-                  fileName={`relatorio_chamados_${mes}_${ano}`}
-                  title={`Relatório de Chamados - ${mes}/${ano}`}
-                  columns={[
-                    { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
-                    { key: 'COD_CHAMADO', label: 'Chamado' },
-                    { key: 'DATA_CHAMADO', label: 'Data' },
-                    { key: 'HORA_CHAMADO', label: 'Hora' },
-                    { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
-                    { key: 'STATUS_CHAMADO', label: 'Status' },
-                    { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
-                    { key: 'RECURSO.NOME_RECURSO', label: 'Recurso' },
-                    { key: 'CLIENTE.NOME_CLIENTE', label: 'Cliente' },
-                    { key: 'CODTRF_CHAMADO', label: 'Código Tarefa' },
-                    { key: 'EMAIL_CHAMADO', label: 'Email' },
-                    { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
-                  ]}
-                  footerText="Gerado pelo sistema em"
-                  className="border border-white/20 bg-white/10 text-white"
-                />
+                {/* Filtro de Busca */}
+                <div className="flex-shrink-0">
+                  <FiltroNumeroChamado />
+                </div>
               </div>
             </div>
           </header>
 
           {/* ===== TABELA ===== */}
-          <div className="h-full w-full overflow-hidden border border-white bg-slate-900">
+          <div className="h-full w-full overflow-hidden bg-slate-900">
             <div
               className="scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 h-full overflow-y-auto"
-              style={{ maxHeight: 'calc(100vh - 424px)' }}
+              style={{ maxHeight: 'calc(100vh - 466px)' }}
             >
               <table className="w-full table-fixed border-collapse">
                 {/* HEADER */}
@@ -314,7 +334,7 @@ export default function Tabela() {
                       {headerGroup.headers.map(header => (
                         <th
                           key={header.id}
-                          className="border-b border-gray-300 bg-teal-800 p-3 font-semibold tracking-wider text-white select-none"
+                          className="bg-teal-800 p-3 font-semibold tracking-wider text-white select-none"
                           style={{ width: getColumnWidth(header.column.id) }}
                         >
                           {header.isPlaceholder
@@ -418,16 +438,16 @@ function getColumnWidth(columnId: string): string {
     COD_CHAMADO: '100px',
     DATA_CHAMADO: '130px',
     HORA_CHAMADO: '80px',
-    ASSUNTO_CHAMADO: '250px',
+    ASSUNTO_CHAMADO: '230px',
     STATUS_CHAMADO: '140px',
     COD_CLASSIFICACAO: '100px',
-    'RECURSO.NOME_RECURSO': '80px',
-    'CLIENTE.NOME_CLIENTE': '80px',
+    'RECURSO.NOME_RECURSO': '100px',
+    'CLIENTE.NOME_CLIENTE': '100px',
     CODTRF_CHAMADO: '90px',
     EMAIL_CHAMADO: '150px',
-    CONCLUSAO_CHAMADO: '120px',
-    actions: '120px', // Nova coluna de ações
+    CONCLUSAO_CHAMADO: '140px',
+    actions: '110px',
   };
 
-  return widthMap[columnId] || '100px';
+  return widthMap[columnId] || '100px'; // Valor padrão
 }

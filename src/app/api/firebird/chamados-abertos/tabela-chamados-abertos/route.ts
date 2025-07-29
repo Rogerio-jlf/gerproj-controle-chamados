@@ -11,7 +11,8 @@ export async function GET(request: Request) {
     const codRecurso = searchParams.get('codRecurso')?.trim();
     const clienteQuery = searchParams.get('cliente')?.trim();
     const recursoQuery = searchParams.get('recurso')?.trim();
-    const statusQuery = searchParams.get('status');
+    const statusQuery = searchParams.get('status')?.trim();
+    const codChamadoQuery = searchParams.get('codChamado')?.trim();
 
     if (!mesParam || mesParam < 1 || mesParam > 12) {
       return NextResponse.json(
@@ -66,6 +67,11 @@ export async function GET(request: Request) {
     if (statusQuery) {
       whereConditions.push('Chamado.STATUS_CHAMADO = ?');
       params.push(statusQuery);
+    }
+
+    if (codChamadoQuery) {
+      whereConditions.push('Chamado.COD_CHAMADO = ?');
+      params.push(Number(codChamadoQuery));
     }
 
     const sql = `

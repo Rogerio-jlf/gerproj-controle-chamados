@@ -105,28 +105,28 @@ export default function Modal({ isOpen, onClose, chamado }: ModalChamadoProps) {
   const getStatusStyle = (status: string | undefined) => {
     switch (status?.toUpperCase()) {
       case 'NAO FINALIZADO':
-        return 'bg-yellow-800/50 text-yellow-400 ring-1 ring-yellow-400';
+        return 'bg-yellow-700 text-white ring-1 ring-yellow-300';
 
       case 'EM ATENDIMENTO':
-        return 'bg-blue-800/50 text-blue-400 ring-1 ring-blue-400';
+        return 'bg-blue-700 text-white ring-1 ring-blue-300';
 
       case 'FINALIZADO':
-        return 'bg-green-800/50 text-green-400 ring-1 ring-green-400';
+        return 'bg-green-700 text-white ring-1 ring-green-300';
 
       case 'NAO INICIADO':
-        return 'bg-gray-800/50 text-gray-400 ring-1 ring-gray-400';
+        return 'bg-red-700 text-white ring-1 ring-red-300';
 
       case 'STANDBY':
-        return 'bg-orange-800/50 text-orange-400 ring-1 ring-orange-400';
+        return 'bg-orange-700 text-white ring-1 ring-orange-300';
 
       case 'ATRIBUIDO':
-        return 'bg-sky-800/50 text-sky-400 ring-1 ring-sky-400';
+        return 'bg-blue-700 text-white ring-1 ring-blue-300';
 
       case 'AGUARDANDO VALIDACAO':
-        return 'bg-purple-800/50 text-purple-400 ring-1 ring-purple-400';
+        return 'bg-purple-700 text-white ring-1 ring-purple-300';
 
       default:
-        return 'bg-gray-800/50 text-gray-400 ring-1 ring-gray-400';
+        return 'bg-gray-700 text-white ring-1 ring-gray-300';
     }
   };
 
@@ -145,43 +145,36 @@ export default function Modal({ isOpen, onClose, chamado }: ModalChamadoProps) {
 
       {/* ===== CONTAINER MODAL ===== */}
       <div
-        className={`relative z-10 mx-4 max-h-[90vh] w-full overflow-hidden rounded-lg border border-slate-600 bg-slate-950 ${showForm ? 'max-w-7xl' : 'max-w-4xl'}`}
+        className={`relative z-10 mx-4 max-h-[90vh] w-full overflow-hidden rounded-lg border border-red-700 bg-slate-950 ${showForm ? 'max-w-7xl' : 'max-w-4xl'}`}
       >
-        {/* ===== CONATAINER HEADER ===== */}
-        <div className="flex items-center border-b border-slate-600 bg-slate-950 p-6">
-          {/* ===== CONTAINER ===== */}
+        {/* ===== HEADER ===== */}
+        <header className="flex items-center border-b border-slate-600 bg-slate-950 p-6">
           <div className="flex items-center gap-4">
-            {/* ÍCONE */}
-            <div className="rounded-full bg-white p-3">
-              <FileText className="h-7 w-7 text-black" />
-            </div>
-            {/* ---------- */}
+            {/* Ícone */}
+            <FileText className="h-10 w-10 animate-pulse text-cyan-400" />
 
-            {/* TÍTULO */}
-            <h1 className="text-3xl font-bold tracking-wider text-white italic">
+            {/* Título */}
+            <h1 className="text-2xl font-bold tracking-wider text-white italic select-none">
               Detalhes do Chamado: #{chamado.COD_CHAMADO}
             </h1>
           </div>
-        </div>
+        </header>
         {/* ---------- */}
 
-        {/* ===== CONTAINER CARDS / FORMULÁRIO ===== */}
+        {/* ===== CARDS / FORMULÁRIO ===== */}
         <div className="flex max-h-[calc(90vh-140px)]">
-          {/* ===== CONTAINER ===== */}
           <div
             className={`transition-all duration-300 ${showForm ? 'w-1/2 border-r' : 'w-full'}`}
           >
             <div className="space-y-6 p-6">
-              {/* ===== CONTAINER ===== */}
               <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-4">
                   {/* ===== CARD 1 ===== */}
                   <div className="rounded-lg bg-slate-800 p-4">
-                    {/* TÍTULO */}
-                    <h2 className="mb-3 text-lg font-bold tracking-wider text-white italic">
+                    {/* Título */}
+                    <h3 className="mb-3 text-lg font-bold tracking-wider text-white italic">
                       Informações do Chamado
-                    </h2>
-                    {/* --------- */}
+                    </h3>
 
                     <div className="space-y-3">
                       <div className="flex items-center gap-4">
@@ -190,7 +183,6 @@ export default function Modal({ isOpen, onClose, chamado }: ModalChamadoProps) {
                           Prioridade: {chamado.PRIOR_CHAMADO}
                         </span>
                       </div>
-                      {/* ---------- */}
 
                       <div className="flex items-center gap-4">
                         <Calendar className="h-5 w-5 animate-pulse text-white" />
@@ -198,7 +190,6 @@ export default function Modal({ isOpen, onClose, chamado }: ModalChamadoProps) {
                           Data: {formatarDataISO(chamado.DATA_CHAMADO)}
                         </span>
                       </div>
-                      {/* ---------- */}
 
                       <div className="flex items-center gap-4">
                         <Clock className="h-5 w-5 animate-pulse text-white" />
@@ -206,7 +197,6 @@ export default function Modal({ isOpen, onClose, chamado }: ModalChamadoProps) {
                           Hora: {formatarHorario(chamado.HORA_CHAMADO)}
                         </span>
                       </div>
-                      {/* ---------- */}
 
                       <div className="space-y-3">
                         <div className="flex items-center gap-4">
@@ -215,7 +205,6 @@ export default function Modal({ isOpen, onClose, chamado }: ModalChamadoProps) {
                             Cliente: {chamado.CLIENTE?.NOME_CLIENTE || 'N/A'}
                           </span>
                         </div>
-                        {/* ---------- */}
 
                         <div className="flex items-center gap-4">
                           <UserCog className="h-5 w-5 animate-pulse text-white" />
@@ -224,7 +213,6 @@ export default function Modal({ isOpen, onClose, chamado }: ModalChamadoProps) {
                           </span>
                         </div>
                       </div>
-                      {/* ---------- */}
 
                       <div className="flex items-center gap-4">
                         <TrendingUp className="h-5 w-5 animate-pulse text-white" />

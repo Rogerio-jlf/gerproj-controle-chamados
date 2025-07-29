@@ -3,6 +3,12 @@
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { RiFileExcel2Line } from 'react-icons/ri';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './ui/tooltip';
 
 interface ExportaExcelButtonProps<T> {
   data: T[];
@@ -84,17 +90,31 @@ export default function ExcelButton<T>({
   };
 
   return (
-    <button
-      onClick={exportToExcel}
-      disabled={disabled || data.length === 0}
-      className={`group flex items-center rounded-lg px-6 py-2 text-sm font-medium ${
-        disabled || data.length === 0
-          ? 'cursor-not-allowed text-indigo-500'
-          : 'cursor-pointer bg-green-500 text-white hover:bg-green-600 active:scale-90'
-      } transition-all duration-300 ${className}`}
-    >
-      <RiFileExcel2Line className="mr-2 h-4 w-4 text-green-500 group-hover:text-white" />
-      {buttonText}
-    </button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>
+          <button
+            onClick={exportToExcel}
+            disabled={disabled || data.length === 0}
+            className={`group flex items-center rounded-md px-6 py-3 text-base font-semibold tracking-wider transition-all duration-300 ${
+              disabled || data.length === 0
+                ? 'cursor-not-allowed text-indigo-500'
+                : 'cursor-pointer border border-white/30 bg-white/10 text-slate-200 hover:scale-110 hover:border-white/30 hover:bg-green-800 active:scale-90'
+            } ${className}`}
+          >
+            <RiFileExcel2Line className="mr-2 h-6 w-6 font-semibold text-green-500 group-hover:text-white" />
+            {buttonText}
+          </button>
+          <TooltipContent
+            side="top"
+            align="end"
+            sideOffset={8}
+            className="border border-white/30 bg-slate-900 text-base font-semibold tracking-wider text-white"
+          >
+            Exportar para Excel
+          </TooltipContent>
+        </TooltipTrigger>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

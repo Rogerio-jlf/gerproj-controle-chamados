@@ -3,18 +3,19 @@
 import { createContext, useContext, useState } from 'react';
 
 // Define a interface para o estado dos filtros de chamados abertos
-interface FiltersProps {
+export interface FiltersProps {
   ano: number;
   mes: number;
   cliente: string;
   recurso: string;
   status: string;
+  codChamado?: string;
 }
 
 // Define a interface para o contexto dos filtros de chamados abertos
 interface FiltersContextProps {
   filters: FiltersProps;
-  setFilters: (filters: FiltersProps) => void;
+  setFilters: React.Dispatch<React.SetStateAction<FiltersProps>>;
   clearFilters: () => void;
 }
 
@@ -32,6 +33,7 @@ const getInitialFilters = (): FiltersProps => {
     cliente: '',
     recurso: '',
     status: '',
+    codChamado: '',
   };
 };
 

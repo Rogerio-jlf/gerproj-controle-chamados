@@ -3,6 +3,12 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AiOutlineFilePdf } from 'react-icons/ai';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './ui/tooltip';
 
 // Define as propriedades aceitas pelo componente ExportaPDFButton.
 interface ExportaPDFButtonProps<T> {
@@ -157,17 +163,31 @@ export default function PDFButton<T extends Record<string, any>>({
 
   // Renderiza o botão de exportação.
   return (
-    <button
-      onClick={exportToPdf}
-      disabled={disabled || data.length === 0}
-      className={`group flex items-center rounded-lg px-6 py-2 text-sm font-medium ${
-        disabled || data.length === 0
-          ? 'cursor-not-allowed text-indigo-500'
-          : 'cursor-pointer bg-red-500 text-white hover:bg-red-600 active:scale-90'
-      } transition-all duration-300 ${className}`}
-    >
-      <AiOutlineFilePdf className="mr-2 h-4 w-4 text-red-500 group-hover:text-white" />
-      {buttonText}
-    </button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>
+          <button
+            onClick={exportToPdf}
+            disabled={disabled || data.length === 0}
+            className={`group flex items-center rounded-md px-6 py-3 text-base font-semibold tracking-wider transition-all duration-300 ${
+              disabled || data.length === 0
+                ? 'cursor-not-allowed text-indigo-500'
+                : 'cursor-pointer border border-white/30 bg-white/10 text-slate-200 hover:scale-110 hover:border-white/30 hover:bg-red-800 active:scale-90'
+            } ${className}`}
+          >
+            <AiOutlineFilePdf className="mr-2 h-6 w-6 font-semibold text-red-500 group-hover:text-white" />
+            {buttonText}
+          </button>
+          <TooltipContent
+            side="top"
+            align="end"
+            sideOffset={8}
+            className="border border-white/30 bg-slate-900 text-base font-semibold tracking-wider text-white"
+          >
+            Exportar para PDF
+          </TooltipContent>
+        </TooltipTrigger>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

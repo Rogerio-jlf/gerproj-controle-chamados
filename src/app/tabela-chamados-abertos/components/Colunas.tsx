@@ -6,6 +6,7 @@ import {
 import { ColumnDef } from '@tanstack/react-table';
 import { Eye, FileText } from 'lucide-react';
 import Link from 'next/link';
+import { FaEye } from 'react-icons/fa';
 
 export interface ChamadosProps {
   COD_CHAMADO: number;
@@ -44,13 +45,7 @@ export const colunasTabela = (
     cell: ({ getValue }) => {
       const value = getValue() as string;
       return (
-        <div
-          className={`rounded-lg p-2 text-center ${
-            value === 'Alta'
-              ? 'bg-red-800/50 text-red-400 ring-1 ring-red-400'
-              : 'bg-green-800/50 text-green-400 ring-1 ring-green-400'
-          }`}
-        >
+        <div className="rounded-lg bg-cyan-800 p-2 text-center text-white ring-1 ring-cyan-300">
           {value}
         </div>
       );
@@ -61,7 +56,7 @@ export const colunasTabela = (
     accessorKey: 'COD_CHAMADO',
     header: () => <div className="text-center">Chamado</div>,
     cell: ({ getValue }) => (
-      <div className="rounded-lg bg-blue-800/50 p-2 text-center text-blue-400 ring-1 ring-blue-400">
+      <div className="rounded-lg bg-cyan-800 p-2 text-center text-white ring-1 ring-cyan-300">
         {getValue() as string}
       </div>
     ),
@@ -120,9 +115,9 @@ export const colunasTabela = (
 
           <TooltipContent
             side="top" // (top, bottom, left, right) - aqui aparece acima
-            align="start" // start = esquerda, center = padrão, end = direita
-            sideOffset={16} // distância entre o trigger e o tooltip
-            className="max-w-md -translate-x-10 border border-slate-700 bg-white text-sm tracking-wider break-words text-black"
+            align="end" // start = esquerda, center = padrão, end = direita
+            sideOffset={12} // distância entre o trigger e o tooltip
+            className="border border-white/30 bg-slate-900 text-base font-semibold tracking-wider text-white"
           >
             {value}
           </TooltipContent>
@@ -141,28 +136,28 @@ export const colunasTabela = (
       const getStatusStyle = (status: string | undefined) => {
         switch (status?.toUpperCase()) {
           case 'NAO FINALIZADO':
-            return 'bg-yellow-800/50 text-yellow-400 ring-1 ring-yellow-400';
+            return 'bg-yellow-700 text-white ring-1 ring-yellow-300';
 
           case 'EM ATENDIMENTO':
-            return 'bg-blue-800/50 text-blue-400 ring-1 ring-blue-400';
+            return 'bg-blue-700 text-white ring-1 ring-blue-300';
 
           case 'FINALIZADO':
-            return 'bg-green-800/50 text-green-400 ring-1 ring-green-400';
+            return 'bg-green-700 text-white ring-1 ring-green-300';
 
           case 'NAO INICIADO':
-            return 'bg-gray-800/50 text-gray-400 ring-1 ring-gray-400';
+            return 'bg-red-700 text-white ring-1 ring-red-300';
 
           case 'STANDBY':
-            return 'bg-orange-800/50 text-orange-400 ring-1 ring-orange-400';
+            return 'bg-orange-700 text-white ring-1 ring-orange-300';
 
           case 'ATRIBUIDO':
-            return 'bg-sky-800/50 text-sky-400 ring-1 ring-sky-400';
+            return 'bg-blue-700 text-white ring-1 ring-blue-300';
 
           case 'AGUARDANDO VALIDACAO':
-            return 'bg-purple-800/50 text-purple-400 ring-1 ring-purple-400';
+            return 'bg-purple-700 text-white ring-1 ring-purple-300';
 
           default:
-            return 'bg-gray-800/50 text-gray-400 ring-1 ring-gray-400';
+            return 'bg-gray-700 text-white ring-1 ring-gray-300';
         }
       };
 
@@ -184,7 +179,7 @@ export const colunasTabela = (
       return (
         <div className="text-center">
           {value ? (
-            <div className="rounded-lg bg-purple-800/50 p-2 text-purple-400 ring-1 ring-purple-400">
+            <div className="rounded-lg bg-cyan-800 p-2 text-white ring-1 ring-cyan-300">
               {value}
             </div>
           ) : (
@@ -213,11 +208,13 @@ export const colunasTabela = (
           </TooltipTrigger>
           <TooltipContent
             side="top" // (top, bottom, left, right) - aqui aparece acima
-            align="start" // start = esquerda, center = padrão, end = direita
-            sideOffset={16} // distância entre o trigger e o tooltip
-            className="max-w-md -translate-x-10 border border-slate-700 bg-white text-sm tracking-wider break-words text-black"
+            align="end" // start = esquerda, center = padrão, end = direita
+            sideOffset={12} // distância entre o trigger e o tooltip
+            className="border border-white/30 bg-slate-900 text-base font-semibold tracking-wider text-white"
           >
-            <p className="text-black">{value ?? 'Não informado'}</p>
+            <p className="font-semibold tracking-wider text-white">
+              {value ?? 'Não informado'}
+            </p>
           </TooltipContent>
         </Tooltip>
       );
@@ -242,11 +239,13 @@ export const colunasTabela = (
           </TooltipTrigger>
           <TooltipContent
             side="top" // (top, bottom, left, right) - aqui aparece acima
-            align="start" // start = esquerda, center = padrão, end = direita
-            sideOffset={16} // distância entre o trigger e o tooltip
-            className="max-w-md -translate-x-10 border border-slate-700 bg-white text-sm tracking-wider break-words text-black"
+            align="end" // start = esquerda, center = padrão, end = direita
+            sideOffset={12} // distância entre o trigger e o tooltip
+            className="border border-white/30 bg-slate-900 text-base font-semibold tracking-wider text-white"
           >
-            <p className="text-black">{value ?? 'Não informado'}</p>
+            <p className="font-semibold tracking-wider text-white">
+              {value ?? 'Não informado'}
+            </p>
           </TooltipContent>
         </Tooltip>
       );
@@ -261,7 +260,7 @@ export const colunasTabela = (
       return (
         <div className="text-center">
           {value ? (
-            <div className="rounded-lg bg-indigo-800/50 p-2 text-indigo-400 ring-1 ring-indigo-400">
+            <div className="rounded-lg bg-cyan-800 p-2 text-white ring-1 ring-cyan-300">
               {value}
             </div>
           ) : (
@@ -292,11 +291,13 @@ export const colunasTabela = (
           </TooltipTrigger>
           <TooltipContent
             side="top" // (top, bottom, left, right) - aqui aparece acima
-            align="start" // start = esquerda, center = padrão, end = direita
-            sideOffset={16} // distância entre o trigger e o tooltip
-            className="max-w-md -translate-x-10 border border-slate-700 bg-white text-sm tracking-wider break-words text-black"
+            align="end" // start = esquerda, center = padrão, end = direita
+            sideOffset={12} // distância entre o trigger e o tooltip
+            className="border border-white/30 bg-slate-900 text-base font-semibold tracking-wider text-white"
           >
-            <p className="text-center text-black">{value ?? 'Não informado'}</p>
+            <p className="text-center font-semibold tracking-wider text-white">
+              {value ?? 'Não informado'}
+            </p>
           </TooltipContent>
         </Tooltip>
       );
@@ -318,11 +319,11 @@ export const colunasTabela = (
       return (
         <div className="text-center">
           {value ? (
-            <div className="rounded-lg bg-green-800/50 p-2 text-green-400 ring-1 ring-green-400">
+            <div className="rounded-lg bg-green-700 p-2 text-white ring-1 ring-green-300">
               {formatarData(value)}
             </div>
           ) : (
-            <div className="rounded-lg bg-yellow-800/50 p-2 text-yellow-400 uppercase ring-1 ring-yellow-400">
+            <div className="rounded-lg bg-yellow-700 p-2 text-white uppercase ring-1 ring-yellow-300">
               Em andamento
             </div>
           )}
@@ -339,40 +340,42 @@ export const colunasTabela = (
       const chamado = row.original;
 
       return (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-3">
+          {/* Botão visualizar Chamado */}
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 onClick={() => acoes.onVisualizarChamado(chamado.COD_CHAMADO)}
-                className="inline-flex items-center justify-center rounded-lg bg-blue-600/20 p-2 text-blue-400 ring-1 ring-blue-400 transition-colors hover:bg-blue-600/30 hover:ring-blue-300"
+                className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-cyan-800 p-2 text-white ring-1 ring-cyan-300"
               >
-                <Eye size={16} />
+                <FaEye className="h-6 w-6" />
               </button>
             </TooltipTrigger>
             <TooltipContent
-              side="top"
-              align="center"
-              sideOffset={8}
-              className="border border-slate-700 bg-white text-sm text-black"
+              side="top" // (top, bottom, left, right) - aqui aparece acima
+              align="end" // start = esquerda, center = padrão, end = direita
+              sideOffset={12} // distância entre o trigger e o tooltip
+              className="border border-white/30 bg-slate-900 text-base font-semibold tracking-wider text-white"
             >
-              Visualizar Chamado
+              Visualizar chamado
             </TooltipContent>
           </Tooltip>
 
+          {/* Botão visualizar OS */}
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 onClick={() => acoes.onVisualizarOS(chamado.COD_CHAMADO)}
-                className="inline-flex items-center justify-center rounded-lg bg-green-600/20 p-2 text-green-400 ring-1 ring-green-400 transition-colors hover:bg-green-600/30 hover:ring-green-300"
+                className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-green-800 p-2 text-white ring-1 ring-green-300"
               >
-                <FileText size={16} />
+                <FaEye className="h-6 w-6" />
               </button>
             </TooltipTrigger>
             <TooltipContent
-              side="top"
-              align="center"
-              sideOffset={8}
-              className="border border-slate-700 bg-white text-sm text-black"
+              side="top" // (top, bottom, left, right) - aqui aparece acima
+              align="end" // start = esquerda, center = padrão, end = direita
+              sideOffset={12} // distância entre o trigger e o tooltip
+              className="border border-white/30 bg-slate-900 text-base font-semibold tracking-wider text-white"
             >
               Visualizar OS
             </TooltipContent>

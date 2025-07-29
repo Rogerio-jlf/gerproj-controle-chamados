@@ -87,7 +87,7 @@ const fetchStatus = async ({
   return data;
 };
 
-export default function Filtros({ onFiltersChange }: FiltersProps) {
+export default function Filtros({}: FiltersProps) {
   const hoje = new Date();
   const { filters, setFilters } = useFiltersTabelaChamadosAbertos();
   const { isAdmin, codRecurso } = useAuth();
