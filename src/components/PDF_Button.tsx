@@ -163,31 +163,16 @@ export default function PDFButton<T extends Record<string, any>>({
 
   // Renderiza o botão de exportação.
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger>
-          <button
-            onClick={exportToPdf}
-            disabled={disabled || data.length === 0}
-            className={`group flex items-center rounded-md px-6 py-3 text-base font-semibold tracking-wider transition-all duration-300 ${
-              disabled || data.length === 0
-                ? 'cursor-not-allowed text-indigo-500'
-                : 'cursor-pointer border border-white/30 bg-white/10 text-slate-200 hover:scale-110 hover:border-white/30 hover:bg-red-800 active:scale-90'
-            } ${className}`}
-          >
-            <AiOutlineFilePdf className="mr-2 h-6 w-6 font-semibold text-red-500 group-hover:text-white" />
-            {buttonText}
-          </button>
-          <TooltipContent
-            side="top"
-            align="end"
-            sideOffset={8}
-            className="border border-white/30 bg-slate-900 text-base font-semibold tracking-wider text-white"
-          >
-            Exportar para PDF
-          </TooltipContent>
-        </TooltipTrigger>
-      </Tooltip>
-    </TooltipProvider>
+    <>
+      {data.length > 0 && (
+        <button
+          onClick={exportToPdf}
+          className={`group flex cursor-pointer items-center rounded-md border border-white/30 bg-white/10 px-6 py-3 text-base font-semibold tracking-wider text-slate-200 hover:scale-110 hover:border-white/30 hover:bg-red-800 active:scale-90 ${className}`}
+        >
+          <AiOutlineFilePdf className="mr-2 h-6 w-6 font-semibold text-red-500 group-hover:text-white" />
+          {buttonText}
+        </button>
+      )}
+    </>
   );
 }

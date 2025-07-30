@@ -29,7 +29,7 @@ Content-Type: application/json
 # --------------------------------------------------------------------------------
 
 ### Buscar todos os chamados com (admin)
-GET http://localhost:3000/api/chamados-abertos/tabelas/tabela-chamados-abertos?mes=6&ano=2025&isAdmin=true
+GET http://localhost:3000/api/firebird/chamados-abertos/tabela-chamados-abertos?mes=6&ano=2025&isAdmin=true
 
 ### Buscar todos os chamados não admin, utilizando codRecurso obrigatório
 GET http://localhost:3000/api/chamados-abertos/tabelas/tabela-chamados-abertos?mes=6&ano=2025&isAdmin=false&codRecurso=144

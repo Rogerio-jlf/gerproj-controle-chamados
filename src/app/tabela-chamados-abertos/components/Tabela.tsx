@@ -1,6 +1,5 @@
 'use client';
 
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { useAuth } from '@/contexts/Auth_Context';
 import { useFiltersTabelaChamadosAbertos } from '@/contexts/Filters_Tabela_Chamados_Abertos_Context';
 import { useQuery } from '@tanstack/react-query';
@@ -12,7 +11,7 @@ import {
 import { useMemo, useState, useCallback } from 'react';
 import { ChamadosProps, colunasTabela } from './Colunas';
 import Modal from './Modal';
-import { AlertCircle, Database, Sigma, TrendingUp } from 'lucide-react';
+import { AlertCircle, Database, Sigma, TriangleAlert } from 'lucide-react';
 import ExcelButton from '../../../components/Excel_Button';
 import PDFButton from '../../../components/PDF_Button';
 import Cards from './Cards';
@@ -20,6 +19,8 @@ import Cards from './Cards';
 // Novo componente Modal para OS
 import OSModal from '../components/OS_Modal';
 import FiltroNumeroChamado from './Filtro_Cod_Chamado';
+import IsLoading from './IsLoading';
+import Erro from './Erro';
 
 async function fetchChamados(
   params: URLSearchParams
@@ -75,7 +76,6 @@ export default function Tabela() {
       if (cliente) params.append('cliente', cliente);
       if (recurso) params.append('recurso', recurso);
       if (status && status !== 'todos') params.append('status', status);
-      // ✅ ADICIONAR: Filtro por código do chamado para admin
       if (codChamado) params.append('codChamado', codChamado);
     } else if (codRecurso) {
       params.append('codRecurso', codRecurso);
@@ -168,251 +168,202 @@ export default function Tabela() {
   // LOADING CARREGAMENTO
   if (isLoading) {
     return (
-      <div className="min-h-[500px] rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
-        <div className="flex h-full items-center justify-center p-12">
-          <div className="space-y-6 text-center">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-100">
-              <div className="relative">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"></div>
-                <Database
-                  className="absolute inset-0 h-8 w-8 animate-pulse text-blue-400"
-                  style={{ animationDelay: '0.5s' }}
-                />
-              </div>
-            </div>
-            <div>
-              <h3 className="mb-2 text-xl font-semibold tracking-wider text-slate-800 select-none">
-                Carregando os dados...
-              </h3>
-              <p className="tracking-wider text-slate-600 select-none">
-                Buscando informações dos chamados, aguarde...
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <>
+        <IsLoading />;
+      </>
     );
   }
 
   // ERRO MESSAGE
   if (isError) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : 'Não foi possível carregar os dados. Tente novamente mais tarde.';
-
     return (
-      <div className="min-h-[500px] rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 to-red-100 shadow-xl">
-        <div className="flex h-full items-center justify-center p-12">
-          <div className="space-y-6 text-center">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-red-300 bg-gradient-to-br from-red-100 to-red-200">
-              <AlertCircle className="h-10 w-10 text-red-500" />
-            </div>
-            <div>
-              <h3 className="mb-2 text-xl font-bold tracking-wider text-red-800 select-none">
-                Oops... Algo deu errado!
-              </h3>
-              <p className="mx-auto max-w-md tracking-wider text-red-600 select-none">
-                {errorMessage}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <>
+        <Erro error={error} />
+      </>
     );
   }
 
-  // -------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------
 
   return (
     <>
-      <TooltipProvider>
-        <div className="overflow-hidden rounded-xl border border-black bg-slate-900">
-          {/* ===== HEADER ===== */}
-          <header className="bg-slate-950 p-6">
-            <div className="space-y-7">
-              {/* ===== ROW 1: TÍTULO E BOTÕES DE EXPORT ===== */}
-              <div className="flex items-center justify-between gap-8">
-                {/* Título com ícone */}
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center rounded-xl border border-white/30 bg-white/10 p-3 backdrop-blur-sm">
-                    <Database className="h-7 w-7 text-cyan-400" />
-                  </div>
-                  <div>
-                    <h1 className="text-3xl font-bold tracking-wider text-slate-200 select-none">
-                      Tabela de Chamados
-                    </h1>
-                    <span className="text-sm font-semibold tracking-wider text-slate-200 italic select-none">
-                      Período: {mes.toString().padStart(2, '0')}/{ano}
-                    </span>
-                  </div>
+      <div className="overflow-hidden rounded-xl bg-slate-900 shadow-xl shadow-black">
+        {/* ===== HEADER ===== */}
+        <header className="bg-slate-950 p-6">
+          <div className="space-y-7">
+            {/* ===== LINHA 1: HEADER E BOTÕES DE EXPORTAÇÃO ===== */}
+            <div className="flex items-center justify-between gap-8">
+              <div className="flex items-center gap-4">
+                {/* Ícone */}
+                <div className="flex items-center justify-center rounded-xl border border-white/30 bg-white/10 p-3 backdrop-blur-sm">
+                  <Database className="h-7 w-7 text-cyan-400" />
                 </div>
 
-                {/* Botões de Export */}
-                <div className="flex items-center gap-4">
-                  <ExcelButton
-                    data={data ?? []}
-                    fileName={`relatorio_de_chamados_${mes}_${ano}`}
-                    title={`Relatório de Chamados - ${mes}/${ano}`}
-                    columns={[
-                      { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
-                      { key: 'COD_CHAMADO', label: 'Chamado' },
-                      { key: 'DATA_CHAMADO', label: 'Data' },
-                      { key: 'HORA_CHAMADO', label: 'Hora' },
-                      { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
-                      { key: 'STATUS_CHAMADO', label: 'Status' },
-                      { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
-                      { key: 'RECURSO.NOME_RECURSO', label: 'Recurso' },
-                      { key: 'CLIENTE.NOME_CLIENTE', label: 'Cliente' },
-                      { key: 'CODTRF_CHAMADO', label: 'Código Tarefa' },
-                      { key: 'EMAIL_CHAMADO', label: 'Email' },
-                      { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
-                    ]}
-                    autoFilter={true}
-                    freezeHeader={true}
-                  />
+                <div>
+                  {/* Título */}
+                  <h1 className="text-3xl font-bold tracking-wider text-slate-200 select-none">
+                    Tabela de Chamados
+                  </h1>
 
-                  <PDFButton
-                    data={data ?? []}
-                    fileName={`relatorio_chamados_${mes}_${ano}`}
-                    title={`Relatório de Chamados - ${mes}/${ano}`}
-                    columns={[
-                      { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
-                      { key: 'COD_CHAMADO', label: 'Chamado' },
-                      { key: 'DATA_CHAMADO', label: 'Data' },
-                      { key: 'HORA_CHAMADO', label: 'Hora' },
-                      { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
-                      { key: 'STATUS_CHAMADO', label: 'Status' },
-                      { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
-                      { key: 'RECURSO.NOME_RECURSO', label: 'Recurso' },
-                      { key: 'CLIENTE.NOME_CLIENTE', label: 'Cliente' },
-                      { key: 'CODTRF_CHAMADO', label: 'Código Tarefa' },
-                      { key: 'EMAIL_CHAMADO', label: 'Email' },
-                      { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
-                    ]}
-                    footerText="Gerado pelo sistema em"
-                  />
+                  {/* Período */}
+                  <span className="text-sm font-semibold tracking-wider text-slate-200 italic select-none">
+                    Período: {mes.toString().padStart(2, '0')}/{ano}
+                  </span>
                 </div>
               </div>
 
-              {/* ===== ROW 2: MÉTRICAS E FILTRO ===== */}
-              <div className="flex items-start justify-between gap-8">
-                {/* Métrica */}
-                {Array.isArray(data) && data.length > 0 && (
-                  <div className="flex-1">
-                    {/* <div className="mb-3"></div> */}
-                    <div className="grid grid-cols-3 gap-4">
-                      <Cards
-                        icon={Sigma}
-                        title="Total de Chamados"
-                        value={stats.totalChamados}
-                        className="w-[240px]"
-                      />
-                    </div>
-                  </div>
-                )}
+              <div className="flex items-center gap-4">
+                {/* Botão exportar excel */}
+                <ExcelButton
+                  data={data ?? []}
+                  fileName={`relatorio_de_chamados_${mes}_${ano}`}
+                  title={`Relatório de Chamados - ${mes}/${ano}`}
+                  columns={[
+                    { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
+                    { key: 'COD_CHAMADO', label: 'Chamado' },
+                    { key: 'DATA_CHAMADO', label: 'Data' },
+                    { key: 'HORA_CHAMADO', label: 'Hora' },
+                    { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
+                    { key: 'STATUS_CHAMADO', label: 'Status' },
+                    { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
+                    { key: 'RECURSO.NOME_RECURSO', label: 'Recurso' },
+                    { key: 'CLIENTE.NOME_CLIENTE', label: 'Cliente' },
+                    { key: 'CODTRF_CHAMADO', label: 'Código Tarefa' },
+                    { key: 'EMAIL_CHAMADO', label: 'Email' },
+                    { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
+                  ]}
+                  autoFilter={true}
+                  freezeHeader={true}
+                />
 
-                {/* Filtro de Busca */}
+                {/* Botão exportar PDF */}
+                <PDFButton
+                  data={data ?? []}
+                  fileName={`relatorio_chamados_${mes}_${ano}`}
+                  title={`Relatório de Chamados - ${mes}/${ano}`}
+                  columns={[
+                    { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
+                    { key: 'COD_CHAMADO', label: 'Chamado' },
+                    { key: 'DATA_CHAMADO', label: 'Data' },
+                    { key: 'HORA_CHAMADO', label: 'Hora' },
+                    { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
+                    { key: 'STATUS_CHAMADO', label: 'Status' },
+                    { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
+                    { key: 'RECURSO.NOME_RECURSO', label: 'Recurso' },
+                    { key: 'CLIENTE.NOME_CLIENTE', label: 'Cliente' },
+                    { key: 'CODTRF_CHAMADO', label: 'Código Tarefa' },
+                    { key: 'EMAIL_CHAMADO', label: 'Email' },
+                    { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
+                  ]}
+                  footerText="Gerado pelo sistema em"
+                />
+              </div>
+            </div>
+
+            {/* ===== LINHA 2: CARD E FILTRO ===== */}
+            <div className="flex items-start justify-between gap-8">
+              {/* Card total chamados */}
+              {Array.isArray(data) && data.length > 0 && (
+                <div className="flex-1">
+                  <div className="grid grid-cols-3 gap-4">
+                    <Cards
+                      icon={Sigma}
+                      title="Total de Chamados"
+                      value={stats.totalChamados}
+                      className="w-[240px]"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Filtro buscar por chamado */}
+              {data && data.length > 0 && (
                 <div className="flex-shrink-0">
                   <FiltroNumeroChamado />
                 </div>
-              </div>
+              )}
             </div>
-          </header>
+          </div>
+        </header>
 
-          {/* ===== TABELA ===== */}
-          <div className="h-full w-full overflow-hidden bg-slate-900">
-            <div
-              className="scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 h-full overflow-y-auto"
-              style={{ maxHeight: 'calc(100vh - 466px)' }}
-            >
-              <table className="w-full table-fixed border-collapse">
-                {/* HEADER */}
-                <thead className="sticky top-0 z-20">
-                  {table.getHeaderGroups().map(headerGroup => (
-                    <tr key={headerGroup.id}>
-                      {headerGroup.headers.map(header => (
-                        <th
-                          key={header.id}
-                          className="bg-teal-800 p-3 font-semibold tracking-wider text-white select-none"
-                          style={{ width: getColumnWidth(header.column.id) }}
+        {/* ===== TABELA ===== */}
+        <div className="h-full w-full overflow-hidden bg-slate-900">
+          <div
+            className="scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 h-full overflow-y-auto"
+            style={{ maxHeight: 'calc(100vh - 466px)' }}
+          >
+            <table className="w-full table-fixed border-collapse">
+              {/* Header Table */}
+              <thead className="sticky top-0 z-20">
+                {table.getHeaderGroups().map(headerGroup => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map(header => (
+                      <th
+                        key={header.id}
+                        className="bg-teal-800 p-3 font-semibold tracking-wider text-white select-none"
+                        style={{ width: getColumnWidth(header.column.id) }}
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+
+              {/* Body Table */}
+              <tbody>
+                {table.getRowModel().rows.length > 0 &&
+                  !isLoading &&
+                  table.getRowModel().rows.map((row, rowIndex) => (
+                    <tr
+                      key={row.id}
+                      className={`group border-b border-slate-700 transition-all duration-300 hover:bg-white/50 ${
+                        rowIndex % 2 === 0 ? 'bg-slate-900' : 'bg-slate-800/50'
+                      }`}
+                    >
+                      {row.getVisibleCells().map(cell => (
+                        <td
+                          key={cell.id}
+                          className="p-3 text-sm font-semibold tracking-wider text-white group-hover:text-black"
+                          style={{ width: getColumnWidth(cell.column.id) }}
                         >
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </th>
+                          <div className="overflow-hidden">
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </div>
+                        </td>
                       ))}
                     </tr>
                   ))}
-                </thead>
-
-                {/* BODY */}
-                <tbody>
-                  {table.getRowModel().rows.length === 0 && !isLoading ? (
-                    <tr>
-                      <td
-                        colSpan={table.getHeaderGroups()[0].headers.length}
-                        className="p-6 text-center text-sm text-gray-400"
-                      >
-                        Nenhum chamado encontrado
-                      </td>
-                    </tr>
-                  ) : (
-                    table.getRowModel().rows.map((row, rowIndex) => (
-                      <tr
-                        key={row.id}
-                        className={`group border-b border-slate-700 transition-all duration-300 hover:bg-white/50 ${
-                          rowIndex % 2 === 0
-                            ? 'bg-slate-900'
-                            : 'bg-slate-800/50'
-                        }`}
-                      >
-                        {row.getVisibleCells().map(cell => (
-                          <td
-                            key={cell.id}
-                            className="p-3 text-sm font-semibold tracking-wider text-white group-hover:text-black"
-                            style={{ width: getColumnWidth(cell.column.id) }}
-                          >
-                            <div className="overflow-hidden">
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext()
-                              )}
-                            </div>
-                          </td>
-                        ))}
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+              </tbody>
+            </table>
           </div>
-
-          {/* MENSAGEM QUANDO NÃO HÁ DADOS */}
-          {Array.isArray(data) && data.length === 0 && !isLoading && (
-            <div className="bg-white p-12 text-center">
-              <div className="space-y-4">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-200">
-                  <TrendingUp className="h-8 w-8 text-red-500" />
-                </div>
-                <div>
-                  <h3 className="mb-2 text-lg font-bold text-black">
-                    Nenhum chamado encontrado.
-                  </h3>
-                  <p className="text-black">
-                    Não há registros para o período {mes}/{ano} com os filtros
-                    selecionados.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
-      </TooltipProvider>
+
+        {/* Mensagem quando não há chamado */}
+        {Array.isArray(data) && data.length === 0 && !isLoading && (
+          <div className="bg-slate-900 py-40 text-center">
+            {/* Ícone */}
+            <TriangleAlert
+              className="mx-auto mb-6 animate-pulse text-yellow-500"
+              size={80}
+            />
+
+            {/* Título */}
+            <h3 className="text-2xl font-bold tracking-wider text-slate-300 italic select-none">
+              Nenhum chamado encontrado, para o período de{' '}
+              {mes.toString().padStart(2, '0')}/{ano}.
+            </h3>
+          </div>
+        )}
+      </div>
 
       {/* Modal do Chamado */}
       <Modal

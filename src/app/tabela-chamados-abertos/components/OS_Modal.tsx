@@ -1,13 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Loader2, AlertCircle, FileText, RefreshCw } from 'lucide-react';
+import {
+  X,
+  Loader2,
+  AlertCircle,
+  FileText,
+  RefreshCw,
+  TriangleAlert,
+} from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import IsLoading from './IsLoading';
+import Erro from './Erro';
+import { Card } from '../../../components/ui/card';
 
 interface OSData {
   COD_OS: string;
@@ -45,6 +55,7 @@ export default function OSModal({ isOpen, onClose, codChamado }: OSModalProps) {
   const [osData, setOsData] = useState<OSData[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
 
   // Buscar dados quando o modal abrir
   useEffect(() => {
@@ -78,9 +89,15 @@ export default function OSModal({ isOpen, onClose, codChamado }: OSModalProps) {
 
   // Limpar dados quando fechar
   const handleClose = () => {
-    setOsData(null);
-    setError(null);
-    onClose();
+    setIsClosing(true);
+
+    // Pequeno delay para mostrar o loader
+    setTimeout(() => {
+      setOsData(null);
+      setError(null);
+      onClose();
+      setIsClosing(false);
+    }, 300); // 300ms de delay para mostrar o loader
   };
 
   // Formatar data
@@ -110,17 +127,19 @@ export default function OSModal({ isOpen, onClose, codChamado }: OSModalProps) {
 
   if (!isOpen) return null;
 
+  // ------------------------------------------------------------------------------------------
+
   return (
     // ===== CONTAINER PRINCIPAL =====
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* ===== OVERLAY ===== */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-xs"
         onClick={onClose}
       />
 
       {/* ===== CONTAINER MODAL ===== */}
-      <div className="relative z-10 mx-4 max-h-[90vh] w-full max-w-7xl overflow-hidden rounded-md border border-red-500">
+      <div className="relative z-10 mx-4 max-h-[90vh] w-full max-w-7xl overflow-hidden rounded-xl">
         {/* mx-4 max-h-[90vh] w-full max-w-6xl overflow-hidden rounded-lg bg-white shadow-xl */}
 
         {/* ===== CONATAINER HEADER ===== */}
@@ -128,7 +147,7 @@ export default function OSModal({ isOpen, onClose, codChamado }: OSModalProps) {
           {/* Ícone e Título */}
           <div className="flex items-center gap-4">
             {/* Ícone */}
-            <FileText className="h-10 w-10 animate-pulse text-cyan-400" />
+            <FileText className="text-cyan-400" size={40} />
 
             <div className="flex flex-col">
               {/* Título */}
@@ -144,103 +163,28 @@ export default function OSModal({ isOpen, onClose, codChamado }: OSModalProps) {
           </div>
           {/* ---------- */}
 
-          {/* Botão e Ícone */}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                {/* Botão */}
-                <button
-                  onClick={handleClose}
-                  className="cursor-pointer text-white hover:scale-125 hover:text-red-500"
-                >
-                  {/* Ícone */}
-                  <X className="h-7 w-7" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="top" // (top, bottom, left, right) - aqui aparece acima
-                align="end" // start = esquerda, center = padrão, end = direita
-                sideOffset={12} // distância entre o trigger e o tooltip
-                className="border border-white/30 bg-slate-900 text-base font-semibold tracking-wider text-white"
-              >
-                Fechar Modal
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          {/* Botão */}
+          <button
+            onClick={handleClose}
+            disabled={isClosing}
+            className="cursor-pointer text-white hover:scale-125 hover:text-red-500 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:text-white"
+          >
+            {isClosing ? (
+              <Loader2 className="h-7 w-7 animate-spin" />
+            ) : (
+              <X className="h-7 w-7" />
+            )}
+          </button>
         </header>
         {/* ---------- */}
 
         {/* ===== CONTEÚDO ===== */}
         <div className="max-h-[calc(90vh-140px)] overflow-y-auto bg-white p-6">
           {/* Loading */}
-          {loading && (
-            <div className="flex min-h-[400px] flex-col items-center justify-center p-12">
-              <div className="relative flex animate-pulse flex-col items-center space-y-6">
-                <div className="relative">
-                  <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-blue-400 to-blue-600 opacity-30 blur-md"></div>
-
-                  {/* Ícone */}
-                  <div className="relative rounded-full border border-blue-100 bg-white p-6 shadow-2xl">
-                    <Loader2 className="animate-spin text-blue-600" size={32} />
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-center">
-                  {/* Título */}
-                  <h3 className="text-2xl font-bold tracking-wider text-slate-800 select-none">
-                    Buscando dados da OS
-                  </h3>
-
-                  <div className="flex items-center justify-center space-x-1">
-                    {/* Aguarde */}
-                    <span className="text-base font-semibold tracking-wider text-slate-600 italic">
-                      Aguarde
-                    </span>
-
-                    {/* Pontos animados de carregamento */}
-                    <div className="flex space-x-1">
-                      <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"></div>
-                      <div
-                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"
-                        style={{ animationDelay: '0.1s' }}
-                      ></div>
-                      <div
-                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"
-                        style={{ animationDelay: '0.2s' }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {loading && <IsLoading />}
 
           {/* Erro */}
-          {error && (
-            <div className="rounded-r-xl border-l-8 border-red-500 bg-red-200 p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  {/* Ícone */}
-                  <AlertCircle
-                    className="flex-shrink-0 animate-pulse text-red-500"
-                    size={60}
-                  />
-
-                  <div>
-                    {/* Título */}
-                    <h3 className="mb-1 text-2xl font-bold tracking-wider text-red-700 select-none">
-                      Oops... Algo deu errado ao tentar buscar os dados da OS!
-                    </h3>
-
-                    {/* Mensagem de erro */}
-                    <p className="text-base font-semibold tracking-wider text-red-500 italic select-none">
-                      {error}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {error && <Erro error={new Error(error)} />}
 
           {/* Dados da OS */}
           {osData && osData.length > 0 && (
@@ -440,7 +384,7 @@ export default function OSModal({ isOpen, onClose, codChamado }: OSModalProps) {
                     {/* Observações */}
                     {(os.OBS_OS || os.OBS) && (
                       <div className="space-y-4 md:col-span-2 lg:col-span-3">
-                        <h3 className="border-b border-slate-300 pb-2 text-lg font-bold text-slate-800">
+                        <h3 className="border-b border-slate-600 pb-2 text-xl font-bold tracking-wider text-black">
                           Observações
                         </h3>
                         {os.OBS_OS && (
@@ -448,7 +392,7 @@ export default function OSModal({ isOpen, onClose, codChamado }: OSModalProps) {
                             <label className="mb-1 block text-base font-semibold tracking-wider text-black italic">
                               Observação OS:
                             </label>
-                            <div className="min-h-[80px] rounded border bg-gray-50 p-4 whitespace-pre-wrap text-slate-900">
+                            <div className="min-h-[80px] rounded-md border border-slate-300 bg-stone-100 px-4 py-2 font-semibold tracking-wider whitespace-pre-wrap text-slate-900 italic">
                               {os.OBS_OS}
                             </div>
                           </div>
@@ -458,7 +402,7 @@ export default function OSModal({ isOpen, onClose, codChamado }: OSModalProps) {
                             <label className="mb-1 block text-base font-semibold tracking-wider text-black italic">
                               Observação Geral:
                             </label>
-                            <div className="min-h-[80px] rounded border bg-gray-50 p-4 whitespace-pre-wrap text-slate-900">
+                            <div className="min-h-[80px] rounded-md border border-slate-300 bg-stone-100 px-4 py-2 font-semibold tracking-wider whitespace-pre-wrap text-slate-900 italic">
                               {os.OBS}
                             </div>
                           </div>
@@ -473,18 +417,17 @@ export default function OSModal({ isOpen, onClose, codChamado }: OSModalProps) {
 
           {/* Mensagem quando não há OS */}
           {osData && osData.length === 0 && (
-            <div className="p-12 text-center">
-              {/* Ícone */}
-              <AlertCircle
-                className="mx-auto mb-6 animate-pulse text-red-500"
-                size={80}
-              />
+            <Card className="rounded-xl bg-slate-900 py-40">
+              <div className="flex flex-col items-center justify-center space-y-6">
+                {/* Ícone */}
+                <TriangleAlert className="text-yellow-500" size={80} />
 
-              {/* Título */}
-              <h3 className="text-2xl font-bold tracking-wider text-slate-800 select-none">
-                Nenhuma OS foi encontrada para o chamado #{codChamado}.
-              </h3>
-            </div>
+                {/* Título */}
+                <h3 className="text-2xl font-bold tracking-wider text-yellow-500 italic select-none">
+                  Nenhuma OS foi encontrada, para o chamado #{codChamado}.
+                </h3>
+              </div>
+            </Card>
           )}
         </div>
       </div>

@@ -18,20 +18,22 @@ export default function Cards({
   return (
     <Card
       className={cn(
-        'rounded-md border border-white/30 bg-white/10 px-4 py-2 backdrop-blur-sm',
+        'rounded-md border border-white/30 bg-white/10 px-4 py-2',
         className
       )}
     >
       <div className="flex items-center gap-4">
         {/* Icon */}
-        <div className="rounded-xl border border-white/30 p-2 backdrop-blur-sm">
-          <Icon className="h-6 w-6 text-cyan-400" />
+        <div className="rounded-xl border border-white/30 p-2">
+          <Icon className="text-cyan-400" size={24} />
         </div>
+
         {/* Título e Valor */}
         <div className="flex flex-col">
-          <p className="text-sm font-semibold tracking-wider text-slate-200 select-none">
+          <h3 className="text-sm font-semibold tracking-wider text-slate-200 select-none">
             {title}
-          </p>
+          </h3>
+
           <p className="text-xl font-bold tracking-wider text-slate-200 italic select-none">
             {value}
           </p>

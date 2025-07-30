@@ -79,7 +79,7 @@ export default function FiltroNumeroChamado() {
           {isSearching ? (
             <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
           ) : (
-            <Search className="h-5 w-5 text-slate-300 transition-colors duration-300 group-hover:text-cyan-400" />
+            <Search className="h-5 w-5 text-slate-200 transition-colors duration-300 group-hover:text-cyan-400" />
           )}
         </div>
 
@@ -87,7 +87,7 @@ export default function FiltroNumeroChamado() {
         <Input
           type="number"
           placeholder="Digite o chamado..."
-          className="h-11 w-full max-w-[300px] border border-white/30 bg-white/10 pr-10 pl-10 font-semibold text-white shadow-lg backdrop-blur-sm transition-all duration-300 [-moz-appearance:textfield] placeholder:text-sm placeholder:tracking-wider placeholder:text-slate-300 placeholder:italic hover:border-cyan-400 hover:bg-slate-900 hover:placeholder:text-cyan-400 focus:border-cyan-400 focus:bg-slate-900 focus:ring-1 focus:ring-cyan-400 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          className="h-11 w-full max-w-[300px] border border-white/30 bg-white/10 pr-10 pl-10 font-semibold text-white transition-all duration-300 [-moz-appearance:textfield] placeholder:text-sm placeholder:tracking-wider placeholder:text-slate-300 placeholder:italic hover:border-cyan-400 hover:bg-slate-900 hover:placeholder:text-cyan-400 focus:border-cyan-400 focus:bg-slate-900 focus:ring-1 focus:ring-cyan-400 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           value={inputValue}
           onChange={e => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -141,7 +141,7 @@ export default function FiltroNumeroChamado() {
         {isSearching && (
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 animate-pulse rounded-full bg-cyan-400"></div>
-            <span className="text-sm font-semibold tracking-wider text-cyan-400 italic">
+            <span className="text-base font-semibold tracking-wider text-cyan-400 italic">
               Pesquisando chamado...
             </span>
           </div>
@@ -151,7 +151,7 @@ export default function FiltroNumeroChamado() {
         {isClearing && (
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 animate-pulse rounded-full bg-red-400"></div>
-            <span className="text-sm font-semibold tracking-wider text-red-400 italic">
+            <span className="text-base font-semibold tracking-wider text-red-400 italic">
               Limpando filtro...
             </span>
           </div>
@@ -165,7 +165,7 @@ export default function FiltroNumeroChamado() {
           !isClearing && (
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 animate-pulse rounded-full bg-yellow-400"></div>
-              <span className="text-sm font-semibold tracking-wider text-yellow-400 italic">
+              <span className="text-base font-semibold tracking-wider text-yellow-400 italic">
                 Pressione Enter para aplicar
               </span>
             </div>

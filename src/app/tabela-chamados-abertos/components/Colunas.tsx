@@ -4,7 +4,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { ColumnDef } from '@tanstack/react-table';
-import { Eye, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { FaEye } from 'react-icons/fa';
 
@@ -22,12 +21,8 @@ export interface ChamadosProps {
   EMAIL_CHAMADO: string;
   PRIOR_CHAMADO: string;
   COD_CLASSIFICACAO: number;
-  CLIENTE?: {
-    NOME_CLIENTE: string;
-  } | null;
-  RECURSO?: {
-    NOME_RECURSO: string;
-  } | null;
+  NOME_CLIENTE: string;
+  NOME_RECURSO: string;
 }
 
 // Tipos para as funções de callback dos botões
@@ -191,7 +186,7 @@ export const colunasTabela = (
   },
   // --------------------
   {
-    accessorKey: 'RECURSO.NOME_RECURSO',
+    accessorKey: 'NOME_RECURSO',
     header: () => <div className="text-center">Consultor</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string | null;
@@ -222,7 +217,7 @@ export const colunasTabela = (
   },
   // --------------------
   {
-    accessorKey: 'CLIENTE.NOME_CLIENTE',
+    accessorKey: 'NOME_CLIENTE',
     header: () => <div className="text-center">Cliente</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string | undefined;
