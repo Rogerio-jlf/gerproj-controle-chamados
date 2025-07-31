@@ -96,31 +96,17 @@ export default function FiltroNumeroChamado() {
 
         {/* Button clear */}
         {inputValue && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={clearFilter}
-                  disabled={isSearching || isClearing}
-                  className="absolute top-1/2 right-3 z-10 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-red-300 text-black transition-all duration-300 hover:bg-red-500 hover:text-white"
-                >
-                  {isClearing ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <X className="h-4 w-4" />
-                  )}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="top"
-                align="center"
-                sideOffset={8}
-                className="border border-slate-600 bg-white text-sm font-semibold text-black"
-              >
-                Limpar filtro
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <button
+            onClick={clearFilter}
+            disabled={isSearching || isClearing}
+            className="absolute top-1/2 right-3 z-10 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-red-300 text-black transition-all duration-300 hover:bg-red-500 hover:text-white"
+          >
+            {isClearing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <X className="h-4 w-4" />
+            )}
+          </button>
         )}
       </div>
       {/* ---------- */}

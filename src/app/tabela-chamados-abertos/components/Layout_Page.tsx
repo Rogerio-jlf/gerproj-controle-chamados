@@ -53,9 +53,7 @@ export default function LayoutPage() {
             {/* HEADER */}
             <Header
               titulo="Chamados Abertos"
-              icon={
-                <HiDocumentPlus className="h-10 w-10 transition-all duration-300 hover:rotate-90" />
-              }
+              icon={<HiDocumentPlus size={40} />}
             />
 
             {/* FILTROS */}

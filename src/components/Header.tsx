@@ -16,41 +16,43 @@ export default function Header({ titulo, icon }: HeaderProps) {
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-4">
           <div>{icon}</div>
-          {/* TÍTULO */}
-          <h2 className="text-4xl font-extrabold tracking-wider text-black italic select-none">
+          {/* título */}
+          <h1 className="text-4xl font-extrabold tracking-wider text-slate-800 italic select-none">
             {titulo}
-          </h2>
+          </h1>
         </div>
       </div>
-      {/* ---------- */}
 
       <div className="flex items-center gap-4">
         <div className="text-right">
-          {/* SUBTÍTULO */}
-          <p className="text-sm font-semibold tracking-wider text-black italic select-none">
+          {/* subtítulo */}
+          <p className="text-sm font-semibold tracking-wider text-slate-800 select-none">
             Última atualização
           </p>
-          {/* DATA ATUAL */}
-          <p className="text-base font-bold tracking-wider text-black italic select-none">
+
+          {/* data atual */}
+          <p className="text-base font-bold tracking-wider text-slate-800 italic select-none">
             {new Date().toLocaleString('pt-BR')}
           </p>
         </div>
 
-        {/* BOTÃO DE ATUALIZAÇÃO */}
+        {/* botão - atualizar página */}
         <Tooltip>
           <TooltipTrigger asChild>
             <button
               onClick={() => window.location.reload()}
-              className="p-2 text-red-500 transition-all duration-300 hover:scale-110 hover:rotate-90 active:scale-90"
+              className="p-2 text-red-500 transition-all duration-300 hover:scale-110 hover:rotate-180 hover:text-blue-500"
             >
               <RefreshCw className="h-10 w-10" />
             </button>
           </TooltipTrigger>
           <TooltipContent
-            side="top"
-            className="max-w-md -translate-x-10 border border-slate-700 bg-slate-900 tracking-wider break-words text-white"
+            side="top" // (top, bottom, left, right) - aqui aparece acima
+            align="end" // start = esquerda, center = padrão, end = direita
+            sideOffset={12} // distância entre o trigger e o tooltip
+            className="border border-white/30 bg-slate-900 text-base font-semibold tracking-wider text-white"
           >
-            <p className="text-xs">Atualizar dados</p>
+            Atualizar dados
           </TooltipContent>
         </Tooltip>
       </div>

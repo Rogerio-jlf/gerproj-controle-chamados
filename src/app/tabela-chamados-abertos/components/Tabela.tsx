@@ -10,14 +10,14 @@ import {
 } from '@tanstack/react-table';
 import { useMemo, useState, useCallback } from 'react';
 import { ChamadosProps, colunasTabela } from './Colunas';
-import Modal from './Modal';
+import ModalChamado from './Modal_Chamado';
 import { AlertCircle, Database, Sigma, TriangleAlert } from 'lucide-react';
 import ExcelButton from '../../../components/Excel_Button';
 import PDFButton from '../../../components/PDF_Button';
 import Cards from './Cards';
 
 // Novo componente Modal para OS
-import OSModal from '../components/OS_Modal';
+import ModalOS from './Modal_OS';
 import FiltroNumeroChamado from './Filtro_Cod_Chamado';
 import IsLoading from './IsLoading';
 import Erro from './Erro';
@@ -187,7 +187,7 @@ export default function Tabela() {
 
   return (
     <>
-      <div className="overflow-hidden rounded-xl bg-slate-900 shadow-xl shadow-black">
+      <div className="overflow-hidden rounded-xl border border-slate-300 bg-slate-900">
         {/* ===== HEADER ===== */}
         <header className="bg-slate-950 p-6">
           <div className="space-y-7">
@@ -290,7 +290,7 @@ export default function Tabela() {
         <div className="h-full w-full overflow-hidden bg-slate-900">
           <div
             className="scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 h-full overflow-y-auto"
-            style={{ maxHeight: 'calc(100vh - 466px)' }}
+            style={{ maxHeight: 'calc(100vh - 470px)' }}
           >
             <table className="w-full table-fixed border-collapse">
               {/* Header Table */}
@@ -366,14 +366,14 @@ export default function Tabela() {
       </div>
 
       {/* Modal do Chamado */}
-      <Modal
+      <ModalChamado
         isOpen={modalOpen}
         onClose={handleCloseModal}
         chamado={selectedChamado}
       />
 
       {/* Modal da OS */}
-      <OSModal
+      <ModalOS
         isOpen={osModalOpen}
         onClose={handleCloseOSModal}
         codChamado={selectedCodChamado}
