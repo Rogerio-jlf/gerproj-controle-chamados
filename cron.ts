@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { solutiiPrisma } from './src/lib/solutii-prisma';
+import { solutiiPrisma } from './src/lib/prisma/solutii-prisma';
 
 // Atualiza às 3h e 15h, todos os dias a view materializada "Apontamentos"
 cron.schedule('0 3,15 * * *', async () => {

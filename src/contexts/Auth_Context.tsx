@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string
   ): Promise<UserProps | null> => {
     try {
-      const res = await fetch('/api/login', {
+      const res = await fetch('/api/postgre-SQL/apontamentos-view/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
