@@ -205,7 +205,7 @@ export default function Modal({ isOpen, selectedRow, onClose }: ModalProps) {
     chamado: TableRowProps,
     observacao: string
   ) => {
-    const phoneNumber = '5531999635544';
+    const phoneNumber = process.env.WHATSAPP_NUMBER || '5531999635544';
     const message =
       `🚨 *Discordância no Chamado ${chamado.chamado_os}*\n\n` +
       `*Cliente:* ${chamado.nome_cliente}\n` +

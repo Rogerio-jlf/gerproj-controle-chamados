@@ -26,8 +26,8 @@ export default function SelectCliente({
 
   return (
     <div className="group w-full">
-      <label className="mb-1 flex items-center gap-2 text-xl font-semibold tracking-wider text-black italic">
-        <Filter className="h-7 w-7" />
+      <label className="mb-1 flex items-center gap-2 text-xl font-semibold tracking-wider text-slate-800">
+        <Filter size={20} />
         Clientes
       </label>
 
@@ -35,7 +35,7 @@ export default function SelectCliente({
         value={value || 'all'}
         onChange={handleChange}
         disabled={disabled || !clientes.length}
-        className="w-full cursor-pointer rounded-lg bg-white p-3 text-lg font-semibold tracking-wider text-black shadow-md shadow-black hover:shadow-lg hover:shadow-black focus:outline-none"
+        className="w-full cursor-pointer rounded-md bg-white p-3 text-lg font-semibold tracking-wider text-slate-800 italic shadow-md shadow-black hover:shadow-lg hover:shadow-black focus:outline-none"
       >
         <option value="all">Todos clientes</option>
 
@@ -43,7 +43,7 @@ export default function SelectCliente({
           <option
             key={nomeCliente}
             value={nomeCliente}
-            className="cursor-pointer rounded-lg p-4 text-lg font-semibold tracking-wider text-black"
+            className="cursor-pointer rounded-lg p-4 text-lg font-semibold tracking-wider text-slate-800 italic"
           >
             {nomeCliente}
           </option>

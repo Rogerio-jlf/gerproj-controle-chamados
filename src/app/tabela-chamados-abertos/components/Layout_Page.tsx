@@ -35,8 +35,9 @@ export default function LayoutPage() {
 
   return (
     <ProtecaoRotas>
+      {/* div - principal */}
       <div className="flex h-screen w-screen overflow-hidden">
-        {/* Sidebar */}
+        {/* sidebar */}
         <Sidebar
           collapsed={collapsed}
           onToggle={handleToggleSidebar}
@@ -48,21 +49,21 @@ export default function LayoutPage() {
             collapsed ? 'ml-20' : 'ml-80'
           }`}
         >
-          {/* CONTEÚDO FIXO NO TOPO */}
+          {/* div - header / filtros */}
           <div className="flex flex-col space-y-6 p-4">
-            {/* HEADER */}
+            {/* header */}
             <Header
               titulo="Chamados Abertos"
-              icon={<HiDocumentPlus size={40} />}
+              icon={<HiDocumentPlus className="text-white/95" size={40} />}
             />
 
-            {/* FILTROS */}
+            {/* filtros */}
             <div className="max-w-full">
               <Filtros onFiltersChange={handleFiltersChange} />
             </div>
           </div>
 
-          {/* TABELA COM SCROLL */}
+          {/* tabela */}
           <div className="flex-1 p-4">
             <Tabela />
           </div>

@@ -13,14 +13,23 @@ interface HeaderProps {
 export default function Header({ titulo, icon }: HeaderProps) {
   return (
     <header className="flex items-center justify-between border-b-2 border-red-500 bg-white p-4">
+      {/* div - icon / título */}
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-4">
-          <div>{icon}</div>
-          {/* título */}
-          <h1 className="text-4xl font-extrabold tracking-wider text-slate-800 italic select-none">
-            {titulo}
-          </h1>
+        {/* ícone */}
+        <div
+          className="w-fit bg-gradient-to-br from-purple-950 via-blue-500 to-purple-950 p-4 text-2xl text-white"
+          style={{
+            borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%',
+            animation: 'blob 4s ease-in-out infinite',
+          }}
+        >
+          {icon}
         </div>
+
+        {/* título */}
+        <h1 className="text-4xl font-extrabold tracking-widest text-slate-800 uppercase select-none">
+          {titulo}
+        </h1>
       </div>
 
       <div className="flex items-center gap-4">
