@@ -1,7 +1,6 @@
 'use client';
 
 import { useAuth } from '@/contexts/Auth_Context';
-import { formatHorasDecimalParaHHMM } from '@/functions/formatarHoras';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { Calendar, CircleFadingPlus, CircleX, Clock } from 'lucide-react';
@@ -72,6 +71,16 @@ export default function CardsHoraApontadas({ filters }: FiltersProps) {
     data?.reduce((acc, curr) => acc + curr.total_horas, 0) || 0;
   const mesesComDados = data?.filter(item => item.total_horas > 0).length || 0;
   const mediaHoras = mesesComDados > 0 ? totalHoras / mesesComDados : 0;
+
+  function formatHorasDecimalParaHHMM(decimal: number): string {
+    const horas = Math.floor(decimal);
+    const minutos = Math.round((decimal - horas) * 60);
+
+    const horasFormatadas = String(horas).padStart(2, '0');
+    const minutosFormatados = String(minutos).padStart(2, '0');
+
+    return `${horasFormatadas}h:${minutosFormatados}`;
+  }
 
   return (
     <div className="space-y-4">

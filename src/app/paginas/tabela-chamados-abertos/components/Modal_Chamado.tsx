@@ -1,8 +1,8 @@
 'use client';
 
-import { useClientes } from '@/hooks/useClientes';
-import { useEmailAtribuirCahamados } from '@/hooks/useEmailAtribuirChamados';
-import { useRecursos } from '@/hooks/useRecursos';
+import { useClientes } from '@/hooks/firebird/useClientes';
+import { useEmailAtribuirCahamados } from '@/hooks/firebird/useEmailAtribuirChamados';
+import { useRecursos } from '@/hooks/firebird/useRecursos';
 import { Card } from '@/components/ui/card';
 import {
   AlertCircle,

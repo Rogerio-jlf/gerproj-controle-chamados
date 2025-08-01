@@ -4,7 +4,7 @@ import Filtros from '@/app/paginas/tabela-chamados/components/Filtros';
 import Tabela_Chamados from '@/app/paginas/tabela-chamados/components/Tabela';
 import ProtecaoRotas from '@/components/ProtecaoRotas';
 import Sidebar from '@/components/Sidebar';
-import { useFiltersTabelaChamados } from '@/contexts/Filters_Tabela_Chamados_Context';
+import { useFiltersTabelaChamados } from '@/contexts/postgre/Filters_Tabela_Chamados_Context';
 import { useCallback, useState } from 'react';
 import { useAuth } from '../../../../contexts/Auth_Context';
 import Header from '../../../../components/Header';

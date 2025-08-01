@@ -4,7 +4,7 @@ import Filtros from '@/app/paginas/tabela-chamados-abertos/components/Filtros';
 import Tabela from '@/app/paginas/tabela-chamados-abertos/components/Tabela';
 import ProtecaoRotas from '@/components/ProtecaoRotas';
 import Sidebar from '@/components/Sidebar';
-import { useFiltersTabelaChamadosAbertos } from '@/contexts/Filters_Tabela_Chamados_Abertos_Context';
+import { useFiltersTabelaChamadosAbertos } from '@/contexts/firebird/Filters_Tabela_Chamados_Abertos_Context';
 import { useCallback, useState } from 'react';
 import { useAuth } from '../../../../contexts/Auth_Context';
 import Header from '../../../../components/Header';

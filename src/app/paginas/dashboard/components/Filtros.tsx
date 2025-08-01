@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/Auth_Context';
-import { useFiltersDashboard } from '@/contexts/Filters_Dashboard_Context';
+import { useFiltersDashboard } from '@/contexts/postgre/Filters_Dashboard_Context';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useEffect, useState } from 'react';

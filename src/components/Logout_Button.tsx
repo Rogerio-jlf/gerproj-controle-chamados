@@ -1,6 +1,6 @@
 'use client';
 
-import { useFiltersDashboard } from '@/contexts/Filters_Dashboard_Context';
+import { useFiltersDashboard } from '@/contexts/postgre/Filters_Dashboard_Context';
 import { useRouter } from 'next/navigation';
 import { IoLogOut } from 'react-icons/io5'; // Ícone de logout
 import { useAuth } from '../contexts/Auth_Context'; // Contexto de autenticação

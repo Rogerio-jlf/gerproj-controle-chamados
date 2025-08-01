@@ -3,7 +3,7 @@
 import Filtros from '@/app/paginas/dashboard/components/Filtros';
 import Sidebar from '@/components/Sidebar';
 import { useAuth } from '@/contexts/Auth_Context';
-import { useFiltersDashboard } from '@/contexts/Filters_Dashboard_Context';
+import { useFiltersDashboard } from '@/contexts/postgre/Filters_Dashboard_Context';
 import { useCallback, useState } from 'react';
 import CardHorasContratadasHorasExecutadas from './cards/Card_Horas_Contratadas_vs_Horas_Executadas';
 import CardMediaHorasChamado from './cards/Card_Media_Horas_Chamado';

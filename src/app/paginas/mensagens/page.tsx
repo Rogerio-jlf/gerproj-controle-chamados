@@ -1,6 +1,6 @@
 'use client';
 
-import { useNotifications } from '@/contexts/NotificationContext';
+import { useNotifications } from '@/contexts/postgre/Notificacao_Context';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChamadoModal } from './components/ChamadoModal';
@@ -32,7 +32,9 @@ export default function MensagensPage() {
 
   const handleViewChamado = async (chamadoOs: string) => {
     try {
-      const response = await fetch(`/api/apontamentos-view/${chamadoOs}`);
+      const response = await fetch(
+        `/api/postgre-SQL/apontamentos-view/${chamadoOs}`
+      );
       const data = await response.json();
 
       if (response.ok) {

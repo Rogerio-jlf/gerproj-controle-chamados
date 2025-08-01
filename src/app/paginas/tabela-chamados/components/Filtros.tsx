@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/Auth_Context';
-import { useFiltersTabelaChamados } from '@/contexts/Filters_Tabela_Chamados_Context';
+import { useFiltersTabelaChamados } from '@/contexts/postgre/Filters_Tabela_Chamados_Context';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useEffect, useState } from 'react';

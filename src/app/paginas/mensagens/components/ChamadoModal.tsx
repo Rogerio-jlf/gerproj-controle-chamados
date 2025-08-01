@@ -20,8 +20,8 @@ export type ChamadoProps = {
   nome_recurso: string;
   hrini_os: string;
   hrfim_os: string;
-  total_horas: string;
   obs: string;
+  duracaoHoras?: number | null; // Adiciona a propriedade opcional para duração
 };
 
 interface ChamadoModalProps {
@@ -216,7 +216,9 @@ export function ChamadoModal({ chamado, onClose }: ChamadoModalProps) {
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-blue-600" />
                         <p className="text-xl font-bold text-blue-900">
-                          {formatTime(chamado.total_horas)}
+                          {formatTime(
+                            chamado.duracaoHoras?.toString() || '0:00'
+                          )}
                         </p>
                       </div>
                     </div>

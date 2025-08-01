@@ -25,8 +25,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 
-import { useNotifications } from '../../../../contexts/NotificationContext';
-import { useNotificationSound } from '../../../../contexts/NotificationContext';
+import { useNotifications } from '../../../../contexts/postgre/Notificacao_Context';
+import { useNotificationSound } from '../../../../contexts/postgre/Notificacao_Context';
 
 // Interface para os dados do modal (estado interno).
 interface ModalDataProps {

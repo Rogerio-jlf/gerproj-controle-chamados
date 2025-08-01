@@ -13,7 +13,7 @@ import {
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import { useNotifications } from '../contexts/NotificationContext';
+import { useNotifications } from '../contexts/postgre/Notificacao_Context';
 
 interface SidebarButtonProps {
   icon: React.ComponentType<{ className?: string }>;
