@@ -25,6 +25,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 
+import { useNotifications } from '../../../contexts/NotificationContext';
+import { useNotificationSound } from '../../../contexts/NotificationContext';
+
 // Interface para os dados do modal (estado interno).
 interface ModalDataProps {
   concordaPagar: boolean;
@@ -118,6 +121,8 @@ const StatusBadge = ({ status }: { status: string }) => {
 
 // Componente principal do modal de chamado.
 export default function Modal({ isOpen, selectedRow, onClose }: ModalProps) {
+  const { addMessage } = useNotifications();
+  const { playNotificationSound } = useNotificationSound();
   const [modalData, setModalData] = useState<ModalDataProps>({
     concordaPagar: true,
     observacao: '',
@@ -232,6 +237,16 @@ export default function Modal({ isOpen, selectedRow, onClose }: ModalProps) {
 
     try {
       if (!modalData.concordaPagar && modalData.observacao.trim() !== '') {
+        // Adicionar a mensagem ao sistema de notificações
+        addMessage({
+          chamadoOs: selectedRow.chamado_os,
+          nomeCliente: selectedRow.nome_cliente,
+          motivo: modalData.observacao.trim(),
+        });
+
+        // Reproduzir som de notificação
+        playNotificationSound();
+
         await Promise.all([
           sendEmailNotification(selectedRow, modalData.observacao),
           new Promise(resolve => {
@@ -239,7 +254,10 @@ export default function Modal({ isOpen, selectedRow, onClose }: ModalProps) {
             resolve(true);
           }),
         ]);
-        alert('Dados salvos e notificações enviadas com sucesso!');
+
+        alert(
+          'Chamado reprovado! Notificações enviadas e mensagem adicionada ao sistema.'
+        );
       } else {
         alert('Dados salvos com sucesso!');
       }

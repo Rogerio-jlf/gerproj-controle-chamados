@@ -1,6 +1,5 @@
 import { useAuth } from '@/contexts/Auth_Context';
 import {
-  BarChart3,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -14,6 +13,7 @@ import {
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
+import { useNotifications } from '../contexts/NotificationContext';
 
 interface SidebarButtonProps {
   icon: React.ComponentType<{ className?: string }>;
@@ -24,6 +24,7 @@ interface SidebarButtonProps {
   collapsed?: boolean;
   isLoading?: boolean;
   isNavigating?: boolean;
+  badgeCount?: number; // ADICIONADO
 }
 
 function SidebarButton({
@@ -35,19 +36,11 @@ function SidebarButton({
   collapsed = false,
   isLoading = false,
   isNavigating = false,
+  badgeCount, // ADICIONADO
 }: SidebarButtonProps) {
   const [isPressed, setIsPressed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  const handleMouseDown = () => setIsPressed(true);
-  const handleMouseUp = () => setIsPressed(false);
-  const handleMouseEnter = () => setIsHovered(true);
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    setIsPressed(false);
-  };
-
-  // Se está navegando, usar estilos ativos temporariamente
   const activeState = isActive || isNavigating;
 
   const primaryStyles = activeState
@@ -76,39 +69,68 @@ function SidebarButton({
   return (
     <button
       onClick={onClick}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        setIsPressed(false);
+      }}
       className={`group mb-3 flex w-full transform cursor-pointer items-center gap-4 overflow-hidden rounded-xl p-4 transition-all duration-300 ease-out select-none hover:scale-105 focus:outline-none active:scale-95 ${getVariantStyles()} ${collapsed ? 'justify-center px-3' : ''}`}
       type="button"
       title={collapsed ? label : undefined}
       disabled={isLoading || isNavigating}
     >
-      {/* Efeito de brilho deslizante */}
       <div className="absolute inset-0 -translate-x-full rounded-xl bg-gradient-to-r from-transparent via-black to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
-
-      {/* Ondulação ao clicar */}
       {isPressed && !isNavigating && (
         <div className="absolute inset-0 animate-ping rounded-xl bg-current opacity-30" />
       )}
-
-      {/* Loading overlay */}
       {(isLoading || isNavigating) && (
         <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-slate-800/30 via-blue-800/30 to-cyan-800/30 backdrop-blur-sm" />
       )}
 
-      {/* BADGE */}
-      {label === 'Mensagens' && collapsed && !isNavigating ? (
-        <div className="relative z-10 flex h-8 w-8 animate-pulse items-center justify-center rounded-full bg-red-500">
-          <span className="text-xs font-bold text-white">99</span>
-        </div>
-      ) : (
-        <>
-          {/* ÍCONE */}
+      {/* Ícone ou badge colapsado */}
+      {collapsed ? (
+        // MODO COLAPSADO
+        label === 'Mensagens' && (badgeCount ?? 0) > 0 ? (
+          <div className="relative z-10 flex h-8 w-8 items-center justify-center">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 px-1 py-6 text-base font-bold tracking-wider text-white">
+              <span className="text-sm font-bold">
+                {(badgeCount ?? 0) > 99 ? '99+' : badgeCount}
+              </span>
+            </div>
+          </div>
+        ) : (
           <div className="relative z-10 flex-shrink-0">
             <div
-              className={`rounded-md p-2 transition-all duration-300 ${activeState ? 'bg-white/20 shadow-md shadow-black' : 'group-hover:bg-white/20 group-hover:shadow-md group-hover:shadow-black'}`}
+              className={`rounded-md p-2 transition-all duration-300 ${
+                activeState
+                  ? 'bg-white/20 shadow-md shadow-black'
+                  : 'group-hover:bg-white/20 group-hover:shadow-md group-hover:shadow-black'
+              }`}
+            >
+              {isLoading || isNavigating ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <IconComponent
+                  className={`h-5 w-5 transition-all duration-300 ${
+                    activeState ? 'scale-110 drop-shadow-lg' : ''
+                  } ${isHovered && !isNavigating ? 'scale-110 rotate-90' : ''}`}
+                />
+              )}
+            </div>
+          </div>
+        )
+      ) : (
+        // MODO EXPANDIDO
+        <>
+          <div className="relative z-10 flex-shrink-0">
+            <div
+              className={`rounded-md p-2 transition-all duration-300 ${
+                activeState
+                  ? 'bg-white/20 shadow-md shadow-black'
+                  : 'group-hover:bg-white/20 group-hover:shadow-md group-hover:shadow-black'
+              }`}
             >
               {isLoading || isNavigating ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -122,49 +144,50 @@ function SidebarButton({
             </div>
           </div>
 
-          {/* Label com efeito de digitação */}
-          {!collapsed && (
-            <div className="relative z-10 flex-1 items-start text-left">
+          <div className="relative z-10 flex-1 items-start text-left">
+            <div className="flex items-center justify-between gap-2">
               <span
-                className={`block text-sm font-semibold tracking-wide transition-all duration-300 group-hover:translate-x-1 ${isNavigating ? 'opacity-75' : ''}`}
+                className={`block text-sm font-semibold tracking-wide transition-all duration-300 group-hover:translate-x-1 ${
+                  isNavigating ? 'opacity-75' : ''
+                }`}
               >
                 {isNavigating ? 'Carregando...' : label}
               </span>
-              {activeState && (
-                <div
-                  className={`absolute -bottom-1 left-0 h-0.5 w-full rounded-full bg-gradient-to-r from-white to-transparent ${isNavigating ? 'animate-pulse' : ''}`}
-                />
+
+              {label === 'Mensagens' && (badgeCount ?? 0) > 0 && (
+                <span className="rounded-full bg-red-500 px-6 py-1 text-base font-bold tracking-wider text-white">
+                  {(badgeCount ?? 0) > 99 ? '99+' : badgeCount}
+                </span>
               )}
             </div>
-          )}
 
-          {/* Badge de mensagens expandido */}
-          {label === 'Mensagens' && !collapsed && !isNavigating && (
-            <div className="relative z-10">
-              <div className="flex h-7 w-7 animate-pulse items-center justify-center rounded-full bg-red-500">
-                <span className="text-xs font-bold text-white">99</span>
-              </div>
-            </div>
-          )}
-
-          {/* Loading dots para versão colapsada */}
-          {collapsed && isNavigating && (
-            <div className="absolute -bottom-1 left-1/2 flex -translate-x-1/2 space-x-1">
+            {activeState && (
               <div
-                className="h-1 w-1 animate-bounce rounded-full bg-cyan-400"
-                style={{ animationDelay: '0ms' }}
+                className={`absolute -bottom-1 left-0 h-0.5 w-full rounded-full bg-gradient-to-r from-white to-transparent ${
+                  isNavigating ? 'animate-pulse' : ''
+                }`}
               />
-              <div
-                className="h-1 w-1 animate-bounce rounded-full bg-cyan-400"
-                style={{ animationDelay: '150ms' }}
-              />
-              <div
-                className="h-1 w-1 animate-bounce rounded-full bg-cyan-400"
-                style={{ animationDelay: '300ms' }}
-              />
-            </div>
-          )}
+            )}
+          </div>
         </>
+      )}
+
+      {/* Dots para collapsed navegando */}
+      {collapsed && isNavigating && (
+        <div className="absolute -bottom-1 left-1/2 flex -translate-x-1/2 space-x-1">
+          <div
+            className="h-1 w-1 animate-bounce rounded-full bg-cyan-400"
+            style={{ animationDelay: '0ms' }}
+          />
+          <div
+            className="h-1 w-1 animate-bounce rounded-full bg-cyan-400"
+            style={{ animationDelay: '150ms' }}
+          />
+          <div
+            className="h-1 w-1 animate-bounce rounded-full bg-cyan-400"
+            style={{ animationDelay: '300ms' }}
+          />
+        </div>
       )}
     </button>
   );
@@ -186,6 +209,7 @@ export default function Sidebar({
   const { isAdmin, nomeRecurso } = useAuth();
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { unreadCount } = useNotifications();
 
   // Limpar estado de navegação quando a rota mudar
   useEffect(() => {
@@ -271,6 +295,7 @@ export default function Sidebar({
       icon: MessageSquare,
       variant: 'primary' as const,
       path: '/mensagens',
+      badgeCount: unreadCount, // Adicione esta propriedade
     },
     {
       id: 'configuracoes',
@@ -283,9 +308,7 @@ export default function Sidebar({
 
   return (
     <div
-      className={`fixed top-0 left-0 z-50 h-full overflow-hidden transition-all duration-300 ease-out ${
-        collapsed ? 'w-20' : 'w-80'
-      }`}
+      className={`fixed top-0 left-0 z-50 h-full overflow-hidden transition-all duration-300 ease-out ${collapsed ? 'w-20' : 'w-80'}`}
     >
       {/* Fundo com efeito glassmorphism */}
       <div className="absolute inset-0 border-r border-gray-700/50 bg-gradient-to-br from-slate-950 via-teal-950 to-slate-950 shadow-2xl backdrop-blur-xl" />
@@ -341,10 +364,8 @@ export default function Sidebar({
             {menuItems.map((item, index) => (
               <div
                 key={item.id}
-                style={{
-                  animationDelay: `${index * 50}ms`,
-                }}
-                className="animate-fade-in"
+                style={{ animationDelay: `${index * 50}ms` }}
+                className="animate-fade-in relative"
               >
                 <SidebarButton
                   icon={item.icon}
@@ -354,7 +375,26 @@ export default function Sidebar({
                   variant={item.variant}
                   collapsed={collapsed}
                   isNavigating={navigatingTo === item.path}
+                  badgeCount={
+                    item.id === 'mensagens' ? item.badgeCount : undefined
+                  }
                 />
+
+                {/* Badge de notificações para mensagens */}
+                {/* {item.id === 'mensagens' &&
+                  item.badgeCount &&
+                  item.badgeCount > 0 &&
+                  collapsed && (
+                    <div
+                      className={`absolute ${collapsed ? '-top-1 -right-1' : 'top-2 right-2'} z-20`}
+                    >
+                      <div className="flex h-6 w-6 animate-pulse items-center justify-center rounded-full bg-red-500 shadow-lg">
+                        <span className="text-xs font-bold text-white">
+                          {item.badgeCount > 99 ? '99+' : item.badgeCount}
+                        </span>
+                      </div>
+                    </div>
+                  )} */}
               </div>
             ))}
           </div>

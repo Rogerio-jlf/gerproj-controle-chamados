@@ -27,6 +27,7 @@ interface NotificationContextType {
   markAsRead: (messageId: string) => void;
   markAllAsRead: () => void;
   clearMessages: () => void;
+  deleteMessage: (messageId: string) => void; // Adicione esta linha
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
@@ -96,6 +97,10 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     localStorage.removeItem('notification_messages');
   };
 
+  const deleteMessage = (messageId: string) => {
+    setMessages(prev => prev.filter(msg => msg.id !== messageId));
+  };
+
   const unreadCount = messages.filter(msg => !msg.read).length;
 
   const value: NotificationContextType = {
@@ -105,6 +110,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     markAsRead,
     markAllAsRead,
     clearMessages,
+    deleteMessage, // Adicione esta linha
   };
 
   return (
