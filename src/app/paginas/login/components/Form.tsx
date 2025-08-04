@@ -3,10 +3,12 @@
 import { useAuth } from '@/contexts/Auth_Context';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Email_Input from './Email_Input';
 import Password_Input from './Password_Input';
 import Remember_Check from './Remember_Check';
 import Button_Submit from './Button_Submit';
+import { FiAlertCircle } from 'react-icons/fi';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -77,26 +79,68 @@ export default function Form() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <Email_Input value={email} onChange={setEmail} />
-      <Password_Input
-        value={password}
-        onChange={setPassword}
-        showPassword={showPassword}
-        toggleShowPassword={() => setShowPassword(!showPassword)}
-      />
-      <Remember_Check
-        rememberMe={rememberMe}
-        onToggle={() => setRememberMe(!rememberMe)}
-      />
-      {error && (
-        <div className="rounded-lg border border-red-400/20 bg-red-400/10 p-3 backdrop-blur-sm">
-          <p className="text-center text-sm font-semibold text-red-200">
-            {error}
-          </p>
-        </div>
-      )}
+    <motion.form 
+      onSubmit={handleSubmit} 
+      className="space-y-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Email_Input value={email} onChange={setEmail} />
+      </motion.div>
+      
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+      >
+        <Password_Input
+          value={password}
+          onChange={setPassword}
+          showPassword={showPassword}
+          toggleShowPassword={() => setShowPassword(!showPassword)}
+        />
+      </motion.div>
+      
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+      >
+        <Remember_Check
+          rememberMe={rememberMe}
+          onToggle={() => setRememberMe(!rememberMe)}
+        />
+      </motion.div>
+      
+      <AnimatePresence>
+        {error && (
+          <motion.div 
+            className="relative overflow-hidden rounded-lg border border-red-400/30 bg-red-400/10 p-4 backdrop-blur-sm shadow-lg"
+            initial={{ opacity: 0, height: 0, y: -10 }}
+            animate={{ opacity: 1, height: 'auto', y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-red-600/5 opacity-50" />
+            <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-red-500 to-red-600" />
+            
+            <div className="flex items-center gap-3">
+              <FiAlertCircle className="h-5 w-5 text-red-400 animate-pulse" />
+              <p className="text-sm font-semibold tracking-wide text-red-200">
+                {error}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
       <Button_Submit isLoading={isLoading} />
-    </form>
+    </motion.form>
   );
 }

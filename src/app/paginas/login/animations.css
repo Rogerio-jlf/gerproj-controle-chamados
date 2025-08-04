@@ -1,0 +1,59 @@
+/* Animações para a tela de login */
+
+/* Animação para partículas no topo do botão */
+@keyframes particle-top {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-10px) translateX(5px);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 0;
+  }
+}
+
+/* Animação para partículas na parte inferior do botão */
+@keyframes particle-bottom {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(10px) translateX(5px);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(20px) translateX(10px);
+    opacity: 0;
+  }
+}
+
+/* Classes de animação */
+.animate-particle-top {
+  animation: particle-top 2s ease-in-out infinite;
+}
+
+.animate-particle-bottom {
+  animation: particle-bottom 2s ease-in-out infinite;
+}
+
+/* Animação de brilho pulsante */
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 5px rgba(168, 85, 247, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(236, 72, 153, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(168, 85, 247, 0.5);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
