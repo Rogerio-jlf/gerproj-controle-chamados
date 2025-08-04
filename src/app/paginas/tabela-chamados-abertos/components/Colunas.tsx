@@ -303,15 +303,27 @@ export const colunasTabela = (
       const value = getValue() as string;
 
       return (
-        <div>
-          {value ? (
-            <Link href={`mailto:${value}`} className="hover:underline">
-              <div className="">{value}</div>
-            </Link>
-          ) : (
-            <div className="text-center">-</div>
-          )}
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div>
+              {value ? (
+                <Link href={`mailto:${value}`} className="hover:underline">
+                  <div className="">{value}</div>
+                </Link>
+              ) : (
+                <div className="text-center">-</div>
+              )}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent
+            side="top" // (top, bottom, left, right) - aqui aparece acima
+            align="end" // start = esquerda, center = padrão, end = direita
+            sideOffset={12} // distância entre o trigger e o tooltip
+            className="border border-slate-300 bg-white text-base font-semibold tracking-wider text-slate-800"
+          >
+            {value}
+          </TooltipContent>
+        </Tooltip>
       );
     },
   },
@@ -368,7 +380,7 @@ export const colunasTabela = (
               side="top" // (top, bottom, left, right) - aqui aparece acima
               align="end" // start = esquerda, center = padrão, end = direita
               sideOffset={12} // distância entre o trigger e o tooltip
-              className="border border-white/30 bg-slate-900 text-base font-semibold tracking-wider text-white"
+              className="border border-slate-300 bg-white text-base font-semibold tracking-wider text-slate-800"
             >
               Visualizar chamado
             </TooltipContent>
@@ -388,7 +400,7 @@ export const colunasTabela = (
               side="top" // (top, bottom, left, right) - aqui aparece acima
               align="end" // start = esquerda, center = padrão, end = direita
               sideOffset={12} // distância entre o trigger e o tooltip
-              className="border border-white/30 bg-slate-900 text-base font-semibold tracking-wider text-white"
+              className="border border-slate-300 bg-white text-base font-semibold tracking-wider text-slate-800"
             >
               Visualizar OS
             </TooltipContent>

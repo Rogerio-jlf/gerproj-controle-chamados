@@ -206,9 +206,11 @@ export default function Tabela() {
                   </h1>
 
                   {/* Período */}
-                  <span className="text-sm font-semibold tracking-wider text-slate-200 italic select-none">
-                    Período: {mes.toString().padStart(2, '0')}/{ano}
-                  </span>
+                  {Array.isArray(data) && data.length > 0 && (
+                    <span className="text-sm font-semibold tracking-wider text-slate-200 italic select-none">
+                      Período: {mes.toString().padStart(2, '0')}/{ano}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -351,13 +353,10 @@ export default function Tabela() {
         {Array.isArray(data) && data.length === 0 && !isLoading && (
           <div className="bg-slate-900 py-40 text-center">
             {/* Ícone */}
-            <TriangleAlert
-              className="mx-auto mb-6 animate-pulse text-yellow-500"
-              size={80}
-            />
+            <TriangleAlert className="mx-auto mb-6 text-yellow-500" size={80} />
 
             {/* Título */}
-            <h3 className="text-2xl font-bold tracking-wider text-slate-300 italic select-none">
+            <h3 className="text-2xl font-bold tracking-wider text-slate-200 italic select-none">
               Nenhum chamado encontrado, para o período de{' '}
               {mes.toString().padStart(2, '0')}/{ano}.
             </h3>
@@ -392,8 +391,8 @@ function getColumnWidth(columnId: string): string {
     ASSUNTO_CHAMADO: '230px',
     STATUS_CHAMADO: '140px',
     COD_CLASSIFICACAO: '100px',
-    'RECURSO.NOME_RECURSO': '100px',
-    'CLIENTE.NOME_CLIENTE': '100px',
+    NOME_RECURSO: '130px',
+    NOME_CLIENTE: '100px',
     CODTRF_CHAMADO: '90px',
     EMAIL_CHAMADO: '150px',
     CONCLUSAO_CHAMADO: '140px',

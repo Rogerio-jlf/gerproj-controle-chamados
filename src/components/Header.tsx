@@ -12,6 +12,7 @@ interface HeaderProps {
 
 export default function Header({ titulo, icon }: HeaderProps) {
   return (
+    // ===== header =====
     <header className="flex items-center justify-between border-b-2 border-red-500 bg-white p-4">
       {/* div - icon / título */}
       <div className="flex items-center gap-4">
@@ -48,11 +49,11 @@ export default function Header({ titulo, icon }: HeaderProps) {
         {/* botão - atualizar página */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <button
-              onClick={() => window.location.reload()}
-              className="p-2 text-red-500 transition-all duration-300 hover:scale-110 hover:rotate-180 hover:text-blue-500"
-            >
-              <RefreshCw className="h-10 w-10" />
+            <button onClick={() => window.location.reload()}>
+              <RefreshCw
+                className="text-red-500 transition-all hover:scale-125 hover:rotate-180 hover:text-blue-500"
+                size={40}
+              />
             </button>
           </TooltipTrigger>
           <TooltipContent

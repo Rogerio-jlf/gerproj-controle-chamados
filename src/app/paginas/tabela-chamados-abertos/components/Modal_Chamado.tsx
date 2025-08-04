@@ -102,9 +102,9 @@ export default function ModalChamado({
   };
 
   const formateDateISO = (dataISO: string | null) => {
-    if (!dataISO) return 'Data inválida';
+    if (!dataISO) return '-';
     const data = new Date(dataISO);
-    if (isNaN(data.getTime())) return 'N/A';
+    if (isNaN(data.getTime())) return '-';
 
     return data.toLocaleDateString('pt-BR');
   };
@@ -159,7 +159,7 @@ export default function ModalChamado({
 
       {/* ===== CONTAINER MODAL ===== */}
       <div
-        className={`animate-in slide-in-from-bottom relative z-10 mx-4 overflow-hidden rounded-2xl border border-slate-600 ${
+        className={`animate-in slide-in-from-bottom relative z-10 mx-4 overflow-hidden rounded-2xl border border-slate-500 ${
           showForm ? 'w-[1600px]' : 'max-w-6xl'
         }`}
       >
@@ -167,7 +167,7 @@ export default function ModalChamado({
         <header className="relative flex items-center justify-between bg-slate-950 p-6">
           <div className="flex items-center gap-4">
             {/* ícone */}
-            <div className="rounded-full bg-cyan-400/20 p-4">
+            <div className="rounded-full bg-cyan-400/40 p-4">
               <FileText className="text-cyan-400" size={40} />
             </div>
 
@@ -230,7 +230,7 @@ export default function ModalChamado({
                           Cliente
                         </p>
                         <p className="font-semibold tracking-wider text-white italic select-none">
-                          {chamado.NOME_CLIENTE || 'N/A'}
+                          {chamado.NOME_CLIENTE || '-'}
                         </p>
                       </div>
                     </div>
@@ -242,7 +242,7 @@ export default function ModalChamado({
                           Prioridade
                         </p>
                         <p className="font-semibold tracking-wider text-white italic select-none">
-                          {chamado.PRIOR_CHAMADO || 'N/A'}
+                          {chamado.PRIOR_CHAMADO || '-'}
                         </p>
                       </div>
                     </div>
@@ -268,7 +268,7 @@ export default function ModalChamado({
                           Recurso
                         </p>
                         <p className="font-semibold tracking-wider text-white italic select-none">
-                          {chamado.NOME_RECURSO || 'N/A'}
+                          {chamado.NOME_RECURSO || '-'}
                         </p>
                       </div>
                     </div>
@@ -300,7 +300,7 @@ export default function ModalChamado({
                             Classificação
                           </p>
                           <p className="font-semibold tracking-wider text-white italic select-none">
-                            {chamado.COD_CLASSIFICACAO || 'N/A'}
+                            {chamado.COD_CLASSIFICACAO || '-'}
                           </p>
                         </div>
                       </div>
@@ -312,7 +312,7 @@ export default function ModalChamado({
                             Email
                           </p>
                           <p className="font-semibold tracking-wider text-white italic select-none">
-                            {chamado.EMAIL_CHAMADO || 'N/A'}
+                            {chamado.EMAIL_CHAMADO || '-'}
                           </p>
                         </div>
                       </div>
@@ -326,7 +326,7 @@ export default function ModalChamado({
                             Código TRF
                           </p>
                           <p className="font-semibold tracking-wider text-white italic select-none">
-                            {chamado.CODTRF_CHAMADO || 'N/A'}
+                            {chamado.CODTRF_CHAMADO || '-'}
                           </p>
                         </div>
                       </div>
@@ -338,7 +338,7 @@ export default function ModalChamado({
                             Conclusão
                           </p>
                           <p className="font-semibold tracking-wider text-white italic select-none">
-                            {formateDateISO(chamado.CONCLUSAO_CHAMADO) || 'N/A'}
+                            {formateDateISO(chamado.CONCLUSAO_CHAMADO) || '-'}
                           </p>
                         </div>
                       </div>
@@ -362,7 +362,7 @@ export default function ModalChamado({
                               : 'truncate'
                           }`}
                         >
-                          {chamado.ASSUNTO_CHAMADO || 'N/A'}
+                          {chamado.ASSUNTO_CHAMADO || '-'}
                         </p>
                       </div>
                     </div>
