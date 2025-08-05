@@ -112,3 +112,6 @@ GET http://localhost:3000/api/firebird/os/13248
 
 ### Teste: atribuir chamado (modo teste, sem alterar o banco) - dados incompletos
 GET http://localhost:3000/api/postgre-SQL/apontamentos-view/13035
+
+### Teste: buscar chamado (modo teste, sem alterar o banco) - dados incompletos
+GET http://localhost:3000/api/firebird-SQL/chamados-abertos/tabela-rescon?mes=5&ano=2023&isAdmin=true

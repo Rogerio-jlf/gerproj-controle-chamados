@@ -6,6 +6,7 @@ import {
 import { ColumnDef } from '@tanstack/react-table';
 import Link from 'next/link';
 import { FaEye } from 'react-icons/fa';
+import { corrigirTextoCorrompido } from '@/lib/corrigirTextoCorrompido';
 
 export interface ChamadosProps {
   COD_CHAMADO: number;
@@ -147,7 +148,9 @@ export const colunasTabela = (
       return (
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="cursor-help truncate text-left">{value}</div>
+            <div className="cursor-help truncate text-left">
+              {corrigirTextoCorrompido(value)}
+            </div>
           </TooltipTrigger>
 
           <TooltipContent
@@ -156,7 +159,7 @@ export const colunasTabela = (
             sideOffset={12} // distância entre o trigger e o tooltip
             className="border border-slate-300 bg-white text-base font-semibold tracking-wider text-slate-800"
           >
-            {value}
+            {corrigirTextoCorrompido(value)}
           </TooltipContent>
         </Tooltip>
       );

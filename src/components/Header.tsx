@@ -18,7 +18,7 @@ export default function Header({ titulo, icon }: HeaderProps) {
       <div className="flex items-center gap-4">
         {/* ícone */}
         <div
-          className="w-fit bg-gradient-to-br from-purple-950 via-blue-500 to-purple-950 p-4 text-2xl text-white"
+          className="w-fit bg-gradient-to-br from-purple-950 via-blue-500 to-purple-950 p-4 text-2xl text-white shadow-md shadow-black"
           style={{
             borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%',
             animation: 'blob 4s ease-in-out infinite',

@@ -5,6 +5,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '../../../../components/ui/tooltip';
+import { MdOutlineMailOutline } from 'react-icons/md';
+import { MdOutlineMarkEmailUnread } from 'react-icons/md';
 
 interface Props {
   filter: 'all' | 'unread';
@@ -31,7 +33,7 @@ export default function Filtros({ filter, setFilter, total, unread }: Props) {
                   : 'bg-slate-100 text-slate-800'
               }`}
             >
-              <MailWarning size={24} />
+              <MdOutlineMailOutline size={24} />
               Todas ({total})
             </button>
           </TooltipTrigger>
@@ -58,7 +60,7 @@ export default function Filtros({ filter, setFilter, total, unread }: Props) {
                   : 'bg-slate-100 text-slate-800'
               }`}
             >
-              <Mail className="h-4 w-4" />
+              <MdOutlineMarkEmailUnread size={24} />
               Não lidas ({unread})
             </button>
           </TooltipTrigger>

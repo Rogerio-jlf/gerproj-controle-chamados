@@ -6,6 +6,7 @@ import IsLoading from './IsLoading';
 import Erro from './Erro';
 import { Card } from '../../../../components/ui/card';
 import { useQuery } from '@tanstack/react-query';
+import { corrigirTextoCorrompido } from '@/lib/corrigirTextoCorrompido';
 
 interface OSModalProps {
   isOpen: boolean;
@@ -101,14 +102,14 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
       />
 
       {/* ===== MODAL ===== */}
-      <div className="relative z-10 mx-4 max-h-[90vh] w-full max-w-7xl overflow-hidden rounded-2xl border border-slate-600">
+      <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-7xl overflow-hidden rounded-2xl border border-slate-600">
         {/* mx-4 max-h-[90vh] w-full max-w-6xl overflow-hidden rounded-lg bg-white shadow-xl */}
 
         {/* ===== HEADER ===== */}
         <header className="relative flex items-center justify-between bg-slate-950 p-6">
           <div className="flex items-center gap-4">
             {/* ícone */}
-            <div className="rounded-full bg-cyan-400/20 p-4">
+            <div className="rounded-full bg-cyan-400/40 p-4">
               <FileText className="text-cyan-400" size={40} />
             </div>
 
@@ -137,7 +138,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
         </header>
 
         {/* ===== CONTEÚDO PRINCIPAL ===== */}
-        <div className="max-h-[calc(100vh-220px)] overflow-y-auto bg-white p-6">
+        <div className="max-h-[calc(100vh-210px)] overflow-y-auto bg-white p-6">
           {/* loading */}
           {isLoading && <IsLoading />}
 
@@ -148,7 +149,26 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
           {dataOS && dataOS.length > 0 && (
             <>
               {dataOS.map((os, index) => (
-                <div key={index} className="space-y-6">
+                <div
+                  key={index}
+                  className={`mb-8 space-y-6 rounded-xl p-6 ${index % 2 === 0 ? 'border border-slate-300 bg-white shadow-md shadow-black' : 'border border-slate-300 bg-white shadow-md shadow-black'}`}
+                >
+                  {/* Cabeçalho da OS com número e separador */}
+                  <div className="mb-6 flex items-center gap-4">
+                    <div
+                      className={`flex h-10 w-10 items-center justify-center rounded-full ${index % 2 === 0 ? 'bg-slate-900' : 'bg-slate-900'}`}
+                    >
+                      <span className="text-lg font-bold text-slate-200">
+                        {index + 1}
+                      </span>
+                    </div>
+                    <h2 className="text-2xl font-bold text-slate-800">
+                      OS #{os.COD_OS}
+                    </h2>
+                    <div
+                      className={`h-1 flex-grow rounded ${index % 2 === 0 ? 'bg-gradient-to-r from-slate-900 via-slate-700 to-transparent' : 'bg-gradient-to-r from-slate-900 via-slate-700 to-transparent'}`}
+                    ></div>
+                  </div>
                   {/* div - linha 1 - informações básicas / data e horários / informações financeiras */}
                   <div className="grid grid-cols-3 gap-6">
                     {/* card - informações básicas */}
@@ -164,7 +184,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                               Código OS
                             </p>
                             <p className="text-base font-semibold tracking-wider text-white italic select-none">
-                              {os.COD_OS || '-'}
+                              #{os.COD_OS || '-'}
                             </p>
                           </div>
                         </div>
@@ -415,7 +435,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                                   Observação OS:
                                 </p>
                                 <p className="min-h-[100px] text-base font-semibold tracking-wider text-white italic select-none">
-                                  {os.OBS_OS || '-'}
+                                  {corrigirTextoCorrompido(os.OBS_OS) || '-'}
                                 </p>
                               </div>
                             </div>
@@ -428,7 +448,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                                   Observação Geral:
                                 </p>
                                 <p className="min-h-[100px] text-base font-semibold tracking-wider text-white italic select-none">
-                                  {os.OBS || '-'}
+                                  {corrigirTextoCorrompido(os.OBS) || '-'}
                                 </p>
                               </div>
                             </div>

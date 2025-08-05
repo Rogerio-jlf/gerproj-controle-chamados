@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { ChamadosProps } from './Colunas';
+import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 
 interface ModalChamadoProps {
   isOpen: boolean;
@@ -160,7 +161,7 @@ export default function ModalChamado({
       {/* ===== CONTAINER MODAL ===== */}
       <div
         className={`animate-in slide-in-from-bottom relative z-10 mx-4 overflow-hidden rounded-2xl border border-slate-500 ${
-          showForm ? 'w-[1600px]' : 'max-w-6xl'
+          showForm ? 'w-[1600px]' : 'w-[900px]'
         }`}
       >
         {/* ===== HEADER ===== */}
@@ -196,7 +197,7 @@ export default function ModalChamado({
         {/* ===== CONTEÚDO PRINCIPAL ===== */}
         <div className="flex max-h-[calc(100vh-220px)] overflow-hidden bg-white p-6">
           <div
-            className={`space-y-6 transition-all duration-500 ease-in-out ${
+            className={`mr space-y-6 px-4 transition-all duration-500 ease-in-out ${
               showForm ? 'w-2/3 border-r border-red-500' : 'w-full'
             }`}
           >
@@ -362,7 +363,9 @@ export default function ModalChamado({
                               : 'truncate'
                           }`}
                         >
-                          {chamado.ASSUNTO_CHAMADO || '-'}
+                          {corrigirTextoCorrompido(
+                            chamado.ASSUNTO_CHAMADO || '-'
+                          )}
                         </p>
                       </div>
                     </div>
