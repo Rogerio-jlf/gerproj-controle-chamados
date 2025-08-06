@@ -1,6 +1,10 @@
 import { DatabaseIcon, Loader2 } from 'lucide-react';
 
-export default function IsLoading() {
+interface IsLoadingProps {
+  title: string;
+}
+
+export default function IsLoading({ title }: IsLoadingProps) {
   return (
     <div className="flex flex-col items-center justify-center space-y-6 py-40">
       {/* Ícones */}
@@ -21,7 +25,7 @@ export default function IsLoading() {
       <div className="space-y-3 text-center">
         {/* Título */}
         <h3 className="text-2xl font-bold tracking-wider text-blue-600 select-none">
-          Buscando chamados
+          {title}
         </h3>
 
         <div className="flex items-center justify-center space-x-1">

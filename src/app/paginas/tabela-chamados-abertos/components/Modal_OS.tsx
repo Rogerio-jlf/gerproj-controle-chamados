@@ -116,11 +116,11 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
             <div>
               {/* título */}
               <h1 className="text-2xl font-bold tracking-wider text-slate-200 select-none">
-                Chamado #{codChamado} - Ordens de Serviço
+                Chamado #{codChamado} - Ordem de Serviço
               </h1>
 
               {/* subtítulo */}
-              <p className="text-sm font-semibold tracking-wider text-slate-200 italic select-none">
+              <p className="text-base font-semibold tracking-wider text-slate-200 italic select-none">
                 {dataOS && dataOS.length > 0
                   ? `${dataOS.length} ordem(ns) de serviço encontrada(s)`
                   : ''}
@@ -140,7 +140,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
         {/* ===== CONTEÚDO PRINCIPAL ===== */}
         <div className="max-h-[calc(100vh-210px)] overflow-y-auto bg-white p-6">
           {/* loading */}
-          {isLoading && <IsLoading />}
+          {isLoading && <IsLoading title="Buscando ordens de serviço" />}
 
           {/* erro */}
           {isError && error && <Erro error={error as Error} />}
@@ -158,11 +158,11 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                     <div
                       className={`flex h-10 w-10 items-center justify-center rounded-full ${index % 2 === 0 ? 'bg-slate-900' : 'bg-slate-900'}`}
                     >
-                      <span className="text-lg font-bold text-slate-200">
+                      <span className="text-lg font-bold tracking-wider text-slate-200 select-none">
                         {index + 1}
                       </span>
                     </div>
-                    <h2 className="text-2xl font-bold text-slate-800">
+                    <h2 className="text-2xl font-bold tracking-wider text-slate-800 italic select-none">
                       OS #{os.COD_OS}
                     </h2>
                     <div
