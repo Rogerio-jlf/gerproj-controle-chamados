@@ -106,21 +106,35 @@ Content-Type: application/json
 
 # --------------------------------------------------------------------------------
 
-### Teste: atribuir chamado (modo teste, sem alterar o banco) - dados incompletos
-GET http://localhost:3000/api/firebird/os/13248
+### AGENREC de acordo com o ano, mês e sendo admin
+GET http://localhost:3000/api/firebird-SQL/chamados-abertos/agenrec?ano=2025&mes=7&isAdmin=true
 
 
-### Teste: atribuir chamado (modo teste, sem alterar o banco) - dados incompletos
-GET http://localhost:3000/api/postgre-SQL/apontamentos-view/13035
 
-### Teste: buscar chamado (modo teste, sem alterar o banco) - dados incompletos
-GET http://localhost:3000/api/firebird-SQL/chamados-abertos/tabela-rescon?mes=5&ano=2023&isAdmin=true
 
-### Buscar todos os recursos
-GET http://localhost:3000/api/firebird-SQL/chamados-abertos/recursos
+### FATDES de acordo com o ano, mês e sendo admin
+GET http://localhost:3000/api/firebird-SQL/chamados-abertos/fatdes?ano=2025&mes=7&isAdmin=true
 
-### Buscar todos os agenrec, filtrando pelo ano, mês e sendo admin
-GET http://localhost:3000/api/firebird-SQL/chamados-abertos/agenrec?ano=2025&mes=8&isAdmin=true
 
-### Buscar todos os agenrec, filtrando pelo ano, mês e codRecurso
-GET http://localhost:3000/api/firebird-SQL/chamados-abertos/agenrec?ano=2025&mes=8&isAdmin=false&codRecurso=144
+
+
+### FATFUN de acordo com o ano, mês e sendo admin
+GET http://localhost:3000/api/firebird-SQL/chamados-abertos/fatfun?ano=2025&mes=7&isAdmin=true
+
+
+
+
+### FATREC de acordo com o ano, mês e sendo admin
+GET http://localhost:3000/api/firebird-SQL/chamados-abertos/fatrec?ano=2025&mes=7&isAdmin=true
+
+
+
+### FATFUN FIXO de acordo com o ano, mês e sendo admin
+GET http://localhost:3000/api/firebird-SQL/chamados-abertos/fatfun/fixo?ano=2025&mes=7&isAdmin=true
+
+
+
+### OS-CHAMADO FIXO de acordo com o ano, mês e sendo admin
+GET http://localhost:3000/api/firebird-SQL/chamados-abertos/os-chamados/fixo?ano=2025&mes=7&isAdmin=true
+
+

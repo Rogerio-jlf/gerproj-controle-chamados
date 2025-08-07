@@ -41,6 +41,7 @@ export async function GET(request: Request) {
       'a.STATUS_AGENREC = 0',
       'a.DATA_AGENREC >= ? AND a.DATA_AGENREC < ?',
     ];
+
     const params: any[] = [dataInicio, dataFim];
 
     if (!isAdmin && codRecurso) {
@@ -116,9 +117,27 @@ export async function GET(request: Request) {
         AND TRIM(os.HRFIM_OS) <> ''
     `;
 
+    // Query para custos dos recursos (todos os tipos)
+    const whereConditionsCustos: string[] = ['r.ATIVO_RECURSO = 1'];
+    const paramsCustos: any[] = [];
+
+    if (!isAdmin && codRecurso) {
+      whereConditionsCustos.push('r.COD_RECURSO = ?');
+      paramsCustos.push(Number(codRecurso));
+    }
+
+    const sqlCustos = `
+      SELECT
+        r.COD_RECURSO,
+        COALESCE(r.CUSTO_RECURSO, 0) as CUSTO_RECURSO,
+        COALESCE(r.TPCUSTO_RECURSO, 0) as TPCUSTO_RECURSO
+      FROM RECURSO r
+      ${whereConditionsCustos.length ? 'WHERE ' + whereConditionsCustos.join(' AND ') : ''}
+    `;
+
     // Executar todas as queries
-    const [agendamentos, horasFaturadas, horasNaoFaturadas] = await Promise.all(
-      [
+    const [agendamentos, horasFaturadas, horasNaoFaturadas, custos] =
+      await Promise.all([
         firebirdQuery<{
           COD_RECURSO: number;
           NOME_RECURSO: string;
@@ -137,8 +156,13 @@ export async function GET(request: Request) {
           HRINI_OS: string;
           HRFIM_OS: string;
         }>(sqlHorasNaoFaturadas, paramsOSNaoFaturadas),
-      ]
-    );
+
+        firebirdQuery<{
+          COD_RECURSO: number;
+          CUSTO_RECURSO: number;
+          TPCUSTO_RECURSO: number;
+        }>(sqlCustos, paramsCustos),
+      ]);
 
     function converterHoraCharParaDecimal(horaStr: string): number {
       if (!horaStr) return 0;
@@ -230,28 +254,74 @@ export async function GET(request: Request) {
       {} as Record<number, number>
     );
 
+    // Mapear custos por recurso
+    const custosPorRecurso = custos.reduce(
+      (acc, item) => {
+        acc[item.COD_RECURSO] = item.CUSTO_RECURSO || 0;
+        return acc;
+      },
+      {} as Record<number, number>
+    );
+
+    // Calcular soma total de custos por tipo
+    const somaCustosTipo1 = custos.reduce((total, item) => {
+      if (item.TPCUSTO_RECURSO === 1) {
+        return total + (item.CUSTO_RECURSO || 0);
+      }
+      return total;
+    }, 0);
+
+    const somaCustosTipo2 = custos.reduce((total, item) => {
+      if (item.TPCUSTO_RECURSO === 2) {
+        return total + (item.CUSTO_RECURSO || 0);
+      }
+      return total;
+    }, 0);
+
+    // Mapear tipos de custo por recurso para calcular peso
+    const tiposCustoPorRecurso = custos.reduce(
+      (acc, item) => {
+        acc[item.COD_RECURSO] = item.TPCUSTO_RECURSO || 0;
+        return acc;
+      },
+      {} as Record<number, number>
+    );
+
     const result = agendamentos.map(item => {
       const horasDiaDecimal = converterHoraCharParaDecimal(item.HRDIA_RECURSO);
       const totalHorasFaturadas =
         horasFaturadasPorRecurso[item.COD_RECURSO] || 0;
       const totalHorasNaoFaturadas =
         horasNaoFaturadasPorRecurso[item.COD_RECURSO] || 0;
+      const custoRecurso = custosPorRecurso[item.COD_RECURSO] || 0;
+      const tipoCustoRecurso = tiposCustoPorRecurso[item.COD_RECURSO] || 0;
+
+      // Calcular peso do recurso (apenas para recursos tipo 1)
+      let pesoRecurso = 0;
+      if (tipoCustoRecurso === 1 && somaCustosTipo1 > 0) {
+        pesoRecurso = custoRecurso / somaCustosTipo1;
+      }
 
       return {
         cod_recurso: item.COD_RECURSO,
         nome_recurso: item.NOME_RECURSO,
-        horas_dia: item.HRDIA_RECURSO,
-        total_dias_mes: item.TOTAL_DIAS_MES,
         total_horas_mes: +(item.TOTAL_DIAS_MES * horasDiaDecimal).toFixed(2),
         total_horas_faturadas: +totalHorasFaturadas.toFixed(2),
         total_horas_nao_faturadas: +totalHorasNaoFaturadas.toFixed(2),
-        total_horas_os: +(totalHorasFaturadas + totalHorasNaoFaturadas).toFixed(
-          2
-        ),
+        custo_recurso: +custoRecurso.toFixed(2),
+        tipo_custo_recurso: tipoCustoRecurso,
+        peso_recurso: +pesoRecurso.toFixed(4),
       };
     });
 
-    return NextResponse.json(result, { status: 200 });
+    return NextResponse.json(
+      {
+        recursos: result,
+        soma_custos_tipo_1: +somaCustosTipo1.toFixed(2),
+        soma_custos_tipo_2: +somaCustosTipo2.toFixed(2),
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error('Erro ao tentar buscar agendamentos:', error);
     return NextResponse.json(
