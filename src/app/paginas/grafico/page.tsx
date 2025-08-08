@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   Bar,
   XAxis,
@@ -29,8 +29,8 @@ import {
   BarChart3,
   Maximize2,
 } from 'lucide-react';
-import './style.css';
 import { useQuery } from '@tanstack/react-query';
+import './style.css';
 
 // Interfaces
 interface ApiResponse {
@@ -81,18 +81,56 @@ interface DadosGrafico {
   nivelPerformance: number;
 }
 
+type TipoVisualizacao = 'overview' | 'performance' | 'financeiro' | 'radar';
+
+// Funções utilitárias otimizadas
+const formatarNumero = (numero: number, decimais: number = 1): number =>
+  Number(numero.toFixed(decimais));
+
+const calcularStatus = (
+  percentualAtingido: number,
+  percentualEficiencia: number
+) => {
+  if (percentualAtingido >= 100 && percentualEficiencia >= 80) {
+    return {
+      nivelPerformance: 5,
+      statusCor: '#10b981',
+      statusTexto: 'Excelente',
+    };
+  } else if (percentualAtingido >= 90 && percentualEficiencia >= 70) {
+    return {
+      nivelPerformance: 4,
+      statusCor: '#059669',
+      statusTexto: 'Muito Bom',
+    };
+  } else if (percentualAtingido >= 80 && percentualEficiencia >= 60) {
+    return { nivelPerformance: 3, statusCor: '#f59e0b', statusTexto: 'Bom' };
+  } else if (percentualAtingido >= 60) {
+    return {
+      nivelPerformance: 2,
+      statusCor: '#f97316',
+      statusTexto: 'Regular',
+    };
+  } else {
+    return {
+      nivelPerformance: 1,
+      statusCor: '#ef4444',
+      statusTexto: 'Precisa Atenção',
+    };
+  }
+};
+
 const DashboardRecursosAPI: React.FC = () => {
   const [mes, setMes] = useState(new Date().getMonth() + 1);
   const [ano, setAno] = useState(new Date().getFullYear());
-  const [tipoVisualizacao, setTipoVisualizacao] = useState<
-    'overview' | 'performance' | 'financeiro' | 'radar'
-  >('overview');
+  const [tipoVisualizacao, setTipoVisualizacao] =
+    useState<TipoVisualizacao>('overview');
   const [recursoSelecionado, setRecursoSelecionado] = useState<number | null>(
     null
   );
   const [modoFullscreen, setModoFullscreen] = useState(false);
 
-  // Função para buscar dados da API
+  // Query otimizada com stale time
   const {
     data: dados,
     isLoading: loading,
@@ -105,26 +143,24 @@ const DashboardRecursosAPI: React.FC = () => {
       const response = await fetch(
         `/api/firebird-SQL/chamados-abertos/dashboard?mes=${mes}&ano=${ano}`
       );
-
       if (!response.ok) {
         throw new Error(
           `Erro na API: ${response.status} ${response.statusText}`
         );
       }
-
       return response.json();
     },
     enabled: !!mes && !!ano,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
+    retry: 2,
+    refetchOnWindowFocus: false,
   });
 
-  // Função para refazer a busca dos dados
-  const buscarDados = () => {
-    refetch();
-  };
+  // Processamento de dados otimizado com useMemo
+  const dadosProcessados: DadosGrafico[] = useMemo(() => {
+    if (!dados?.data_recursos) return [];
 
-  // Processar dados para visualizações avançadas
-  const dadosProcessados: DadosGrafico[] = React.useMemo(() => {
-    if (!dados) return [];
     return dados.data_recursos.map(recurso => {
       const percentualAtingido =
         recurso.quantidade_horas_necessarias_produzir > 0
@@ -156,193 +192,186 @@ const DashboardRecursosAPI: React.FC = () => {
             recurso.quantidade_horas_faturadas_recurso
           : 0;
 
-      // Sistema de classificação de performance
-      let nivelPerformance = 0;
-      let statusCor = '#ef4444';
-      let statusTexto = 'Crítico';
-
-      if (percentualAtingido >= 100 && percentualEficiencia >= 80) {
-        nivelPerformance = 5;
-        statusCor = '#10b981';
-        statusTexto = 'Excelente';
-      } else if (percentualAtingido >= 90 && percentualEficiencia >= 70) {
-        nivelPerformance = 4;
-        statusCor = '#059669';
-        statusTexto = 'Muito Bom';
-      } else if (percentualAtingido >= 80 && percentualEficiencia >= 60) {
-        nivelPerformance = 3;
-        statusCor = '#f59e0b';
-        statusTexto = 'Bom';
-      } else if (percentualAtingido >= 60) {
-        nivelPerformance = 2;
-        statusCor = '#f97316';
-        statusTexto = 'Regular';
-      } else {
-        nivelPerformance = 1;
-        statusCor = '#ef4444';
-        statusTexto = 'Precisa Atenção';
-      }
+      const status = calcularStatus(percentualAtingido, percentualEficiencia);
 
       return {
         nome: recurso.nome_recurso.split(' ').slice(0, 2).join(' '),
         nomeCompleto: recurso.nome_recurso,
         codRecurso: recurso.cod_recurso,
-        horasDisponiveis: Number(
-          recurso.quantidade_horas_disponiveis_recurso.toFixed(1)
+        horasDisponiveis: formatarNumero(
+          recurso.quantidade_horas_disponiveis_recurso
         ),
-        horasFaturadas: Number(
-          recurso.quantidade_horas_faturadas_recurso.toFixed(1)
+        horasFaturadas: formatarNumero(
+          recurso.quantidade_horas_faturadas_recurso
         ),
-        horasNaoFaturadas: Number(
-          recurso.quantidade_horas_nao_faturadas_recurso.toFixed(1)
+        horasNaoFaturadas: formatarNumero(
+          recurso.quantidade_horas_nao_faturadas_recurso
         ),
-        horasExecutadas: Number(
-          recurso.quantidade_horas_executadas_recurso.toFixed(1)
+        horasExecutadas: formatarNumero(
+          recurso.quantidade_horas_executadas_recurso
         ),
-        horasNecessarias: Number(
-          recurso.quantidade_horas_necessarias_produzir.toFixed(1)
+        horasNecessarias: formatarNumero(
+          recurso.quantidade_horas_necessarias_produzir
         ),
-        percentualAtingido: Number(percentualAtingido.toFixed(1)),
-        percentualUtilizacao: Number(percentualUtilizacao.toFixed(1)),
-        percentualEficiencia: Number(percentualEficiencia.toFixed(1)),
+        percentualAtingido: formatarNumero(percentualAtingido),
+        percentualUtilizacao: formatarNumero(percentualUtilizacao),
+        percentualEficiencia: formatarNumero(percentualEficiencia),
         custo: recurso.valor_custo_recurso,
-        custoPorHora: Number(custoPorHora.toFixed(2)),
+        custoPorHora: formatarNumero(custoPorHora, 2),
         valorRateio: recurso.valor_rateio_despesas_recurso,
         valorTotal: recurso.valor_total_recurso_produzir_pagar,
-        statusCor,
-        statusTexto,
-        nivelPerformance,
+        ...status,
       };
     });
   }, [dados]);
 
-  // Métricas consolidadas
-  const metricas = React.useMemo(() => {
+  // Métricas consolidadas otimizadas
+  const metricas = useMemo(() => {
     if (!dados || dadosProcessados.length === 0) return null;
 
-    const totalHorasDisponiveis = dadosProcessados.reduce(
-      (sum, r) => sum + r.horasDisponiveis,
-      0
-    );
-    const totalHorasExecutadas = dadosProcessados.reduce(
-      (sum, r) => sum + r.horasExecutadas,
-      0
-    );
-    const totalHorasFaturadas = dadosProcessados.reduce(
-      (sum, r) => sum + r.horasFaturadas,
-      0
-    );
-    const totalHorasNecessarias = dadosProcessados.reduce(
-      (sum, r) => sum + r.horasNecessarias,
-      0
+    const totais = dadosProcessados.reduce(
+      (acc, r) => ({
+        horasDisponiveis: acc.horasDisponiveis + r.horasDisponiveis,
+        horasExecutadas: acc.horasExecutadas + r.horasExecutadas,
+        horasFaturadas: acc.horasFaturadas + r.horasFaturadas,
+        horasNecessarias: acc.horasNecessarias + r.horasNecessarias,
+      }),
+      {
+        horasDisponiveis: 0,
+        horasExecutadas: 0,
+        horasFaturadas: 0,
+        horasNecessarias: 0,
+      }
     );
 
     const utilizacaoMedia =
-      totalHorasDisponiveis > 0
-        ? (totalHorasExecutadas / totalHorasDisponiveis) * 100
-        : 0;
-    const eficienciaMedia =
-      totalHorasExecutadas > 0
-        ? (totalHorasFaturadas / totalHorasExecutadas) * 100
-        : 0;
-    const metaAtingidaMedia =
-      totalHorasNecessarias > 0
-        ? (totalHorasFaturadas / totalHorasNecessarias) * 100
+      totais.horasDisponiveis > 0
+        ? formatarNumero(
+            (totais.horasExecutadas / totais.horasDisponiveis) * 100
+          )
         : 0;
 
-    const recursosExcelentes = dadosProcessados.filter(
-      r => r.nivelPerformance >= 4
-    ).length;
-    const recursosCriticos = dadosProcessados.filter(
-      r => r.nivelPerformance <= 2
-    ).length;
+    const eficienciaMedia =
+      totais.horasExecutadas > 0
+        ? formatarNumero((totais.horasFaturadas / totais.horasExecutadas) * 100)
+        : 0;
+
+    const metaAtingidaMedia =
+      totais.horasNecessarias > 0
+        ? formatarNumero(
+            (totais.horasFaturadas / totais.horasNecessarias) * 100
+          )
+        : 0;
 
     return {
-      utilizacaoMedia: Number(utilizacaoMedia.toFixed(1)),
-      eficienciaMedia: Number(eficienciaMedia.toFixed(1)),
-      metaAtingidaMedia: Number(metaAtingidaMedia.toFixed(1)),
-      recursosExcelentes,
-      recursosCriticos,
+      utilizacaoMedia,
+      eficienciaMedia,
+      metaAtingidaMedia,
+      recursosExcelentes: dadosProcessados.filter(r => r.nivelPerformance >= 4)
+        .length,
+      recursosCriticos: dadosProcessados.filter(r => r.nivelPerformance <= 2)
+        .length,
       custoMedio: dados.media_custos_recurso_mes,
-      horasOciosas: Number(
-        (totalHorasDisponiveis - totalHorasExecutadas).toFixed(1)
+      horasOciosas: formatarNumero(
+        totais.horasDisponiveis - totais.horasExecutadas
       ),
-      horasImprodutivas: Number(
-        (totalHorasExecutadas - totalHorasFaturadas).toFixed(1)
+      horasImprodutivas: formatarNumero(
+        totais.horasExecutadas - totais.horasFaturadas
       ),
     };
   }, [dados, dadosProcessados]);
 
-  // Tooltip personalizado avançado
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="max-w-sm rounded-xl border border-gray-200 bg-white/95 p-4 shadow-2xl backdrop-blur-sm">
-          <h4 className="mb-3 text-lg font-bold text-gray-800">
-            {data.nomeCompleto}
-          </h4>
+  // Callbacks otimizados
+  const buscarDados = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-blue-500"></div>
-                <span className="text-gray-600">Disponíveis:</span>
-                <span className="font-semibold">{data.horasDisponiveis}h</span>
+  const handleTipoVisualizacao = useCallback((tipo: TipoVisualizacao) => {
+    setTipoVisualizacao(tipo);
+  }, []);
+
+  const handleRecursoSelecionado = useCallback((codRecurso: number) => {
+    setRecursoSelecionado(prev => (prev === codRecurso ? null : codRecurso));
+  }, []);
+
+  // Tooltip otimizado - memoizado para evitar re-renders
+  const CustomTooltip = useMemo(() => {
+    const TooltipComponent = React.memo<{ active?: boolean; payload?: any }>(
+      ({ active, payload }) => {
+        if (!active || !payload?.[0]?.payload) return null;
+
+        const data = payload[0].payload;
+        return (
+          <div className="max-w-sm rounded-xl border border-gray-200 bg-white/95 p-4 shadow-2xl backdrop-blur-sm">
+            <h4 className="mb-3 text-lg font-bold text-gray-800">
+              {data.nomeCompleto}
+            </h4>
+
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+                  <span className="text-gray-600">Disponíveis:</span>
+                  <span className="font-semibold">
+                    {data.horasDisponiveis}h
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                  <span className="text-gray-600">Faturadas:</span>
+                  <span className="font-semibold">{data.horasFaturadas}h</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-full bg-orange-500"></div>
+                  <span className="text-gray-600">Não Faturadas:</span>
+                  <span className="font-semibold">
+                    {data.horasNaoFaturadas}h
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                <span className="text-gray-600">Faturadas:</span>
-                <span className="font-semibold">{data.horasFaturadas}h</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-orange-500"></div>
-                <span className="text-gray-600">Não Faturadas:</span>
-                <span className="font-semibold">{data.horasNaoFaturadas}h</span>
+
+              <div className="space-y-2">
+                <div className="text-center">
+                  <div
+                    className="text-2xl font-bold"
+                    style={{ color: data.statusCor }}
+                  >
+                    {data.percentualAtingido}%
+                  </div>
+                  <div className="text-xs text-gray-500">Meta Atingida</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-purple-600">
+                    {data.percentualEficiencia}%
+                  </div>
+                  <div className="text-xs text-gray-500">Eficiência</div>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="text-center">
-                <div
-                  className="text-2xl font-bold"
-                  style={{ color: data.statusCor }}
-                >
-                  {data.percentualAtingido}%
-                </div>
-                <div className="text-xs text-gray-500">Meta Atingida</div>
+            <div className="mt-3 border-t border-gray-200 pt-3">
+              <div className="flex justify-between text-xs text-gray-600">
+                <span>Custo/Hora:</span>
+                <span className="font-medium">R$ {data.custoPorHora}</span>
               </div>
-              <div className="text-center">
-                <div className="text-lg font-semibold text-purple-600">
-                  {data.percentualEficiencia}%
-                </div>
-                <div className="text-xs text-gray-500">Eficiência</div>
+              <div className="flex justify-between text-xs text-gray-600">
+                <span>Status:</span>
+                <span className="font-medium" style={{ color: data.statusCor }}>
+                  {data.statusTexto}
+                </span>
               </div>
             </div>
           </div>
+        );
+      }
+    );
 
-          <div className="mt-3 border-t border-gray-200 pt-3">
-            <div className="flex justify-between text-xs text-gray-600">
-              <span>Custo/Hora:</span>
-              <span className="font-medium">
-                R$ {data.custoPorHora.toFixed(2)}
-              </span>
-            </div>
-            <div className="flex justify-between text-xs text-gray-600">
-              <span>Status:</span>
-              <span className="font-medium" style={{ color: data.statusCor }}>
-                {data.statusTexto}
-              </span>
-            </div>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
+    TooltipComponent.displayName = 'CustomTooltip';
+    return TooltipComponent;
+  }, []);
 
-  // Componente de KPI Card melhorado
-  const KPICard: React.FC<{
+  // Componente KPI otimizado
+  const KPICard = React.memo<{
     icon: React.ReactNode;
     title: string;
     value: string | number;
@@ -350,7 +379,7 @@ const DashboardRecursosAPI: React.FC = () => {
     trend?: 'up' | 'down' | 'stable';
     color: string;
     size?: 'normal' | 'large';
-  }> = ({ icon, title, value, subtitle, trend, color, size = 'normal' }) => (
+  }>(({ icon, title, value, subtitle, trend, color, size = 'normal' }) => (
     <div
       className={`rounded-2xl border border-white/20 bg-white/80 p-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl ${size === 'large' ? 'col-span-2' : ''}`}
     >
@@ -373,14 +402,23 @@ const DashboardRecursosAPI: React.FC = () => {
       </p>
       {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
     </div>
-  );
+  ));
 
-  // Componente de Performance Individual
-  const PerformanceGrid = () => (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
-      {dadosProcessados
-        .sort((a, b) => b.percentualAtingido - a.percentualAtingido)
-        .map(recurso => (
+  KPICard.displayName = 'KPICard';
+
+  // Componente de Performance Grid otimizado
+  const PerformanceGrid = React.memo(() => {
+    const recursosOrdenados = useMemo(
+      () =>
+        [...dadosProcessados].sort(
+          (a, b) => b.percentualAtingido - a.percentualAtingido
+        ),
+      [dadosProcessados]
+    );
+
+    return (
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
+        {recursosOrdenados.map(recurso => (
           <div
             key={recurso.codRecurso}
             className={`cursor-pointer rounded-xl border-2 bg-white/90 p-4 shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl ${
@@ -388,13 +426,7 @@ const DashboardRecursosAPI: React.FC = () => {
                 ? 'scale-105 border-blue-400'
                 : 'border-white/30 hover:border-gray-300'
             }`}
-            onClick={() =>
-              setRecursoSelecionado(
-                recursoSelecionado === recurso.codRecurso
-                  ? null
-                  : recurso.codRecurso
-              )
-            }
+            onClick={() => handleRecursoSelecionado(recurso.codRecurso)}
           >
             <div className="mb-3 flex items-center justify-between">
               <h4 className="flex-1 truncate text-sm font-semibold text-gray-800">
@@ -406,7 +438,7 @@ const DashboardRecursosAPI: React.FC = () => {
               />
             </div>
 
-            {/* Gauge circular para meta */}
+            {/* Gauge circular otimizado */}
             <div className="relative mb-4">
               <svg className="mx-auto h-20 w-20" viewBox="0 0 36 36">
                 <path
@@ -422,7 +454,6 @@ const DashboardRecursosAPI: React.FC = () => {
                   strokeWidth="2"
                   strokeDasharray={`${recurso.percentualAtingido}, 100`}
                   strokeLinecap="round"
-                  className="transition-all duration-1000 ease-out"
                   transform="rotate(-90 18 18)"
                 />
               </svg>
@@ -458,7 +489,6 @@ const DashboardRecursosAPI: React.FC = () => {
               </div>
             </div>
 
-            {/* Badge de status */}
             <div className="mt-3">
               <span
                 className="inline-block rounded-full px-2 py-1 text-xs font-medium text-white"
@@ -469,18 +499,25 @@ const DashboardRecursosAPI: React.FC = () => {
             </div>
           </div>
         ))}
-    </div>
-  );
+      </div>
+    );
+  });
 
-  // Gráfico Radar para análise multidimensional
-  const RadarAnalysis = () => {
-    const radarData = dadosProcessados.slice(0, 6).map(recurso => ({
-      nome: recurso.nome,
-      Meta: recurso.percentualAtingido,
-      Eficiência: recurso.percentualEficiencia,
-      Utilização: recurso.percentualUtilizacao,
-      Performance: recurso.nivelPerformance * 20,
-    }));
+  PerformanceGrid.displayName = 'PerformanceGrid';
+
+  // Gráfico Radar otimizado
+  const RadarAnalysis = React.memo(() => {
+    const radarData = useMemo(
+      () =>
+        dadosProcessados.slice(0, 6).map(recurso => ({
+          nome: recurso.nome,
+          Meta: recurso.percentualAtingido,
+          Eficiência: recurso.percentualEficiencia,
+          Utilização: recurso.percentualUtilizacao,
+          Performance: recurso.nivelPerformance * 20,
+        })),
+      [dadosProcessados]
+    );
 
     return (
       <ResponsiveContainer width="100%" height={500}>
@@ -522,8 +559,30 @@ const DashboardRecursosAPI: React.FC = () => {
         </RadarChart>
       </ResponsiveContainer>
     );
-  };
+  });
 
+  RadarAnalysis.displayName = 'RadarAnalysis';
+
+  // Dados dos gráficos chunked otimizados
+  const dadosGraficosChunked = useMemo(() => {
+    const chunkSize = 10;
+    const filteredData = dadosProcessados.filter(
+      recurso =>
+        recurso.horasDisponiveis > 0 ||
+        recurso.horasExecutadas > 0 ||
+        recurso.horasFaturadas > 0
+    );
+    const sortedData = [...filteredData].sort(
+      (a, b) => b.horasFaturadas - a.horasFaturadas
+    );
+    const chunks = [];
+    for (let i = 0; i < sortedData.length; i += chunkSize) {
+      chunks.push(sortedData.slice(i, i + chunkSize));
+    }
+    return { chunks, totalRecursos: sortedData.length };
+  }, [dadosProcessados]);
+
+  // Loading otimizado
   if (loading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -553,7 +612,7 @@ const DashboardRecursosAPI: React.FC = () => {
               Ops! Algo deu errado
             </h2>
             <p className="mb-6 text-gray-600">
-              {(error instanceof Error ? error.message : error) ||
+              {(error instanceof Error ? error.message : String(error)) ||
                 'Não foi possível carregar os dados'}
             </p>
             <button
@@ -579,7 +638,7 @@ const DashboardRecursosAPI: React.FC = () => {
       </div>
 
       <div className="relative z-10 mx-auto max-w-[2000px] p-6">
-        {/* Header Premium */}
+        {/* Header */}
         <div className="mb-8 rounded-3xl border border-white/30 bg-white/80 p-8 shadow-2xl backdrop-blur-lg">
           <div className="mb-6 flex items-center justify-between">
             <div>
@@ -596,7 +655,6 @@ const DashboardRecursosAPI: React.FC = () => {
                   .replace(/^\w/, c => c.toUpperCase())}
               </p>
             </div>
-
             <button
               onClick={() => setModoFullscreen(!modoFullscreen)}
               className="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 p-3 text-white transition-all duration-300 hover:from-blue-600 hover:to-indigo-700"
@@ -664,7 +722,9 @@ const DashboardRecursosAPI: React.FC = () => {
               ].map(({ key, label, icon }) => (
                 <button
                   key={key}
-                  onClick={() => setTipoVisualizacao(key as any)}
+                  onClick={() =>
+                    handleTipoVisualizacao(key as TipoVisualizacao)
+                  }
                   className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 ${
                     tipoVisualizacao === key
                       ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
@@ -747,289 +807,246 @@ const DashboardRecursosAPI: React.FC = () => {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Ordenar por:</span>
-                <select
-                  className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-sm"
-                  onChange={e => {
-                    // Adicione lógica de ordenação se necessário
-                  }}
-                >
-                  <option value="nome">Nome do Recurso</option>
-                  <option value="atingimento">% Atingimento</option>
-                  <option value="horas">Horas Faturadas</option>
-                </select>
+                <span className="text-sm text-gray-500">
+                  Total de recursos ativos:
+                </span>
+                <span className="font-semibold text-blue-600">
+                  {dadosGraficosChunked.totalRecursos}
+                </span>
               </div>
             </div>
 
-            {/* Dividir os dados em chunks de 10 itens cada */}
-            {(() => {
-              const chunkSize = 10;
-              const chunks = [];
-              const sortedData = [...dadosProcessados].sort(
-                (a, b) => b.horasFaturadas - a.horasFaturadas
-              );
-
-              for (let i = 0; i < sortedData.length; i += chunkSize) {
-                chunks.push(sortedData.slice(i, i + chunkSize));
-              }
-
-              return (
-                <div className="space-y-8">
-                  {chunks.map((chunk, index) => (
-                    <div
-                      key={index}
-                      className={`rounded-xl bg-gradient-to-br from-white to-gray-50 p-5 shadow-lg ${index > 0 ? 'mt-8 border-t border-gray-200 pt-8' : ''}`}
-                    >
-                      {index > 0 && (
-                        <div className="mb-4 text-center text-sm font-medium text-gray-500">
-                          Continuação ({index * chunkSize + 1}-
-                          {Math.min((index + 1) * chunkSize, sortedData.length)}{' '}
-                          de {sortedData.length} recursos)
-                        </div>
-                      )}
-
-                      <ResponsiveContainer width="100%" height={500}>
-                        <ComposedChart
-                          data={chunk}
-                          margin={{ top: 20, right: 30, bottom: 80, left: 50 }}
-                          barCategoryGap={25}
-                          barGap={8}
-                        >
-                          <defs>
-                            <linearGradient
-                              id={`barGradientBlue-${index}`}
-                              x1="0"
-                              y1="0"
-                              x2="0"
-                              y2="1"
-                            >
-                              <stop
-                                offset="0%"
-                                stopColor="#3b82f6"
-                                stopOpacity={0.8}
-                              />
-                              <stop
-                                offset="100%"
-                                stopColor="#3b82f6"
-                                stopOpacity={0.2}
-                              />
-                            </linearGradient>
-                            <linearGradient
-                              id={`barGradientOrange-${index}`}
-                              x1="0"
-                              y1="0"
-                              x2="0"
-                              y2="1"
-                            >
-                              <stop
-                                offset="0%"
-                                stopColor="#f59e0b"
-                                stopOpacity={0.8}
-                              />
-                              <stop
-                                offset="100%"
-                                stopColor="#f59e0b"
-                                stopOpacity={0.2}
-                              />
-                            </linearGradient>
-                            <linearGradient
-                              id={`barGradientGreen-${index}`}
-                              x1="0"
-                              y1="0"
-                              x2="0"
-                              y2="1"
-                            >
-                              <stop
-                                offset="0%"
-                                stopColor="#10b981"
-                                stopOpacity={0.8}
-                              />
-                              <stop
-                                offset="100%"
-                                stopColor="#10b981"
-                                stopOpacity={0.2}
-                              />
-                            </linearGradient>
-                            <linearGradient
-                              id={`barGradientPurple-${index}`}
-                              x1="0"
-                              y1="0"
-                              x2="0"
-                              y2="1"
-                            >
-                              <stop
-                                offset="0%"
-                                stopColor="#8b5cf6"
-                                stopOpacity={0.8}
-                              />
-                              <stop
-                                offset="100%"
-                                stopColor="#8b5cf6"
-                                stopOpacity={0.2}
-                              />
-                            </linearGradient>
-                          </defs>
-
-                          <CartesianGrid
-                            strokeDasharray="3 3"
-                            vertical={false}
-                            stroke="#e5e7eb"
-                          />
-
-                          <XAxis
-                            dataKey="nome"
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fontSize: 11, fontWeight: 500 }}
-                            angle={-45}
-                            textAnchor="end"
-                            height={60}
-                          />
-
-                          <YAxis
-                            yAxisId="left"
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fontSize: 11 }}
-                            label={{
-                              value: 'Horas',
-                              angle: -90,
-                              position: 'insideLeft',
-                              fontSize: 12,
-                              fontWeight: 600,
-                              fill: '#4b5563',
-                            }}
-                          />
-
-                          <YAxis
-                            yAxisId="right"
-                            orientation="right"
-                            domain={[0, 100]}
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fontSize: 11 }}
-                            label={{
-                              value: '% Atingimento',
-                              angle: 90,
-                              position: 'insideRight',
-                              fontSize: 12,
-                              fontWeight: 600,
-                              fill: '#4b5563',
-                            }}
-                          />
-
-                          <Tooltip
-                            content={<CustomTooltip />}
-                            cursor={{ fill: '#f3f4f6', opacity: 0.5 }}
-                          />
-
-                          <Legend
-                            wrapperStyle={{ paddingTop: '30px' }}
-                            formatter={value => (
-                              <span className="text-xs font-medium text-gray-600">
-                                {value}
-                              </span>
-                            )}
-                          />
-
-                          <Bar
-                            yAxisId="left"
-                            name="Disponíveis"
-                            dataKey="horasDisponiveis"
-                            fill={`url(#barGradientBlue-${index})`}
-                            radius={[6, 6, 0, 0]}
-                            animationDuration={1500}
-                            label={{
-                              position: 'top',
-                              formatter: (value: number) => `${value}h`,
-                              fill: '#1e40af',
-                              fontSize: 11,
-                              fontWeight: 600,
-                            }}
-                          />
-
-                          <Bar
-                            yAxisId="left"
-                            name="Executadas"
-                            dataKey="horasExecutadas"
-                            fill={`url(#barGradientOrange-${index})`}
-                            radius={[6, 6, 0, 0]}
-                            animationDuration={1500}
-                            label={{
-                              position: 'top',
-                              formatter: (value: number) => `${value}h`,
-                              fill: '#92400e',
-                              fontSize: 11,
-                              fontWeight: 600,
-                            }}
-                          />
-
-                          <Bar
-                            yAxisId="left"
-                            name="Faturadas"
-                            dataKey="horasFaturadas"
-                            fill={`url(#barGradientGreen-${index})`}
-                            radius={[6, 6, 0, 0]}
-                            animationDuration={1500}
-                            label={{
-                              position: 'top',
-                              formatter: (value: number) => `${value}h`,
-                              fill: '#065f46',
-                              fontSize: 11,
-                              fontWeight: 600,
-                            }}
-                          />
-
-                          <Bar
-                            yAxisId="right"
-                            name="% Meta"
-                            dataKey="percentualAtingido"
-                            fill={`url(#barGradientPurple-${index})`}
-                            radius={[6, 6, 0, 0]}
-                            animationDuration={1500}
-                            label={{
-                              position: 'top',
-                              formatter: (value: number) => `${value}%`,
-                              fill: '#5b21b6',
-                              fontSize: 11,
-                              fontWeight: 600,
-                            }}
-                          />
-                        </ComposedChart>
-                      </ResponsiveContainer>
-
-                      {/* Mostrar legenda apenas no último gráfico */}
-                      {index === chunks.length - 1 && (
-                        <div className="mt-4 flex flex-wrap justify-center gap-4 text-xs">
-                          <div className="flex items-center">
-                            <div className="mr-2 h-3 w-3 rounded-full bg-blue-500"></div>
-                            <span>
-                              Horas Disponíveis = Capacidade total do recurso
-                            </span>
-                          </div>
-                          <div className="flex items-center">
-                            <div className="mr-2 h-3 w-3 rounded-full bg-amber-500"></div>
-                            <span>
-                              Horas Executadas = Tempo efetivamente trabalhado
-                            </span>
-                          </div>
-                          <div className="flex items-center">
-                            <div className="mr-2 h-3 w-3 rounded-full bg-emerald-500"></div>
-                            <span>
-                              Horas Faturadas = Tempo que gerou receita
-                            </span>
-                          </div>
-                          <div className="flex items-center">
-                            <div className="mr-2 h-3 w-3 rounded-full bg-violet-500"></div>
-                            <span>% Meta = Faturado vs Necessário</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+            {dadosGraficosChunked.totalRecursos === 0 ? (
+              <div className="flex h-64 items-center justify-center rounded-xl bg-gray-50">
+                <div className="text-center">
+                  <Activity className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-4 text-lg font-medium text-gray-600">
+                    Nenhum dado disponível
+                  </h3>
+                  <p className="mt-1 text-gray-500">
+                    Todos os recursos estão com valores zerados neste período
+                  </p>
                 </div>
-              );
-            })()}
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {dadosGraficosChunked.chunks.map((chunk, index) => (
+                  <div
+                    key={index}
+                    className={`rounded-xl bg-gradient-to-br from-white to-gray-50 p-5 shadow-lg ${index > 0 ? 'mt-8 border-t border-gray-200 pt-8' : ''}`}
+                  >
+                    {index > 0 && (
+                      <div className="mb-4 text-center text-sm font-medium text-gray-500">
+                        Continuação ({index * 10 + 1}-
+                        {Math.min(
+                          (index + 1) * 10,
+                          dadosGraficosChunked.totalRecursos
+                        )}{' '}
+                        de {dadosGraficosChunked.totalRecursos} recursos)
+                      </div>
+                    )}
+
+                    <ResponsiveContainer width="100%" height={500}>
+                      <ComposedChart
+                        data={chunk}
+                        margin={{ top: 20, right: 30, bottom: 80, left: 50 }}
+                        barCategoryGap={25}
+                        barGap={8}
+                      >
+                        <defs>
+                          <linearGradient
+                            id={`barGradientBlue-${index}`}
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="0%"
+                              stopColor="#3b82f6"
+                              stopOpacity={0.8}
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor="#3b82f6"
+                              stopOpacity={0.2}
+                            />
+                          </linearGradient>
+                          <linearGradient
+                            id={`barGradientOrange-${index}`}
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="0%"
+                              stopColor="#f59e0b"
+                              stopOpacity={0.8}
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor="#f59e0b"
+                              stopOpacity={0.2}
+                            />
+                          </linearGradient>
+                          <linearGradient
+                            id={`barGradientGreen-${index}`}
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="0%"
+                              stopColor="#10b981"
+                              stopOpacity={0.8}
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor="#10b981"
+                              stopOpacity={0.2}
+                            />
+                          </linearGradient>
+                          <linearGradient
+                            id={`barGradientPurple-${index}`}
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="0%"
+                              stopColor="#8b5cf6"
+                              stopOpacity={0.8}
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor="#8b5cf6"
+                              stopOpacity={0.2}
+                            />
+                          </linearGradient>
+                        </defs>
+
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          vertical={false}
+                          stroke="#e5e7eb"
+                        />
+                        <XAxis
+                          dataKey="nome"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 11, fontWeight: 500 }}
+                          angle={-45}
+                          textAnchor="end"
+                          height={60}
+                        />
+                        <YAxis
+                          yAxisId="left"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 11 }}
+                          label={{
+                            value: 'Horas',
+                            angle: -90,
+                            position: 'insideLeft',
+                            fontSize: 12,
+                            fontWeight: 600,
+                            fill: '#4b5563',
+                          }}
+                        />
+                        <YAxis
+                          yAxisId="right"
+                          orientation="right"
+                          domain={[0, 100]}
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 11 }}
+                          label={{
+                            value: '% Atingimento',
+                            angle: 90,
+                            position: 'insideRight',
+                            fontSize: 12,
+                            fontWeight: 600,
+                            fill: '#4b5563',
+                          }}
+                        />
+                        <Tooltip
+                          content={<CustomTooltip />}
+                          cursor={{ fill: '#f3f4f6', opacity: 0.5 }}
+                        />
+                        <Legend
+                          wrapperStyle={{ paddingTop: '30px' }}
+                          formatter={value => (
+                            <span className="text-xs font-medium text-gray-600">
+                              {value}
+                            </span>
+                          )}
+                        />
+                        <Bar
+                          yAxisId="left"
+                          name="Disponíveis"
+                          dataKey="horasDisponiveis"
+                          fill={`url(#barGradientBlue-${index})`}
+                          radius={[6, 6, 0, 0]}
+                          animationDuration={1500}
+                        />
+                        <Bar
+                          yAxisId="left"
+                          name="Executadas"
+                          dataKey="horasExecutadas"
+                          fill={`url(#barGradientOrange-${index})`}
+                          radius={[6, 6, 0, 0]}
+                          animationDuration={1500}
+                        />
+                        <Bar
+                          yAxisId="left"
+                          name="Faturadas"
+                          dataKey="horasFaturadas"
+                          fill={`url(#barGradientGreen-${index})`}
+                          radius={[6, 6, 0, 0]}
+                          animationDuration={1500}
+                        />
+                        <Bar
+                          yAxisId="right"
+                          name="% Meta"
+                          dataKey="percentualAtingido"
+                          fill={`url(#barGradientPurple-${index})`}
+                          radius={[6, 6, 0, 0]}
+                          animationDuration={1500}
+                        />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+
+                    {index === dadosGraficosChunked.chunks.length - 1 && (
+                      <div className="mt-4 flex flex-wrap justify-center gap-4 text-xs">
+                        <div className="flex items-center">
+                          <div className="mr-2 h-3 w-3 rounded-full bg-blue-500"></div>
+                          <span>
+                            Horas Disponíveis = Capacidade total do recurso
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="mr-2 h-3 w-3 rounded-full bg-amber-500"></div>
+                          <span>
+                            Horas Executadas = Tempo efetivamente trabalhado
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="mr-2 h-3 w-3 rounded-full bg-emerald-500"></div>
+                          <span>Horas Faturadas = Tempo que gerou receita</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="mr-2 h-3 w-3 rounded-full bg-violet-500"></div>
+                          <span>% Meta = Faturado vs Necessário</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
