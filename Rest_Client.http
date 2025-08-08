@@ -106,26 +106,9 @@ Content-Type: application/json
 
 # --------------------------------------------------------------------------------
 
-### AGENREC de acordo com o ano, mês e sendo admin
-GET http://localhost:3000/api/firebird-SQL/chamados-abertos/agenrec?ano=2025&mes=7&isAdmin=true
-
-
-
-
 ### FATDES de acordo com o ano, mês e sendo admin
 GET http://localhost:3000/api/firebird-SQL/chamados-abertos/fatdes?ano=2025&mes=7&isAdmin=true
 
-
-
-
-### FATFUN de acordo com o ano, mês e sendo admin
-GET http://localhost:3000/api/firebird-SQL/chamados-abertos/fatfun?ano=2025&mes=7&isAdmin=true
-
-
-
-
-### FATREC de acordo com o ano, mês e sendo admin
-GET http://localhost:3000/api/firebird-SQL/chamados-abertos/fatrec?ano=2025&mes=7&isAdmin=true
 
 
 
@@ -134,7 +117,11 @@ GET http://localhost:3000/api/firebird-SQL/chamados-abertos/fatfun/fixo?ano=2025
 
 
 
-### OS-CHAMADO FIXO de acordo com o ano, mês e sendo admin
-GET http://localhost:3000/api/firebird-SQL/chamados-abertos/os-chamados/fixo?ano=2025&mes=7&isAdmin=true
+### FATFUN FIXO de acordo com o ano, mês e sendo admin
+GET http://localhost:3000/api/firebird-SQL/chamados-abertos/fatfun/fixo?ano=2025&mes=8&isAdmin=true
 
 
+
+
+### FATFUN VARIÁVEL de acordo com o ano, mês e sendo admin
+GET http://localhost:3000/api/firebird-SQL/chamados-abertos/fatfun/variavel?ano=2025&mes=7&isAdmin=true
