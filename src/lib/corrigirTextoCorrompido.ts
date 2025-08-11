@@ -15,7 +15,7 @@ export function corrigirTextoCorrompido(texto: string): string {
     'Manuten��o�preventiva': 'Manutenção preventiva',
     'Solicita��o�de�servi�o': 'Solicitação de serviço',
     'Avalia��o�de�desempenho': 'Avaliação de desempenho',
-    'Configura��o�do�sistema': 'Configuração do sistema'
+    'Configura��o�do�sistema': 'Configuração do sistema',
   };
 
   // Verifica se é um caso específico conhecido
@@ -36,7 +36,8 @@ export function corrigirTextoCorrompido(texto: string): string {
     .replace(/�em�/g, ' em ')
     .replace(/�para�/g, ' para ')
     .replace(/�com�/g, ' com ')
-    .replace(/�es�/g, 'ões');
+    .replace(/�es�/g, 'ões')
+    .replace(/�/g, 'Ç');
 
   // Limpa espaços duplos que podem ter sido criados
   textoCorrigido = textoCorrigido.replace(/\s+/g, ' ').trim();
@@ -46,12 +47,12 @@ export function corrigirTextoCorrompido(texto: string): string {
     try {
       // Tenta diferentes codificações
       const codificacoes = ['latin1', 'iso-8859-1', 'windows-1252', 'utf-8'];
-      
+
       for (const codificacao of codificacoes) {
         try {
           const buffer = Buffer.from(texto, 'binary');
           const tentativa = iconv.decode(buffer, codificacao);
-          
+
           if (!tentativa.includes('�')) {
             return tentativa;
           }
@@ -59,7 +60,7 @@ export function corrigirTextoCorrompido(texto: string): string {
           continue;
         }
       }
-      
+
       // Se nenhuma codificação funcionou, retorna o texto com as substituições já feitas
       return textoCorrigido;
     } catch (error) {
@@ -67,6 +68,6 @@ export function corrigirTextoCorrompido(texto: string): string {
       return textoCorrigido;
     }
   }
-  
+
   return textoCorrigido;
 }

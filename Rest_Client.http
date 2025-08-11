@@ -124,4 +124,4 @@ GET http://localhost:3000/api/firebird-SQL/chamados-abertos/fatfun/fixo?ano=2025
 
 
 ### FATFUN VARIÁVEL de acordo com o ano, mês e sendo admin
-GET http://localhost:3000/api/firebird-SQL/chamados-abertos/fatfun/variavel?ano=2025&mes=7&isAdmin=true
+GET http://localhost:3000/api/firebird-SQL/chamados-abertos/dashboard?ano=2025&mes=8&isAdmin=true
