@@ -8,6 +8,10 @@ import {
   Users,
   TrendingUp,
   Filter,
+  RefreshCw,
+  Activity,
+  Zap,
+  Target,
 } from 'lucide-react';
 
 interface ClienteDetalhes {
@@ -92,11 +96,11 @@ const HorasContratadasDashboard = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'suspenso':
-        return 'text-red-600 bg-red-50 border-red-200';
+        return 'text-red-600 bg-red-50/80 border-red-200/50 backdrop-blur-sm';
       case 'ativo':
-        return 'text-green-600 bg-green-50 border-green-200';
+        return 'text-emerald-600 bg-emerald-50/80 border-emerald-200/50 backdrop-blur-sm';
       default:
-        return 'text-gray-600 bg-gray-50 border-gray-200';
+        return 'text-slate-600 bg-slate-50/80 border-slate-200/50 backdrop-blur-sm';
     }
   };
 
@@ -125,10 +129,18 @@ const HorasContratadasDashboard = ({
 
   if (isLoading) {
     return (
-      <div className="flex min-h-96 items-center justify-center">
-        <div className="flex items-center space-x-2">
-          <Clock className="h-6 w-6 animate-spin text-blue-600" />
-          <span className="text-slate-600">Carregando dados...</span>
+      <div className="flex min-h-96 items-center justify-center rounded-3xl border border-white/30 bg-gradient-to-br from-white/95 via-white/90 to-slate-50/95 shadow-xl shadow-slate-900/5 backdrop-blur-xl">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="relative">
+            <div className="h-16 w-16 animate-pulse rounded-full border-4 border-blue-200"></div>
+            <div className="absolute inset-0 h-16 w-16 animate-spin rounded-full border-4 border-t-blue-600"></div>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-semibold text-slate-700">
+              Carregando dados
+            </p>
+            <p className="text-sm text-slate-500">Aguarde um momento...</p>
+          </div>
         </div>
       </div>
     );
@@ -136,36 +148,57 @@ const HorasContratadasDashboard = ({
 
   if (isError) {
     return (
-      <div className="rounded-2xl border border-red-300 bg-red-50 p-6 shadow-md shadow-black">
-        <div className="flex items-center space-x-2">
-          <AlertTriangle className="h-6 w-6 text-red-600" />
-          <span className="font-semibold text-red-800">
-            Erro ao carregar dados
-          </span>
-        </div>
-        <p className="mt-2 font-medium text-red-700">{error?.message}</p>
-        <div className="mt-4">
+      <div className="relative overflow-hidden rounded-3xl border border-red-200/50 bg-gradient-to-br from-red-50/95 via-white/90 to-red-50/95 p-8 shadow-xl shadow-red-900/10 backdrop-blur-xl">
+        <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-gradient-to-br from-red-200/30 to-red-300/30 blur-2xl"></div>
+
+        <div className="relative z-10">
+          <div className="mb-4 flex items-center space-x-3">
+            <div className="rounded-2xl bg-red-100/80 p-3 backdrop-blur-sm">
+              <AlertTriangle className="h-6 w-6 text-red-600" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-red-800">
+                Erro ao carregar dados
+              </h3>
+              <p className="text-red-600/80">{error?.message}</p>
+            </div>
+          </div>
+
           <button
             onClick={() => refetch()}
-            className="rounded-md bg-red-600 px-6 py-2 font-semibold text-white transition-all hover:bg-red-700 hover:shadow-lg hover:shadow-black"
+            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-6 py-3 font-semibold text-white shadow-lg shadow-red-900/20 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-red-900/30"
           >
+            <RefreshCw className="h-4 w-4" />
             Tentar novamente
           </button>
-        </div>
 
-        {error?.message.includes('database') && (
-          <div className="mt-4 rounded-xl border border-yellow-300 bg-yellow-50 p-4">
-            <h4 className="mb-2 font-semibold text-yellow-800">
-              Possíveis soluções:
-            </h4>
-            <ul className="list-inside list-disc space-y-1 text-sm text-yellow-700">
-              <li>Verifique se o servidor PostgreSQL está rodando</li>
-              <li>Confirme se o IP 192.168.234.3:5432 está acessível</li>
-              <li>Verifique as credenciais de conexão no arquivo .env</li>
-              <li>Confirme se não há firewall bloqueando a conexão</li>
-            </ul>
-          </div>
-        )}
+          {error?.message.includes('database') && (
+            <div className="mt-6 rounded-2xl border border-yellow-200/50 bg-yellow-50/80 p-6 shadow-lg backdrop-blur-sm">
+              <h4 className="mb-3 flex items-center gap-2 font-semibold text-yellow-800">
+                <Zap className="h-5 w-5" />
+                Possíveis soluções
+              </h4>
+              <ul className="space-y-2 text-sm text-yellow-700">
+                <li className="flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-yellow-500"></div>
+                  Verifique se o servidor PostgreSQL está rodando
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-yellow-500"></div>
+                  Confirme se o IP 192.168.234.3:5432 está acessível
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-yellow-500"></div>
+                  Verifique as credenciais de conexão no arquivo .env
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-yellow-500"></div>
+                  Confirme se não há firewall bloqueando a conexão
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -173,142 +206,198 @@ const HorasContratadasDashboard = ({
   if (!data) return null;
 
   return (
-    <div className="space-y-6">
-      {/* Cards de resumo */}
+    <div className="space-y-8">
+      {/* Cards de resumo modernizados */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl border border-slate-300 bg-white p-6 shadow-md shadow-black">
-          <div className="flex items-center justify-between">
+        {/* Card Total Clientes */}
+        <div className="group relative overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br from-white/95 via-white/90 to-blue-50/95 p-6 shadow-xl shadow-slate-900/5 backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-900/10">
+          <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-gradient-to-br from-blue-200/30 to-purple-200/30 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100"></div>
+          <div className="relative z-10 flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold tracking-wider text-slate-600">
+              <p className="mb-2 text-sm font-semibold tracking-wider text-slate-500/80 uppercase">
                 Total Clientes
               </p>
-              <p className="text-2xl font-extrabold text-blue-600">
+              <p className="bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-3xl font-black text-transparent">
                 {data.resumo.totalClientes}
               </p>
             </div>
-            <Users className="h-8 w-8 text-blue-600" />
+            <div className="rounded-2xl bg-gradient-to-br from-blue-500/90 to-indigo-600/90 p-4 shadow-lg">
+              <Users className="h-6 w-6 text-white" />
+            </div>
           </div>
+          <div className="absolute bottom-0 left-0 h-1 w-0 rounded-t-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500 group-hover:w-full"></div>
         </div>
 
-        <div className="rounded-2xl border border-slate-300 bg-white p-6 shadow-md shadow-black">
-          <div className="flex items-center justify-between">
+        {/* Card Horas Contratadas */}
+        <div className="group relative overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br from-white/95 via-white/90 to-emerald-50/95 p-6 shadow-xl shadow-slate-900/5 backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-emerald-900/10">
+          <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-gradient-to-br from-emerald-200/30 to-green-200/30 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100"></div>
+          <div className="relative z-10 flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold tracking-wider text-slate-600">
+              <p className="mb-2 text-sm font-semibold tracking-wider text-slate-500/80 uppercase">
                 Horas Contratadas
               </p>
-              <p className="text-2xl font-extrabold text-green-600">
+              <p className="bg-gradient-to-r from-emerald-700 to-green-700 bg-clip-text text-3xl font-black text-transparent">
                 {data.totalHorasContratadas}h
               </p>
             </div>
-            <Clock className="h-8 w-8 text-green-600" />
+            <div className="rounded-2xl bg-gradient-to-br from-emerald-500/90 to-green-600/90 p-4 shadow-lg">
+              <Target className="h-6 w-6 text-white" />
+            </div>
           </div>
+          <div className="absolute bottom-0 left-0 h-1 w-0 rounded-t-full bg-gradient-to-r from-emerald-500 to-green-500 transition-all duration-500 group-hover:w-full"></div>
         </div>
 
-        <div className="rounded-2xl border border-slate-300 bg-white p-6 shadow-md shadow-black">
-          <div className="flex items-center justify-between">
+        {/* Card Horas Executadas */}
+        <div className="group relative overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br from-white/95 via-white/90 to-orange-50/95 p-6 shadow-xl shadow-slate-900/5 backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-orange-900/10">
+          <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-gradient-to-br from-orange-200/30 to-amber-200/30 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100"></div>
+          <div className="relative z-10 flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold tracking-wider text-slate-600">
+              <p className="mb-2 text-sm font-semibold tracking-wider text-slate-500/80 uppercase">
                 Horas Executadas
               </p>
-              <p className="text-2xl font-extrabold text-orange-600">
+              <p className="bg-gradient-to-r from-orange-700 to-amber-700 bg-clip-text text-3xl font-black text-transparent">
                 {data.totalHorasExecutadas}h
               </p>
             </div>
-            <TrendingUp className="h-8 w-8 text-orange-600" />
+            <div className="rounded-2xl bg-gradient-to-br from-orange-500/90 to-amber-600/90 p-4 shadow-lg">
+              <Activity className="h-6 w-6 text-white" />
+            </div>
           </div>
+          <div className="absolute bottom-0 left-0 h-1 w-0 rounded-t-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-500 group-hover:w-full"></div>
         </div>
 
-        <div className="rounded-2xl border border-slate-300 bg-white p-6 shadow-md shadow-black">
-          <div className="flex items-center justify-between">
+        {/* Card % Execução */}
+        <div className="group relative overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br from-white/95 via-white/90 to-purple-50/95 p-6 shadow-xl shadow-slate-900/5 backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-900/10">
+          <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-gradient-to-br from-purple-200/30 to-indigo-200/30 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100"></div>
+          <div className="relative z-10 flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold tracking-wider text-slate-600">
+              <p className="mb-2 text-sm font-semibold tracking-wider text-slate-500/80 uppercase">
                 % Execução
               </p>
-              <p className="text-2xl font-extrabold text-slate-800">
+              <p className="bg-gradient-to-r from-purple-700 to-indigo-700 bg-clip-text text-3xl font-black text-transparent">
                 {data.resumo.percentualExecucao.toFixed(2)}%
               </p>
             </div>
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full ${
+              className={`rounded-2xl p-4 shadow-lg ${
                 data.resumo.percentualExecucao > 90
-                  ? 'bg-red-100'
-                  : 'bg-green-100'
+                  ? 'bg-gradient-to-br from-red-500/90 to-red-600/90'
+                  : 'bg-gradient-to-br from-emerald-500/90 to-green-600/90'
               }`}
             >
               {data.resumo.percentualExecucao > 90 ? (
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <AlertTriangle className="h-6 w-6 text-white" />
               ) : (
-                <CheckCircle className="h-5 w-5 text-green-600" />
+                <CheckCircle className="h-6 w-6 text-white" />
               )}
             </div>
           </div>
+          <div className="absolute bottom-0 left-0 h-1 w-0 rounded-t-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-500 group-hover:w-full"></div>
         </div>
       </div>
 
-      {/* Filtros e busca */}
-      <div className="rounded-2xl border border-slate-300 bg-white p-6 shadow-md shadow-black">
-        <div className="flex flex-col gap-4 sm:flex-row">
-          <div className="relative flex-1">
-            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-slate-400" />
+      {/* Filtros e busca modernizados */}
+      <div className="relative overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br from-white/95 via-white/90 to-slate-50/95 p-6 shadow-xl shadow-slate-900/5 backdrop-blur-xl">
+        <div className="absolute -top-10 -left-10 h-20 w-20 rounded-full bg-gradient-to-br from-blue-200/20 to-purple-200/20 blur-xl"></div>
+
+        <div className="relative z-10 flex flex-col gap-6 sm:flex-row">
+          <div className="group relative flex-1">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+              <Search className="h-5 w-5 text-slate-400 transition-colors group-focus-within:text-blue-600" />
+            </div>
             <input
               type="text"
               placeholder="Buscar por cliente ou código..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full rounded-md border border-slate-300 py-2 pr-4 pl-10 font-medium text-slate-600 shadow-md shadow-black focus:border-transparent focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-2xl border border-slate-200/50 bg-white/80 py-3 pr-4 pl-12 font-medium text-slate-700 shadow-lg shadow-slate-900/5 backdrop-blur-sm transition-all duration-300 placeholder:text-slate-400 focus:border-blue-400 focus:shadow-xl focus:ring-2 focus:shadow-blue-900/10 focus:ring-blue-500/30"
             />
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Filter className="h-4 w-4 text-slate-400" />
-            <select
-              value={statusFilter}
-              onChange={e =>
-                setStatusFilter(
-                  e.target.value as 'todos' | 'ativo' | 'suspenso'
-                )
-              }
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 shadow-md shadow-black focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="todos">Todos</option>
-              <option value="ativo">Ativos</option>
-              <option value="suspenso">Suspensos</option>
-            </select>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-slate-500">
+              <Filter className="h-5 w-5" />
+              <span className="text-sm font-medium">Filtrar:</span>
+            </div>
+            <div className="relative">
+              <select
+                value={statusFilter}
+                onChange={e =>
+                  setStatusFilter(
+                    e.target.value as 'todos' | 'ativo' | 'suspenso'
+                  )
+                }
+                className="cursor-pointer appearance-none rounded-2xl border border-slate-200/50 bg-white/80 px-4 py-3 pr-10 text-sm font-semibold text-slate-700 shadow-lg shadow-slate-900/5 backdrop-blur-sm transition-all duration-300 hover:bg-white hover:shadow-xl hover:shadow-blue-900/10 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/30"
+              >
+                <option value="todos">Todos os Status</option>
+                <option value="ativo">Clientes Ativos</option>
+                <option value="suspenso">Clientes Suspensos</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Lista de clientes */}
-      <div className="overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-md shadow-black">
-        <div className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4">
-          <h2 className="text-lg font-bold tracking-wider text-slate-800">
-            Detalhes por Cliente ({filteredClientes.length})
-          </h2>
+      {/* Tabela de clientes modernizada */}
+      <div className="relative overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br from-white/95 via-white/90 to-slate-50/95 shadow-xl shadow-slate-900/5 backdrop-blur-xl">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/2 via-purple-600/2 to-indigo-600/2"></div>
+
+        {/* Header da tabela */}
+        <div className="relative z-10 border-b border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-white/80 px-8 py-6 backdrop-blur-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-2xl font-bold text-transparent">
+              Detalhes por Cliente
+            </h2>
+            <div className="flex items-center gap-2 rounded-xl bg-white/60 px-4 py-2 shadow-md backdrop-blur-sm">
+              <div className="h-2 w-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></div>
+              <span className="text-sm font-semibold text-slate-600">
+                {filteredClientes.length}{' '}
+                {filteredClientes.length === 1 ? 'cliente' : 'clientes'}
+              </span>
+            </div>
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Tabela */}
+        <div className="relative z-10 overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold tracking-wider text-slate-600 uppercase">
-                  Cliente
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold tracking-wider text-slate-600 uppercase">
-                  Horas Contratadas
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold tracking-wider text-slate-600 uppercase">
-                  Horas Executadas
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold tracking-wider text-slate-600 uppercase">
-                  Progresso
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold tracking-wider text-slate-600 uppercase">
-                  Status
-                </th>
+            <thead>
+              <tr className="border-b border-slate-200/30 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm">
+                {[
+                  { label: 'Cliente', icon: Users },
+                  { label: 'Horas Contratadas', icon: Target },
+                  { label: 'Horas Executadas', icon: Activity },
+                  { label: 'Progresso', icon: TrendingUp },
+                  { label: 'Status', icon: CheckCircle },
+                ].map(({ label, icon: Icon }) => (
+                  <th key={label} className="px-8 py-4 text-left">
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-4 w-4 text-slate-500" />
+                      <span className="text-xs font-bold tracking-wider text-slate-600 uppercase">
+                        {label}
+                      </span>
+                    </div>
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 bg-white">
-              {filteredClientes.map(cliente => {
+            <tbody className="divide-y divide-slate-200/30">
+              {filteredClientes.map((cliente, index) => {
                 const status = getClienteStatus(
                   cliente.horasExecutadas,
                   cliente.horasContratadas
@@ -325,58 +414,76 @@ const HorasContratadasDashboard = ({
                 return (
                   <tr
                     key={cliente.cod_cliente}
-                    className="transition-colors hover:bg-slate-50"
+                    className="group transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-purple-50/30 hover:shadow-lg"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-bold text-slate-800">
-                          {cliente.nome_cliente || 'Nome não disponível'}
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/90 to-indigo-600/90 shadow-md">
+                          <span className="text-sm font-bold text-white">
+                            {cliente.nome_cliente?.charAt(0) ||
+                              cliente.cod_cliente.charAt(0)}
+                          </span>
                         </div>
-                        <div className="text-sm font-medium text-slate-600">
-                          Código: {cliente.cod_cliente}
+                        <div>
+                          <div className="text-base font-bold text-slate-800 group-hover:text-slate-900">
+                            {cliente.nome_cliente || 'Nome não disponível'}
+                          </div>
+                          <div className="text-sm font-medium text-slate-500">
+                            Código: {cliente.cod_cliente}
+                          </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm font-semibold whitespace-nowrap text-slate-800">
-                      {cliente.horasContratadas}h
+                    <td className="px-8 py-6">
+                      <span className="text-lg font-bold text-slate-800">
+                        {cliente.horasContratadas}h
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-sm font-semibold whitespace-nowrap text-slate-800">
-                      {cliente.horasExecutadas}h
+                    <td className="px-8 py-6">
+                      <span className="text-lg font-bold text-slate-800">
+                        {cliente.horasExecutadas}h
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="h-2 w-full rounded-full bg-slate-200 shadow-inner">
-                        <div
-                          className={`h-2 rounded-full transition-all ${
-                            status === 'suspenso'
-                              ? 'bg-red-600'
-                              : 'bg-green-600'
-                          }`}
-                          style={{ width: `${Math.min(percentual, 100)}%` }}
-                        ></div>
+                    <td className="px-8 py-6">
+                      <div className="space-y-2">
+                        <div className="h-3 w-32 overflow-hidden rounded-full bg-slate-200/80 shadow-inner">
+                          <div
+                            className={`h-3 rounded-full transition-all duration-1000 ${
+                              status === 'suspenso'
+                                ? 'bg-gradient-to-r from-red-500 to-red-600'
+                                : 'bg-gradient-to-r from-emerald-500 to-green-600'
+                            }`}
+                            style={{
+                              width: `${Math.min(percentual, 100)}%`,
+                              animationDelay: `${index * 100}ms`,
+                            }}
+                          ></div>
+                        </div>
+                        <div className="text-sm font-semibold text-slate-600">
+                          {cliente.horasContratadas > 0
+                            ? `${percentual.toFixed(1)}%`
+                            : 'Sem limite'}
+                        </div>
                       </div>
-                      <div className="mt-1 text-xs font-medium text-slate-600">
-                        {cliente.horasContratadas > 0
-                          ? `${percentual.toFixed(1)}%`
-                          : 'Sem limite'}
-                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-8 py-6">
                       <span
-                        className={`inline-flex items-center rounded-full border-2 px-3 py-1 text-xs font-bold ${getStatusColor(status)}`}
+                        className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-bold transition-all duration-300 ${getStatusColor(status)}`}
                       >
                         {status === 'suspenso' ? (
                           <>
-                            <AlertTriangle className="mr-1 h-3 w-3" />
+                            <AlertTriangle className="h-4 w-4" />
                             Suspenso
                           </>
                         ) : status === 'ativo' ? (
                           <>
-                            <CheckCircle className="mr-1 h-3 w-3" />
+                            <CheckCircle className="h-4 w-4" />
                             Ativo
                           </>
                         ) : (
                           <>
-                            <Clock className="mr-1 h-3 w-3" />
+                            <Clock className="h-4 w-4" />
                             Sem limite
                           </>
                         )}
@@ -389,10 +496,17 @@ const HorasContratadasDashboard = ({
           </table>
         </div>
 
+        {/* Estado vazio */}
         {filteredClientes.length === 0 && (
-          <div className="py-8 text-center">
-            <p className="font-medium text-slate-600">
-              Nenhum cliente encontrado com os filtros aplicados.
+          <div className="relative z-10 py-16 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-slate-200 to-slate-300">
+              <Search className="h-8 w-8 text-slate-400" />
+            </div>
+            <h3 className="mb-2 text-lg font-semibold text-slate-700">
+              Nenhum cliente encontrado
+            </h3>
+            <p className="text-slate-500">
+              Tente ajustar os filtros ou termos de busca
             </p>
           </div>
         )}

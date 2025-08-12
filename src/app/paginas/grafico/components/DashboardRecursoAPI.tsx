@@ -6,29 +6,34 @@ import { formatarNumero, calcularStatus } from './utils';
 // =======================
 // Tipos da API
 // =======================
-export interface RecursoAPI {
-  nome_recurso: string;
+interface DataRecurso {
   cod_recurso: number;
-  quantidade_horas_disponiveis_recurso: number;
-  quantidade_horas_executadas_recurso: number;
-  quantidade_horas_faturadas_recurso: number;
-  quantidade_horas_nao_faturadas_recurso: number;
-  quantidade_horas_necessarias_produzir: number;
-  valor_custo_recurso: number;
-  valor_rateio_despesas_recurso: number;
-  valor_total_recurso_produzir_pagar: number;
+  nome: string;
+  tipo_custo: number;
+  valor_almoco: number;
+  valor_deslocamento: number;
+  valor_salario: number;
+  valor_custo: number;
+  quantidade_horas_disponiveis: number;
+  quantidade_horas_faturadas: number;
+  quantidade_horas_nao_faturadas: number;
+  quantidade_horas_executadas: number;
+  percentual_peso_total_horas_executadas: number;
+  valor_rateio_total_despesas: number;
+  valor_produzir_pagar: number;
+  quantidade_horas_faturadas_necessarias_produzir_pagar: number;
 }
 
-export interface DashboardAPIResponse {
-  data_recursos: RecursoAPI[];
-  media_custos_recurso_mes?: number;
-  quantidade_total_recursos_mes: number;
+export interface DataAPI {
+  data_recursos: DataRecurso[];
+  valor_total_geral_media_custos?: number;
+  quantidade_total_geral_recursos: number;
 }
 
 // =======================
 // Tipos de dados processados
 // =======================
-interface RecursoProcessado {
+interface DadosProcessados {
   nome: string;
   nomeCompleto: string;
   codRecurso: number;
@@ -53,9 +58,9 @@ interface RecursoProcessado {
 // Tipos de métricas
 // =======================
 interface Metricas {
-  utilizacaoMedia: number;
+  metaGeral: number;
   eficienciaMedia: number;
-  metaAtingidaMedia: number;
+  utilizacaoMedia: number;
   recursosExcelentes: number;
   recursosCriticos: number;
   custoMedio?: number;
@@ -67,9 +72,9 @@ export const DashboardRecursosAPI: React.FC<{
   mes: number;
   ano: number;
   children: (params: {
-    dados: DashboardAPIResponse;
+    dados: DataAPI;
+    dadosProcessados: DadosProcessados[];
     metricas: Metricas;
-    dadosProcessados: RecursoProcessado[];
     recursoSelecionado: number | null;
     setRecursoSelecionado: React.Dispatch<React.SetStateAction<number | null>>;
     buscarDados: () => void;
@@ -85,7 +90,7 @@ export const DashboardRecursosAPI: React.FC<{
     isError,
     error,
     refetch,
-  } = useQuery<DashboardAPIResponse>({
+  } = useQuery<DataAPI>({
     queryKey: ['chamadosDashboard', mes, ano],
     queryFn: async () => {
       const response = await fetch(
@@ -95,7 +100,7 @@ export const DashboardRecursosAPI: React.FC<{
         throw new Error(
           `Erro na API: ${response.status} ${response.statusText}`
         );
-      return (await response.json()) as DashboardAPIResponse;
+      return (await response.json()) as DataAPI;
     },
     enabled: !!mes && !!ano,
     staleTime: 5 * 60 * 1000,
@@ -104,68 +109,61 @@ export const DashboardRecursosAPI: React.FC<{
     refetchOnWindowFocus: false,
   });
 
-  const dadosProcessados: RecursoProcessado[] = useMemo(() => {
+  const dadosProcessados: DadosProcessados[] = useMemo(() => {
     if (!dados?.data_recursos) return [];
 
     return dados.data_recursos.map(recurso => {
       const percentualAtingido =
-        recurso.quantidade_horas_necessarias_produzir > 0
+        recurso.quantidade_horas_faturadas_necessarias_produzir_pagar > 0
           ? Math.min(
-              (recurso.quantidade_horas_faturadas_recurso /
-                recurso.quantidade_horas_necessarias_produzir) *
+              (recurso.quantidade_horas_faturadas /
+                recurso.quantidade_horas_faturadas_necessarias_produzir_pagar) *
                 100,
               100
             )
           : 0;
 
       const percentualUtilizacao =
-        recurso.quantidade_horas_disponiveis_recurso > 0
-          ? (recurso.quantidade_horas_executadas_recurso /
-              recurso.quantidade_horas_disponiveis_recurso) *
+        recurso.quantidade_horas_disponiveis > 0
+          ? (recurso.quantidade_horas_executadas /
+              recurso.quantidade_horas_disponiveis) *
             100
           : 0;
 
       const percentualEficiencia =
-        recurso.quantidade_horas_executadas_recurso > 0
-          ? (recurso.quantidade_horas_faturadas_recurso /
-              recurso.quantidade_horas_executadas_recurso) *
+        recurso.quantidade_horas_executadas > 0
+          ? (recurso.quantidade_horas_faturadas /
+              recurso.quantidade_horas_executadas) *
             100
           : 0;
 
       const custoPorHora =
-        recurso.quantidade_horas_faturadas_recurso > 0
-          ? recurso.valor_custo_recurso /
-            recurso.quantidade_horas_faturadas_recurso
+        recurso.quantidade_horas_faturadas > 0
+          ? recurso.valor_custo / recurso.quantidade_horas_faturadas
           : 0;
 
       const status = calcularStatus(percentualAtingido, percentualEficiencia);
 
       return {
-        nome: recurso.nome_recurso.split(' ').slice(0, 2).join(' '),
-        nomeCompleto: recurso.nome_recurso,
+        nome: recurso.nome.split(' ').slice(0, 2).join(' '),
+        nomeCompleto: recurso.nome,
         codRecurso: recurso.cod_recurso,
-        horasDisponiveis: formatarNumero(
-          recurso.quantidade_horas_disponiveis_recurso
-        ),
-        horasFaturadas: formatarNumero(
-          recurso.quantidade_horas_faturadas_recurso
-        ),
+        horasDisponiveis: formatarNumero(recurso.quantidade_horas_disponiveis),
+        horasFaturadas: formatarNumero(recurso.quantidade_horas_faturadas),
         horasNaoFaturadas: formatarNumero(
-          recurso.quantidade_horas_nao_faturadas_recurso
+          recurso.quantidade_horas_nao_faturadas
         ),
-        horasExecutadas: formatarNumero(
-          recurso.quantidade_horas_executadas_recurso
-        ),
+        horasExecutadas: formatarNumero(recurso.quantidade_horas_executadas),
         horasNecessarias: formatarNumero(
-          recurso.quantidade_horas_necessarias_produzir
+          recurso.quantidade_horas_faturadas_necessarias_produzir_pagar
         ),
         percentualAtingido: formatarNumero(percentualAtingido),
         percentualUtilizacao: formatarNumero(percentualUtilizacao),
         percentualEficiencia: formatarNumero(percentualEficiencia),
-        custo: recurso.valor_custo_recurso,
+        custo: recurso.valor_custo,
         custoPorHora: formatarNumero(custoPorHora, 2),
-        valorRateio: recurso.valor_rateio_despesas_recurso,
-        valorTotal: recurso.valor_total_recurso_produzir_pagar,
+        valorRateio: recurso.valor_rateio_total_despesas,
+        valorTotal: recurso.valor_produzir_pagar,
         ...status,
       };
     });
@@ -176,18 +174,25 @@ export const DashboardRecursosAPI: React.FC<{
 
     const totais = dadosProcessados.reduce(
       (acc, r) => ({
+        horasNecessarias: acc.horasNecessarias + r.horasNecessarias,
         horasDisponiveis: acc.horasDisponiveis + r.horasDisponiveis,
         horasExecutadas: acc.horasExecutadas + r.horasExecutadas,
         horasFaturadas: acc.horasFaturadas + r.horasFaturadas,
-        horasNecessarias: acc.horasNecessarias + r.horasNecessarias,
       }),
       {
+        horasNecessarias: 0,
         horasDisponiveis: 0,
         horasExecutadas: 0,
         horasFaturadas: 0,
-        horasNecessarias: 0,
       }
     );
+
+    const metaGeral =
+      totais.horasNecessarias > 0
+        ? formatarNumero(
+            (totais.horasFaturadas / totais.horasNecessarias) * 100
+          )
+        : 0;
 
     const utilizacaoMedia =
       totais.horasDisponiveis > 0
@@ -201,22 +206,15 @@ export const DashboardRecursosAPI: React.FC<{
         ? formatarNumero((totais.horasFaturadas / totais.horasExecutadas) * 100)
         : 0;
 
-    const metaAtingidaMedia =
-      totais.horasNecessarias > 0
-        ? formatarNumero(
-            (totais.horasFaturadas / totais.horasNecessarias) * 100
-          )
-        : 0;
-
     return {
+      metaGeral,
       utilizacaoMedia,
       eficienciaMedia,
-      metaAtingidaMedia,
       recursosExcelentes: dadosProcessados.filter(r => r.nivelPerformance >= 4)
         .length,
       recursosCriticos: dadosProcessados.filter(r => r.nivelPerformance <= 2)
         .length,
-      custoMedio: dados.media_custos_recurso_mes,
+      custoMedio: dados.valor_total_geral_media_custos,
       horasOciosas: formatarNumero(
         totais.horasDisponiveis - totais.horasExecutadas
       ),
