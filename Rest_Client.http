@@ -106,5 +106,5 @@ Content-Type: application/json
 
 # --------------------------------------------------------------------------------
 
-### FATFUN VARIÁVEL de acordo com o ano, mês e sendo admin
+### PERFORMANCE API
 GET http://localhost:3000/api/firebird-SQL/chamados-abertos/dashboard?ano=2025&mes=7&isAdmin=true

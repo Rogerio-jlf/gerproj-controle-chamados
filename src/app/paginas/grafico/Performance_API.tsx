@@ -1,7 +1,7 @@
 'use client';
 import React, { useMemo, useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { formatarNumero, calcularStatus } from './utils';
+import { formatarNumero, calcularStatus } from './components/utils';
 
 // =======================
 // Tipos da API
@@ -22,18 +22,26 @@ interface DataRecurso {
   valor_rateio_total_despesas: number;
   valor_produzir_pagar: number;
   quantidade_horas_faturadas_necessarias_produzir_pagar: number;
+  quantidade_total_geral_horas_faturadas: number;
+  quantidade_total_geral_horas_executadas: number;
+  valor_total_geral_horas_disponiveis: number;
 }
 
+// =======
+// Tipos da API
 export interface DataAPI {
   data_recursos: DataRecurso[];
   valor_total_geral_media_custos?: number;
+  valor_total_geral_custos?: number;
   quantidade_total_geral_recursos: number;
+  valor_total_geral_receitas?: number;
+  valor_total_geral_despesas?: number;
 }
 
 // =======================
 // Tipos de dados processados
 // =======================
-interface DadosProcessados {
+interface DataDadosProcessados {
   nome: string;
   nomeCompleto: string;
   codRecurso: number;
@@ -57,8 +65,8 @@ interface DadosProcessados {
 // =======================
 // Tipos de métricas
 // =======================
-interface Metricas {
-  metaGeral: number;
+interface DataMetricas {
+  metaAtingidaMedia: number;
   eficienciaMedia: number;
   utilizacaoMedia: number;
   recursosExcelentes: number;
@@ -68,24 +76,26 @@ interface Metricas {
   horasImprodutivas: number;
 }
 
-export const DashboardRecursosAPI: React.FC<{
+interface DataAPIProps {
   mes: number;
   ano: number;
   children: (params: {
-    dados: DataAPI;
-    dadosProcessados: DadosProcessados[];
-    metricas: Metricas;
+    dadosAPI: DataAPI;
+    dadosProcessados: DataDadosProcessados[];
+    metricas: DataMetricas;
     recursoSelecionado: number | null;
     setRecursoSelecionado: React.Dispatch<React.SetStateAction<number | null>>;
     buscarDados: () => void;
   }) => React.ReactNode;
-}> = ({ mes, ano, children }) => {
+}
+
+export default function PerformanceAPI({ mes, ano, children }: DataAPIProps) {
   const [recursoSelecionado, setRecursoSelecionado] = useState<number | null>(
     null
   );
 
   const {
-    data: dados,
+    data: dadosAPI,
     isLoading,
     isError,
     error,
@@ -109,10 +119,10 @@ export const DashboardRecursosAPI: React.FC<{
     refetchOnWindowFocus: false,
   });
 
-  const dadosProcessados: DadosProcessados[] = useMemo(() => {
-    if (!dados?.data_recursos) return [];
+  const dadosProcessados: DataDadosProcessados[] = useMemo(() => {
+    if (!dadosAPI?.data_recursos) return [];
 
-    return dados.data_recursos.map(recurso => {
+    return dadosAPI.data_recursos.map(recurso => {
       const percentualAtingido =
         recurso.quantidade_horas_faturadas_necessarias_produzir_pagar > 0
           ? Math.min(
@@ -123,17 +133,17 @@ export const DashboardRecursosAPI: React.FC<{
             )
           : 0;
 
-      const percentualUtilizacao =
-        recurso.quantidade_horas_disponiveis > 0
-          ? (recurso.quantidade_horas_executadas /
-              recurso.quantidade_horas_disponiveis) *
-            100
-          : 0;
-
       const percentualEficiencia =
         recurso.quantidade_horas_executadas > 0
           ? (recurso.quantidade_horas_faturadas /
               recurso.quantidade_horas_executadas) *
+            100
+          : 0;
+
+      const percentualUtilizacao =
+        recurso.quantidade_horas_disponiveis > 0
+          ? (recurso.quantidade_horas_executadas /
+              recurso.quantidade_horas_disponiveis) *
             100
           : 0;
 
@@ -167,10 +177,10 @@ export const DashboardRecursosAPI: React.FC<{
         ...status,
       };
     });
-  }, [dados]);
+  }, [dadosAPI]);
 
-  const metricas: Metricas | null = useMemo(() => {
-    if (!dados || dadosProcessados.length === 0) return null;
+  const metricas: DataMetricas | null = useMemo(() => {
+    if (!dadosAPI || dadosProcessados.length === 0) return null;
 
     const totais = dadosProcessados.reduce(
       (acc, r) => ({
@@ -187,7 +197,7 @@ export const DashboardRecursosAPI: React.FC<{
       }
     );
 
-    const metaGeral =
+    const metaAtingidaMedia =
       totais.horasNecessarias > 0
         ? formatarNumero(
             (totais.horasFaturadas / totais.horasNecessarias) * 100
@@ -207,22 +217,31 @@ export const DashboardRecursosAPI: React.FC<{
         : 0;
 
     return {
-      metaGeral,
+      metaAtingidaMedia,
       utilizacaoMedia,
       eficienciaMedia,
       recursosExcelentes: dadosProcessados.filter(r => r.nivelPerformance >= 4)
-        .length,
+        .length, // Excelente + Muito Bom
       recursosCriticos: dadosProcessados.filter(r => r.nivelPerformance <= 2)
-        .length,
-      custoMedio: dados.valor_total_geral_media_custos,
+        .length, // Ruim + Regular
+      custoMedio: dadosAPI.valor_total_geral_media_custos,
       horasOciosas: formatarNumero(
         totais.horasDisponiveis - totais.horasExecutadas
       ),
       horasImprodutivas: formatarNumero(
         totais.horasExecutadas - totais.horasFaturadas
       ),
+      totalReceitas: formatarNumero(
+        dadosAPI.valor_total_geral_receitas || 0,
+        2
+      ),
+      totalCustos: formatarNumero(dadosAPI.valor_total_geral_custos || 0, 2),
+      totalDespesas: formatarNumero(
+        dadosAPI.valor_total_geral_despesas || 0,
+        2
+      ),
     };
-  }, [dados, dadosProcessados]);
+  }, [dadosAPI, dadosProcessados]);
 
   const buscarDados = useCallback(() => refetch(), [refetch]);
 
@@ -233,7 +252,7 @@ export const DashboardRecursosAPI: React.FC<{
       </div>
     );
 
-  if (isError || !dados || !metricas)
+  if (isError || !dadosAPI || !metricas)
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 p-6">
         <div className="w-full max-w-md rounded-2xl border border-red-200 bg-white/90 p-8 shadow-2xl backdrop-blur-sm">
@@ -254,13 +273,11 @@ export const DashboardRecursosAPI: React.FC<{
     );
 
   return children({
-    dados,
+    dadosAPI,
     metricas,
     dadosProcessados,
     recursoSelecionado,
     setRecursoSelecionado,
     buscarDados,
   });
-};
-
-export default DashboardRecursosAPI;
+}

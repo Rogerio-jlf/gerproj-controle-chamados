@@ -60,6 +60,7 @@ interface DataMes {
   dadosRecursos: any[];
   totalGeralHorasExecutadas: number;
   totalGeralHorasNecessariasProduzirPagar: number;
+  totalGeralHorasDisponiveis: number;
   totalGeralDespesas: number;
 }
 
@@ -283,6 +284,7 @@ function processarDadosMes(
   // ========== PRIMEIRO: CALCULAR TOTAIS GERAIS ==========
   let totalGeralHorasExecutadas = 0;
   let totalGeralHorasFaturadasNecessariasProduzirPagar = 0;
+  let totalGeralHorasDisponiveis = 0;
   const horasMap = new Map();
 
   resultHoras.forEach((item: any) => {
@@ -294,6 +296,9 @@ function processarDadosMes(
     const qtdTotalHorasFaturadasNecessariasProduzirPagarRecurso = Number(
       item.quantidade_horas_faturadas_necessarias_produzir_pagar
     );
+    const qtdTotalHorasDisponiveisRecurso = Number(
+      item.quantidade_horas_disponiveis
+    );
 
     horasMap.set(item.COD_RECURSO, {
       qtdHorasFaturadasRecurso: qtdTotalHorasFaturadasRecurso,
@@ -301,11 +306,13 @@ function processarDadosMes(
       qtdHorasExecutadasRecurso: qtdTotalHorasExecutadasRecurso,
       qtdHorasFaturadasNecessariasProduzirPagarRecurso:
         qtdTotalHorasFaturadasNecessariasProduzirPagarRecurso,
+      qtdHorasDisponiveisRecurso: qtdTotalHorasDisponiveisRecurso,
     });
 
     totalGeralHorasExecutadas += qtdTotalHorasExecutadasRecurso;
     totalGeralHorasFaturadasNecessariasProduzirPagar +=
       qtdTotalHorasFaturadasNecessariasProduzirPagarRecurso;
+    totalGeralHorasDisponiveis += qtdTotalHorasDisponiveisRecurso;
   });
 
   const valorTotalGeralDespesas =
@@ -415,7 +422,8 @@ function processarDadosMes(
     dadosRecursos,
     totalGeralHorasExecutadas,
     totalGeralHorasFaturadasNecessariasProduzirPagar,
-
+    totalGeralHorasDisponiveis,
+    valorTotalGeralReceitas,
     valorTotalGeralDespesas,
   };
 }
@@ -450,6 +458,7 @@ async function buscarDadosHistoricos(
         ...dadosMesProcessados,
         resultCustos: resultCustos,
         resultAgendamentos,
+        resultFaturamento,
         totalGeralDespesas: dadosMesProcessados.valorTotalGeralDespesas,
         totalGeralHorasNecessariasProduzirPagar:
           dadosMesProcessados.totalGeralHorasFaturadasNecessariasProduzirPagar,
@@ -544,6 +553,10 @@ function calcularMediaUltimos6Meses(
           valorMes = calcularTotalDespesasRateadas(dadosMes);
           break;
         // ----------
+
+        case 'valor_total_geral_horas_disponiveis':
+          valorMes = Number(dadosMes.totalGeralHorasDisponiveis.toFixed(2));
+          break;
 
         default:
           return valorAtual;
@@ -706,6 +719,13 @@ export async function GET(request: Request) {
 
     const totalDespesas = Number(resultDespesas[0]?.TOTAL_DESPESAS) || 0;
 
+    const valorTotalGeralReceitas = Number(
+      resultFaturamento.reduce(
+        (acc: number, item: any) => acc + (Number(item.TOTAL_FATURADO) || 0),
+        0
+      )
+    );
+
     // Processar dados de agendamentos
     const agendamentosMap = new Map<number, DadosAgendamento>();
 
@@ -714,12 +734,12 @@ export async function GET(request: Request) {
       const totalHorasDia = converterTempoParaDecimal(
         String(item.HRDIA_RECURSO || '0')
       );
-      const totalHorasDisponiveisMes = totalDiasMes * totalHorasDia;
+      const totalGeralHorasDisponiveis = totalDiasMes * totalHorasDia;
 
       agendamentosMap.set(item.COD_RECURSO, {
         qtdDiasMes: totalDiasMes,
         qtdHorasDia: totalHorasDia,
-        qtdHorasDisponiveisMes: totalHorasDisponiveisMes,
+        qtdHorasDisponiveisMes: totalGeralHorasDisponiveis,
       });
     });
     // --------------------------------------------------------------------------------
@@ -989,6 +1009,22 @@ export async function GET(request: Request) {
       valor_total_geral_despesas: calcularMediaUltimos6Meses(
         'valor_total_geral_despesas',
         Number(totalDespesas.toFixed(2)),
+        ehMesCorrente,
+        dadosHistoricos
+      ),
+      // ----------
+
+      valor_total_geral_receitas: calcularMediaUltimos6Meses(
+        'valor_total_geral_receitas',
+        Number(valorTotalGeralReceitas.toFixed(2)),
+        ehMesCorrente,
+        dadosHistoricos
+      ),
+      // ----------
+
+      valor_total_geral_horas_disponiveis: calcularMediaUltimos6Meses(
+        'valor_total_geral_horas_disponiveis',
+        Number(totais.totalGeralHorasDisponiveis.toFixed(2)),
         ehMesCorrente,
         dadosHistoricos
       ),

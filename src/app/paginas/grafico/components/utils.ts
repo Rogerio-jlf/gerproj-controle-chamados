@@ -5,6 +5,9 @@ export const calcularStatus = (
   percentualAtingido: number,
   percentualEficiencia: number
 ) => {
+  console.log(
+    `Status calc: ${percentualAtingido}% atingido, ${percentualEficiencia}% eficiência`
+  );
   if (percentualAtingido >= 100 && percentualEficiencia >= 80) {
     return {
       nivelPerformance: 5,

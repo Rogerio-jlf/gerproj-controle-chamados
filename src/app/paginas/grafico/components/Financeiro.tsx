@@ -22,13 +22,13 @@ const Financeiro: React.FC<{ metricas: any; dados: any }> = ({
         <KPICard
           icon={<DollarSign className="h-6 w-6 text-white" />}
           title="Total de Custos"
-          value={`R$ ${dados.valor_total_custos_mes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+          value={`R$ ${dados.valor_total_geral_custos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           color="bg-gradient-to-r from-emerald-500 to-teal-600"
         />
         <KPICard
           icon={<DollarSign className="h-6 w-6 text-white" />}
           title="Despesas Rateadas"
-          value={`R$ ${dados.valor_total_despesas_rateadas_recursos_mes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+          value={`R$ ${dados.valor_total_geral_despesas_rateadas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           color="bg-gradient-to-r from-pink-500 to-fuchsia-600"
         />
       </div>

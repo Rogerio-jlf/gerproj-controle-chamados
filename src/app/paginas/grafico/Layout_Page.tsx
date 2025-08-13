@@ -1,13 +1,13 @@
 'use client';
 import React, { useState } from 'react';
-import DashboardRecursosAPI from './DashboardRecursoAPI';
-import Header from './Header';
-import Cards from './Cards';
-import Overview from './Overview';
-import HorasContratadasDashboard from './Horas_Contradas_Horas_Executadas';
-import TabelaAnalises from './Tabela_Analises';
-import Financeiro from './Financeiro';
-import ConsolidadoDashboard from './Consolidado';
+import PerformanceAPI from './Performance_API';
+import Header from './components/Header';
+import Cards from './components/Cards';
+import Overview from './components/Overview';
+import HorasContratadasDashboard from './components/Horas_Contradas_Horas_Executadas';
+import TabelaAnalises from './components/Tabela_Analises';
+import Financeiro from './components/Financeiro';
+import ConsolidadoDashboard from './components/Consolidado';
 import {
   Users,
   Target,
@@ -15,7 +15,11 @@ import {
   Clock,
   CheckCircle,
   AlertTriangle,
+  Info,
 } from 'lucide-react';
+import { GoCheckCircleFill } from 'react-icons/go';
+import { GoAlertFill } from 'react-icons/go';
+import { AiFillAlert } from 'react-icons/ai';
 
 const Layout_Page: React.FC = () => {
   const [mes, setMes] = useState(new Date().getMonth() + 1);
@@ -36,6 +40,34 @@ const Layout_Page: React.FC = () => {
     window.location.href = '/login';
   };
 
+  // Função para verificar se o mês selecionado é o mês corrente
+  const isCurrentMonth = () => {
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth() + 1;
+    const currentYear = currentDate.getFullYear();
+
+    return mes === currentMonth && ano === currentYear;
+  };
+
+  // Função para obter o nome do mês
+  const getMonthName = (monthNumber: number) => {
+    const months = [
+      'Janeiro',
+      'Fevereiro',
+      'Março',
+      'Abril',
+      'Maio',
+      'Junho',
+      'Julho',
+      'Agosto',
+      'Setembro',
+      'Outubro',
+      'Novembro',
+      'Dezembro',
+    ];
+    return months[monthNumber - 1];
+  };
+
   return (
     // <div className="flex h-screen w-screen overflow-hidden">
     <div className="bg-white p-10">
@@ -51,8 +83,8 @@ const Layout_Page: React.FC = () => {
         } p-4`}
       > */}
       <div className="flex w-full flex-col gap-8">
-        <DashboardRecursosAPI mes={mes} ano={ano}>
-          {({ dados, metricas, dadosProcessados }) => {
+        <PerformanceAPI mes={mes} ano={ano}>
+          {({ dadosAPI, metricas, dadosProcessados }) => {
             return (
               <>
                 <Header
@@ -64,14 +96,15 @@ const Layout_Page: React.FC = () => {
                   setTipoVisualizacao={setTipoVisualizacao}
                 />
 
-                {/* Cards apenas para visualizações que não sejam 'performance' ou 'consolidado' */}
+                {/* Cards não exibidos para as abas: performance e/ou consolidado */}
                 {tipoVisualizacao !== 'performance' &&
                   tipoVisualizacao !== 'consolidado' && (
+                    // div - cards
                     <div className="grid grid-cols-6 gap-6">
                       <Cards
                         icon={<Users size={24} className="text-white" />}
                         title="Total de Recursos"
-                        value={dados.quantidade_total_geral_recursos}
+                        value={dadosAPI.quantidade_total_geral_recursos}
                         color="bg-gradient-to-r from-blue-600 to-indigo-600"
                       />
                       {/* ---------- */}
@@ -79,13 +112,13 @@ const Layout_Page: React.FC = () => {
                       <Cards
                         icon={<Target size={24} className="text-white" />}
                         title="Meta Geral"
-                        value={`${metricas.metaGeral}%`}
+                        value={`${metricas.metaAtingidaMedia}%`}
                         subtitle={
-                          metricas.metaGeral >= 100
+                          metricas.metaAtingidaMedia >= 100
                             ? '🎯 Meta atingida!'
                             : '📈 Em progresso'
                         }
-                        trend={metricas.metaGeral >= 80 ? 'up' : 'down'}
+                        trend={metricas.metaAtingidaMedia >= 80 ? 'up' : 'down'}
                         color="bg-gradient-to-r from-green-600 to-emerald-600"
                       />
                       {/* ---------- */}
@@ -129,46 +162,77 @@ const Layout_Page: React.FC = () => {
                     </div>
                   )}
 
-                {/* Nova aba Consolidado */}
+                {/* aba consolidado */}
                 {tipoVisualizacao === 'consolidado' && (
                   <div className="rounded-2xl border border-slate-300 bg-white p-10 shadow-md shadow-black">
+                    {/* Aviso para mês corrente */}
+                    {isCurrentMonth() && (
+                      <div className="mb-6 rounded-lg border-l-8 border-blue-500 bg-blue-50 p-4">
+                        <div className="flex items-center">
+                          <Info className="mr-3 h-5 w-5 text-blue-700" />
+                          <p className="text-base font-semibold tracking-wider text-blue-700 italic select-none">
+                            Os dados apresentados para {getMonthName(mes)}/{ano}{' '}
+                            são calculados com base na média dos últimos 3
+                            meses, uma vez que o mês em questão, ainda não foi
+                            finalizado.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {/* ---------- */}
+
                     <div className="mb-10 flex items-center justify-between">
-                      <div>
-                        <h2 className="text-2xl font-bold tracking-wider text-slate-800 select-none">
+                      {/* <div>
+                        <h2 className="text-3xl font-bold tracking-wider text-slate-800 select-none">
                           Dashboard Executivo Consolidado
                         </h2>
                         <p className="text-base font-semibold tracking-wider text-slate-600 italic select-none">
-                          Visão estratégica consolidada • Dados agregados sem
-                          exposição individual
+                          Visão estratégica consolidada
                         </p>
-                      </div>
+                      </div> */}
 
-                      <div className="flex items-center gap-2">
-                        <span className="text-base font-semibold tracking-wider text-slate-600 italic select-none">
-                          Status do período:
-                        </span>
-
+                      {/* <div className="flex items-center gap-2">
                         <span
-                          className={`text-lg font-semibold tracking-wider italic select-none ${
-                            metricas.metaGeral >= 100
+                          className={`text-xl font-bold tracking-wider italic select-none ${
+                            metricas.metaAtingidaMedia >= 100
                               ? 'text-green-600'
-                              : metricas.metaGeral >= 80
-                                ? 'text-orange-600'
+                              : metricas.metaAtingidaMedia >= 80
+                                ? 'text-amber-600'
                                 : 'text-red-600'
-                          }`}
+                          } flex items-center gap-2`}
                         >
-                          {metricas.metaGeral >= 100
-                            ? '✅ Meta atingida'
-                            : metricas.metaGeral >= 80
-                              ? '⚠️ Próximo da meta'
-                              : '🚨 Abaixo da meta'}
+                          {metricas.metaAtingidaMedia >= 100 ? (
+                            <>
+                              <GoCheckCircleFill
+                                className="inline text-green-600"
+                                size={32}
+                              />
+                              Meta Atingida
+                            </>
+                          ) : metricas.metaAtingidaMedia >= 80 ? (
+                            <>
+                              <GoAlertFill
+                                className="inline text-amber-600"
+                                size={32}
+                              />
+                              Próximo da meta
+                            </>
+                          ) : (
+                            <>
+                              <AiFillAlert
+                                className="inline text-red-600"
+                                size={32}
+                              />
+                              Abaixo da meta
+                            </>
+                          )}
                         </span>
-                      </div>
+                      </div> */}
                     </div>
 
                     <ConsolidadoDashboard
                       metricas={metricas}
-                      dados={dados}
+                      dados={dadosAPI}
                       dadosProcessados={dadosProcessados}
                     />
                   </div>
@@ -231,7 +295,7 @@ const Layout_Page: React.FC = () => {
                 )}
 
                 {tipoVisualizacao === 'financeiro' && (
-                  <Financeiro metricas={metricas} dados={dados} />
+                  <Financeiro metricas={metricas} dados={dadosAPI} />
                 )}
 
                 {tipoVisualizacao === 'tabela performance' && (
@@ -245,7 +309,7 @@ const Layout_Page: React.FC = () => {
               </>
             );
           }}
-        </DashboardRecursosAPI>
+        </PerformanceAPI>
       </div>
       {/* </main> */}
     </div>
