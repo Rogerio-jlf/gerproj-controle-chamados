@@ -84,7 +84,7 @@ const Layout_Page: React.FC = () => {
       > */}
       <div className="flex w-full flex-col gap-8">
         <PerformanceAPI mes={mes} ano={ano}>
-          {({ dadosAPI, metricas, dadosProcessados }) => {
+          {({ dadosAPI, dadosNumericosAPI, dadosProcessados }) => {
             return (
               <>
                 <Header
@@ -112,13 +112,17 @@ const Layout_Page: React.FC = () => {
                       <Cards
                         icon={<Target size={24} className="text-white" />}
                         title="Meta Geral"
-                        value={`${metricas.metaAtingidaMedia}%`}
+                        value={`${dadosNumericosAPI.metaAtingidaMedia}%`}
                         subtitle={
-                          metricas.metaAtingidaMedia >= 100
+                          dadosNumericosAPI.metaAtingidaMedia >= 100
                             ? '🎯 Meta atingida!'
                             : '📈 Em progresso'
                         }
-                        trend={metricas.metaAtingidaMedia >= 80 ? 'up' : 'down'}
+                        trend={
+                          dadosNumericosAPI.metaAtingidaMedia >= 80
+                            ? 'up'
+                            : 'down'
+                        }
                         color="bg-gradient-to-r from-green-600 to-emerald-600"
                       />
                       {/* ---------- */}
@@ -126,8 +130,8 @@ const Layout_Page: React.FC = () => {
                       <Cards
                         icon={<Activity size={24} className="text-white" />}
                         title="Eficiência Média"
-                        value={`${metricas.eficienciaMedia}%`}
-                        subtitle={`${metricas.horasImprodutivas}h improdutivas`}
+                        value={`${dadosNumericosAPI.eficienciaMedia}%`}
+                        subtitle={`${dadosNumericosAPI.horasImprodutivas}h improdutivas`}
                         color="bg-gradient-to-r from-purple-600 to-violet-600"
                       />
                       {/* ---------- */}
@@ -135,8 +139,8 @@ const Layout_Page: React.FC = () => {
                       <Cards
                         icon={<Clock size={24} className="text-white" />}
                         title="Utilização"
-                        value={`${metricas.utilizacaoMedia}%`}
-                        subtitle={`${metricas.horasOciosas}h ociosas`}
+                        value={`${dadosNumericosAPI.utilizacaoMedia}%`}
+                        subtitle={`${dadosNumericosAPI.horasOciosas}h ociosas`}
                         color="bg-gradient-to-r from-orange-600 to-red-600"
                       />
                       {/* ---------- */}
@@ -144,8 +148,8 @@ const Layout_Page: React.FC = () => {
                       <Cards
                         icon={<CheckCircle size={24} className="text-white" />}
                         title="Top Performers"
-                        value={metricas.recursosExcelentes}
-                        subtitle={`${((metricas.recursosExcelentes / dadosProcessados.length) * 100).toFixed(0)}% da equipe`}
+                        value={dadosNumericosAPI.recursosExcelentes}
+                        subtitle={`${((dadosNumericosAPI.recursosExcelentes / dadosProcessados.length) * 100).toFixed(0)}% da equipe`}
                         color="bg-gradient-to-r from-teal-600 to-lime-600"
                       />
                       {/* ---------- */}
@@ -155,8 +159,8 @@ const Layout_Page: React.FC = () => {
                           <AlertTriangle size={24} className="text-white" />
                         }
                         title="Recursos Críticos"
-                        value={metricas.recursosCriticos}
-                        subtitle={`${((metricas.recursosCriticos / dadosProcessados.length) * 100).toFixed(0)}% da equipe`}
+                        value={dadosNumericosAPI.recursosCriticos}
+                        subtitle={`${((dadosNumericosAPI.recursosCriticos / dadosProcessados.length) * 100).toFixed(0)}% da equipe`}
                         color="bg-gradient-to-r from-red-600 to-rose-600"
                       />
                     </div>
@@ -181,59 +185,12 @@ const Layout_Page: React.FC = () => {
                     )}
                     {/* ---------- */}
 
-                    <div className="mb-10 flex items-center justify-between">
-                      {/* <div>
-                        <h2 className="text-3xl font-bold tracking-wider text-slate-800 select-none">
-                          Dashboard Executivo Consolidado
-                        </h2>
-                        <p className="text-base font-semibold tracking-wider text-slate-600 italic select-none">
-                          Visão estratégica consolidada
-                        </p>
-                      </div> */}
-
-                      {/* <div className="flex items-center gap-2">
-                        <span
-                          className={`text-xl font-bold tracking-wider italic select-none ${
-                            metricas.metaAtingidaMedia >= 100
-                              ? 'text-green-600'
-                              : metricas.metaAtingidaMedia >= 80
-                                ? 'text-amber-600'
-                                : 'text-red-600'
-                          } flex items-center gap-2`}
-                        >
-                          {metricas.metaAtingidaMedia >= 100 ? (
-                            <>
-                              <GoCheckCircleFill
-                                className="inline text-green-600"
-                                size={32}
-                              />
-                              Meta Atingida
-                            </>
-                          ) : metricas.metaAtingidaMedia >= 80 ? (
-                            <>
-                              <GoAlertFill
-                                className="inline text-amber-600"
-                                size={32}
-                              />
-                              Próximo da meta
-                            </>
-                          ) : (
-                            <>
-                              <AiFillAlert
-                                className="inline text-red-600"
-                                size={32}
-                              />
-                              Abaixo da meta
-                            </>
-                          )}
-                        </span>
-                      </div> */}
-                    </div>
+                    <div className="mb-10 flex items-center justify-between"></div>
 
                     <ConsolidadoDashboard
-                      metricas={metricas}
                       dados={dadosAPI}
                       dadosProcessados={dadosProcessados}
+                      dadosNumericosAPI={dadosNumericosAPI}
                     />
                   </div>
                 )}
@@ -295,7 +252,7 @@ const Layout_Page: React.FC = () => {
                 )}
 
                 {tipoVisualizacao === 'financeiro' && (
-                  <Financeiro metricas={metricas} dados={dadosAPI} />
+                  <Financeiro metricas={dadosNumericosAPI} dados={dadosAPI} />
                 )}
 
                 {tipoVisualizacao === 'tabela performance' && (

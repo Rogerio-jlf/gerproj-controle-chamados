@@ -32,13 +32,13 @@ import {
 } from 'lucide-react';
 
 interface ConsolidadoProps {
-  metricas: any;
+  dadosNumericosAPI: any;
   dados: any;
   dadosProcessados: any[];
 }
 
 const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
-  metricas,
+  dadosNumericosAPI,
   dados,
   dadosProcessados,
 }) => {
@@ -54,9 +54,6 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
   const dadosConsolidados = React.useMemo(() => {
     const totais = dadosProcessados.reduce(
       (acc, r) => ({
-        totalReceitas: acc.totalReceitas + r.horasFaturadas * r.custoPorHora,
-        totalCustos: acc.totalCustos + r.custo,
-        totalDespesas: acc.totalDespesas + r.valorRateio,
         horasDisponiveis: acc.horasDisponiveis + r.horasDisponiveis,
         horasExecutadas: acc.horasExecutadas + r.horasExecutadas,
         horasFaturadas: acc.horasFaturadas + r.horasFaturadas,
@@ -65,9 +62,6 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
         valorTotal: acc.valorTotal + r.valorTotal,
       }),
       {
-        totalReceitas: 0,
-        totalCustos: 0,
-        totalDespesas: 0,
         horasDisponiveis: 0,
         horasExecutadas: 0,
         horasFaturadas: 0,
@@ -103,7 +97,7 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
       setAnimatedValues({
         totalReceitas: dadosConsolidados.totalReceitas,
         metaProgress: dadosConsolidados.percentualMeta,
-        eficiencia: metricas.eficienciaMedia,
+        eficiencia: dadosNumericosAPI.eficienciaMedia,
       });
     }, 500);
 
@@ -117,7 +111,7 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
       clearTimeout(timer);
       clearInterval(cardTimer);
     };
-  }, [dadosConsolidados, metricas]);
+  }, [dadosConsolidados, dadosNumericosAPI]);
 
   // Dados para gráficos com cores premium
   const dadosHoras = [
@@ -146,19 +140,19 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
   const dadosFinanceiros = [
     {
       name: 'Receitas',
-      value: metricas.totalReceitas,
+      value: dadosNumericosAPI.totalReceitas,
       fill: 'url(#gradientGreen)',
       icon: <TrendingUp className="h-4 w-4" />,
     },
     {
       name: 'Custos',
-      value: dadosConsolidados.totalCustos,
+      value: dadosNumericosAPI.totalCustos,
       fill: 'url(#gradientOrange)',
       icon: <DollarSign className="h-4 w-4" />,
     },
     {
       name: 'Despesas',
-      value: dadosConsolidados.totalDespesas,
+      value: dadosNumericosAPI.totalDespesas,
       fill: 'url(#gradientRed)',
       icon: <TrendingDown className="h-4 w-4" />,
     },
@@ -193,8 +187,8 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(value);
   };
 
@@ -287,25 +281,22 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
       </svg>
       {/* ==================== */}
 
-      {/* ===== div conteúdo ===== */}
+      {/* ========== CONTEÚDO ========== */}
       <div className="max-w-8xl mx-auto space-y-8">
-        {/* Header Premium */}
-        <div className="mb-12 text-center">
-          {/* <div className="mb-6 inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 text-white shadow-lg">
-            <Eye className="h-6 w-6" />
-            <span className="text-lg font-bold">Dashboard Executivo</span>
-            <Star className="h-6 w-6 text-yellow-300" />
-          </div> */}
+        {/* ========== Header ========== */}
+        <header className="mb-12 text-center">
           <h1 className="mb-2 bg-gradient-to-r from-slate-800 via-blue-700 to-purple-700 bg-clip-text text-4xl font-black text-transparent">
             Análise Consolidada de Performance
           </h1>
           <p className="text-lg text-slate-600">
             Visão 360° do desempenho organizacional em tempo real
           </p>
-        </div>
+        </header>
+        {/* ==================== */}
+        {/* ==================== */}
 
-        {/* Cards de Resumo Executivo com Animações */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {/* ========== Seção - Cards ========== */}
+        <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {[
             {
               icon: <Users size={24} className="text-white" />,
@@ -318,12 +309,12 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
             {
               icon: <Target size={24} className="text-white" />,
               title: 'Meta Geral',
-              value: `${metricas.metaAtingidaMedia}%`,
+              value: `${dadosNumericosAPI.metaAtingidaMedia}%`,
               subtitle:
-                metricas.metaAtingidaMedia >= 100
+                dadosNumericosAPI.metaAtingidaMedia >= 100
                   ? '🎯 Meta atingida!'
                   : '📈 Em progresso',
-              trend: metricas.metaAtingidaMedia >= 80 ? 'up' : 'down',
+              trend: dadosNumericosAPI.metaAtingidaMedia >= 80 ? 'up' : 'down',
               color:
                 'bg-gradient-to-br from-emerald-500 via-green-600 to-teal-700',
               delay: 200,
@@ -331,8 +322,8 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
             {
               icon: <Zap size={24} className="text-white" />,
               title: 'Eficiência Média',
-              value: `${metricas.eficienciaMedia}%`,
-              subtitle: `${metricas.horasImprodutivas}h improdutivas`,
+              value: `${dadosNumericosAPI.eficienciaMedia}%`,
+              subtitle: `${dadosNumericosAPI.horasImprodutivas}h improdutivas`,
               color:
                 'bg-gradient-to-br from-purple-500 via-violet-600 to-purple-700',
               delay: 400,
@@ -340,8 +331,8 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
             {
               icon: <Activity size={24} className="text-white" />,
               title: 'Utilização',
-              value: `${metricas.utilizacaoMedia}%`,
-              subtitle: `${metricas.horasOciosas}h ociosas`,
+              value: `${dadosNumericosAPI.utilizacaoMedia}%`,
+              subtitle: `${dadosNumericosAPI.horasOciosas}h ociosas`,
               color:
                 'bg-gradient-to-br from-orange-500 via-red-500 to-pink-600',
               delay: 600,
@@ -349,16 +340,16 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
             {
               icon: <Award size={24} className="text-white" />,
               title: 'Top Performers',
-              value: metricas.recursosExcelentes,
-              subtitle: `${((metricas.recursosExcelentes / dadosProcessados.length) * 100).toFixed(0)}% da equipe`,
+              value: dadosNumericosAPI.recursosExcelentes,
+              subtitle: `${((dadosNumericosAPI.recursosExcelentes / dadosProcessados.length) * 100).toFixed(0)}% da equipe`,
               color: 'bg-gradient-to-br from-teal-500 via-cyan-600 to-blue-700',
               delay: 800,
             },
             {
               icon: <AlertTriangle size={24} className="text-white" />,
               title: 'Recursos Críticos',
-              value: metricas.recursosCriticos,
-              subtitle: `${((metricas.recursosCriticos / dadosProcessados.length) * 100).toFixed(0)}% da equipe`,
+              value: dadosNumericosAPI.recursosCriticos,
+              subtitle: `${((dadosNumericosAPI.recursosCriticos / dadosProcessados.length) * 100).toFixed(0)}% da equipe`,
               color: 'bg-gradient-to-br from-red-500 via-rose-600 to-red-700',
               delay: 1000,
             },
@@ -405,13 +396,14 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
               </div>
             </div>
           ))}
-        </div>
+        </section>
+        {/* ==================== */}
         {/* ==================== */}
 
-        {/* Gráficos Principais Premium */}
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          {/* Distribuição de Horas */}
-          <div className="group hover:shadow-3xl rounded-3xl border border-white/50 bg-white/80 p-8 shadow-2xl backdrop-blur-sm transition-all duration-500 hover:bg-white/90">
+        {/* ========== Seção - Distribuição de Horas / Análise Financeira ========== */}
+        <section className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          {/* ========== Distribuição de Horas ========== */}
+          <section className="group hover:shadow-3xl rounded-3xl border border-white/50 bg-white/80 p-8 shadow-2xl backdrop-blur-sm transition-all duration-500 hover:bg-white/90">
             <div className="mb-8 flex items-center gap-4">
               <div className="rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 p-4 shadow-lg">
                 <Clock className="text-white" size={28} />
@@ -467,10 +459,11 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          </section>
+          {/* ==================== */}
 
-          {/* Análise Financeira */}
-          <div className="group hover:shadow-3xl rounded-3xl border border-white/50 bg-white/80 p-8 shadow-2xl backdrop-blur-sm transition-all duration-500 hover:bg-white/90">
+          {/* ========== Análise Financeira ========== */}
+          <section className="group hover:shadow-3xl rounded-3xl border border-white/50 bg-white/80 p-8 shadow-2xl backdrop-blur-sm transition-all duration-500 hover:bg-white/90">
             <div className="mb-8 flex items-center gap-4">
               <div className="rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 p-4 shadow-lg">
                 <BarChart3 className="text-white" size={28} />
@@ -512,12 +505,13 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
                 />
               </BarChart>
             </ResponsiveContainer>
-          </div>
-        </div>
+          </section>
+        </section>
+        {/* ==================== */}
         {/* ==================== */}
 
-        {/* Seção de Tendências e Progresso */}
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        {/* ========== Seção - Progresso da Meta / Tendências / Resumo Operacional ========== */}
+        <section className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Progresso da Meta com Gráfico Radial Premium */}
           <div className="hover:shadow-3xl rounded-3xl border border-white/50 bg-white/80 p-8 shadow-2xl backdrop-blur-sm transition-all duration-500">
             <div className="mb-8 flex items-center gap-4">
@@ -663,28 +657,28 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
                 },
                 {
                   label: 'Utilização Média',
-                  value: `${metricas.utilizacaoMedia}%`,
+                  value: `${dadosNumericosAPI.utilizacaoMedia}%`,
                   color: 'text-purple-600',
                   bgColor: 'from-purple-50 to-violet-50',
                   icon: <Activity className="h-5 w-5" />,
                 },
                 {
                   label: 'Top Performers',
-                  value: metricas.recursosExcelentes,
+                  value: dadosNumericosAPI.recursosExcelentes,
                   color: 'text-green-600',
                   bgColor: 'from-green-50 to-emerald-50',
                   icon: <Award className="h-5 w-5" />,
                 },
                 {
                   label: 'Recursos Críticos',
-                  value: metricas.recursosCriticos,
+                  value: dadosNumericosAPI.recursosCriticos,
                   color: 'text-red-600',
                   bgColor: 'from-red-50 to-rose-50',
                   icon: <AlertTriangle className="h-5 w-5" />,
                 },
                 {
                   label: 'Custo Médio/Recurso',
-                  value: formatCurrency(metricas.custoMedio || 0),
+                  value: formatCurrency(dadosNumericosAPI.custoMedio || 0),
                   color: 'text-orange-600',
                   bgColor: 'from-orange-50 to-amber-50',
                   icon: <DollarSign className="h-5 w-5" />,
@@ -709,22 +703,25 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
               ))}
             </div>
           </div>
-        </div>
+        </section>
+        {/* ==================== */}
         {/* ==================== */}
 
-        {/* Seção de Insights Financeiros */}
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          {/* Análise de Lucratividade */}
-          <div className="hover:shadow-3xl rounded-3xl border border-white/50 bg-white/80 p-8 shadow-2xl backdrop-blur-sm transition-all duration-500">
+        {/* ========== Análise de Lucratividade / Distribuição de Performance ========== */}
+        <section className="grid grid-cols-2 gap-8">
+          {/* ========== Análise de Lucratividade ========== */}
+          <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-md shadow-black">
             <div className="mb-8 flex items-center gap-4">
-              <div className="rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 p-4 shadow-lg">
+              <div className="rounded-xl bg-gradient-to-r from-green-500 to-green-600 p-4 shadow-md shadow-black">
                 <DollarSign className="text-white" size={28} />
               </div>
+
               <div>
-                <h3 className="text-2xl font-black text-slate-800">
+                <h3 className="text-2xl font-extrabold tracking-wider text-slate-800 select-none">
                   Análise de Lucratividade
                 </h3>
-                <p className="font-medium text-slate-600">
+
+                <p className="text-base font-semibold tracking-wider text-slate-700 italic select-none">
                   Performance financeira
                 </p>
               </div>
@@ -732,69 +729,103 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
 
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-6">
-                <div className="rounded-2xl border border-green-100 bg-gradient-to-br from-green-50 to-emerald-50 p-6 text-center">
-                  <div className="mb-2 text-3xl font-black text-green-600">
-                    {formatCurrency(dadosConsolidados.lucroOperacional)}
+                {/* Lucro Operacional */}
+                <div
+                  className={`rounded-2xl border border-green-200 p-6 text-center shadow-md shadow-black ${dadosNumericosAPI.lucroOperacional < 0 ? 'bg-red-100' : 'bg-green-100'}`}
+                >
+                  <div
+                    className={`mb-2 text-3xl font-bold tracking-wider select-none ${dadosNumericosAPI.lucroOperacional < 0 ? 'text-red-600' : 'text-green-600'}`}
+                  >
+                    {formatCurrency(dadosNumericosAPI.lucroOperacional)}
                   </div>
-                  <div className="text-sm font-semibold text-green-700">
+                  <div
+                    className={`text-base font-semibold tracking-wider italic select-none ${dadosNumericosAPI.lucroOperacional < 0 ? 'text-red-600' : 'text-green-600'}`}
+                  >
                     Lucro Operacional
                   </div>
                 </div>
-                <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 text-center">
-                  <div className="mb-2 text-3xl font-black text-blue-600">
-                    {dadosConsolidados.margemLucro.toFixed(1)}%
+
+                {/* Margem de Lucro */}
+                <div
+                  className={`rounded-2xl border border-blue-200 p-6 text-center shadow-md shadow-black ${
+                    dadosNumericosAPI.margemLucro < 0
+                      ? 'bg-red-100'
+                      : 'bg-blue-100'
+                  }`}
+                >
+                  <div
+                    className={`mb-2 text-3xl font-bold tracking-wider select-none ${
+                      dadosNumericosAPI.margemLucro < 0
+                        ? 'text-red-600'
+                        : 'text-blue-600'
+                    }`}
+                  >
+                    {dadosNumericosAPI.margemLucro.toFixed(1)}%
                   </div>
-                  <div className="text-sm font-semibold text-blue-700">
+                  <div
+                    className={`text-base font-semibold tracking-wider italic select-none ${
+                      dadosNumericosAPI.margemLucro < 0
+                        ? 'text-red-600'
+                        : 'text-blue-600'
+                    }`}
+                  >
                     Margem de Lucro
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 to-gray-50 p-6">
-                <h4 className="mb-4 font-bold text-slate-800">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-md shadow-black">
+                <h4 className="mb-4 text-xl font-bold tracking-wider text-slate-800 select-none">
                   Breakdown Financeiro
                 </h4>
+
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-slate-600">
+                    <span className="text-base font-semibold tracking-wider text-slate-700 italic select-none">
                       Receitas Totais:
                     </span>
-                    <span className="font-bold text-green-600">
-                      {formatCurrency(dadosConsolidados.totalReceitas)}
+                    <span className="text-lg font-bold tracking-wider text-green-600 select-none">
+                      {formatCurrency(dadosNumericosAPI.totalReceitas)}
                     </span>
                   </div>
+
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-slate-600">
+                    <span className="text-base font-semibold tracking-wider text-slate-700 italic select-none">
                       Custos Diretos:
                     </span>
-                    <span className="font-bold text-orange-600">
-                      {formatCurrency(dadosConsolidados.totalCustos)}
+                    <span className="text-lg font-bold tracking-wider text-red-600 select-none">
+                      {formatCurrency(dadosNumericosAPI.totalCustos)}
                     </span>
                   </div>
+
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-slate-600">
+                    <span className="text-base font-semibold tracking-wider text-slate-700 italic select-none">
                       Despesas:
                     </span>
-                    <span className="font-bold text-red-600">
-                      {formatCurrency(dadosConsolidados.totalDespesas)}
+                    <span className="text-lg font-bold tracking-wider text-red-600 select-none">
+                      {formatCurrency(dadosNumericosAPI.totalDespesas)}
                     </span>
                   </div>
-                  <hr className="border-slate-300" />
-                  <div className="flex items-center justify-between text-lg">
-                    <span className="font-bold text-slate-800">Resultado:</span>
+
+                  <hr className="border-slate-500" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-xl font-extrabold tracking-wider text-slate-800 select-none">
+                      Resultado:
+                    </span>
                     <span
-                      className={`font-black ${dadosConsolidados.lucroOperacional >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                      className={`text-xl font-extrabold tracking-wider select-none ${dadosNumericosAPI.lucroOperacional >= 0 ? 'text-green-600' : 'text-red-600'}`}
                     >
-                      {formatCurrency(dadosConsolidados.lucroOperacional)}
+                      {formatCurrency(dadosNumericosAPI.lucroOperacional)}
                     </span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
+          {/* ==================== */}
 
-          {/* Distribuição de Performance */}
-          <div className="hover:shadow-3xl rounded-3xl border border-white/50 bg-white/80 p-8 shadow-2xl backdrop-blur-sm transition-all duration-500">
+          {/* ========== Distribuição de Performance ========== */}
+          <section className="hover:shadow-3xl rounded-3xl border border-white/50 bg-white/80 p-8 shadow-2xl backdrop-blur-sm transition-all duration-500">
             <div className="mb-8 flex items-center gap-4">
               <div className="rounded-2xl bg-gradient-to-r from-purple-500 to-pink-600 p-4 shadow-lg">
                 <Activity className="text-white" size={28} />
@@ -812,7 +843,7 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
               <div className="grid grid-cols-3 gap-4">
                 <div className="rounded-xl border border-green-100 bg-gradient-to-br from-green-50 to-emerald-50 p-4 text-center">
                   <div className="mb-1 text-2xl font-black text-green-600">
-                    {metricas.recursosExcelentes}
+                    {dadosNumericosAPI.recursosExcelentes}
                   </div>
                   <div className="text-xs font-semibold text-green-700">
                     Excelentes
@@ -821,8 +852,8 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
                 <div className="rounded-xl border border-yellow-100 bg-gradient-to-br from-yellow-50 to-amber-50 p-4 text-center">
                   <div className="mb-1 text-2xl font-black text-yellow-600">
                     {dadosProcessados.length -
-                      metricas.recursosExcelentes -
-                      metricas.recursosCriticos}
+                      dadosNumericosAPI.recursosExcelentes -
+                      dadosNumericosAPI.recursosCriticos}
                   </div>
                   <div className="text-xs font-semibold text-yellow-700">
                     Normais
@@ -830,7 +861,7 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
                 </div>
                 <div className="rounded-xl border border-red-100 bg-gradient-to-br from-red-50 to-rose-50 p-4 text-center">
                   <div className="mb-1 text-2xl font-black text-red-600">
-                    {metricas.recursosCriticos}
+                    {dadosNumericosAPI.recursosCriticos}
                   </div>
                   <div className="text-xs font-semibold text-red-700">
                     Críticos
@@ -850,13 +881,15 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
                         Eficiência Média
                       </span>
                       <span className="text-sm font-bold text-purple-600">
-                        {metricas.eficienciaMedia}%
+                        {dadosNumericosAPI.eficienciaMedia}%
                       </span>
                     </div>
                     <div className="h-3 w-full rounded-full bg-slate-200">
                       <div
                         className="h-3 rounded-full bg-gradient-to-r from-purple-500 to-violet-600 transition-all duration-1000"
-                        style={{ width: `${metricas.eficienciaMedia}%` }}
+                        style={{
+                          width: `${dadosNumericosAPI.eficienciaMedia}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -866,13 +899,15 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
                         Utilização Média
                       </span>
                       <span className="text-sm font-bold text-blue-600">
-                        {metricas.utilizacaoMedia}%
+                        {dadosNumericosAPI.utilizacaoMedia}%
                       </span>
                     </div>
                     <div className="h-3 w-full rounded-full bg-slate-200">
                       <div
                         className="h-3 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-1000"
-                        style={{ width: `${metricas.utilizacaoMedia}%` }}
+                        style={{
+                          width: `${dadosNumericosAPI.utilizacaoMedia}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -881,7 +916,7 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
 
               {/* Alertas e Recomendações */}
               <div className="space-y-3">
-                {metricas.recursosCriticos > 0 && (
+                {dadosNumericosAPI.recursosCriticos > 0 && (
                   <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-gradient-to-r from-red-50 to-rose-50 p-4">
                     <AlertTriangle className="h-5 w-5 flex-shrink-0 text-red-600" />
                     <div>
@@ -889,13 +924,14 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
                         Atenção Necessária
                       </div>
                       <div className="text-xs text-red-600">
-                        {metricas.recursosCriticos} recursos precisam de suporte
+                        {dadosNumericosAPI.recursosCriticos} recursos precisam
+                        de suporte
                       </div>
                     </div>
                   </div>
                 )}
 
-                {metricas.eficienciaMedia >= 80 && (
+                {dadosNumericosAPI.eficienciaMedia >= 80 && (
                   <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 p-4">
                     <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
                     <div>
@@ -910,12 +946,13 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
                 )}
               </div>
             </div>
-          </div>
-        </div>
+          </section>
+        </section>
+        {/* ==================== */}
         {/* ==================== */}
 
-        {/* Footer com Informações Adicionais */}
-        <div className="rounded-3xl border border-white/50 bg-white/60 p-8 shadow-xl backdrop-blur-sm">
+        {/* ========== Footer ========== */}
+        <footer className="rounded-3xl border border-white/50 bg-white/60 p-8 shadow-xl backdrop-blur-sm">
           <div className="text-center">
             <h3 className="mb-4 text-2xl font-black text-slate-800">
               Resumo Executivo - Período Atual
@@ -939,7 +976,7 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
               </div>
               <div className="text-center">
                 <div className="mb-2 text-3xl font-black text-purple-600">
-                  {metricas.eficienciaMedia}%
+                  {dadosNumericosAPI.eficienciaMedia}%
                 </div>
                 <div className="text-sm font-semibold text-slate-600">
                   Eficiência Geral
@@ -960,16 +997,17 @@ const ConsolidadoDashboard: React.FC<ConsolidadoProps> = ({
                 Dashboard atualizado em tempo real • Dados consolidados de{' '}
                 {dadosProcessados.length} recursos • Performance geral:{' '}
                 <span className="font-bold text-blue-600">
-                  {metricas.eficienciaMedia >= 80
+                  {dadosNumericosAPI.eficienciaMedia >= 80
                     ? 'Excelente'
-                    : metricas.eficienciaMedia >= 60
+                    : dadosNumericosAPI.eficienciaMedia >= 60
                       ? 'Boa'
                       : 'Necessita Melhoria'}
                 </span>
               </p>
             </div>
           </div>
-        </div>
+        </footer>
+        {/* ==================== */}
         {/* ==================== */}
       </div>
     </div>

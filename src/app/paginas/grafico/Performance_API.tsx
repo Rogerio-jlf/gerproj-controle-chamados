@@ -22,9 +22,6 @@ interface DataRecurso {
   valor_rateio_total_despesas: number;
   valor_produzir_pagar: number;
   quantidade_horas_faturadas_necessarias_produzir_pagar: number;
-  quantidade_total_geral_horas_faturadas: number;
-  quantidade_total_geral_horas_executadas: number;
-  valor_total_geral_horas_disponiveis: number;
 }
 
 // =======
@@ -65,7 +62,7 @@ interface DataDadosProcessados {
 // =======================
 // Tipos de métricas
 // =======================
-interface DataMetricas {
+interface DadosNumericosAPI {
   metaAtingidaMedia: number;
   eficienciaMedia: number;
   utilizacaoMedia: number;
@@ -82,7 +79,7 @@ interface DataAPIProps {
   children: (params: {
     dadosAPI: DataAPI;
     dadosProcessados: DataDadosProcessados[];
-    metricas: DataMetricas;
+    dadosNumericosAPI: DadosNumericosAPI;
     recursoSelecionado: number | null;
     setRecursoSelecionado: React.Dispatch<React.SetStateAction<number | null>>;
     buscarDados: () => void;
@@ -179,7 +176,7 @@ export default function PerformanceAPI({ mes, ano, children }: DataAPIProps) {
     });
   }, [dadosAPI]);
 
-  const metricas: DataMetricas | null = useMemo(() => {
+  const dadosNumericosAPI: DadosNumericosAPI | null = useMemo(() => {
     if (!dadosAPI || dadosProcessados.length === 0) return null;
 
     const totais = dadosProcessados.reduce(
@@ -240,6 +237,20 @@ export default function PerformanceAPI({ mes, ano, children }: DataAPIProps) {
         dadosAPI.valor_total_geral_despesas || 0,
         2
       ),
+      lucroOperacional: formatarNumero(
+        (dadosAPI.valor_total_geral_receitas ?? 0) -
+          (dadosAPI.valor_total_geral_custos ?? 0) -
+          (dadosAPI.valor_total_geral_despesas ?? 0),
+        2
+      ),
+      margemLucro: formatarNumero(
+        (((dadosAPI.valor_total_geral_receitas ?? 0) -
+          (dadosAPI.valor_total_geral_custos ?? 0) -
+          (dadosAPI.valor_total_geral_despesas ?? 0)) /
+          (dadosAPI.valor_total_geral_receitas ?? 0)) *
+          100,
+        2
+      ),
     };
   }, [dadosAPI, dadosProcessados]);
 
@@ -252,7 +263,7 @@ export default function PerformanceAPI({ mes, ano, children }: DataAPIProps) {
       </div>
     );
 
-  if (isError || !dadosAPI || !metricas)
+  if (isError || !dadosAPI || !dadosNumericosAPI)
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 p-6">
         <div className="w-full max-w-md rounded-2xl border border-red-200 bg-white/90 p-8 shadow-2xl backdrop-blur-sm">
@@ -274,8 +285,8 @@ export default function PerformanceAPI({ mes, ano, children }: DataAPIProps) {
 
   return children({
     dadosAPI,
-    metricas,
     dadosProcessados,
+    dadosNumericosAPI,
     recursoSelecionado,
     setRecursoSelecionado,
     buscarDados,
