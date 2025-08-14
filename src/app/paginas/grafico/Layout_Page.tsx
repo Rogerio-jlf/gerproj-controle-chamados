@@ -2,24 +2,12 @@
 import React, { useState } from 'react';
 import PerformanceAPI from './Performance_API';
 import Header from './components/Header';
-import Cards from './components/Cards';
 import Overview from './components/Overview';
 import HorasContratadasDashboard from './components/Horas_Contradas_Horas_Executadas';
 import TabelaAnalises from './components/Tabela_Analises';
 import Financeiro from './components/Financeiro';
 import ConsolidadoDashboard from './components/Consolidado';
-import {
-  Users,
-  Target,
-  Activity,
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-  Info,
-} from 'lucide-react';
-import { GoCheckCircleFill } from 'react-icons/go';
-import { GoAlertFill } from 'react-icons/go';
-import { AiFillAlert } from 'react-icons/ai';
+import { Info } from 'lucide-react';
 
 const Layout_Page: React.FC = () => {
   const [mes, setMes] = useState(new Date().getMonth() + 1);
@@ -97,74 +85,6 @@ const Layout_Page: React.FC = () => {
                 />
 
                 {/* Cards não exibidos para as abas: performance e/ou consolidado */}
-                {tipoVisualizacao !== 'performance' &&
-                  tipoVisualizacao !== 'consolidado' && (
-                    // div - cards
-                    <div className="grid grid-cols-6 gap-6">
-                      <Cards
-                        icon={<Users size={24} className="text-white" />}
-                        title="Total de Recursos"
-                        value={dadosAPI.quantidade_total_geral_recursos}
-                        color="bg-gradient-to-r from-blue-600 to-indigo-600"
-                      />
-                      {/* ---------- */}
-
-                      <Cards
-                        icon={<Target size={24} className="text-white" />}
-                        title="Meta Geral"
-                        value={`${dadosNumericosAPI.metaAtingidaMedia}%`}
-                        subtitle={
-                          dadosNumericosAPI.metaAtingidaMedia >= 100
-                            ? '🎯 Meta atingida!'
-                            : '📈 Em progresso'
-                        }
-                        trend={
-                          dadosNumericosAPI.metaAtingidaMedia >= 80
-                            ? 'up'
-                            : 'down'
-                        }
-                        color="bg-gradient-to-r from-green-600 to-emerald-600"
-                      />
-                      {/* ---------- */}
-
-                      <Cards
-                        icon={<Activity size={24} className="text-white" />}
-                        title="Eficiência Média"
-                        value={`${dadosNumericosAPI.eficienciaMedia}%`}
-                        subtitle={`${dadosNumericosAPI.horasImprodutivas}h improdutivas`}
-                        color="bg-gradient-to-r from-purple-600 to-violet-600"
-                      />
-                      {/* ---------- */}
-
-                      <Cards
-                        icon={<Clock size={24} className="text-white" />}
-                        title="Utilização"
-                        value={`${dadosNumericosAPI.utilizacaoMedia}%`}
-                        subtitle={`${dadosNumericosAPI.horasOciosas}h ociosas`}
-                        color="bg-gradient-to-r from-orange-600 to-red-600"
-                      />
-                      {/* ---------- */}
-
-                      <Cards
-                        icon={<CheckCircle size={24} className="text-white" />}
-                        title="Top Performers"
-                        value={dadosNumericosAPI.recursosExcelentes}
-                        subtitle={`${((dadosNumericosAPI.recursosExcelentes / dadosProcessados.length) * 100).toFixed(0)}% da equipe`}
-                        color="bg-gradient-to-r from-teal-600 to-lime-600"
-                      />
-                      {/* ---------- */}
-
-                      <Cards
-                        icon={
-                          <AlertTriangle size={24} className="text-white" />
-                        }
-                        title="Recursos Críticos"
-                        value={dadosNumericosAPI.recursosCriticos}
-                        subtitle={`${((dadosNumericosAPI.recursosCriticos / dadosProcessados.length) * 100).toFixed(0)}% da equipe`}
-                        color="bg-gradient-to-r from-red-600 to-rose-600"
-                      />
-                    </div>
-                  )}
 
                 {/* aba consolidado */}
                 {tipoVisualizacao === 'consolidado' && (
@@ -197,7 +117,8 @@ const Layout_Page: React.FC = () => {
                 )}
 
                 {tipoVisualizacao === 'overview' && (
-                  <div className="rounded-2xl border border-slate-300 bg-white p-10 shadow-md shadow-black">
+                  // <div className="rounded-2xl border border-slate-300 bg-white p-10 shadow-md shadow-black">
+                  <div className="bg-white">
                     <div className="mb-10 flex items-center justify-between">
                       <div>
                         <h2 className="text-2xl font-bold tracking-wider text-slate-800 select-none">
@@ -221,7 +142,7 @@ const Layout_Page: React.FC = () => {
 
                     <Overview
                       chunks={(() => {
-                        const chunkSize = 8;
+                        const chunkSize = 9;
                         const filtered = dadosProcessados.filter(
                           r =>
                             r.horasDisponiveis > 0 ||
@@ -244,6 +165,9 @@ const Layout_Page: React.FC = () => {
                         return chunks;
                       })()}
                       totalRecursos={dadosProcessados.length}
+                      dados={dadosAPI}
+                      dadosProcessados={dadosProcessados}
+                      dadosNumericosAPI={dadosNumericosAPI}
                     />
                   </div>
                 )}
