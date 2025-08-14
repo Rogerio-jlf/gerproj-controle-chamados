@@ -168,7 +168,8 @@ const Layout_Page: React.FC = () => {
 
                 {/* aba consolidado */}
                 {tipoVisualizacao === 'consolidado' && (
-                  <div className="rounded-2xl border border-slate-300 bg-white p-10 shadow-md shadow-black">
+                  // <div className="rounded-2xl border border-slate-100 bg-white p-10 shadow-md shadow-black">
+                  <div className="bg-white">
                     {/* Aviso para mês corrente */}
                     {isCurrentMonth() && (
                       <div className="mb-6 rounded-lg border-l-8 border-blue-500 bg-blue-50 p-4">

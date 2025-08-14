@@ -70,13 +70,22 @@ const CAMPOS_PARA_MEDIA = [
   'valor_rateio_despesas_recurso',
   'valor_total_recurso_produzir_pagar',
   'quantidade_horas_necessarias_produzir',
-  'valor_total_custos_mes',
-  'valor_total_media_custo_mes',
-  'quantidade_total_horas_executadas_mes',
-  'quantidade_total_horas_faturadas_mes',
-  'quantidade_total_horas_nao_faturadas_mes',
-  'valor_total_despesas_mes',
-  'valor_total_despesas_rateadas_recursos_mes',
+  // custos
+  'valor_total_geral_almocos',
+  'valor_total_geral_deslocamentos',
+  'valor_total_geral_salarios',
+  'valor_total_geral_media_custos',
+  // horas por
+  'quantidade_total_geral_horas_disponiveis',
+  'quantidade_total_geral_horas_faturadas',
+  'quantidade_total_geral_horas_nao_faturadas',
+  'quantidade_total_geral_horas_executadas',
+  'quantidade_total_geral_horas_faturadas_necessarias_produzir_pagar',
+  // financeiro
+  'valor_total_geral_receitas',
+  'valor_total_geral_custos',
+  'valor_total_geral_despesas',
+  'valor_total_geral_despesas_rateadas',
 ] as const;
 
 // Queries organizadas
@@ -477,7 +486,7 @@ async function buscarDadosHistoricos(
 // ------------------------------------------------------------------------------------
 
 // Função para calcular média dos últimos 6 meses
-function calcularMediaUltimos6Meses(
+function calcularMediaUltimosMeses(
   campo: string,
   valorAtual: number,
   ehMesCorrente: boolean,
@@ -491,42 +500,102 @@ function calcularMediaUltimos6Meses(
     return valorAtual;
   }
 
-  let soma = valorAtual;
-  let contador = 1;
+  let soma = 0; // 👈 MUDANÇA: Não inicializar com valorAtual
+  let contador = 0; // 👈 MUDANÇA: Não contar o mês atual
 
   dadosHistoricos.forEach(dadosMes => {
     let valorMes = 0;
 
     try {
       switch (campo) {
-        case 'valor_total_custos_mes':
+        case 'valor_total_geral_almocos':
           valorMes = dadosMes.resultCustos.reduce(
             (acc: number, item: any) =>
-              acc + (Number(item.TOTAL_CUSTO_RECURSO) || 0) + 0
-          );
-          break;
-        // ----------
-
-        case 'valor_total_media_custo_mes':
-          valorMes = dadosMes.resultCustos.reduce(
-            (acc: number, item: any) =>
-              acc +
-              (Number(item.totalCustoRecurso / item.quantidadeRecursos) || 0),
+              acc + (Number(item.TOTAL_ALMOCO_RECURSO) || 0),
             0
           );
           break;
-        // ----------
+        // ==========
 
-        case 'quantidade_total_horas_executadas_mes':
-          valorMes = dadosMes.resultHoras.reduce((acc: number, item: any) => {
-            const horasFaturadas = Number(item.HORAS_FATURADAS) || 0;
-            const horasNaoFaturadas = Number(item.HORAS_NAO_FATURADAS) || 0;
-            return acc + horasFaturadas + horasNaoFaturadas;
-          }, 0);
+        case 'valor_total_geral_deslocamentos':
+          valorMes = dadosMes.resultCustos.reduce(
+            (acc: number, item: any) =>
+              acc + (Number(item.TOTAL_DESLOCAMENTO_RECURSO) || 0),
+            0
+          );
           break;
-        // ----------
+        // ==========
 
-        case 'quantidade_total_horas_faturadas_mes':
+        case 'valor_total_geral_salarios':
+          valorMes = dadosMes.resultCustos.reduce(
+            (acc: number, item: any) =>
+              acc + (Number(item.TOTAL_SALARIO_RECURSO) || 0),
+            0
+          );
+          break;
+        // ==========
+
+        case 'valor_total_geral_receitas':
+          valorMes = dadosMes.resultFaturamento.reduce(
+            (acc: number, item: any) =>
+              acc + (Number(item.TOTAL_FATURADO) || 0),
+            0
+          );
+          break;
+        // ==========
+
+        case 'valor_total_geral_custos':
+          valorMes = dadosMes.resultCustos.reduce(
+            (acc: number, item: any) =>
+              acc + (Number(item.TOTAL_CUSTO_RECURSO) || 0),
+            0
+          );
+          break;
+        // ==========
+
+        case 'valor_total_geral_despesas':
+          valorMes = dadosMes.resultDespesas.reduce(
+            (acc: number, item: any) =>
+              acc + (Number(item.TOTAL_DESPESAS) || 0),
+            0
+          );
+          break;
+        // ==========
+
+        // case 'valor_total_geral_media_custos':
+        //   const totalCustosMes = dadosMes.resultCustos.reduce(
+        //     (acc: number, item: any) =>
+        //       acc + (Number(item.TOTAL_CUSTO_RECURSO) || 0),
+        //     0
+        //   );
+        //   const quantidadeRecursosMes = dadosMes.resultCustos.length;
+        //   valorMes =
+        //     quantidadeRecursosMes > 0
+        //       ? totalCustosMes / quantidadeRecursosMes
+        //       : 0;
+        //   break;
+        // ==========
+
+        // case 'valor_total_geral_despesas_rateadas':
+        //   valorMes = calcularTotalDespesasRateadas(dadosMes);
+        //   break;
+        // ==========
+
+        case 'quantidade_total_geral_horas_disponiveis':
+          valorMes = dadosMes.resultAgendamentos.reduce(
+            (acc: number, item: any) => {
+              const hrDiaConvertida = converterTempoParaDecimal(
+                String(item.HRDIA_RECURSO || '0')
+              );
+              const totalDias = Number(item.TOTAL_DIAS_MES) || 0;
+              return acc + hrDiaConvertida * totalDias;
+            },
+            0
+          );
+          break;
+        // ==========
+
+        case 'quantidade_total_geral_horas_faturadas':
           valorMes = dadosMes.resultHoras.reduce(
             (acc: number, item: any) =>
               acc + (Number(item.HORAS_FATURADAS) || 0),
@@ -535,7 +604,7 @@ function calcularMediaUltimos6Meses(
           break;
         // ----------
 
-        case 'quantidade_total_horas_nao_faturadas_mes':
+        case 'quantidade_total_geral_horas_nao_faturadas':
           valorMes = dadosMes.resultHoras.reduce(
             (acc: number, item: any) =>
               acc + (Number(item.HORAS_NAO_FATURADAS) || 0),
@@ -544,19 +613,21 @@ function calcularMediaUltimos6Meses(
           break;
         // ----------
 
-        case 'valor_total_despesas_mes':
-          valorMes = Number(dadosMes.resultDespesas[0]?.TOTAL_DESPESAS) || 0;
+        case 'quantidade_total_geral_horas_executadas':
+          valorMes = dadosMes.resultHoras.reduce((acc: number, item: any) => {
+            const horasFaturadas = Number(item.HORAS_FATURADAS) || 0;
+            const horasNaoFaturadas = Number(item.HORAS_NAO_FATURADAS) || 0;
+            return acc + horasFaturadas + horasNaoFaturadas;
+          }, 0);
           break;
         // ----------
 
-        case 'valor_total_despesas_rateadas_recursos_mes':
-          valorMes = calcularTotalDespesasRateadas(dadosMes);
+        case 'quantidade_total_geral_horas_faturadas_necessarias_produzir_pagar':
+          valorMes = dadosMes.resultHoras.reduce((acc: number, item: any) => {
+            return acc + (Number(item.HORAS_FATURADAS) || 0);
+          }, 0);
           break;
         // ----------
-
-        case 'valor_total_geral_horas_disponiveis':
-          valorMes = Number(dadosMes.totalGeralHorasDisponiveis.toFixed(2));
-          break;
 
         default:
           return valorAtual;
@@ -571,6 +642,7 @@ function calcularMediaUltimos6Meses(
     }
   });
 
+  // 👈 RESULTADO: Apenas (julho + junho + maio) / 3
   return contador > 0 ? Number((soma / contador).toFixed(2)) : valorAtual;
 }
 
@@ -773,6 +845,7 @@ export async function GET(request: Request) {
               )
             : 0;
         const despesaRateio = Number((totalDespesas * pesoRecurso).toFixed(2));
+
         const valorTotalProduzir = Number(
           (valorSalarioRecurso + despesaRateio).toFixed(2)
         );
@@ -926,77 +999,109 @@ export async function GET(request: Request) {
     // resposta final - totalizadores gerais
     const response = {
       data_recursos: dataCustos,
-      // ----------
+      // ==========
 
-      valor_total_geral_almocos: calcularMediaUltimos6Meses(
+      valor_total_geral_almocos: calcularMediaUltimosMeses(
         'valor_total_geral_almocos',
         Number(totais.totalGeralAlmocos.toFixed(2)),
         ehMesCorrente,
         dadosHistoricos
       ),
-      // ----------
+      // ==========
 
-      valor_total_geral_deslocamentos: calcularMediaUltimos6Meses(
+      valor_total_geral_deslocamentos: calcularMediaUltimosMeses(
         'valor_total_geral_deslocamentos',
         Number(totais.totalGeralDeslocamentos.toFixed(2)),
         ehMesCorrente,
         dadosHistoricos
       ),
-      // ----------
+      // ==========
 
-      valor_total_geral_salarios: calcularMediaUltimos6Meses(
+      valor_total_geral_salarios: calcularMediaUltimosMeses(
         'valor_total_geral_salarios',
         Number(totais.totalGeralSalarios.toFixed(2)),
         ehMesCorrente,
         dadosHistoricos
       ),
+      // ==========
+
+      valor_total_geral_receitas: calcularMediaUltimosMeses(
+        'valor_total_geral_receitas',
+        Number(valorTotalGeralReceitas.toFixed(2)),
+        ehMesCorrente,
+        dadosHistoricos
+      ),
       // ----------
 
-      valor_total_geral_custos: calcularMediaUltimos6Meses(
+      valor_total_geral_custos: calcularMediaUltimosMeses(
         'valor_total_geral_custos',
         Number(totais.totalGeralCustos.toFixed(2)),
         ehMesCorrente,
         dadosHistoricos
       ),
-      // ----------
+      // ==========
 
-      quantidade_total_geral_recursos: qtdtotalGeralRecursos,
-      // ----------
-
-      valor_total_geral_media_custos: calcularMediaUltimos6Meses(
-        'valor_total_geral_media_custos',
-        Number(mediaCustosRecurso.toFixed(2)),
+      valor_total_geral_despesas: calcularMediaUltimosMeses(
+        'valor_total_geral_despesas',
+        Number(totalDespesas.toFixed(2)),
         ehMesCorrente,
         dadosHistoricos
       ),
-      // ----------
+      // ==========
 
-      quantidade_total_geral_horas_faturadas: calcularMediaUltimos6Meses(
+      // valor_total_geral_media_custos: calcularMediaUltimosMeses(
+      //   'valor_total_geral_media_custos',
+      //   Number(mediaCustosRecurso.toFixed(2)),
+      //   ehMesCorrente,
+      //   dadosHistoricos
+      // ),
+      // ==========
+
+      // valor_total_geral_despesas_rateadas: calcularMediaUltimosMeses(
+      //   'valor_total_geral_despesas_rateadas',
+      //   Number(totais.totalGeralRateioDespesas.toFixed(2)),
+      //   ehMesCorrente,
+      //   dadosHistoricos
+      // ),
+
+      quantidade_total_geral_recursos: qtdtotalGeralRecursos,
+      // ==========
+
+      // ===== horas =====
+      quantidade_total_geral_horas_disponiveis: calcularMediaUltimosMeses(
+        'quantidade_total_geral_horas_disponiveis',
+        Number(totais.totalGeralHorasDisponiveis.toFixed(2)),
+        ehMesCorrente,
+        dadosHistoricos
+      ),
+      // ==========
+
+      quantidade_total_geral_horas_faturadas: calcularMediaUltimosMeses(
         'quantidade_total_geral_horas_faturadas',
         Number(totais.totalGeralHorasFaturadas.toFixed(2)),
         ehMesCorrente,
         dadosHistoricos
       ),
-      // ----------
+      // ==========
 
-      quantidade_total_geral_horas_nao_faturadas: calcularMediaUltimos6Meses(
+      quantidade_total_geral_horas_nao_faturadas: calcularMediaUltimosMeses(
         'quantidade_total_geral_horas_nao_faturadas',
         Number(totais.totalGeralHorasNaoFaturadas.toFixed(2)),
         ehMesCorrente,
         dadosHistoricos
       ),
-      // ----------
+      // ==========
 
-      quantidade_total_geral_horas_executadas: calcularMediaUltimos6Meses(
+      quantidade_total_geral_horas_executadas: calcularMediaUltimosMeses(
         'quantidade_total_geral_horas_executadas',
         Number(totais.totalGeralHorasExecutadas.toFixed(2)),
         ehMesCorrente,
         dadosHistoricos
       ),
-      // ----------
+      // ==========
 
       quantidade_total_geral_horas_faturadas_necessarias_produzir_pagar:
-        calcularMediaUltimos6Meses(
+        calcularMediaUltimosMeses(
           'quantidade_total_geral_horas_faturadas_necessarias_produzir_pagar',
           Number(
             totais.totalGeralHorasFaturadasNecessariasProduzirPagar.toFixed(2)
@@ -1005,37 +1110,6 @@ export async function GET(request: Request) {
           dadosHistoricos
         ),
       // ----------
-
-      valor_total_geral_despesas: calcularMediaUltimos6Meses(
-        'valor_total_geral_despesas',
-        Number(totalDespesas.toFixed(2)),
-        ehMesCorrente,
-        dadosHistoricos
-      ),
-      // ----------
-
-      valor_total_geral_receitas: calcularMediaUltimos6Meses(
-        'valor_total_geral_receitas',
-        Number(valorTotalGeralReceitas.toFixed(2)),
-        ehMesCorrente,
-        dadosHistoricos
-      ),
-      // ----------
-
-      valor_total_geral_horas_disponiveis: calcularMediaUltimos6Meses(
-        'valor_total_geral_horas_disponiveis',
-        Number(totais.totalGeralHorasDisponiveis.toFixed(2)),
-        ehMesCorrente,
-        dadosHistoricos
-      ),
-      // ----------
-
-      valor_total_geral_despesas_rateadas: calcularMediaUltimos6Meses(
-        'valor_total_geral_despesas_rateadas',
-        Number(totais.totalGeralRateioDespesas.toFixed(2)),
-        ehMesCorrente,
-        dadosHistoricos
-      ),
     };
     // --------------------------------------------------------------------------------
 
