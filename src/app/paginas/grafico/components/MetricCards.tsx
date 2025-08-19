@@ -95,6 +95,7 @@ export default function MetricsCards({
       delay: 1000,
     },
   ];
+  // ====================================================================================================
 
   return (
     <section className={`grid grid-cols-6 gap-6 ${className}`}>

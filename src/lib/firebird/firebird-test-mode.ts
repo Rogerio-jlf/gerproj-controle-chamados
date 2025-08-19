@@ -2,14 +2,11 @@
 import Firebird from 'node-firebird';
 
 const options: Firebird.Options = {
-  host: 'localhost',
-  port: 3050,
-  database:
-    process.env.NODE_ENV === 'development'
-      ? 'C:/GERPROJ/GERPROJ_SOLUTII.GDB'
-      : 'C:/GERPROJ/GERPROJ_SOLUTII.GDB',
-  user: 'SYSDBA',
-  password: 'masterkey',
+  host: process.env.FIREBIRD_HOST,
+  port: Number(process.env.FIREBIRD_PORT),
+  database: process.env.FIREBIRD_DATABASE,
+  user: process.env.FIREBIRD_USER,
+  password: process.env.FIREBIRD_PASSWORD,
   lowercase_keys: false,
   pageSize: 4096,
 };

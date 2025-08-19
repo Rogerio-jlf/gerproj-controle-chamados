@@ -181,16 +181,16 @@ export default function PerformanceAPI({ mes, ano, children }: DataAPIProps) {
 
     const totais = dadosProcessados.reduce(
       (acc, r) => ({
-        horasNecessarias: acc.horasNecessarias + r.horasNecessarias,
         horasDisponiveis: acc.horasDisponiveis + r.horasDisponiveis,
-        horasExecutadas: acc.horasExecutadas + r.horasExecutadas,
         horasFaturadas: acc.horasFaturadas + r.horasFaturadas,
+        horasExecutadas: acc.horasExecutadas + r.horasExecutadas,
+        horasNecessarias: acc.horasNecessarias + r.horasNecessarias,
       }),
       {
-        horasNecessarias: 0,
         horasDisponiveis: 0,
-        horasExecutadas: 0,
         horasFaturadas: 0,
+        horasExecutadas: 0,
+        horasNecessarias: 0,
       }
     );
 
@@ -201,6 +201,11 @@ export default function PerformanceAPI({ mes, ano, children }: DataAPIProps) {
           )
         : 0;
 
+    const eficienciaMedia =
+      totais.horasExecutadas > 0
+        ? formatarNumero((totais.horasFaturadas / totais.horasExecutadas) * 100)
+        : 0;
+
     const utilizacaoMedia =
       totais.horasDisponiveis > 0
         ? formatarNumero(
@@ -208,15 +213,10 @@ export default function PerformanceAPI({ mes, ano, children }: DataAPIProps) {
           )
         : 0;
 
-    const eficienciaMedia =
-      totais.horasExecutadas > 0
-        ? formatarNumero((totais.horasFaturadas / totais.horasExecutadas) * 100)
-        : 0;
-
     return {
       metaAtingidaMedia,
-      utilizacaoMedia,
       eficienciaMedia,
+      utilizacaoMedia,
       recursosExcelentes: dadosProcessados.filter(r => r.nivelPerformance >= 4)
         .length, // Excelente + Muito Bom
       recursosCriticos: dadosProcessados.filter(r => r.nivelPerformance <= 2)

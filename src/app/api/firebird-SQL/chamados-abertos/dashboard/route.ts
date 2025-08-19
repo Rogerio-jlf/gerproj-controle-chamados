@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { firebirdQuery } from '@/lib/firebird/firebird-client';
 
-// Interfaces
+// ============================================================================
+// INTERFACES E TIPOS
+// ============================================================================
+
 interface CustosRecurso {
   COD_RECURSO: number;
   NOME_RECURSO: string;
@@ -14,9 +17,22 @@ interface CustosRecurso {
 
 interface HorasRecurso {
   COD_RECURSO: number;
-  HORAS_EXECUTADAS: number;
   HORAS_FATURADAS: number;
   HORAS_NAO_FATURADAS: number;
+}
+
+interface AgendamentoRecurso {
+  COD_RECURSO: number;
+  NOME_RECURSO: string;
+  HRDIA_RECURSO: string;
+  TOTAL_DIAS_MES: number;
+}
+
+interface FaturamentoCliente {
+  COD_CLIENTE: number;
+  NOME_CLIENTE: string;
+  TOTAL_FATURADO: number;
+  TOTAL_HORAS_FATURADAS: number;
 }
 
 interface DataRecurso {
@@ -37,27 +53,41 @@ interface DataRecurso {
   quantidade_horas_faturadas_necessarias_produzir_pagar: number;
 }
 
-interface DataMes {
-  mes: number;
-  ano: number;
-  resultCustos: any[];
-  resultHoras: any[];
-  resultDespesas: any[];
-  resultAgendamentos: any[];
-  resultFaturamento: any[];
-  dadosRecursos: any[];
-  totalGeralHorasExecutadas: number;
-  totalGeralHorasNecessariasProduzirPagar: number;
-  totalGeralHorasDisponiveis: number;
-  totalGeralDespesas: number;
+interface DadosProcessados {
+  custos: Map<number, CustosRecurso>;
+  horas: Map<
+    number,
+    { faturadas: number; naoFaturadas: number; executadas: number }
+  >;
+  agendamentos: Map<number, { horasDisponiveis: number }>;
+  totalHorasExecutadas: number;
+  totalDespesas: number;
+  totalReceitas: number;
+  totalHorasFaturadas: number;
+  valorHoraVenda: number;
 }
 
-// Constantes
-const CAMPOS_PARA_MEDIA = [
-  'quantidade_total_geral_horas_disponiveis',
-  'quantidade_total_geral_horas_faturadas',
-  'quantidade_total_geral_horas_nao_faturadas',
-  'quantidade_total_geral_horas_executadas',
+interface DadosHistoricos {
+  mes: number;
+  ano: number;
+  dadosProcessados: DadosProcessados;
+}
+
+type CampoMedia =
+  | 'valor_almoco'
+  | 'valor_deslocamento'
+  | 'valor_salario'
+  | 'valor_custo'
+  | 'percentual_peso_total_horas_executadas'
+  | 'valor_rateio_total_despesas'
+  | 'valor_produzir_pagar'
+  | 'quantidade_horas_faturadas_necessarias_produzir_pagar';
+
+// ============================================================================
+// CONSTANTES
+// ============================================================================
+
+const CAMPOS_PARA_MEDIA_TOTAIS = [
   'quantidade_total_geral_horas_faturadas_necessarias_produzir_pagar',
   'valor_total_geral_almocos',
   'valor_total_geral_deslocamentos',
@@ -67,17 +97,31 @@ const CAMPOS_PARA_MEDIA = [
   'valor_total_geral_despesas',
 ] as const;
 
-// Queries
+const CAMPOS_CUSTO_RECURSO: CampoMedia[] = [
+  'valor_almoco',
+  'valor_deslocamento',
+  'valor_salario',
+  'valor_custo',
+  'percentual_peso_total_horas_executadas',
+  'valor_rateio_total_despesas',
+  'valor_produzir_pagar',
+  'quantidade_horas_faturadas_necessarias_produzir_pagar',
+];
+
+// ============================================================================
+// QUERIES OTIMIZADAS
+// ============================================================================
+
 const QUERIES = {
   custos: `
     SELECT 
       r.COD_RECURSO,
       r.NOME_RECURSO,
       r.TPCUSTO_RECURSO,
-      SUM(f.VRALM_FATFUN) AS TOTAL_ALMOCO_RECURSO,
-      SUM(f.VRDESL_FATFUN) AS TOTAL_DESLOCAMENTO_RECURSO,
-      SUM(f.VRSAL_FATFUN) AS TOTAL_SALARIO_RECURSO,
-      COALESCE(SUM(f.VRALM_FATFUN),0) + COALESCE(SUM(f.VRDESL_FATFUN),0) + COALESCE(SUM(f.VRSAL_FATFUN),0) AS TOTAL_CUSTO_RECURSO
+      COALESCE(SUM(f.VRALM_FATFUN), 0) AS TOTAL_ALMOCO_RECURSO,
+      COALESCE(SUM(f.VRDESL_FATFUN), 0) AS TOTAL_DESLOCAMENTO_RECURSO,
+      COALESCE(SUM(f.VRSAL_FATFUN), 0) AS TOTAL_SALARIO_RECURSO,
+      COALESCE(SUM(f.VRALM_FATFUN), 0) + COALESCE(SUM(f.VRDESL_FATFUN), 0) + COALESCE(SUM(f.VRSAL_FATFUN), 0) AS TOTAL_CUSTO_RECURSO
     FROM RECURSO r
     LEFT JOIN FATFUN f ON f.COD_RECURSO = r.COD_RECURSO AND f.MESANO_FATFUN = ?
     WHERE r.ATIVO_RECURSO = 1 
@@ -88,32 +132,49 @@ const QUERIES = {
     SELECT 
       r.COD_RECURSO,
       COALESCE(SUM(
-        CASE WHEN o.FATURADO_OS = 'SIM' THEN 
-          (CAST(SUBSTRING(o.HRFIM_OS FROM 1 FOR 2) AS INTEGER) + 
-           CAST(SUBSTRING(o.HRFIM_OS FROM 3 FOR 2) AS INTEGER) / 60.0) - 
-          (CAST(SUBSTRING(o.HRINI_OS FROM 1 FOR 2) AS INTEGER) + 
-           CAST(SUBSTRING(o.HRINI_OS FROM 3 FOR 2) AS INTEGER) / 60.0)
-        ELSE 0 END
+        CASE 
+          WHEN o.COD_OS IS NOT NULL 
+               AND UPPER(o.FATURADO_OS) = 'SIM'
+               AND o.DTINI_OS >= ? 
+               AND o.DTINI_OS < ?
+          THEN 
+            (
+              COALESCE(CAST(SUBSTRING(TRIM(o.HRFIM_OS) FROM 1 FOR 2) AS INTEGER), 0) * 60
+              + COALESCE(CAST(SUBSTRING(TRIM(o.HRFIM_OS) FROM 3 FOR 2) AS INTEGER), 0)
+              - COALESCE(CAST(SUBSTRING(TRIM(o.HRINI_OS) FROM 1 FOR 2) AS INTEGER), 0) * 60
+              - COALESCE(CAST(SUBSTRING(TRIM(o.HRINI_OS) FROM 3 FOR 2) AS INTEGER), 0)
+              + CASE WHEN TRIM(o.HRFIM_OS) < TRIM(o.HRINI_OS) THEN 1440 ELSE 0 END
+            ) / 60.0
+          ELSE 0 
+        END
       ), 0) AS HORAS_FATURADAS,
+
       COALESCE(SUM(
-        CASE WHEN o.FATURADO_OS = 'NAO' THEN 
-          (CAST(SUBSTRING(o.HRFIM_OS FROM 1 FOR 2) AS INTEGER) + 
-           CAST(SUBSTRING(o.HRFIM_OS FROM 3 FOR 2) AS INTEGER) / 60.0) - 
-          (CAST(SUBSTRING(o.HRINI_OS FROM 1 FOR 2) AS INTEGER) + 
-           CAST(SUBSTRING(o.HRINI_OS FROM 3 FOR 2) AS INTEGER) / 60.0)
-        ELSE 0 END
+        CASE 
+          WHEN o.COD_OS IS NOT NULL 
+               AND UPPER(o.FATURADO_OS) = 'NAO'
+               AND o.DTINI_OS >= ? 
+               AND o.DTINI_OS < ?
+          THEN 
+            (
+              COALESCE(CAST(SUBSTRING(TRIM(o.HRFIM_OS) FROM 1 FOR 2) AS INTEGER), 0) * 60
+              + COALESCE(CAST(SUBSTRING(TRIM(o.HRFIM_OS) FROM 3 FOR 2) AS INTEGER), 0)
+              - COALESCE(CAST(SUBSTRING(TRIM(o.HRINI_OS) FROM 1 FOR 2) AS INTEGER), 0) * 60
+              - COALESCE(CAST(SUBSTRING(TRIM(o.HRINI_OS) FROM 3 FOR 2) AS INTEGER), 0)
+              + CASE WHEN TRIM(o.HRFIM_OS) < TRIM(o.HRINI_OS) THEN 1440 ELSE 0 END
+            ) / 60.0
+          ELSE 0 
+        END
       ), 0) AS HORAS_NAO_FATURADAS
+
     FROM RECURSO r
     LEFT JOIN OS o ON o.CODREC_OS = r.COD_RECURSO
-      AND o.DTINI_OS >= ? AND o.DTINI_OS < ?
-      AND o.HRINI_OS IS NOT NULL AND o.HRFIM_OS IS NOT NULL
-      AND o.HRINI_OS <> '' AND o.HRFIM_OS <> ''
     WHERE r.ATIVO_RECURSO = 1
     GROUP BY r.COD_RECURSO
     ORDER BY r.COD_RECURSO`,
 
   despesas: `
-    SELECT SUM(VRDESP_FATDES) AS TOTAL_DESPESAS
+    SELECT COALESCE(SUM(VRDESP_FATDES), 0) AS TOTAL_DESPESAS
     FROM FATDES
     WHERE MESANO_FATDES = ?`,
 
@@ -134,8 +195,8 @@ const QUERIES = {
     SELECT 
       c.COD_CLIENTE,
       c.NOME_CLIENTE,
-      SUM(f.VRTOT_FATREC) AS TOTAL_FATURADO,
-      SUM(f.QTDHORA_FATREC) AS TOTAL_HORAS_FATURADAS
+      COALESCE(SUM(f.VRTOT_FATREC), 0) AS TOTAL_FATURADO,
+      COALESCE(SUM(f.QTDHORA_FATREC), 0) AS TOTAL_HORAS_FATURADAS
     FROM CLIENTE c
     LEFT JOIN FATREC f ON f.COD_CLIENTE = c.COD_CLIENTE AND f.MESANO_FATREC = ?
     WHERE c.ATIVO_CLIENTE = 1
@@ -143,7 +204,10 @@ const QUERIES = {
     ORDER BY c.NOME_CLIENTE`,
 };
 
-// Utilitários
+// ============================================================================
+// UTILITÁRIOS
+// ============================================================================
+
 function validarParametros(mes: number, ano: number): string[] {
   const errors: string[] = [];
   if (!mes || mes < 1 || mes > 12) {
@@ -189,12 +253,13 @@ function calcularDatasPeriodo(
   mes: number,
   ano: number
 ): { dataInicio: string; dataFim: string } {
-  const dataInicio = `${ano}-${String(mes).padStart(2, '0')}-01`;
-  const proximoMes = mes === 12 ? 1 : mes + 1;
-  const proximoAno = mes === 12 ? ano + 1 : ano;
-  const dataFim = `${proximoAno}-${String(proximoMes).padStart(2, '0')}-01`;
+  const dataInicio = new Date(Date.UTC(ano, mes - 1, 1));
+  const dataFim = new Date(Date.UTC(ano, mes, 1));
 
-  return { dataInicio, dataFim };
+  return {
+    dataInicio: dataInicio.toISOString().split('T')[0],
+    dataFim: dataFim.toISOString().split('T')[0],
+  };
 }
 
 function converterTempoParaDecimal(hrDiaStr: string): number {
@@ -214,108 +279,113 @@ function converterTempoParaDecimal(hrDiaStr: string): number {
   return Number(hrDiaStr);
 }
 
-// Função principal para executar queries de um período
+function criarMapsOtimizados(
+  resultCustos: CustosRecurso[],
+  resultHoras: HorasRecurso[],
+  resultAgendamentos: AgendamentoRecurso[]
+) {
+  // Map de custos
+  const custosMap = new Map<number, CustosRecurso>();
+  resultCustos.forEach(item => {
+    custosMap.set(item.COD_RECURSO, item);
+  });
+
+  // Map de horas com cálculos
+  const horasMap = new Map<
+    number,
+    { faturadas: number; naoFaturadas: number; executadas: number }
+  >();
+  let totalHorasExecutadas = 0;
+  let totalHorasFaturadas = 0;
+
+  resultHoras.forEach(item => {
+    const faturadas = Number(item.HORAS_FATURADAS) || 0;
+    const naoFaturadas = Number(item.HORAS_NAO_FATURADAS) || 0;
+    const executadas = faturadas + naoFaturadas;
+
+    horasMap.set(item.COD_RECURSO, { faturadas, naoFaturadas, executadas });
+    totalHorasExecutadas += executadas;
+    totalHorasFaturadas += faturadas;
+  });
+
+  // Map de agendamentos
+  const agendamentosMap = new Map<number, { horasDisponiveis: number }>();
+  resultAgendamentos.forEach(item => {
+    const totalDias = Number(item.TOTAL_DIAS_MES) || 0;
+    const horasDia = converterTempoParaDecimal(
+      String(item.HRDIA_RECURSO || '0')
+    );
+    const horasDisponiveis = totalDias * horasDia;
+
+    agendamentosMap.set(item.COD_RECURSO, { horasDisponiveis });
+  });
+
+  return {
+    custosMap,
+    horasMap,
+    agendamentosMap,
+    totalHorasExecutadas,
+    totalHorasFaturadas,
+  };
+}
+
+// ============================================================================
+// PROCESSAMENTO DE DADOS
+// ============================================================================
+
 async function executarQueriesPeriodo(mes: number, ano: number) {
   const mesAno = formatarMesAno(mes, ano);
   const { dataInicio, dataFim } = calcularDatasPeriodo(mes, ano);
 
   return Promise.all([
     firebirdQuery(QUERIES.custos, [mesAno]),
-    firebirdQuery(QUERIES.horas, [dataInicio, dataFim]),
+    firebirdQuery(QUERIES.horas, [dataInicio, dataFim, dataInicio, dataFim]),
     firebirdQuery(QUERIES.despesas, [mesAno]),
     firebirdQuery(QUERIES.agendamentos, [dataInicio, dataFim]),
     firebirdQuery(QUERIES.faturamento, [mesAno]),
   ]);
 }
 
-// Processar dados do mês
-function processarDadosMes(
-  mes: number,
-  ano: number,
-  resultCustos: any[],
-  resultHoras: any[],
+function processarDadosPeriodo(
+  resultCustos: CustosRecurso[],
+  resultHoras: HorasRecurso[],
   resultDespesas: any[],
-  resultFaturamento: any[]
-) {
-  // Calcular totais das horas
-  let totalGeralHorasExecutadas = 0;
-  const horasMap = new Map();
+  resultAgendamentos: AgendamentoRecurso[],
+  resultFaturamento: FaturamentoCliente[]
+): DadosProcessados {
+  const {
+    custosMap,
+    horasMap,
+    agendamentosMap,
+    totalHorasExecutadas,
+    totalHorasFaturadas,
+  } = criarMapsOtimizados(resultCustos, resultHoras, resultAgendamentos);
 
-  resultHoras.forEach((item: any) => {
-    const horasFaturadas = Number(item.HORAS_FATURADAS) || 0;
-    const horasNaoFaturadas = Number(item.HORAS_NAO_FATURADAS) || 0;
-    const horasExecutadas = horasFaturadas + horasNaoFaturadas;
-
-    horasMap.set(item.COD_RECURSO, {
-      horasFaturadas,
-      horasNaoFaturadas,
-      horasExecutadas,
-    });
-
-    totalGeralHorasExecutadas += horasExecutadas;
-  });
-
-  const valorTotalGeralDespesas =
-    Number(resultDespesas[0]?.TOTAL_DESPESAS) || 0;
-  const valorTotalGeralReceitas = resultFaturamento.reduce(
-    (acc: number, item: any) => acc + (Number(item.TOTAL_FATURADO) || 0),
+  const totalDespesas = Number(resultDespesas[0]?.TOTAL_DESPESAS) || 0;
+  const totalReceitas = resultFaturamento.reduce(
+    (acc, item) => acc + (Number(item.TOTAL_FATURADO) || 0),
     0
   );
 
-  // Calcular dados dos recursos
-  const dadosRecursos = resultCustos.map((item: any) => {
-    const dadosHoras = horasMap.get(item.COD_RECURSO) || {
-      horasFaturadas: 0,
-      horasNaoFaturadas: 0,
-      horasExecutadas: 0,
-    };
-
-    const percentualPeso =
-      totalGeralHorasExecutadas > 0
-        ? Number(
-            (dadosHoras.horasExecutadas / totalGeralHorasExecutadas).toFixed(4)
-          )
-        : 0;
-
-    const valorRateio = Number(
-      (valorTotalGeralDespesas * percentualPeso).toFixed(2)
-    );
-    const valorCusto =
-      (Number(item.TOTAL_ALMOCO_RECURSO) || 0) +
-      (Number(item.TOTAL_DESLOCAMENTO_RECURSO) || 0) +
-      (Number(item.TOTAL_SALARIO_RECURSO) || 0);
-
-    return {
-      cod_recurso: item.COD_RECURSO,
-      quantidade_horas_faturadas_recurso: dadosHoras.horasFaturadas,
-      quantidade_horas_nao_faturadas_recurso: dadosHoras.horasNaoFaturadas,
-      quantidade_horas_executadas_recurso: dadosHoras.horasExecutadas,
-      percentual_peso_horas_executadas_recurso: percentualPeso,
-      valor_rateio_despesas_recurso: valorRateio,
-      valor_produzir_pagar_recurso: valorCusto + valorRateio,
-    };
-  });
+  const valorHoraVenda =
+    totalHorasFaturadas > 0 ? totalReceitas / totalHorasFaturadas : 0;
 
   return {
-    mes,
-    ano,
-    resultCustos,
-    resultHoras,
-    resultDespesas,
-    resultFaturamento,
-    dadosRecursos,
-    totalGeralHorasExecutadas,
-    totalGeralHorasNecessariasProduzirPagar: 0, // Calculado depois se necessário
-    totalGeralHorasDisponiveis: 0, // Calculado depois se necessário
-    totalGeralDespesas: valorTotalGeralDespesas,
+    custos: custosMap,
+    horas: horasMap,
+    agendamentos: agendamentosMap,
+    totalHorasExecutadas,
+    totalDespesas,
+    totalReceitas,
+    totalHorasFaturadas,
+    valorHoraVenda,
   };
 }
 
-// Buscar dados históricos
 async function buscarDadosHistoricos(
   meses: { mes: number; ano: number }[]
-): Promise<DataMes[]> {
-  const resultados: DataMes[] = [];
+): Promise<DadosHistoricos[]> {
+  const resultados: DadosHistoricos[] = [];
 
   for (const { mes, ano } of meses) {
     try {
@@ -327,19 +397,15 @@ async function buscarDadosHistoricos(
         resultFaturamento,
       ] = await executarQueriesPeriodo(mes, ano);
 
-      const dadosProcessados = processarDadosMes(
-        mes,
-        ano,
+      const dadosProcessados = processarDadosPeriodo(
         resultCustos,
         resultHoras,
         resultDespesas,
+        resultAgendamentos,
         resultFaturamento
       );
 
-      resultados.push({
-        ...dadosProcessados,
-        resultAgendamentos,
-      });
+      resultados.push({ mes, ano, dadosProcessados });
     } catch (error) {
       console.error(
         `Erro ao buscar dados históricos para ${mes}/${ano}:`,
@@ -351,159 +417,97 @@ async function buscarDadosHistoricos(
   return resultados;
 }
 
-// Calcular média de campo por recurso
+// ============================================================================
+// CÁLCULO DE MÉDIAS
+// ============================================================================
+
 function calcularMediaCampoRecurso(
   codRecurso: number,
-  campo: string,
+  campo: CampoMedia,
   valorAtual: number,
   ehMesCorrente: boolean,
-  dadosHistoricos: DataMes[],
-  resultCustosHistorico: any[] = [],
-  resultHorasHistorico: any[] = [],
-  resultAgendamentosHistorico: any[] = []
+  dadosHistoricos: DadosHistoricos[]
 ): number {
-  if (!ehMesCorrente || dadosHistoricos.length === 0) {
-    return valorAtual;
-  }
-
-  const camposParaMedia = [
-    'valor_almoco',
-    'valor_deslocamento',
-    'valor_salario',
-    'valor_custo',
-    'quantidade_horas_disponiveis',
-    'quantidade_horas_faturadas',
-    'quantidade_horas_nao_faturadas',
-    'quantidade_horas_executadas',
-    'percentual_peso_total_horas_executadas',
-    'valor_rateio_total_despesas',
-    'valor_produzir_pagar',
-    'quantidade_horas_faturadas_necessarias_produzir_pagar',
-  ];
-
-  if (!camposParaMedia.includes(campo)) {
+  if (
+    !ehMesCorrente ||
+    dadosHistoricos.length === 0 ||
+    !CAMPOS_CUSTO_RECURSO.includes(campo)
+  ) {
     return valorAtual;
   }
 
   let soma = 0;
   let contador = 0;
 
-  dadosHistoricos.forEach(dadosMes => {
-    let valorMes = 0;
-
+  for (const { dadosProcessados } of dadosHistoricos) {
     try {
+      let valorMes = 0;
+      const custosRecurso = dadosProcessados.custos.get(codRecurso);
+      const horasRecurso = dadosProcessados.horas.get(codRecurso);
+
+      if (!custosRecurso) continue;
+
       switch (campo) {
         case 'valor_almoco':
-          const recursoAlmoco = dadosMes.resultCustos.find(
-            (r: any) => r.COD_RECURSO === codRecurso
-          );
-          valorMes = Number(recursoAlmoco?.TOTAL_ALMOCO_RECURSO) || 0;
+          valorMes = Number(custosRecurso.TOTAL_ALMOCO_RECURSO) || 0;
           break;
-
         case 'valor_deslocamento':
-          const recursoDeslocamento = dadosMes.resultCustos.find(
-            (r: any) => r.COD_RECURSO === codRecurso
-          );
-          valorMes =
-            Number(recursoDeslocamento?.TOTAL_DESLOCAMENTO_RECURSO) || 0;
+          valorMes = Number(custosRecurso.TOTAL_DESLOCAMENTO_RECURSO) || 0;
           break;
-
         case 'valor_salario':
-          const recursoSalario = dadosMes.resultCustos.find(
-            (r: any) => r.COD_RECURSO === codRecurso
-          );
-          valorMes = Number(recursoSalario?.TOTAL_SALARIO_RECURSO) || 0;
+          valorMes = Number(custosRecurso.TOTAL_SALARIO_RECURSO) || 0;
           break;
-
         case 'valor_custo':
-          const recursoCusto = dadosMes.resultCustos.find(
-            (r: any) => r.COD_RECURSO === codRecurso
-          );
-          if (recursoCusto) {
-            const almoco = Number(recursoCusto.TOTAL_ALMOCO_RECURSO) || 0;
-            const deslocamento =
-              Number(recursoCusto.TOTAL_DESLOCAMENTO_RECURSO) || 0;
-            const salario = Number(recursoCusto.TOTAL_SALARIO_RECURSO) || 0;
-            valorMes = almoco + deslocamento + salario;
-          }
+          valorMes =
+            (Number(custosRecurso.TOTAL_ALMOCO_RECURSO) || 0) +
+            (Number(custosRecurso.TOTAL_DESLOCAMENTO_RECURSO) || 0) +
+            (Number(custosRecurso.TOTAL_SALARIO_RECURSO) || 0);
           break;
-
-        case 'quantidade_horas_disponiveis':
-          const recursoAgendamento = dadosMes.resultAgendamentos?.find(
-            (r: any) => r.COD_RECURSO === codRecurso
-          );
-          if (recursoAgendamento) {
-            const horasDia = converterTempoParaDecimal(
-              String(recursoAgendamento.HRDIA_RECURSO || '0')
-            );
-            const totalDias = Number(recursoAgendamento.TOTAL_DIAS_MES) || 0;
-            valorMes = horasDia * totalDias;
-          }
-          break;
-
-        case 'quantidade_horas_faturadas':
-          const recursoHorasFat = dadosMes.resultHoras.find(
-            (r: any) => r.COD_RECURSO === codRecurso
-          );
-          valorMes = Number(recursoHorasFat?.HORAS_FATURADAS) || 0;
-          break;
-
-        case 'quantidade_horas_nao_faturadas':
-          const recursoHorasNaoFat = dadosMes.resultHoras.find(
-            (r: any) => r.COD_RECURSO === codRecurso
-          );
-          valorMes = Number(recursoHorasNaoFat?.HORAS_NAO_FATURADAS) || 0;
-          break;
-
-        case 'quantidade_horas_executadas':
-          const recursoHorasExec = dadosMes.resultHoras.find(
-            (r: any) => r.COD_RECURSO === codRecurso
-          );
-          if (recursoHorasExec) {
-            const faturadas = Number(recursoHorasExec.HORAS_FATURADAS) || 0;
-            const naoFaturadas =
-              Number(recursoHorasExec.HORAS_NAO_FATURADAS) || 0;
-            valorMes = faturadas + naoFaturadas;
-          }
-          break;
-
         case 'percentual_peso_total_horas_executadas':
-          const recursoPeso = dadosMes.dadosRecursos.find(
-            (r: any) => r.cod_recurso === codRecurso
-          );
-          valorMes =
-            Number(recursoPeso?.percentual_peso_horas_executadas_recurso) || 0;
+          if (horasRecurso && dadosProcessados.totalHorasExecutadas > 0) {
+            valorMes =
+              horasRecurso.executadas / dadosProcessados.totalHorasExecutadas;
+          }
           break;
-
         case 'valor_rateio_total_despesas':
-          const recursoRateio = dadosMes.dadosRecursos.find(
-            (r: any) => r.cod_recurso === codRecurso
-          );
-          valorMes = Number(recursoRateio?.valor_rateio_despesas_recurso) || 0;
+          if (horasRecurso && dadosProcessados.totalHorasExecutadas > 0) {
+            const peso =
+              horasRecurso.executadas / dadosProcessados.totalHorasExecutadas;
+            valorMes = dadosProcessados.totalDespesas * peso;
+          }
           break;
-
         case 'valor_produzir_pagar':
-          const recursoProduzir = dadosMes.dadosRecursos.find(
-            (r: any) => r.cod_recurso === codRecurso
-          );
-          valorMes = Number(recursoProduzir?.valor_produzir_pagar_recurso) || 0;
+          const custoTotal =
+            (Number(custosRecurso.TOTAL_ALMOCO_RECURSO) || 0) +
+            (Number(custosRecurso.TOTAL_DESLOCAMENTO_RECURSO) || 0) +
+            (Number(custosRecurso.TOTAL_SALARIO_RECURSO) || 0);
+          if (horasRecurso && dadosProcessados.totalHorasExecutadas > 0) {
+            const peso =
+              horasRecurso.executadas / dadosProcessados.totalHorasExecutadas;
+            const rateio = dadosProcessados.totalDespesas * peso;
+            valorMes = custoTotal + rateio;
+          }
           break;
-
         case 'quantidade_horas_faturadas_necessarias_produzir_pagar':
-          const recursoNecessarias = dadosMes.dadosRecursos.find(
-            (r: any) => r.cod_recurso === codRecurso
-          );
-          valorMes =
-            Number(
-              recursoNecessarias?.quantidade_horas_faturadas_necessarias_produzir_pagar
-            ) || 0;
+          const custoTotalNec =
+            (Number(custosRecurso.TOTAL_ALMOCO_RECURSO) || 0) +
+            (Number(custosRecurso.TOTAL_DESLOCAMENTO_RECURSO) || 0) +
+            (Number(custosRecurso.TOTAL_SALARIO_RECURSO) || 0);
+          if (
+            horasRecurso &&
+            dadosProcessados.totalHorasExecutadas > 0 &&
+            dadosProcessados.valorHoraVenda > 0
+          ) {
+            const peso =
+              horasRecurso.executadas / dadosProcessados.totalHorasExecutadas;
+            const rateio = dadosProcessados.totalDespesas * peso;
+            const produzir = custoTotalNec + rateio;
+            valorMes = produzir / dadosProcessados.valorHoraVenda;
+          }
           break;
-
-        default:
-          return valorAtual;
       }
 
-      if (!isNaN(valorMes)) {
+      if (!isNaN(valorMes) && valorMes !== 0) {
         soma += valorMes;
         contador++;
       }
@@ -513,118 +517,87 @@ function calcularMediaCampoRecurso(
         error
       );
     }
-  });
+  }
 
   return contador > 0 ? Number((soma / contador).toFixed(2)) : valorAtual;
 }
 
-// Calcular média dos últimos meses
-function calcularMediaUltimosMeses(
+function calcularMediaTotais(
   campo: string,
   valorAtual: number,
   ehMesCorrente: boolean,
-  dadosHistoricos: DataMes[]
+  dadosHistoricos: DadosHistoricos[]
 ): number {
-  if (!ehMesCorrente || dadosHistoricos.length === 0) {
-    return valorAtual;
-  }
-
-  if (!CAMPOS_PARA_MEDIA.includes(campo as any)) {
+  if (
+    !ehMesCorrente ||
+    dadosHistoricos.length === 0 ||
+    !CAMPOS_PARA_MEDIA_TOTAIS.includes(campo as any)
+  ) {
     return valorAtual;
   }
 
   let soma = 0;
   let contador = 0;
 
-  dadosHistoricos.forEach(dadosMes => {
-    let valorMes = 0;
-
+  for (const { dadosProcessados } of dadosHistoricos) {
     try {
+      let valorMes = 0;
+
       switch (campo) {
         case 'valor_total_geral_almocos':
-          valorMes = dadosMes.resultCustos.reduce(
-            (acc: number, item: any) =>
-              acc + (Number(item.TOTAL_ALMOCO_RECURSO) || 0),
+          valorMes = Array.from(dadosProcessados.custos.values()).reduce(
+            (acc, item) => acc + (Number(item.TOTAL_ALMOCO_RECURSO) || 0),
             0
           );
           break;
         case 'valor_total_geral_deslocamentos':
-          valorMes = dadosMes.resultCustos.reduce(
-            (acc: number, item: any) =>
-              acc + (Number(item.TOTAL_DESLOCAMENTO_RECURSO) || 0),
+          valorMes = Array.from(dadosProcessados.custos.values()).reduce(
+            (acc, item) => acc + (Number(item.TOTAL_DESLOCAMENTO_RECURSO) || 0),
             0
           );
           break;
         case 'valor_total_geral_salarios':
-          valorMes = dadosMes.resultCustos.reduce(
-            (acc: number, item: any) =>
-              acc + (Number(item.TOTAL_SALARIO_RECURSO) || 0),
+          valorMes = Array.from(dadosProcessados.custos.values()).reduce(
+            (acc, item) => acc + (Number(item.TOTAL_SALARIO_RECURSO) || 0),
             0
           );
           break;
         case 'valor_total_geral_receitas':
-          valorMes = dadosMes.resultFaturamento.reduce(
-            (acc: number, item: any) =>
-              acc + (Number(item.TOTAL_FATURADO) || 0),
-            0
-          );
+          valorMes = dadosProcessados.totalReceitas;
           break;
         case 'valor_total_geral_custos':
-          valorMes = dadosMes.resultCustos.reduce(
-            (acc: number, item: any) =>
-              acc + (Number(item.TOTAL_CUSTO_RECURSO) || 0),
+          valorMes = Array.from(dadosProcessados.custos.values()).reduce(
+            (acc, item) => acc + (Number(item.TOTAL_CUSTO_RECURSO) || 0),
             0
           );
           break;
         case 'valor_total_geral_despesas':
-          valorMes = dadosMes.resultDespesas.reduce(
-            (acc: number, item: any) =>
-              acc + (Number(item.TOTAL_DESPESAS) || 0),
-            0
-          );
-          break;
-        case 'quantidade_total_geral_horas_disponiveis':
-          valorMes = dadosMes.resultAgendamentos.reduce(
-            (acc: number, item: any) => {
-              const hrDia = converterTempoParaDecimal(
-                String(item.HRDIA_RECURSO || '0')
-              );
-              const totalDias = Number(item.TOTAL_DIAS_MES) || 0;
-              return acc + hrDia * totalDias;
-            },
-            0
-          );
-          break;
-        case 'quantidade_total_geral_horas_faturadas':
-          valorMes = dadosMes.resultHoras.reduce(
-            (acc: number, item: any) =>
-              acc + (Number(item.HORAS_FATURADAS) || 0),
-            0
-          );
-          break;
-        case 'quantidade_total_geral_horas_nao_faturadas':
-          valorMes = dadosMes.resultHoras.reduce(
-            (acc: number, item: any) =>
-              acc + (Number(item.HORAS_NAO_FATURADAS) || 0),
-            0
-          );
-          break;
-        case 'quantidade_total_geral_horas_executadas':
-          valorMes = dadosMes.resultHoras.reduce((acc: number, item: any) => {
-            const faturadas = Number(item.HORAS_FATURADAS) || 0;
-            const naoFaturadas = Number(item.HORAS_NAO_FATURADAS) || 0;
-            return acc + faturadas + naoFaturadas;
-          }, 0);
+          valorMes = dadosProcessados.totalDespesas;
           break;
         case 'quantidade_total_geral_horas_faturadas_necessarias_produzir_pagar':
-          valorMes = dadosMes.resultHoras.reduce(
-            (acc: number, item: any) =>
-              acc + (Number(item.HORAS_FATURADAS) || 0),
-            0
-          );
+          if (dadosProcessados.valorHoraVenda > 0) {
+            const totalCustoRateio = Array.from(
+              dadosProcessados.custos.values()
+            ).reduce((acc, item) => {
+              const custoRecurso =
+                (Number(item.TOTAL_ALMOCO_RECURSO) || 0) +
+                (Number(item.TOTAL_DESLOCAMENTO_RECURSO) || 0) +
+                (Number(item.TOTAL_SALARIO_RECURSO) || 0);
+
+              const horasRecurso = dadosProcessados.horas.get(item.COD_RECURSO);
+              if (horasRecurso && dadosProcessados.totalHorasExecutadas > 0) {
+                const peso =
+                  horasRecurso.executadas /
+                  dadosProcessados.totalHorasExecutadas;
+                const rateio = dadosProcessados.totalDespesas * peso;
+                return acc + custoRecurso + rateio;
+              }
+              return acc + custoRecurso;
+            }, 0);
+
+            valorMes = totalCustoRateio / dadosProcessados.valorHoraVenda;
+          }
           break;
-        default:
-          return valorAtual;
       }
 
       if (!isNaN(valorMes) && valorMes !== 0) {
@@ -634,12 +607,103 @@ function calcularMediaUltimosMeses(
     } catch (error) {
       console.error(`Erro ao calcular média para campo ${campo}:`, error);
     }
-  });
+  }
 
   return contador > 0 ? Number((soma / contador).toFixed(2)) : valorAtual;
 }
 
-// Handler principal
+// ============================================================================
+// MONTAGEM DA RESPOSTA
+// ============================================================================
+
+function montarDataRecursos(
+  dadosProcessados: DadosProcessados,
+  ehMesCorrente: boolean,
+  dadosHistoricos: DadosHistoricos[]
+): DataRecurso[] {
+  const recursos: DataRecurso[] = [];
+
+  dadosProcessados.custos.forEach((custoItem, codRecurso) => {
+    const dadosHoras = dadosProcessados.horas.get(codRecurso) || {
+      faturadas: 0,
+      naoFaturadas: 0,
+      executadas: 0,
+    };
+
+    const dadosAgendamento = dadosProcessados.agendamentos.get(codRecurso) || {
+      horasDisponiveis: 0,
+    };
+
+    // Cálculos base
+    const valorAlmoco = Number(custoItem.TOTAL_ALMOCO_RECURSO) || 0;
+    const valorDeslocamento = Number(custoItem.TOTAL_DESLOCAMENTO_RECURSO) || 0;
+    const valorSalario = Number(custoItem.TOTAL_SALARIO_RECURSO) || 0;
+    const valorCusto = valorAlmoco + valorDeslocamento + valorSalario;
+
+    const pesoRecurso =
+      dadosProcessados.totalHorasExecutadas > 0
+        ? dadosHoras.executadas / dadosProcessados.totalHorasExecutadas
+        : 0;
+
+    const despesaRateio = dadosProcessados.totalDespesas * pesoRecurso;
+    const valorProduzir = valorCusto + despesaRateio;
+    const horasNecessarias =
+      dadosProcessados.valorHoraVenda > 0
+        ? valorProduzir / dadosProcessados.valorHoraVenda
+        : 0;
+
+    // Criar objeto base com formatação de 2 casas decimais
+    const recurso: DataRecurso = {
+      cod_recurso: codRecurso,
+      nome: custoItem.NOME_RECURSO?.trim() || '',
+      tipo_custo: custoItem.TPCUSTO_RECURSO,
+      valor_almoco: Number(valorAlmoco.toFixed(2)),
+      valor_deslocamento: Number(valorDeslocamento.toFixed(2)),
+      valor_salario: Number(valorSalario.toFixed(2)),
+      valor_custo: Number(valorCusto.toFixed(2)),
+
+      // Campos de horas - sempre valores originais com 2 casas decimais
+      quantidade_horas_disponiveis: Number(
+        dadosAgendamento.horasDisponiveis.toFixed(2)
+      ),
+      quantidade_horas_faturadas: Number(dadosHoras.faturadas.toFixed(2)),
+      quantidade_horas_nao_faturadas: Number(
+        dadosHoras.naoFaturadas.toFixed(2)
+      ),
+      quantidade_horas_executadas: Number(dadosHoras.executadas.toFixed(2)),
+
+      // Campos calculados com 2 casas decimais
+      percentual_peso_total_horas_executadas: Number(pesoRecurso.toFixed(4)),
+      valor_rateio_total_despesas: Number(despesaRateio.toFixed(2)),
+      valor_produzir_pagar: Number(valorProduzir.toFixed(2)),
+      quantidade_horas_faturadas_necessarias_produzir_pagar: Number(
+        horasNecessarias.toFixed(2)
+      ),
+    };
+
+    // Aplicar médias apenas se for mês corrente (já retornam com 2 casas decimais)
+    if (ehMesCorrente) {
+      CAMPOS_CUSTO_RECURSO.forEach(campo => {
+        (recurso as any)[campo] = calcularMediaCampoRecurso(
+          codRecurso,
+          campo,
+          (recurso as any)[campo],
+          ehMesCorrente,
+          dadosHistoricos
+        );
+      });
+    }
+
+    recursos.push(recurso);
+  });
+
+  return recursos.sort((a, b) => a.cod_recurso - b.cod_recurso);
+}
+
+// ============================================================================
+// HANDLER PRINCIPAL
+// ============================================================================
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -666,234 +730,32 @@ export async function GET(request: Request) {
       resultFaturamento,
     ] = await executarQueriesPeriodo(mesParam, anoParam);
 
+    // Processar dados do período atual
+    const dadosProcessados = processarDadosPeriodo(
+      resultCustos,
+      resultHoras,
+      resultDespesas,
+      resultAgendamentos,
+      resultFaturamento
+    );
+
     // Buscar dados históricos se necessário
-    let dadosHistoricos: DataMes[] = [];
+    let dadosHistoricos: DadosHistoricos[] = [];
     if (ehMesCorrente) {
       const ultimos3Meses = getUltimos3Meses(mesParam, anoParam);
       dadosHistoricos = await buscarDadosHistoricos(ultimos3Meses);
     }
 
-    // Calcular valores principais
-    const receitaTotal = resultFaturamento.reduce(
-      (acc: number, item: any) => acc + (Number(item.TOTAL_FATURADO) || 0),
-      0
+    // Montar dados dos recursos
+    const dataRecursos = montarDataRecursos(
+      dadosProcessados,
+      ehMesCorrente,
+      dadosHistoricos
     );
 
-    const totalHorasFaturadasGeral = resultFaturamento.reduce(
-      (acc: number, item: any) =>
-        acc + (Number(item.TOTAL_HORAS_FATURADAS) || 0),
-      0
-    );
-
-    const valorHoraVenda =
-      totalHorasFaturadasGeral > 0
-        ? receitaTotal / totalHorasFaturadasGeral
-        : 0;
-    const totalDespesas = Number(resultDespesas[0]?.TOTAL_DESPESAS) || 0;
-
-    // Construir maps para otimizar acesso aos dados
-    const horasMap = new Map();
-    const agendamentosMap = new Map();
-    let totalHorasExecutadasGeral = 0;
-
-    // Processar horas
-    resultHoras.forEach((item: HorasRecurso) => {
-      const horasFaturadas = Number(item.HORAS_FATURADAS) || 0;
-      const horasNaoFaturadas = Number(item.HORAS_NAO_FATURADAS) || 0;
-      const horasExecutadas = horasFaturadas + horasNaoFaturadas;
-
-      horasMap.set(item.COD_RECURSO, {
-        horasFaturadas,
-        horasNaoFaturadas,
-        horasExecutadas,
-      });
-
-      totalHorasExecutadasGeral += horasExecutadas;
-    });
-
-    // Processar agendamentos
-    resultAgendamentos.forEach((item: any) => {
-      const totalDias = Number(item.TOTAL_DIAS_MES) || 0;
-      const horasDia = converterTempoParaDecimal(
-        String(item.HRDIA_RECURSO || '0')
-      );
-      const horasDisponiveis = totalDias * horasDia;
-
-      agendamentosMap.set(item.COD_RECURSO, {
-        qtdDiasMes: totalDias,
-        qtdHorasDia: horasDia,
-        qtdHorasDisponiveisMes: horasDisponiveis,
-      });
-    });
-
-    // Processar dados por recurso
-    const dataRecurso: DataRecurso[] = resultCustos.map(
-      (item: CustosRecurso) => {
-        // Valores de custo
-        const valorAlmoco = Number(item.TOTAL_ALMOCO_RECURSO) || 0;
-        const valorDeslocamento = Number(item.TOTAL_DESLOCAMENTO_RECURSO) || 0;
-        const valorSalario = Number(item.TOTAL_SALARIO_RECURSO) || 0;
-        const valorCusto = valorAlmoco + valorDeslocamento + valorSalario;
-
-        // Dados de horas e agendamentos
-        const dadosHoras = horasMap.get(item.COD_RECURSO) || {
-          horasFaturadas: 0,
-          horasNaoFaturadas: 0,
-          horasExecutadas: 0,
-        };
-
-        const dadosAgendamento = agendamentosMap.get(item.COD_RECURSO) || {
-          qtdHorasDisponiveisMes: 0,
-        };
-
-        // Cálculos principais
-        const pesoRecurso =
-          totalHorasExecutadasGeral > 0
-            ? Number(
-                (
-                  dadosHoras.horasExecutadas / totalHorasExecutadasGeral
-                ).toFixed(4)
-              )
-            : 0;
-
-        const despesaRateio = Number((totalDespesas * pesoRecurso).toFixed(2));
-        const valorProduzir = Number((valorCusto + despesaRateio).toFixed(2));
-        const horasNecessarias =
-          valorHoraVenda > 0
-            ? Number((valorProduzir / valorHoraVenda).toFixed(2))
-            : 0;
-
-        return {
-          cod_recurso: item.COD_RECURSO,
-          nome: item.NOME_RECURSO?.trim() || '',
-          tipo_custo: item.TPCUSTO_RECURSO,
-          valor_almoco: Number(valorAlmoco.toFixed(2)),
-          valor_deslocamento: Number(valorDeslocamento.toFixed(2)),
-          valor_salario: Number(valorSalario.toFixed(2)),
-          valor_custo: Number(valorCusto.toFixed(2)),
-          quantidade_horas_disponiveis: Number(
-            dadosAgendamento.qtdHorasDisponiveisMes.toFixed(2)
-          ),
-          quantidade_horas_faturadas: Number(
-            dadosHoras.horasFaturadas.toFixed(2)
-          ),
-          quantidade_horas_nao_faturadas: Number(
-            dadosHoras.horasNaoFaturadas.toFixed(2)
-          ),
-          quantidade_horas_executadas: Number(
-            dadosHoras.horasExecutadas.toFixed(2)
-          ),
-          percentual_peso_total_horas_executadas: pesoRecurso,
-          valor_rateio_total_despesas: despesaRateio,
-          valor_produzir_pagar: valorProduzir,
-          quantidade_horas_faturadas_necessarias_produzir_pagar:
-            horasNecessarias,
-        };
-      }
-    );
-
-    // Aplicar médias por recurso se for mês corrente
-    const dataRecursoComMedias = dataRecurso.map(recurso => {
-      if (ehMesCorrente) {
-        return {
-          ...recurso,
-          valor_almoco: calcularMediaCampoRecurso(
-            recurso.cod_recurso,
-            'valor_almoco',
-            recurso.valor_almoco,
-            ehMesCorrente,
-            dadosHistoricos
-          ),
-          valor_deslocamento: calcularMediaCampoRecurso(
-            recurso.cod_recurso,
-            'valor_deslocamento',
-            recurso.valor_deslocamento,
-            ehMesCorrente,
-            dadosHistoricos
-          ),
-          valor_salario: calcularMediaCampoRecurso(
-            recurso.cod_recurso,
-            'valor_salario',
-            recurso.valor_salario,
-            ehMesCorrente,
-            dadosHistoricos
-          ),
-          valor_custo: calcularMediaCampoRecurso(
-            recurso.cod_recurso,
-            'valor_custo',
-            recurso.valor_custo,
-            ehMesCorrente,
-            dadosHistoricos
-          ),
-          quantidade_horas_disponiveis: calcularMediaCampoRecurso(
-            recurso.cod_recurso,
-            'quantidade_horas_disponiveis',
-            recurso.quantidade_horas_disponiveis,
-            ehMesCorrente,
-            dadosHistoricos
-          ),
-          quantidade_horas_faturadas: calcularMediaCampoRecurso(
-            recurso.cod_recurso,
-            'quantidade_horas_faturadas',
-            recurso.quantidade_horas_faturadas,
-            ehMesCorrente,
-            dadosHistoricos
-          ),
-          quantidade_horas_nao_faturadas: calcularMediaCampoRecurso(
-            recurso.cod_recurso,
-            'quantidade_horas_nao_faturadas',
-            recurso.quantidade_horas_nao_faturadas,
-            ehMesCorrente,
-            dadosHistoricos
-          ),
-          quantidade_horas_executadas: calcularMediaCampoRecurso(
-            recurso.cod_recurso,
-            'quantidade_horas_executadas',
-            recurso.quantidade_horas_executadas,
-            ehMesCorrente,
-            dadosHistoricos
-          ),
-          percentual_peso_total_horas_executadas: calcularMediaCampoRecurso(
-            recurso.cod_recurso,
-            'percentual_peso_total_horas_executadas',
-            recurso.percentual_peso_total_horas_executadas,
-            ehMesCorrente,
-            dadosHistoricos
-          ),
-          valor_rateio_total_despesas: calcularMediaCampoRecurso(
-            recurso.cod_recurso,
-            'valor_rateio_total_despesas',
-            recurso.valor_rateio_total_despesas,
-            ehMesCorrente,
-            dadosHistoricos
-          ),
-          valor_produzir_pagar: calcularMediaCampoRecurso(
-            recurso.cod_recurso,
-            'valor_produzir_pagar',
-            recurso.valor_produzir_pagar,
-            ehMesCorrente,
-            dadosHistoricos
-          ),
-          quantidade_horas_faturadas_necessarias_produzir_pagar:
-            calcularMediaCampoRecurso(
-              recurso.cod_recurso,
-              'quantidade_horas_faturadas_necessarias_produzir_pagar',
-              recurso.quantidade_horas_faturadas_necessarias_produzir_pagar,
-              ehMesCorrente,
-              dadosHistoricos
-            ),
-        };
-      }
-      return recurso;
-    });
-
-    // Recalcular totais com os dados que podem ter médias aplicadas
-    const totaisFinais = dataRecursoComMedias.reduce(
+    // Calcular totais sem médias (valores originais para horas)
+    const totaisOriginais = dataRecursos.reduce(
       (acc, recurso) => ({
-        almocos: acc.almocos + recurso.valor_almoco,
-        deslocamentos: acc.deslocamentos + recurso.valor_deslocamento,
-        salarios: acc.salarios + recurso.valor_salario,
-        custos: acc.custos + recurso.valor_custo,
         horasDisponiveis:
           acc.horasDisponiveis + recurso.quantidade_horas_disponiveis,
         horasFaturadas: acc.horasFaturadas + recurso.quantidade_horas_faturadas,
@@ -901,6 +763,22 @@ export async function GET(request: Request) {
           acc.horasNaoFaturadas + recurso.quantidade_horas_nao_faturadas,
         horasExecutadas:
           acc.horasExecutadas + recurso.quantidade_horas_executadas,
+      }),
+      {
+        horasDisponiveis: 0,
+        horasFaturadas: 0,
+        horasNaoFaturadas: 0,
+        horasExecutadas: 0,
+      }
+    );
+
+    // Calcular totais com médias aplicadas para campos de custo
+    const totaisComMedias = dataRecursos.reduce(
+      (acc, recurso) => ({
+        almocos: acc.almocos + recurso.valor_almoco,
+        deslocamentos: acc.deslocamentos + recurso.valor_deslocamento,
+        salarios: acc.salarios + recurso.valor_salario,
+        custos: acc.custos + recurso.valor_custo,
         horasNecessarias:
           acc.horasNecessarias +
           recurso.quantidade_horas_faturadas_necessarias_produzir_pagar,
@@ -910,84 +788,74 @@ export async function GET(request: Request) {
         deslocamentos: 0,
         salarios: 0,
         custos: 0,
-        horasDisponiveis: 0,
-        horasFaturadas: 0,
-        horasNaoFaturadas: 0,
-        horasExecutadas: 0,
         horasNecessarias: 0,
       }
     );
 
     // Montar resposta final
     const response = {
-      data_recursos: dataRecursoComMedias,
+      data_recursos: dataRecursos,
 
-      valor_total_geral_almocos: calcularMediaUltimosMeses(
+      // Totais com médias aplicadas onde apropriado
+      valor_total_geral_almocos: calcularMediaTotais(
         'valor_total_geral_almocos',
-        Number(totaisFinais.almocos.toFixed(2)),
+        Number(totaisComMedias.almocos.toFixed(2)),
         ehMesCorrente,
         dadosHistoricos
       ),
-      valor_total_geral_deslocamentos: calcularMediaUltimosMeses(
+      valor_total_geral_deslocamentos: calcularMediaTotais(
         'valor_total_geral_deslocamentos',
-        Number(totaisFinais.deslocamentos.toFixed(2)),
+        Number(totaisComMedias.deslocamentos.toFixed(2)),
         ehMesCorrente,
         dadosHistoricos
       ),
-      valor_total_geral_salarios: calcularMediaUltimosMeses(
+      valor_total_geral_salarios: calcularMediaTotais(
         'valor_total_geral_salarios',
-        Number(totaisFinais.salarios.toFixed(2)),
+        Number(totaisComMedias.salarios.toFixed(2)),
         ehMesCorrente,
         dadosHistoricos
       ),
-      valor_total_geral_receitas: calcularMediaUltimosMeses(
+      valor_total_geral_receitas: calcularMediaTotais(
         'valor_total_geral_receitas',
-        Number(receitaTotal.toFixed(2)),
+        Number(dadosProcessados.totalReceitas.toFixed(2)),
         ehMesCorrente,
         dadosHistoricos
       ),
-      valor_total_geral_custos: calcularMediaUltimosMeses(
+      valor_total_geral_custos: calcularMediaTotais(
         'valor_total_geral_custos',
-        Number(totaisFinais.custos.toFixed(2)),
+        Number(totaisComMedias.custos.toFixed(2)),
         ehMesCorrente,
         dadosHistoricos
       ),
-      valor_total_geral_despesas: calcularMediaUltimosMeses(
+      valor_total_geral_despesas: calcularMediaTotais(
         'valor_total_geral_despesas',
-        Number(totalDespesas.toFixed(2)),
+        Number(dadosProcessados.totalDespesas.toFixed(2)),
         ehMesCorrente,
         dadosHistoricos
       ),
 
-      quantidade_total_geral_recursos: dataRecursoComMedias.length,
-      quantidade_total_geral_horas_disponiveis: calcularMediaUltimosMeses(
-        'quantidade_total_geral_horas_disponiveis',
-        Number(totaisFinais.horasDisponiveis.toFixed(2)),
-        ehMesCorrente,
-        dadosHistoricos
+      // Informações gerais
+      quantidade_total_geral_recursos: dataRecursos.length,
+
+      // Totais de horas - sempre valores originais (sem médias)
+      quantidade_total_geral_horas_disponiveis: Number(
+        totaisOriginais.horasDisponiveis.toFixed(2)
       ),
-      quantidade_total_geral_horas_faturadas: calcularMediaUltimosMeses(
-        'quantidade_total_geral_horas_faturadas',
-        Number(totaisFinais.horasFaturadas.toFixed(2)),
-        ehMesCorrente,
-        dadosHistoricos
+      quantidade_total_geral_horas_faturadas: Number(
+        totaisOriginais.horasFaturadas.toFixed(2)
       ),
-      quantidade_total_geral_horas_nao_faturadas: calcularMediaUltimosMeses(
-        'quantidade_total_geral_horas_nao_faturadas',
-        Number(totaisFinais.horasNaoFaturadas.toFixed(2)),
-        ehMesCorrente,
-        dadosHistoricos
+      quantidade_total_geral_horas_nao_faturadas: Number(
+        totaisOriginais.horasNaoFaturadas.toFixed(2)
       ),
-      quantidade_total_geral_horas_executadas: calcularMediaUltimosMeses(
-        'quantidade_total_geral_horas_executadas',
-        Number(totaisFinais.horasExecutadas.toFixed(2)),
-        ehMesCorrente,
-        dadosHistoricos
+      quantidade_total_geral_horas_executadas: Number(
+        totaisOriginais.horasExecutadas.toFixed(2)
       ),
+
+      // Horas necessárias com média aplicada
       quantidade_total_geral_horas_faturadas_necessarias_produzir_pagar:
-        calcularMediaUltimosMeses(
+        calcularMediaTotais(
           'quantidade_total_geral_horas_faturadas_necessarias_produzir_pagar',
-          Number(totaisFinais.horasNecessarias.toFixed(2)),
+          Number(totaisComMedias.horasNecessarias.toFixed(2)),
           ehMesCorrente,
           dadosHistoricos
         ),
