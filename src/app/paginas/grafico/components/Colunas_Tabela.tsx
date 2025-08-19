@@ -54,7 +54,7 @@ const PerformanceMetricCol: React.FC<{ value: number; colorClass: string }> = ({
   </td>
 );
 
-export default function PerformanceTableColumns({
+export default function ColunasTabelaRecursos({
   dadosProcessados,
 }: ColunasTabelaProps) {
   return (

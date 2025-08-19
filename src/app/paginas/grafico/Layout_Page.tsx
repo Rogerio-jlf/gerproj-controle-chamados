@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 import PerformanceAPI from './Performance_API';
 import Header from './components/Header';
 import Overview from './components/Overview';
-import HorasContratadasDashboard from './components/Horas_Contradas_Horas_Executadas';
-import TabelaAnalises from './components/Tabela_Analises';
+import TabelaClientes from './components/Tabela_Clientes';
+import TabelaRecursos from './components/Tabela_Recursos';
 import Financeiro from './components/Financeiro';
-import ConsolidadoDashboard from './components/Consolidado';
+import Dashboard from './components/Dashboard';
 import { Info } from 'lucide-react';
 
 const Layout_Page: React.FC = () => {
@@ -15,11 +15,7 @@ const Layout_Page: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
 
   const [tipoVisualizacao, setTipoVisualizacao] = useState<
-    | 'overview'
-    | 'performance'
-    | 'financeiro'
-    | 'tabela performance'
-    | 'consolidado'
+    'overview' | 'dashboard' | 'clientes' | 'recursos' | 'financeiro'
   >('overview');
 
   const handleToggleSidebar = () => setCollapsed(prev => !prev);
@@ -84,10 +80,8 @@ const Layout_Page: React.FC = () => {
                   setTipoVisualizacao={setTipoVisualizacao}
                 />
 
-                {/* Cards não exibidos para as abas: performance e/ou consolidado */}
-
-                {/* aba consolidado */}
-                {tipoVisualizacao === 'consolidado' && (
+                {/* aba dashboard */}
+                {tipoVisualizacao === 'dashboard' && (
                   // <div className="rounded-2xl border border-slate-100 bg-white p-10 shadow-md shadow-black">
                   <div className="bg-white">
                     {/* Aviso para mês corrente */}
@@ -108,7 +102,7 @@ const Layout_Page: React.FC = () => {
 
                     <div className="mb-10 flex items-center justify-between"></div>
 
-                    <ConsolidadoDashboard
+                    <Dashboard
                       dados={dadosAPI}
                       dadosProcessados={dadosProcessados}
                       dadosNumericosAPI={dadosNumericosAPI}
@@ -119,27 +113,6 @@ const Layout_Page: React.FC = () => {
                 {tipoVisualizacao === 'overview' && (
                   // <div className="rounded-2xl border border-slate-300 bg-white p-10 shadow-md shadow-black">
                   <div className="bg-white">
-                    <div className="mb-10 flex items-center justify-between">
-                      <div>
-                        <h2 className="text-2xl font-bold tracking-wider text-slate-800 select-none">
-                          Desempenho Operacional
-                        </h2>
-                        <p className="text-base font-semibold tracking-wider text-slate-600 italic select-none">
-                          Comparativo de capacidade, produção e eficácia
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-base font-semibold tracking-wider text-slate-600 italic select-none">
-                          Total de recursos ativos:
-                        </span>
-
-                        <span className="text-lg font-semibold tracking-wider text-blue-600 italic select-none">
-                          {dadosProcessados.length}
-                        </span>
-                      </div>
-                    </div>
-
                     <Overview
                       chunks={(() => {
                         const chunkSize = 9;
@@ -168,24 +141,26 @@ const Layout_Page: React.FC = () => {
                       dados={dadosAPI}
                       dadosProcessados={dadosProcessados}
                       dadosNumericosAPI={dadosNumericosAPI}
+                      mes={mes}
+                      ano={ano}
                     />
                   </div>
                 )}
 
-                {tipoVisualizacao === 'performance' && (
-                  <HorasContratadasDashboard mes={mes} ano={ano} />
+                {tipoVisualizacao === 'clientes' && (
+                  <TabelaClientes mes={mes} ano={ano} />
                 )}
 
                 {tipoVisualizacao === 'financeiro' && (
                   <Financeiro metricas={dadosNumericosAPI} dados={dadosAPI} />
                 )}
 
-                {tipoVisualizacao === 'tabela performance' && (
+                {tipoVisualizacao === 'recursos' && (
                   <div className="rounded-2xl border border-slate-300 bg-white p-10 shadow-md shadow-black">
                     <h2 className="mb-6 text-2xl font-bold tracking-wider text-slate-800 select-none">
                       Tabela de Performance
                     </h2>
-                    <TabelaAnalises dadosProcessados={dadosProcessados} />
+                    <TabelaRecursos dadosProcessados={dadosProcessados} />
                   </div>
                 )}
               </>

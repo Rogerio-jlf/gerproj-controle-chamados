@@ -11,7 +11,7 @@ interface CardProps {
   size?: 'normal' | 'large';
 }
 
-export default function Cards({
+export default function CardsFinanceiros({
   icon,
   title,
   value,

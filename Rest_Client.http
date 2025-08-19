@@ -112,3 +112,10 @@ GET http://localhost:3000/api/firebird-SQL/chamados-abertos/dashboard?ano=2025&m
 
 ### PERFORMANCE API
 GET http://localhost:3000/api/firebird-SQL/debug?dataInicio=2025.08.01&dataFim=2025.09.01
+
+
+
+
+
+### PERFORMANCE API
+GET http://localhost:3000/api/firebird-SQL/cache

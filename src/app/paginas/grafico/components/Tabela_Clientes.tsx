@@ -40,10 +40,10 @@ interface HorasContratadasDashboardProps {
   ano: number;
 }
 
-const HorasContratadasDashboard = ({
+export default function TabelaClientes({
   mes,
   ano,
-}: HorasContratadasDashboardProps) => {
+}: HorasContratadasDashboardProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<
     'todos' | 'ativo' | 'suspenso'
@@ -513,6 +513,4 @@ const HorasContratadasDashboard = ({
       </div>
     </div>
   );
-};
-
-export default HorasContratadasDashboard;
+}

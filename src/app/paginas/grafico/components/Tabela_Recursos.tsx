@@ -16,7 +16,7 @@ interface TabelaProps {
   dadosProcessados: RecursoProps[];
 }
 
-export default function TabelaAnalises(props: TabelaProps) {
+export default function TabelaRecursos(props: TabelaProps) {
   const { dadosProcessados } = props;
 
   return (

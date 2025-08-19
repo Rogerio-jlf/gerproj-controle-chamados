@@ -1,12 +1,15 @@
 'use client';
 import React from 'react';
-import KPICard from './Cards';
+import KPICard from './Cards_Financeiros';
 import { DollarSign } from 'lucide-react';
 
-const Financeiro: React.FC<{ metricas: any; dados: any }> = ({
+export default function Financeiro({
   metricas,
   dados,
-}) => {
+}: {
+  metricas: any;
+  dados: any;
+}) {
   return (
     <div className="rounded-3xl border border-white/30 bg-white/80 p-6 shadow-xl backdrop-blur-lg">
       <h2 className="mb-6 text-2xl font-bold text-gray-800">
@@ -28,12 +31,10 @@ const Financeiro: React.FC<{ metricas: any; dados: any }> = ({
         <KPICard
           icon={<DollarSign className="h-6 w-6 text-white" />}
           title="Despesas Rateadas"
-          value={`R$ ${dados.valor_total_geral_despesas_rateadas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+          value={`R$ ${dados?.valor_total_geral_despesas_rateadas?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) ?? '0.00'}`}
           color="bg-gradient-to-r from-pink-500 to-fuchsia-600"
         />
       </div>
     </div>
   );
-};
-
-export default Financeiro;
+}

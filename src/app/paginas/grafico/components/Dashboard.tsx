@@ -29,7 +29,7 @@ import {
   DollarSign,
   Award,
 } from 'lucide-react';
-import MetricsCards from './MetricCards'; // Importe o novo componente
+import MetricsCards from './Cards_Dashboard'; // Importe o novo componente
 
 // ====================================================================================================
 
@@ -41,7 +41,7 @@ interface ConsolidadoProps {
 
 // ====================================================================================================
 
-export default function ConsolidadoDashboard({
+export default function Dashboard({
   dadosNumericosAPI = {},
   dados = {},
   dadosProcessados = [],

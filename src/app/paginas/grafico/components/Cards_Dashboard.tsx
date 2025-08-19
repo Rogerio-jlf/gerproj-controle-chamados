@@ -11,7 +11,7 @@ import {
 
 // ====================================================================================================
 
-interface MetricsCardsProps {
+interface CardsDashboardProps {
   dadosNumericosAPI?: any;
   dados?: any;
   dadosProcessados?: any[];
@@ -20,12 +20,12 @@ interface MetricsCardsProps {
 
 // ====================================================================================================
 
-export default function MetricsCards({
+export default function CardsDashboard({
   dadosNumericosAPI = {},
   dados = {},
   dadosProcessados = [],
   className = '',
-}: MetricsCardsProps) {
+}: CardsDashboardProps) {
   const [visibleCards, setVisibleCards] = useState(0);
 
   // Animações de entrada dos cards
