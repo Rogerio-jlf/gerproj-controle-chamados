@@ -2,6 +2,7 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { formatarNumero, calcularStatus } from './components/utils';
+import LoadingComponent from '../../../components/Loading';
 
 // =======================
 // Tipos da API
@@ -256,12 +257,7 @@ export default function PerformanceAPI({ mes, ano, children }: DataAPIProps) {
 
   const buscarDados = useCallback(() => refetch(), [refetch]);
 
-  if (isLoading)
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <div className="text-center">Carregando...</div>
-      </div>
-    );
+  if (isLoading) return <LoadingComponent />;
 
   if (isError || !dadosAPI || !dadosNumericosAPI)
     return (

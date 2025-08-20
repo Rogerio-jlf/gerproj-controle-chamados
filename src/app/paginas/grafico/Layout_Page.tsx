@@ -115,7 +115,7 @@ const Layout_Page: React.FC = () => {
                   <div className="bg-white">
                     <Overview
                       chunks={(() => {
-                        const chunkSize = 9;
+                        const chunkSize = 18;
                         const filtered = dadosProcessados.filter(
                           r =>
                             r.horasDisponiveis > 0 ||

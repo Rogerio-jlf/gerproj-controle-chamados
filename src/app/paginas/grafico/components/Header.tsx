@@ -6,18 +6,19 @@ import {
   DollarSign,
   Activity,
   TrendingUp,
-  Calendar,
-  ChevronDown,
+  Filter,
 } from 'lucide-react';
+// ==================================================
 
 interface HeaderProps {
   mes: number;
-  ano: number;
   setMes: (m: number) => void;
+  ano: number;
   setAno: (a: number) => void;
   tipoVisualizacao: string;
   setTipoVisualizacao: (t: any) => void;
 }
+// ==================================================
 
 export default function Header({
   mes,
@@ -27,52 +28,30 @@ export default function Header({
   tipoVisualizacao,
   setTipoVisualizacao,
 }: HeaderProps) {
+  // ====================================================================================================
   return (
-    <header className="relative overflow-hidden rounded-2xl border border-white/20 bg-gradient-to-r from-slate-50/95 via-white/90 to-blue-50/95 shadow-xl shadow-blue-900/10 backdrop-blur-xl">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-600/3 via-purple-600/3 to-indigo-600/3"></div>
-      <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-gradient-to-br from-blue-400/10 to-purple-400/10 blur-2xl"></div>
-      <div className="absolute -bottom-20 -left-20 h-40 w-40 rounded-full bg-gradient-to-tr from-indigo-400/10 to-cyan-400/10 blur-2xl"></div>
-
-      {/* Content - Single Line Layout */}
-      <div className="relative z-10 flex items-center justify-between gap-8 px-6 py-4">
-        {/* Left Section - Title + Period */}
-        <div className="flex items-center gap-8">
-          {/* Compact Title */}
-          <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/30">
-              <BarChart3 className="h-5 w-5 text-white" />
-            </div>
-            <div className="flex flex-col">
-              <h1 className="bg-gradient-to-r from-slate-800 to-blue-700 bg-clip-text text-2xl font-bold tracking-tight text-transparent">
+    <header className="rounded-2xl border-t border-slate-200 bg-gradient-to-r from-slate-600 via-slate-400 to-slate-600 shadow-md shadow-black">
+      <div className="flex items-center justify-between gap-8 p-4">
+        <div className="flex items-center justify-center gap-4">
+          {/* ===== items da esquerda ===== */}
+          <div className="flex items-center gap-6">
+            {/* ícone */}
+            <Filter className="text-white" size={40} />
+            {/* <div className="flex flex-col">
+              <h1 className="bg-gradient-to-r from-slate-800 to-blue-700 bg-clip-text text-3xl font-extrabold tracking-wider text-transparent select-none">
                 Performance
               </h1>
-              <div className="flex items-center gap-2 text-xs text-slate-500">
-                <Calendar className="h-3 w-3" />
-                <span>
-                  {new Date(ano, mes - 1)
-                    .toLocaleDateString('pt-BR', {
-                      month: 'long',
-                      year: 'numeric',
-                    })
-                    .replace(/^\w/, c => c.toUpperCase())}
-                </span>
-              </div>
-            </div>
+            </div> */}
           </div>
 
-          {/* Period Selectors */}
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold tracking-wider text-slate-600/70 uppercase">
-              Filtro
-            </span>
-
-            {/* Month Selector */}
+          {/* ===== filtros ===== */}
+          <div className="flex items-center justify-center gap-4">
+            {/* select mês */}
             <div className="group relative">
               <select
                 value={mes}
                 onChange={e => setMes(Number(e.target.value))}
-                className="cursor-pointer appearance-none rounded-lg border border-slate-200/60 bg-white/80 py-2 pr-8 pl-4 text-sm font-medium text-slate-700 shadow-md shadow-slate-900/5 backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-lg focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                className="cursor-pointer rounded-md border-t border-slate-200 bg-white px-6 py-2 text-base font-semibold text-slate-800 shadow-xs shadow-black transition-all hover:scale-105 hover:shadow-md hover:shadow-black focus:outline-none"
               >
                 {Array.from({ length: 12 }, (_, i) => {
                   const mesNome = new Date(2026, i)
@@ -85,29 +64,28 @@ export default function Header({
                   );
                 })}
               </select>
-              <ChevronDown className="pointer-events-none absolute top-1/2 right-2 h-3 w-3 -translate-y-1/2 text-slate-500 transition-colors group-hover:text-blue-600" />
             </div>
 
-            {/* Year Selector */}
+            {/* select ano */}
             <div className="group relative">
               <select
                 value={ano}
                 onChange={e => setAno(Number(e.target.value))}
-                className="cursor-pointer appearance-none rounded-lg border border-slate-200/60 bg-white/80 py-2 pr-8 pl-4 text-sm font-medium text-slate-700 shadow-md shadow-slate-900/5 backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-lg focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                className="cursor-pointer rounded-md border-t border-slate-200 bg-white px-6 py-2 text-base font-semibold text-slate-800 shadow-xs shadow-black transition-all hover:scale-105 hover:shadow-md hover:shadow-black focus:outline-none"
               >
-                {Array.from({ length: 5 }, (_, i) => (
+                {Array.from({ length: 3 }, (_, i) => (
                   <option key={2026 - i} value={2026 - i}>
                     {2026 - i}
                   </option>
                 ))}
               </select>
-              <ChevronDown className="pointer-events-none absolute top-1/2 right-2 h-3 w-3 -translate-y-1/2 text-slate-500 transition-colors group-hover:text-blue-600" />
             </div>
           </div>
         </div>
 
-        {/* Right Section - Navigation Tabs */}
-        <nav className="flex items-center gap-1 rounded-xl border border-white/40 bg-white/60 p-1 shadow-lg shadow-slate-900/5 backdrop-blur-sm">
+        {/* ===== itens da direita ===== */}
+        <nav className="flex items-center justify-center gap-4">
+          {/* <nav className="flex items-center justify-center gap-1 rounded-md bg-white px-4 py-2 shadow-xs shadow-black"> */}
           {[
             {
               key: 'overview',
@@ -143,38 +121,22 @@ export default function Header({
             <button
               key={key}
               onClick={() => setTipoVisualizacao(key)}
-              className={`group relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-all duration-300 ${
+              className={`group relative flex items-center justify-center gap-4 rounded-md border-t border-slate-200 px-4 py-2 text-base font-semibold shadow-xs shadow-black transition-all ${
                 tipoVisualizacao === key
-                  ? 'scale-105 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/30'
-                  : 'text-slate-600 hover:scale-105 hover:bg-white/80 hover:text-slate-800 hover:shadow-md'
+                  ? 'bg-black text-white hover:scale-105 hover:shadow-md hover:shadow-black'
+                  : 'bg-white/60 text-slate-800 hover:scale-105 hover:bg-slate-600 hover:text-white hover:shadow-md hover:shadow-black'
               }`}
               title={label}
             >
-              <div
-                className={`transition-transform duration-200 ${
-                  tipoVisualizacao === key
-                    ? 'scale-110'
-                    : 'group-hover:scale-110'
-                }`}
-              >
-                {icon}
-              </div>
+              <div>{icon}</div>
 
-              {/* Show full label on larger screens, short on smaller */}
+              {/* telas maiores e telas menores */}
               <span className="hidden font-medium xl:block">{label}</span>
               <span className="font-medium xl:hidden">{shortLabel}</span>
-
-              {/* Active indicator */}
-              {tipoVisualizacao === key && (
-                <div className="absolute -bottom-0.5 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-white/80"></div>
-              )}
             </button>
           ))}
         </nav>
       </div>
-
-      {/* Subtle bottom border */}
-      <div className="absolute right-0 bottom-0 left-0 h-px bg-gradient-to-r from-transparent via-slate-200/50 to-transparent"></div>
     </header>
   );
 }
