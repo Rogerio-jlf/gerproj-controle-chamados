@@ -6,7 +6,6 @@ import {
   CheckCircle,
   Users,
   TrendingUp,
-  RefreshCw,
   Activity,
   Zap,
   Target,
@@ -20,11 +19,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '../../../../components/ui/tooltip';
-import LoadingComponent from '../../../../components/Loading';
 import { IoMdClock } from 'react-icons/io';
 import { TbClockPlus } from 'react-icons/tb';
 import { ImUsers } from 'react-icons/im';
 import { FaGaugeHigh } from 'react-icons/fa6';
+import { FaArrowTrendUp } from 'react-icons/fa6';
+import { FaArrowTrendDown } from 'react-icons/fa6';
 
 interface ClienteDetalhes {
   cod_cliente: string;
@@ -89,6 +89,27 @@ export default function Clientes({ mes, ano }: HorasContratadasDashboardProps) {
     retry: 3,
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
+
+  // ==========================================================================================
+  const diferenca =
+    data?.totalHorasExecutadas && data?.totalHorasContratadas
+      ? data.totalHorasExecutadas - data.totalHorasContratadas
+      : 0;
+  const executadasMaior = diferenca > 0;
+
+  const titulo = executadasMaior ? 'Ultrapassou' : 'Saldo';
+  const valor = Math.abs(diferenca); // sempre positivo
+  const Icone = executadasMaior ? FaArrowTrendUp : FaArrowTrendDown;
+
+  // Classes dinâmicas para cores
+  const cardClasses = executadasMaior
+    ? 'bg-yellow-600 border-yellow-200'
+    : 'bg-cyan-600 border-cyan-200';
+
+  const iconClasses = executadasMaior
+    ? 'from-yellow-300 via-yellow-700 to-yellow-300'
+    : 'from-cyan-300 via-cyan-700 to-cyan-300';
+  // ==========================================================================================
 
   const getClienteStatus = (
     horasExecutadas: number,
@@ -180,61 +201,6 @@ export default function Clientes({ mes, ano }: HorasContratadasDashboardProps) {
         return valueA < valueB ? 1 : -1;
       }) || [];
 
-  if (isLoading) {
-    return <LoadingComponent />;
-  }
-
-  if (isError) {
-    return (
-      <div className="rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 p-8 shadow-xl">
-        <div className="mb-6 flex items-start space-x-4">
-          <div className="rounded-full bg-red-100 p-3">
-            <AlertTriangle className="h-8 w-8 text-red-600" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-red-800">
-              Ops! Algo deu errado
-            </h3>
-            <p className="mt-2 text-red-600">
-              {error?.message ||
-                'Não foi possível carregar os dados dos clientes.'}
-            </p>
-          </div>
-        </div>
-
-        <button
-          onClick={() => refetch()}
-          className="flex items-center gap-3 rounded-xl bg-red-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:bg-red-700 hover:shadow-xl"
-        >
-          <RefreshCw className="h-5 w-5" />
-          Tentar Novamente
-        </button>
-
-        {error?.message.includes('database') && (
-          <div className="mt-6 rounded-xl border border-yellow-200 bg-yellow-50 p-6">
-            <h4 className="mb-3 flex items-center gap-2 font-semibold text-yellow-800">
-              <Zap className="h-5 w-5" />
-              Possíveis soluções
-            </h4>
-            <ul className="space-y-2 text-sm text-yellow-700">
-              {[
-                'Verifique se o servidor PostgreSQL está rodando',
-                'Confirme se o IP 192.168.234.3:5432 está acessível',
-                'Verifique as credenciais de conexão no arquivo .env',
-                'Confirme se não há firewall bloqueando a conexão',
-              ].map((item, idx) => (
-                <li key={idx} className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-    );
-  }
-
   if (!data) return null;
   // ==========================================================================================
 
@@ -245,7 +211,7 @@ export default function Clientes({ mes, ano }: HorasContratadasDashboardProps) {
         <header className="flex items-center justify-between rounded-t-md bg-slate-900 p-6">
           {/* ===== seção da esquerda ===== */}
           <section className="flex flex-col items-start justify-center">
-            <h1 className="text-3xl font-extrabold tracking-wider text-white select-none">
+            <h1 className="text-3xl font-extrabold tracking-widest text-white select-none">
               Horas Cliente
             </h1>
 
@@ -313,73 +279,119 @@ export default function Clientes({ mes, ano }: HorasContratadasDashboardProps) {
           {/* ==================== */}
 
           {/* ===== seção da direita ===== */}
-          <section className="grid grid-cols-4 gap-4">
+          <section className="grid grid-cols-5 gap-4">
+            {/* total clientes */}
             <div className="min-w-[180px] rounded-md border-t border-blue-200 bg-blue-600 px-4 py-2 shadow-md shadow-black">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-base font-bold tracking-wider text-white select-none">
-                    Total Clientes
-                  </p>
-                  <p className="text-2xl font-semibold tracking-wider text-white italic select-none">
-                    {data.resumo.totalClientes}
-                  </p>
-                </div>
+              <div className="flex items-center gap-4">
+                {/* ícone */}
                 <div className="flex h-10 w-10 items-center justify-center rounded-md bg-gradient-to-br from-blue-300 via-blue-700 to-blue-300 shadow-md shadow-black">
                   <ImUsers className="text-white" size={24} />
                 </div>
-              </div>
-            </div>
-
-            <div className="min-w-[180px] rounded-md border-t border-orange-200 bg-orange-600 px-4 py-2 shadow-md shadow-black">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-base font-bold tracking-wider text-white select-none">
-                    Horas Contratadas
+                <div className="flex flex-col items-start justify-center">
+                  {/* título */}
+                  <p className="text-lg font-semibold tracking-wider text-white select-none">
+                    Total Clientes
                   </p>
-                  <p className="text-2xl font-semibold tracking-wider text-white italic select-none">
-                    {data.totalHorasContratadas}h
+                  {/* valor */}
+                  <p className="text-2xl font-bold tracking-wider text-white select-none">
+                    {data.resumo.totalClientes}
                   </p>
                 </div>
+              </div>
+            </div>
+            {/* ===== */}
+
+            {/* horas contratadas */}
+            <div className="min-w-[180px] rounded-md border-t border-orange-200 bg-orange-600 px-4 py-2 shadow-md shadow-black">
+              <div className="flex items-center gap-4">
+                {/* ícone */}
                 <div className="flex h-10 w-10 items-center justify-center rounded-md bg-gradient-to-br from-orange-300 via-orange-700 to-orange-300 shadow-md shadow-black">
                   <IoMdClock className="text-white" size={24} />
                 </div>
-              </div>
-            </div>
-
-            <div className="min-w-[180px] rounded-md border-t border-green-200 bg-green-600 px-4 py-2 shadow-md shadow-black">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-base font-bold tracking-wider text-white select-none">
-                    Horas Executadas
+                <div className="flex flex-col items-start justify-center">
+                  {/* título */}
+                  <p className="text-lg font-semibold tracking-wider text-white select-none">
+                    Horas Contratadas
                   </p>
-                  <p className="text-2xl font-semibold tracking-wider text-white italic select-none">
-                    {data.totalHorasExecutadas}h
+                  {/* valor */}
+                  <p className="text-2xl font-bold tracking-wider text-white select-none">
+                    {data.totalHorasContratadas}h
                   </p>
                 </div>
+              </div>
+            </div>
+            {/*  */}
+
+            {/* horas executadas */}
+            <div className="min-w-[180px] rounded-md border-t border-green-200 bg-green-600 px-4 py-2 shadow-md shadow-black">
+              <div className="flex items-center gap-4">
+                {/* ícone */}
                 <div className="flex h-10 w-10 items-center justify-center rounded-md bg-gradient-to-br from-green-300 via-green-700 to-green-300 shadow-md shadow-black">
                   <TbClockPlus className="text-white" size={24} />
                 </div>
-              </div>
-            </div>
-
-            <div className="min-w-[180px] rounded-md border-t border-purple-200 bg-purple-600 px-4 py-2 shadow-md shadow-black">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-base font-bold tracking-wider text-white select-none">
-                    Eficiência
+                <div className="flex flex-col items-start justify-center">
+                  {/* título */}
+                  <p className="text-lg font-semibold tracking-wider text-white select-none">
+                    Horas Executadas
                   </p>
-                  <p className="text-2xl font-semibold tracking-wider text-white italic select-none">
-                    {data.resumo.percentualExecucao.toFixed(1)}%
+                  {/* valor */}
+                  <p className="text-2xl font-bold tracking-wider text-white select-none">
+                    {data.totalHorasExecutadas}h
                   </p>
                 </div>
+              </div>
+            </div>
+            {/* ===== */}
+
+            {/* diferença entre horas contratadas e horas executadas */}
+            <div
+              className={`min-w-[180px] rounded-md border-t ${cardClasses} px-4 py-2 shadow-md shadow-black`}
+            >
+              <div className="flex items-center gap-4">
+                {/* ícone */}
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-md bg-gradient-to-br ${iconClasses} shadow-md shadow-black`}
+                >
+                  <Icone className="text-white" size={24} />
+                </div>
+                <div className="flex flex-col items-start justify-center">
+                  {/* título */}
+                  <p className="text-lg font-semibold tracking-wider text-white select-none">
+                    {titulo}
+                  </p>
+                  {/* valor */}
+                  <p className="text-2xl font-bold tracking-wider text-white select-none">
+                    {valor}h
+                  </p>
+                </div>
+              </div>
+            </div>
+            {/* ===== */}
+
+            {/* eficiência */}
+            <div className="min-w-[180px] rounded-md border-t border-purple-200 bg-purple-600 px-4 py-2 shadow-md shadow-black">
+              <div className="flex items-center gap-4">
+                {/* ícone */}
                 <div className="flex h-10 w-10 items-center justify-center rounded-md bg-gradient-to-br from-purple-300 via-purple-700 to-purple-300 shadow-md shadow-black">
                   <FaGaugeHigh className="text-white" size={24} />
                 </div>
+                <div className="flex flex-col items-start justify-center">
+                  {/* título */}
+                  <p className="text-lg font-semibold tracking-wider text-white select-none">
+                    Eficiência
+                  </p>
+                  {/* valor */}
+                  <p className="text-2xl font-bold tracking-wider text-white select-none">
+                    {data.resumo.percentualExecucao.toFixed(1)}%
+                  </p>
+                </div>
               </div>
             </div>
+            {/* ===== */}
           </section>
           {/* ==================== */}
         </header>
+        {/* ============================== */}
 
         {/* Tabela */}
         <div className="overflow-x-auto">

@@ -243,69 +243,89 @@ export default function Grafico({
 
               {/* ===== seção da direita ===== */}
               <section className="grid grid-cols-4 gap-4">
+                {/* horas disponíveis */}
                 <div className="min-w-[180px] rounded-md border-t border-blue-200 bg-blue-600 px-4 py-2 shadow-md shadow-black">
                   <div className="flex items-center gap-4">
+                    {/* ícone */}
                     <div className="flex h-12 w-12 items-center justify-center rounded-md bg-gradient-to-br from-blue-300 via-blue-700 to-blue-300 shadow-md shadow-black">
                       <IoMdClock className="text-white" size={24} />
                     </div>
-                    <div className="flex flex-col items-center justify-center">
-                      <p className="text-lg font-semibold tracking-wider text-white select-none">
+                    <div className="flex flex-col items-start justify-center">
+                      {/* título */}
+                      <p className="text-lg font-semibold tracking-widest text-white select-none">
                         Horas Disponíveis
                       </p>
-                      <p className="text-xl font-bold tracking-wider text-white select-none">
+                      {/* valor */}
+                      <p className="text-2xl font-bold tracking-wider text-white select-none">
                         {totaisGerais.disponiveis.toLocaleString('pt-BR')}h
                       </p>
                     </div>
                   </div>
                 </div>
+                {/* ===== */}
 
+                {/* horas executadas */}
                 <div className="min-w-[180px] rounded-md border-t border-orange-200 bg-orange-600 px-4 py-2 shadow-md shadow-black">
                   <div className="flex items-center gap-4">
+                    {/* ícone */}
                     <div className="flex h-12 w-12 items-center justify-center rounded-md bg-gradient-to-br from-orange-300 via-orange-700 to-orange-300 shadow-md shadow-black">
                       <TbClockPlus className="text-white" size={24} />
                     </div>
-                    <div className="flex flex-col items-center justify-center">
+                    <div className="flex flex-col items-start justify-center">
+                      {/* título */}
                       <p className="text-lg font-semibold tracking-wider text-white select-none">
                         Horas Executadas
                       </p>
-                      <p className="text-xl font-bold tracking-wider text-white select-none">
+                      {/* valor */}
+                      <p className="text-2xl font-bold tracking-wider text-white select-none">
                         {totaisGerais.executadas.toLocaleString('pt-BR')}h
                       </p>
                     </div>
                   </div>
                 </div>
+                {/* ===== */}
 
+                {/* horas faturadas */}
                 <div className="min-w-[180px] rounded-md border-t border-green-200 bg-green-600 px-4 py-2 shadow-md shadow-black">
                   <div className="flex items-center gap-4">
+                    {/* ícone */}
                     <div className="flex h-12 w-12 items-center justify-center rounded-md bg-gradient-to-br from-green-300 via-green-700 to-green-300 shadow-md shadow-black">
                       <TbClockDollar className="text-white" size={24} />
                     </div>
-                    <div className="flex flex-col items-center justify-center">
+                    <div className="flex flex-col items-start justify-center">
+                      {/* título */}
                       <p className="text-lg font-semibold tracking-wider text-white select-none">
                         Horas Faturadas
                       </p>
-                      <p className="text-xl font-bold tracking-wider text-white select-none">
+                      {/* valor */}
+                      <p className="text-2xl font-bold tracking-wider text-white select-none">
                         {totaisGerais.faturadas.toLocaleString('pt-BR')}h
                       </p>
                     </div>
                   </div>
                 </div>
+                {/* ===== */}
 
+                {/* horas não faturadas */}
                 <div className="min-w-[180px] rounded-md border-t border-red-200 bg-red-600 px-4 py-2 shadow-md shadow-black">
                   <div className="flex items-center gap-4">
+                    {/* ícone */}
                     <div className="flex h-12 w-12 items-center justify-center rounded-md bg-gradient-to-br from-red-300 via-red-700 to-red-300 shadow-md shadow-black">
                       <TbClockMinus className="text-white" size={24} />
                     </div>
-                    <div className="flex flex-col items-center justify-center">
+                    <div className="flex flex-col items-start justify-center">
+                      {/* título */}
                       <p className="text-lg font-semibold tracking-wider text-white select-none">
                         Horas Não Faturadas
                       </p>
-                      <p className="text-xl font-bold tracking-wider text-white select-none">
+                      {/* valor */}
+                      <p className="text-2xl font-bold tracking-wider text-white select-none">
                         {totaisGerais.naoFaturadas.toLocaleString('pt-BR')}h
                       </p>
                     </div>
                   </div>
                 </div>
+                {/* ===== */}
               </section>
             </header>
             {/* ==================== */}

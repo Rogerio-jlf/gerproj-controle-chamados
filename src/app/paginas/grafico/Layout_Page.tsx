@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import PerformanceAPI from './Performance_API';
 import Header from './components/Header';
-import Overview from './components/Overview';
+import Overview from './components/Aba_Overview';
 import TabelaClientes from './components/Tabela_Clientes';
 import TabelaRecursos from './components/Tabela_Recursos';
 import Financeiro from './components/Financeiro';

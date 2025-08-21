@@ -3,6 +3,7 @@ import React, { useMemo, useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { formatarNumero, calcularStatus } from './components/utils';
 import LoadingComponent from '../../../components/Loading';
+import ErrorComponent from '../../../components/Error';
 
 // =======================
 // Tipos da API
@@ -260,24 +261,7 @@ export default function PerformanceAPI({ mes, ano, children }: DataAPIProps) {
   if (isLoading) return <LoadingComponent />;
 
   if (isError || !dadosAPI || !dadosNumericosAPI)
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 p-6">
-        <div className="w-full max-w-md rounded-2xl border border-red-200 bg-white/90 p-8 shadow-2xl backdrop-blur-sm">
-          <div className="text-center">
-            <p className="mb-6 text-gray-600">
-              {(error instanceof Error ? error.message : String(error)) ||
-                'Não foi possível carregar os dados'}
-            </p>
-            <button
-              onClick={buscarDados}
-              className="w-full rounded-xl bg-gradient-to-r from-red-500 to-pink-600 px-6 py-3 font-semibold text-white"
-            >
-              Tentar Novamente
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    return <ErrorComponent onRetry={buscarDados} />;
 
   return children({
     dadosAPI,
