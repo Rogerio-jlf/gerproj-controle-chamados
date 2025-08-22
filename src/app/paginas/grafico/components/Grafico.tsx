@@ -18,18 +18,22 @@ import { IoMdClock } from 'react-icons/io';
 import { TbClockPlus } from 'react-icons/tb';
 import { TbClockMinus } from 'react-icons/tb';
 import { TbClockDollar } from 'react-icons/tb';
-// ==================================================
+import { FaCalendarAlt } from 'react-icons/fa';
+import { FaUser } from 'react-icons/fa';
+import { Card } from '../../../../components/ui/card';
+import { FaCalendarTimes } from 'react-icons/fa';
+// ====================================================================================================
 
 interface OverviewProps {
   dadosNumericosAPI?: any;
   dados?: any;
   dadosProcessados?: any[];
-  chunks: any[];
+  parts: any[];
   totalRecursos: number;
   mes: number;
   ano: number;
 }
-// ==================================================
+// ====================================================================================================
 
 const GRADIENTS = {
   blue: { from: '#0000FF', to: '#0000FF', color: '#0000FF' },
@@ -38,6 +42,7 @@ const GRADIENTS = {
   orange: { from: '#FFA500', to: '#FFA500', color: '#FFA500' },
   red: { from: '#FF0000', to: '#FF0000', color: '#FF0000' },
 };
+// ==========
 
 const BAR_CONFIG = [
   { name: 'Disponíveis', dataKey: 'horasDisponiveis', gradient: 'blue' },
@@ -52,14 +57,15 @@ const BAR_CONFIG = [
     isPercentage: true,
   },
 ];
-// ==================================================
+// ====================================================================================================
 
 export default function Grafico({
-  chunks,
+  parts,
   totalRecursos,
   mes,
   ano,
 }: OverviewProps) {
+  // Função para garantir que cada chunk tenha 9 itens, preenchendo com vazios se necessário
   const padChunkToNine = (chunk: any[]) => {
     const paddedChunk = [...chunk];
     while (paddedChunk.length < 9) {
@@ -75,7 +81,30 @@ export default function Grafico({
     }
     return paddedChunk;
   };
+  // ==========
 
+  // Verificar se há dados válidos para exibir
+  const hasValidData = () => {
+    if (totalRecursos === 0 || !parts || parts.length === 0) {
+      return false;
+    }
+
+    // Verifica se existe pelo menos um recurso com dados válidos em todos os parts
+    return parts.some(chunk =>
+      chunk.some(
+        (item: any) =>
+          !item.isEmpty &&
+          ((item.horasDisponiveis && item.horasDisponiveis > 0) ||
+            (item.horasExecutadas && item.horasExecutadas > 0) ||
+            (item.horasFaturadas && item.horasFaturadas > 0) ||
+            (item.horasNaoFaturadas && item.horasNaoFaturadas > 0) ||
+            (item.percentualAtingido && item.percentualAtingido > 0))
+      )
+    );
+  };
+  // ==========
+
+  // Renderização dos gradientes
   const renderGradientDefs = () => (
     <svg width="0" height="0" className="absolute">
       <defs>
@@ -95,7 +124,9 @@ export default function Grafico({
       </defs>
     </svg>
   );
+  // ==========
 
+  // Renderização das barras
   const renderBars = () =>
     BAR_CONFIG.map(
       ({ name, dataKey, gradient, yAxis = 'left', isPercentage }) => (
@@ -136,39 +167,52 @@ export default function Grafico({
         </Bar>
       )
     );
+  // ==========
 
-  if (totalRecursos === 0) {
+  // Verifica se não há dados válidos para exibir
+  if (!hasValidData()) {
     return (
-      <div className="flex h-96 items-center justify-center rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 p-8 shadow-lg">
-        <div className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-gray-300 bg-white">
-            <svg
-              className="h-8 w-8 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+      <Card className="flex h-96 items-center justify-center rounded-xl border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-8 shadow-md shadow-black">
+        {/* Conteúdo */}
+        <div className="flex flex-col items-center justify-center space-y-8">
+          <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full border-3 border-dashed border-gray-300 bg-white shadow-xl">
+            <div className="flex flex-col items-center gap-4">
+              <FaCalendarAlt className="text-gray-400" size={28} />
+              {/* ===== */}
+              <FaUser className="text-gray-400" size={28} />
+            </div>
           </div>
-          <h3 className="mt-4 text-xl font-semibold text-gray-700">
-            Nenhum dado disponível
-          </h3>
-          <p className="mt-2 text-gray-500">
-            Todos os recursos estão com valores zerados neste período
-          </p>
+          {/* ===== */}
+          <div className="flex flex-col items-center justify-center">
+            <h3 className="text-2xl font-extrabold tracking-wider text-gray-900 select-none">
+              Nenhum dado disponível
+            </h3>
+            {/* ===== */}
+            <p className="text-base font-bold tracking-wider text-gray-700 italic select-none">
+              Não há dados de recursos para o período selecionado
+            </p>
+          </div>
+          {/* ===== */}
+          <div className="flex items-center justify-center gap-3">
+            <FaCalendarTimes className="text-blue-600" size={20} />{' '}
+            {/* ===== */}
+            <p className="text-base font-semibold tracking-wider text-blue-600 select-none">
+              {new Date(ano, mes - 1)
+                .toLocaleDateString('pt-BR', {
+                  month: 'long',
+                  year: 'numeric',
+                })
+                .replace(/^\w/, c => c.toUpperCase())}
+            </p>
+          </div>
         </div>
-      </div>
+      </Card>
     );
   }
+  // ==========
 
-  // Calcular totais gerais de todos os chunks
-  const totaisGerais = chunks.reduce(
+  // Calcular totais gerais de todos os parts
+  const totaisGerais = parts.reduce(
     (acc, chunk) => {
       chunk.forEach((item: any) => {
         // Considerar todos os recursos que têm algum valor (não apenas faturadas > 0)
@@ -195,7 +239,7 @@ export default function Grafico({
     <div className="space-y-6">
       {renderGradientDefs()}
       {/* ===== GRÁFICO ===== */}
-      {chunks.map((chunk: any, index: number) => {
+      {parts.map((chunk: any, index: number) => {
         const filteredChunk = chunk.filter(
           (item: any) => item.horasFaturadas > 0
         );

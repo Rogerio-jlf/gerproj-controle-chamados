@@ -65,6 +65,11 @@ interface DataDadosProcessados {
 // Tipos de métricas
 // =======================
 interface DadosNumericosAPI {
+  margemLucro: any;
+  lucroOperacional: number;
+  totalDespesas: any;
+  totalCustos: number;
+  totalReceitas: number;
   metaAtingidaMedia: number;
   eficienciaMedia: number;
   utilizacaoMedia: number;
@@ -260,8 +265,7 @@ export default function PerformanceAPI({ mes, ano, children }: DataAPIProps) {
 
   if (isLoading) return <LoadingComponent />;
 
-  if (isError || !dadosAPI || !dadosNumericosAPI)
-    return <ErrorComponent onRetry={buscarDados} />;
+  if (isError || !dadosAPI || !dadosNumericosAPI) return <ErrorComponent />;
 
   return children({
     dadosAPI,

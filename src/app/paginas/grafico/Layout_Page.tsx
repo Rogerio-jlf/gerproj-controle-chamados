@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import PerformanceAPI from './Performance_API';
 import Header from './components/Header';
 import Overview from './components/Aba_Overview';
-import TabelaClientes from './components/Tabela_Clientes';
-import TabelaRecursos from './components/Tabela_Recursos';
-import Financeiro from './components/Financeiro';
+import TabelaClientes from './components/Aba_Clientes';
+import TabelaRecursos from './components/Aba_Recursos';
+import Financeiro from './components/Aba_Financeiro';
 import Dashboard from './components/Dashboard';
 import { Info } from 'lucide-react';
 
@@ -151,18 +151,11 @@ const Layout_Page: React.FC = () => {
                   <TabelaClientes mes={mes} ano={ano} />
                 )}
 
-                {tipoVisualizacao === 'financeiro' && (
-                  <Financeiro metricas={dadosNumericosAPI} dados={dadosAPI} />
+                {tipoVisualizacao === 'recursos' && (
+                  <TabelaRecursos dadosProcessados={dadosProcessados} />
                 )}
 
-                {tipoVisualizacao === 'recursos' && (
-                  <div className="rounded-2xl border border-slate-300 bg-white p-10 shadow-md shadow-black">
-                    <h2 className="mb-6 text-2xl font-bold tracking-wider text-slate-800 select-none">
-                      Tabela de Performance
-                    </h2>
-                    <TabelaRecursos dadosProcessados={dadosProcessados} />
-                  </div>
-                )}
+                {tipoVisualizacao === 'financeiro' && <Financeiro />}
               </>
             );
           }}

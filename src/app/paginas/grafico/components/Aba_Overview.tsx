@@ -1,6 +1,7 @@
 import React from 'react';
 import Grafico from './Grafico';
 import Clientes from './Clientes';
+// ====================================================================================================
 
 interface Props {
   mes: number;
@@ -12,6 +13,7 @@ interface Props {
   chunks: any[];
   totalRecursos: number;
 }
+// ====================================================================================================
 
 export default function Dashboard({
   mes,
@@ -32,7 +34,7 @@ export default function Dashboard({
           dadosNumericosAPI={dadosNumericosAPI}
           dados={dados}
           dadosProcessados={dadosProcessados}
-          chunks={chunks}
+          parts={chunks}
           totalRecursos={totalRecursos}
         />
       </section>
