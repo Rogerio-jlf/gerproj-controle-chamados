@@ -72,6 +72,7 @@ const Layout_Page: React.FC = () => {
             return (
               <>
                 <Header
+                  title={tipoVisualizacao.toLocaleUpperCase()}
                   mes={mes}
                   ano={ano}
                   setMes={setMes}
