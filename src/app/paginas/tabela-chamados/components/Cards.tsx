@@ -1,28 +1,40 @@
 import { LucideIcon } from 'lucide-react';
 import { Card } from '../../../../components/ui/card';
+import { cn } from '../../../../lib/utils';
 
 interface CardsProps {
   icon: LucideIcon;
   title: string;
   value: string | number;
-  iconBgColor?: string;
+  className?: string; // Adiciona a propriedade className para permitir customização
 }
 
 export default function Cards({
   icon: Icon,
   title,
   value,
-  iconBgColor = 'bg-white/30',
+  className,
 }: CardsProps) {
   return (
-    <Card className="rounded-lg border border-white/20 bg-white/10 px-6 py-2 select-none">
-      <div className="flex items-center gap-3">
-        <div className={`rounded-lg ${iconBgColor} p-2`}>
-          <Icon className="h-5 w-5 text-white" />
+    <Card
+      className={cn(
+        'rounded-md border border-white/30 bg-white/10 px-4 py-2',
+        className
+      )}
+    >
+      <div className="flex items-center gap-4">
+        {/* Icon */}
+        <div className="rounded-xl border border-white/30 p-2">
+          <Icon className="text-cyan-400" size={24} />
         </div>
+
+        {/* Título e Valor */}
         <div className="flex flex-col">
-          <p className="text-sm tracking-wider text-white">{title}</p>
-          <p className="text-left text-xl font-bold tracking-wider text-white">
+          <h3 className="text-sm font-semibold tracking-wider text-slate-200 select-none">
+            {title}
+          </h3>
+
+          <p className="text-xl font-bold tracking-wider text-slate-200 italic select-none">
             {value}
           </p>
         </div>

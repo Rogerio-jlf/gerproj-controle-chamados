@@ -3,9 +3,6 @@ import { Kodchasan } from 'next/font/google';
 import { ClientProviders } from '../app/ClientProvider'; // importe correto
 import './globals.css';
 
-// 🔥 IMPORTAÇÃO DO CRON - vai inicializar automaticamente
-import '../lib/firebird/cron';
-
 const kodchasan = Kodchasan({
   variable: '--font-kodchasan',
   subsets: ['latin'],
@@ -43,11 +40,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // 🚀 Log para confirmar que o layout foi carregado (só no servidor)
-  if (typeof window === 'undefined') {
-    console.log('🏠 Layout carregado - Cron deve estar inicializando...');
-  }
-
   return (
     <html lang="en">
       <body className={`${kodchasan.variable} antialiased`}>

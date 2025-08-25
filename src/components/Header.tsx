@@ -4,6 +4,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import LogoutButton from './Logout_Button';
 
 interface HeaderProps {
   titulo: string;
@@ -66,6 +67,7 @@ export default function Header({ titulo, icon }: HeaderProps) {
           </TooltipContent>
         </Tooltip>
       </div>
+      <LogoutButton />
     </header>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/hooks/useAuth'; // Usando o hook useAuth correto
+import { useAuth } from '@/hooks/useAuth';
 import { useFiltersTabelaChamadosAbertos } from '@/contexts/firebird/Filters_Tabela_Chamados_Abertos_Context';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -11,21 +11,12 @@ import {
 import { useMemo, useState, useCallback } from 'react';
 import { ChamadosProps, colunasTabela } from './Colunas';
 import ModalChamado from './Modal_Chamado';
-import {
-  AlertCircle,
-  Database,
-  Sigma,
-  TriangleAlert,
-  Lock,
-  UserX,
-} from 'lucide-react';
+import { AlertCircle, Database, TriangleAlert, Lock } from 'lucide-react';
 import ExcelButton from '../../../../components/Excel_Button';
 import PDFButton from '../../../../components/PDF_Button';
-import Cards from './Cards';
 
 // Novo componente Modal para OS
 import ModalOS from './Modal_OS';
-import FiltroNumeroChamado from './Filtro_Cod_Chamado';
 import IsLoading from './IsLoading';
 import Erro from './Erro';
 
@@ -77,14 +68,14 @@ export default function Tabela() {
   };
 
   // Verifica se o usuário é ADM
-  const isAdmin = user?.tipo === 'ADM';
+  // const isAdmin = user?.tipo === 'ADM';
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-  const enabled = !!ano && !!mes && !!token && !!user && isAdmin;
+  const enabled = !!ano && !!mes && !!token && !!user;
 
   const queryParams = useMemo(() => {
-    if (!user || !isAdmin) return new URLSearchParams();
+    if (!user) return new URLSearchParams();
 
     const params = new URLSearchParams({
       ano: String(ano),
@@ -98,7 +89,7 @@ export default function Tabela() {
     if (codChamado) params.append('codChamado', codChamado);
 
     return params;
-  }, [ano, mes, cliente, recurso, status, codChamado, user, isAdmin]);
+  }, [ano, mes, cliente, recurso, status, codChamado, user]);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['chamadosAbertos', queryParams.toString(), token],
@@ -269,108 +260,87 @@ export default function Tabela() {
       <div className="overflow-hidden rounded-xl border border-slate-300 bg-slate-900">
         {/* ===== HEADER ===== */}
         <header className="bg-slate-950 p-6">
-          <div className="space-y-7">
-            {/* ===== LINHA 1: HEADER E BOTÕES DE EXPORTAÇÃO ===== */}
-            <div className="flex items-center justify-between gap-8">
-              <div className="flex items-center gap-4">
-                {/* Ícone */}
-                <div className="flex items-center justify-center rounded-xl border border-white/30 bg-white/10 p-3 backdrop-blur-sm">
-                  <Database className="h-7 w-7 text-cyan-400" />
-                </div>
-
-                <div>
-                  {/* Título */}
-                  <h1 className="text-3xl font-bold tracking-wider text-slate-200 select-none">
-                    Tabela de Chamados
-                  </h1>
-
-                  {/* Info do usuário e período */}
-                  <div className="mt-1 flex items-center gap-4">
-                    <span className="rounded-full border border-emerald-800 bg-emerald-900/20 px-2 py-1 text-xs font-medium tracking-wider text-emerald-400">
-                      ADM: {user.nome}
+          <div className="flex items-center justify-between gap-8">
+            {/* ícone, título, usuário e período */}
+            <section className="flex items-center justify-center gap-6">
+              {/* ícone */}
+              <div className="flex items-center justify-center rounded-xl border border-white/30 bg-white/10 p-4">
+                <Database className="text-cyan-400" size={44} />
+              </div>
+              {/* ===== */}
+              <div className="flex flex-col items-start justify-center">
+                {/* título */}
+                <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-white select-none">
+                  Tabela de Chamados
+                </h1>
+                {/* ===== */}
+                <div className="flex items-center gap-4">
+                  {/* nome usuário */}
+                  <span className="rounded-full bg-green-800 px-4 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+                    {user.nome}
+                  </span>
+                  {/* período */}
+                  {Array.isArray(data) && data.length > 0 && (
+                    <span className="rounded-full bg-blue-800 px-4 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+                      {mes.toString().padStart(2, '0')}/{ano}
                     </span>
-                    {Array.isArray(data) && data.length > 0 && (
-                      <span className="text-sm font-semibold tracking-wider text-slate-200 italic select-none">
-                        Período: {mes.toString().padStart(2, '0')}/{ano}
-                      </span>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
+            </section>
+            {/* ===== */}
 
-              <div className="flex items-center gap-4">
-                {/* Botão exportar excel */}
-                <ExcelButton
-                  data={data ?? []}
-                  fileName={`relatorio_de_chamados_${mes}_${ano}`}
-                  title={`Relatório de Chamados - ${mes}/${ano}`}
-                  columns={[
-                    { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
-                    { key: 'COD_CHAMADO', label: 'Chamado' },
-                    { key: 'DATA_CHAMADO', label: 'Data' },
-                    { key: 'HORA_CHAMADO', label: 'Hora' },
-                    { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
-                    { key: 'STATUS_CHAMADO', label: 'Status' },
-                    { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
-                    { key: 'NOME_RECURSO', label: 'Recurso' },
-                    { key: 'NOME_CLIENTE', label: 'Cliente' },
-                    { key: 'CODTRF_CHAMADO', label: 'Código Tarefa' },
-                    { key: 'EMAIL_CHAMADO', label: 'Email' },
-                    { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
-                  ]}
-                  autoFilter={true}
-                  freezeHeader={true}
-                />
+            {/* botões de exportação, excel e PDF */}
+            <section className="flex items-center gap-6">
+              {/* excel */}
+              <ExcelButton
+                data={data ?? []}
+                fileName={`relatorio_de_chamados_${mes}_${ano}`}
+                title={`Relatório de Chamados - ${mes}/${ano}`}
+                columns={[
+                  { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
+                  { key: 'COD_CHAMADO', label: 'Chamado' },
+                  { key: 'DATA_CHAMADO', label: 'Data' },
+                  { key: 'HORA_CHAMADO', label: 'Hora' },
+                  { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
+                  { key: 'STATUS_CHAMADO', label: 'Status' },
+                  { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
+                  { key: 'NOME_RECURSO', label: 'Recurso' },
+                  { key: 'NOME_CLIENTE', label: 'Cliente' },
+                  { key: 'CODTRF_CHAMADO', label: 'Código Tarefa' },
+                  { key: 'EMAIL_CHAMADO', label: 'Email' },
+                  { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
+                ]}
+                autoFilter={true}
+                freezeHeader={true}
+              />
 
-                {/* Botão exportar PDF */}
-                <PDFButton
-                  data={data ?? []}
-                  fileName={`relatorio_chamados_${mes}_${ano}`}
-                  title={`Relatório de Chamados - ${mes}/${ano}`}
-                  columns={[
-                    { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
-                    { key: 'COD_CHAMADO', label: 'Chamado' },
-                    { key: 'DATA_CHAMADO', label: 'Data' },
-                    { key: 'HORA_CHAMADO', label: 'Hora' },
-                    { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
-                    { key: 'STATUS_CHAMADO', label: 'Status' },
-                    { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
-                    { key: 'NOME_RECURSO', label: 'Recurso' },
-                    { key: 'NOME_CLIENTE', label: 'Cliente' },
-                    { key: 'CODTRF_CHAMADO', label: 'Código Tarefa' },
-                    { key: 'EMAIL_CHAMADO', label: 'Email' },
-                    { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
-                  ]}
-                  footerText="Gerado pelo sistema em"
-                />
-              </div>
-            </div>
-
-            {/* ===== LINHA 2: CARD E FILTRO ===== */}
-            <div className="flex items-start justify-between gap-8">
-              {/* Card total chamados */}
-              {Array.isArray(data) && data.length > 0 && (
-                <div className="flex-1">
-                  <div className="grid grid-cols-3 gap-4">
-                    <Cards
-                      icon={Sigma}
-                      title="Total de Chamados"
-                      value={stats.totalChamados}
-                      className="w-[240px]"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Filtro buscar por chamado */}
-              {data && data.length > 0 && (
-                <div className="flex-shrink-0">
-                  <FiltroNumeroChamado />
-                </div>
-              )}
-            </div>
+              {/* PDF */}
+              <PDFButton
+                data={data ?? []}
+                fileName={`relatorio_chamados_${mes}_${ano}`}
+                title={`Relatório de Chamados - ${mes}/${ano}`}
+                columns={[
+                  { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
+                  { key: 'COD_CHAMADO', label: 'Chamado' },
+                  { key: 'DATA_CHAMADO', label: 'Data' },
+                  { key: 'HORA_CHAMADO', label: 'Hora' },
+                  { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
+                  { key: 'STATUS_CHAMADO', label: 'Status' },
+                  { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
+                  { key: 'NOME_RECURSO', label: 'Recurso' },
+                  { key: 'NOME_CLIENTE', label: 'Cliente' },
+                  { key: 'CODTRF_CHAMADO', label: 'Código Tarefa' },
+                  { key: 'EMAIL_CHAMADO', label: 'Email' },
+                  { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
+                ]}
+                footerText="Gerado pelo sistema em"
+              />
+            </section>
+            {/* ===== */}
           </div>
         </header>
+        {/* ===== */}
 
         {/* ===== TABELA ===== */}
         <div className="h-full w-full overflow-hidden bg-slate-900">
@@ -379,11 +349,13 @@ export default function Tabela() {
             style={{ maxHeight: 'calc(100vh - 470px)' }}
           >
             <table className="w-full table-fixed border-collapse">
-              {/* Header Table */}
+              {/* cabeçalho da tabela */}
               <thead className="sticky top-0 z-20">
                 {table.getHeaderGroups().map(headerGroup => (
+                  // linha do cabeçalho
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map(header => (
+                      // campos do cabeçalho
                       <th
                         key={header.id}
                         className="bg-teal-800 p-3 font-semibold tracking-wider text-white select-none"
@@ -400,12 +372,14 @@ export default function Tabela() {
                   </tr>
                 ))}
               </thead>
+              {/* ===== */}
 
-              {/* Body Table */}
+              {/* corpo da tabela */}
               <tbody>
                 {table.getRowModel().rows.length > 0 &&
                   !isLoading &&
                   table.getRowModel().rows.map((row, rowIndex) => (
+                    // linha da tabela
                     <tr
                       key={row.id}
                       className={`group border-b border-slate-700 transition-all duration-300 hover:bg-white/50 ${
@@ -413,6 +387,7 @@ export default function Tabela() {
                       }`}
                     >
                       {row.getVisibleCells().map(cell => (
+                        // células da tabela
                         <td
                           key={cell.id}
                           className="p-3 text-sm font-semibold tracking-wider text-white group-hover:text-black"
@@ -429,7 +404,9 @@ export default function Tabela() {
                     </tr>
                   ))}
               </tbody>
+              {/* ===== */}
             </table>
+            {/* ===== */}
           </div>
         </div>
 

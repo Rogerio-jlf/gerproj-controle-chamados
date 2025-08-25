@@ -1,7 +1,7 @@
 'use client';
 
 import Filtros from '@/app/paginas/tabela-chamados/components/Filtros';
-import Tabela from '@/app/paginas/tabela-chamados/components/Tabela';
+import Tabela from '@/app/paginas/tabela-chamados-recursos/components/Tabela';
 import { useFiltersTabelaChamadosAbertos } from '@/contexts/firebird/Filters_Tabela_Chamados_Abertos_Context';
 import { useCallback } from 'react';
 import { useAuth } from '../../../../contexts/Auth_Context';
@@ -9,17 +9,15 @@ import Header from '../../../../components/Header';
 import { HiDocumentPlus } from 'react-icons/hi2';
 
 export default function LayoutPage() {
-  const { isAdmin, codCliente } = useAuth();
+  // const { isAdmin, codCliente } = useAuth();
   const { filters, setFilters } = useFiltersTabelaChamadosAbertos();
 
   const handleFiltersChange = useCallback(
     (newFilters: typeof filters) => {
-      const updatedFilters = !isAdmin
-        ? { ...newFilters, cliente: codCliente || '' }
-        : newFilters;
+      const updatedFilters = { ...filters, ...newFilters };
       setFilters(updatedFilters);
     },
-    [isAdmin, codCliente, setFilters]
+    [setFilters, filters]
   );
 
   return (

@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/Auth_Context';
-import { useFiltersTabelaChamados } from '@/contexts/postgre/Filters_Tabela_Chamados_Context';
+import { useFiltersTabelaChamadosAbertos } from '@/contexts/firebird/Filters_Tabela_Chamados_Abertos_Context';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -24,26 +24,27 @@ interface FiltersProps {
   }) => void;
 }
 
-// Fetchers
-const fetchClientes = async ({ ano, mes, isAdmin, codCliente }: any) => {
+// FETCH CLIENTE
+const fetchClientes = async ({ ano, mes, isAdmin, codRecurso }: any) => {
   const params = new URLSearchParams({
     ano: ano.toString(),
     mes: mes.toString(),
     isAdmin: isAdmin.toString(),
   });
-  if (!isAdmin && codCliente) params.append('codCliente', codCliente);
+  if (!isAdmin && codRecurso) params.append('codRecurso', codRecurso);
   const { data } = await axios.get(
-    `/api/postgre-SQL/apontamentos-view/filtros/clientes?${params}`
+    `/api/firebird-SQL/chamados-abertos/filtros/clientes?${params}`
   );
   if (!Array.isArray(data)) throw new Error('Resposta inesperada');
   return data;
 };
 
+// FETCH RECURSOS
 const fetchRecursos = async ({
   ano,
   mes,
   isAdmin,
-  codCliente,
+  codRecurso,
   clienteSelecionado,
 }: any) => {
   const params = new URLSearchParams({
@@ -51,21 +52,22 @@ const fetchRecursos = async ({
     mes: mes.toString(),
     isAdmin: isAdmin.toString(),
   });
-  if (!isAdmin && codCliente) params.append('codCliente', codCliente);
+  if (!isAdmin && codRecurso) params.append('codRecurso', codRecurso);
   if (isAdmin && clienteSelecionado)
     params.append('cliente', clienteSelecionado);
   const { data } = await axios.get(
-    `/api/postgre-SQL/apontamentos-view/filtros/recursos?${params}`
+    `/api/firebird-SQL/chamados-abertos/filtros/recursos?${params}`
   );
   if (!Array.isArray(data)) throw new Error('Resposta inesperada');
   return data;
 };
 
+// FETCH STATUS
 const fetchStatus = async ({
   ano,
   mes,
   isAdmin,
-  codCliente,
+  codRecurso,
   clienteSelecionado,
   recursoSelecionado,
 }: any) => {
@@ -74,22 +76,23 @@ const fetchStatus = async ({
     mes: mes.toString(),
     isAdmin: isAdmin.toString(),
   });
-  if (!isAdmin && codCliente) params.append('codCliente', codCliente);
+  if (!isAdmin && codRecurso) params.append('codRecurso', codRecurso);
   if (isAdmin && clienteSelecionado)
     params.append('cliente', clienteSelecionado);
   if (recursoSelecionado) params.append('recurso', recursoSelecionado);
   const { data } = await axios.get(
-    `/api/postgre-SQL/apontamentos-view/filtros/status?${params}`
+    `/api/firebird-SQL/chamados-abertos/filtros/status?${params}`
   );
   if (!Array.isArray(data)) throw new Error('Resposta inesperada');
   return data;
 };
 
-export default function Filtros({ onFiltersChange }: FiltersProps) {
+export default function Filtros({}: FiltersProps) {
   const hoje = new Date();
-  const { filters, setFilters } = useFiltersTabelaChamados();
-  const { isAdmin, codCliente } = useAuth();
+  const { filters, setFilters } = useFiltersTabelaChamadosAbertos();
+  const { isAdmin, codRecurso } = useAuth();
 
+  // Estados locais
   const [ano, setAno] = useState(filters.ano || hoje.getFullYear());
   const [mes, setMes] = useState(filters.mes || hoje.getMonth() + 1);
   const [clienteSelecionado, setClienteSelecionado] = useState(
@@ -102,64 +105,89 @@ export default function Filtros({ onFiltersChange }: FiltersProps) {
     filters.status || ''
   );
 
+  // Debounces
   const [debouncedAno] = useDebounce(ano, 300);
   const [debouncedMes] = useDebounce(mes, 300);
   const [debouncedClienteSelecionado] = useDebounce(clienteSelecionado, 300);
   const [debouncedRecursoSelecionado] = useDebounce(recursoSelecionado, 300);
   const [debouncedStatusSelecionado] = useDebounce(statusSelecionado, 300);
 
-  // CLIENTES
+  // QUERIES usando valores debounced para evitar muitos fetches rápidos
   const { data: clientes = [], isLoading: loadingClientes } = useQuery({
-    queryKey: ['clientes', ano, mes, isAdmin, codCliente],
-    queryFn: () => fetchClientes({ ano, mes, isAdmin, codCliente }),
-    enabled: !!ano && !!mes,
-  });
-
-  useEffect(() => {
-    setClienteSelecionado('');
-    setRecursoSelecionado('');
-    setStatusSelecionado('');
-  }, [clientes]);
-
-  // RECURSOS
-  const { data: recursos = [], isLoading: loadingRecursos } = useQuery({
-    queryKey: ['recursos', ano, mes, isAdmin, codCliente, clienteSelecionado],
+    queryKey: ['clientes', debouncedAno, debouncedMes, isAdmin, codRecurso],
     queryFn: () =>
-      fetchRecursos({ ano, mes, isAdmin, codCliente, clienteSelecionado }),
-    enabled: !!ano && !!mes && (!!isAdmin || !!codCliente),
+      fetchClientes({
+        ano: debouncedAno,
+        mes: debouncedMes,
+        isAdmin,
+        codRecurso,
+      }),
+    enabled: !!debouncedAno && !!debouncedMes && (isAdmin || !!codRecurso),
   });
 
-  useEffect(() => {
-    setRecursoSelecionado('');
-    setStatusSelecionado('');
-  }, [recursos]);
+  const { data: recursos = [], isLoading: loadingRecursos } = useQuery({
+    queryKey: [
+      'recursos',
+      debouncedAno,
+      debouncedMes,
+      isAdmin,
+      codRecurso,
+      debouncedClienteSelecionado,
+    ],
+    queryFn: () =>
+      fetchRecursos({
+        ano: debouncedAno,
+        mes: debouncedMes,
+        isAdmin,
+        codRecurso,
+        clienteSelecionado: debouncedClienteSelecionado,
+      }),
+    enabled: !!debouncedAno && !!debouncedMes && (isAdmin || !!codRecurso),
+  });
 
-  // STATUS
   const { data: statusList = [], isLoading: loadingStatus } = useQuery({
     queryKey: [
       'status',
-      ano,
-      mes,
+      debouncedAno,
+      debouncedMes,
       isAdmin,
-      codCliente,
-      clienteSelecionado,
-      recursoSelecionado,
+      codRecurso,
+      debouncedClienteSelecionado,
+      debouncedRecursoSelecionado,
     ],
     queryFn: () =>
       fetchStatus({
-        ano,
-        mes,
+        ano: debouncedAno,
+        mes: debouncedMes,
         isAdmin,
-        codCliente,
-        clienteSelecionado,
-        recursoSelecionado,
+        codRecurso,
+        clienteSelecionado: debouncedClienteSelecionado,
+        recursoSelecionado: debouncedRecursoSelecionado,
       }),
-    enabled: !!ano && !!mes && (!!isAdmin || !!codCliente),
+    enabled: !!debouncedAno && !!debouncedMes && (isAdmin || !!codRecurso),
   });
 
+  // Reset seleções quando o valor selecionado não existir mais nos dados retornados
   useEffect(() => {
-    setStatusSelecionado('');
-  }, [statusList]);
+    if (clienteSelecionado && !clientes.includes(clienteSelecionado)) {
+      setClienteSelecionado('');
+      setRecursoSelecionado('');
+      setStatusSelecionado('');
+    }
+  }, [clientes, clienteSelecionado]);
+
+  useEffect(() => {
+    if (recursoSelecionado && !recursos.includes(recursoSelecionado)) {
+      setRecursoSelecionado('');
+      setStatusSelecionado('');
+    }
+  }, [recursos, recursoSelecionado]);
+
+  useEffect(() => {
+    if (statusSelecionado && !statusList.includes(statusSelecionado)) {
+      setStatusSelecionado('');
+    }
+  }, [statusList, statusSelecionado]);
 
   // Atualiza contexto e callback externo
   useEffect(() => {
@@ -193,7 +221,7 @@ export default function Filtros({ onFiltersChange }: FiltersProps) {
               value={clienteSelecionado}
               onChange={setClienteSelecionado}
               clientes={clientes}
-              disabled={!!codCliente}
+              disabled={!!codRecurso}
             />
 
             <SelectRecurso

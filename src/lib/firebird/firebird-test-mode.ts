@@ -1,4 +1,3 @@
-// lib/firebird/firebird-client.ts
 import Firebird from 'node-firebird';
 
 const options: Firebird.Options = {

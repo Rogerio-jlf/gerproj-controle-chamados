@@ -9,10 +9,27 @@ import Password_Input from './Password_Input';
 import Remember_Check from './Remember_Check';
 import Button_Submit from './Button_Submit';
 import { FiAlertCircle } from 'react-icons/fi';
+import jwtDecode from 'jwt-decode'; // ✅ Forma correta
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+interface UserToken {
+  id: number;
+  nome: string;
+  tipo: string;
+  recurso: {
+    id: number;
+    nome: string;
+    email: string;
+    ativo: number;
+  };
+  exp: number;
+}
+
 export default function Form() {
+  const router = useRouter();
+  const { login } = useAuth();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -20,67 +37,113 @@ export default function Form() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const router = useRouter();
-  const { login } = useAuth();
-
   useEffect(() => {
-    const rememberedEmail = localStorage.getItem('rememberedEmail');
-    if (rememberedEmail) {
-      setEmail(rememberedEmail);
-      setRememberMe(true);
-    }
-  }, []);
+    const checkExistingAuth = () => {
+      const token = localStorage.getItem('token');
+
+      if (token) {
+        try {
+          const decoded = jwtDecode<UserToken>(token); // ✅ Tipo definido
+
+          if (decoded.exp * 1000 > Date.now()) {
+            if (decoded.tipo === 'ADM') {
+              router.push('/paginas/tabela-chamados');
+            } else if (decoded.recurso?.id) {
+              router.push('/paginas/tabela-chamados-recursos');
+            } else {
+              router.push('/paginas/tabela-chamados-recursos');
+            }
+            return;
+          } else {
+            localStorage.removeItem('token');
+          }
+        } catch (err) {
+          localStorage.removeItem('token');
+        }
+      }
+
+      const rememberedEmail = localStorage.getItem('rememberedEmail');
+      if (rememberedEmail) {
+        setEmail(rememberedEmail);
+        setRememberMe(true);
+      }
+    };
+
+    checkExistingAuth();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
+    if (!email.trim()) {
+      setError('Por favor, digite seu email ou usuário.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!password.trim()) {
+      setError('Por favor, digite sua senha.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const userData = await login(email, password);
-      console.log('UserData retornado pelo login:', userData);
 
-      if (userData) {
-        if (rememberMe) {
-          localStorage.setItem('rememberedEmail', email);
-        } else {
-          localStorage.removeItem('rememberedEmail');
-        }
-
-        await sleep(1000); // opcional, só para UX
-
-        // Agora usando os dados retornados pela função login
-        console.log('Verificando redirecionamento:', {
-          isAdmin: userData.isAdmin,
-          codCliente: userData.codCliente,
-          codRecurso: userData.codRecurso,
-        });
-
-        if (userData.isAdmin) {
-          console.log('Redirecionando para dashboard (admin)');
-          await router.push('/paginas/dashboard');
-        } else if (userData.codCliente) {
-          await router.push('/paginas/dashboard');
-        } else if (userData.codRecurso) {
-          await router.push('/paginas/tabela-chamados-abertos');
-        } else {
-          setError('Usuário autenticado, mas sem permissões definidas.');
-          setIsLoading(false);
-        }
-      } else {
+      if (!userData) {
         setError('Usuário não cadastrado ou senha inválida.');
         setIsLoading(false);
+        return;
+      }
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Erro ao salvar dados de autenticação.');
+        setIsLoading(false);
+        return;
+      }
+
+      const userInfo = jwtDecode<UserToken>(token); // ✅ Decodificação limpa
+
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+
+      await sleep(500);
+
+      if (userInfo.tipo === 'ADM') {
+        router.push('/paginas/tabela-chamados');
+      } else if (userInfo.recurso?.id) {
+        router.push('/paginas/tabela-chamados-recursos');
+      } else {
+        router.push('/paginas/tabela-chamados-recursos');
       }
     } catch (err) {
-      setError('Erro ao tentar fazer login. Tente novamente.');
+      console.error('Erro no login:', err);
+      setError(
+        'Erro ao tentar fazer login. Verifique sua conexão e tente novamente.'
+      );
       setIsLoading(false);
-      console.error(err);
     }
   };
 
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    if (error) setError('');
+  };
+
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    if (error) setError('');
+  };
+
   return (
-    <motion.form 
-      onSubmit={handleSubmit} 
+    <motion.form
+      onSubmit={handleSubmit}
       className="space-y-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -91,9 +154,9 @@ export default function Form() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <Email_Input value={email} onChange={setEmail} />
+        <Email_Input value={email} onChange={handleEmailChange} />
       </motion.div>
-      
+
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -101,12 +164,12 @@ export default function Form() {
       >
         <Password_Input
           value={password}
-          onChange={setPassword}
+          onChange={handlePasswordChange}
           showPassword={showPassword}
           toggleShowPassword={() => setShowPassword(!showPassword)}
         />
       </motion.div>
-      
+
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -117,11 +180,11 @@ export default function Form() {
           onToggle={() => setRememberMe(!rememberMe)}
         />
       </motion.div>
-      
+
       <AnimatePresence>
         {error && (
-          <motion.div 
-            className="relative overflow-hidden rounded-lg border border-red-400/30 bg-red-400/10 p-4 backdrop-blur-sm shadow-lg"
+          <motion.div
+            className="relative overflow-hidden rounded-lg border border-red-400/30 bg-red-400/10 p-4 shadow-lg backdrop-blur-sm"
             initial={{ opacity: 0, height: 0, y: -10 }}
             animate={{ opacity: 1, height: 'auto', y: 0 }}
             exit={{ opacity: 0, height: 0, y: -10 }}
@@ -129,9 +192,8 @@ export default function Form() {
           >
             <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-red-600/5 opacity-50" />
             <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-red-500 to-red-600" />
-            
             <div className="flex items-center gap-3">
-              <FiAlertCircle className="h-5 w-5 text-red-400 animate-pulse" />
+              <FiAlertCircle className="h-5 w-5 animate-pulse text-red-400" />
               <p className="text-sm font-semibold tracking-wide text-red-200">
                 {error}
               </p>
@@ -139,7 +201,7 @@ export default function Form() {
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       <Button_Submit isLoading={isLoading} />
     </motion.form>
   );

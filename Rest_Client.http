@@ -119,3 +119,20 @@ GET http://localhost:3000/api/firebird-SQL/debug?dataInicio=2025.08.01&dataFim=2
 
 ### PERFORMANCE API
 GET http://localhost:3000/api/firebird-SQL/cache
+
+
+
+
+
+
+
+
+
+### Teste: atribuir chamado (modo teste, sem alterar o banco)
+POST http://localhost:3000/api/login
+Content-Type: application/json
+
+{
+  "login": "ANA.A",
+  "senha": "&"
+}

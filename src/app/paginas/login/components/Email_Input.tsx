@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { IoMail } from 'react-icons/io5';
 import { motion } from 'framer-motion';
@@ -10,7 +10,7 @@ interface Props {
 
 export default function EmailInput({ value, onChange }: Props) {
   return (
-    <motion.div 
+    <motion.div
       className="space-y-2"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -27,7 +27,7 @@ export default function EmailInput({ value, onChange }: Props) {
       </motion.label>
 
       <div className="group relative">
-        <motion.div 
+        <motion.div
           className="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -45,7 +45,7 @@ export default function EmailInput({ value, onChange }: Props) {
           whileTap={{ scale: 0.99 }}
         >
           <input
-            type="email"
+            type="text"
             id="email"
             name="email"
             value={value}
@@ -54,10 +54,10 @@ export default function EmailInput({ value, onChange }: Props) {
             required
             className="block w-full rounded-lg border border-white/20 bg-white/10 py-4 pr-4 pl-11 text-sm tracking-wider text-white placeholder-white/60 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:bg-white/20 focus:border-transparent focus:ring-2 focus:ring-purple-500/70 focus:outline-none"
           />
-          
+
           {/* Efeito de foco */}
           <div className="absolute inset-0 -z-10 rounded-lg bg-gradient-to-r from-purple-500/20 to-pink-500/20 opacity-0 blur-sm transition-opacity duration-300 group-focus-within:opacity-100"></div>
-          
+
           {/* Efeito de brilho */}
           <div className="absolute inset-0 -z-20 rounded-lg bg-gradient-to-r from-purple-600/10 via-pink-600/10 to-purple-600/10 opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-100"></div>
         </motion.div>

@@ -23,12 +23,6 @@
     "moduleResolution": "node",
     "noEmit": true
   },
-  "include": [
-    "cron.ts",
-    "next-env.d.ts",
-    "server.ts",
-    "src/**/*",
-    ".next/types/**/*.ts"
-  ],
+  "include": ["next-env.d.ts", "server.ts", "src/**/*", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
 }
