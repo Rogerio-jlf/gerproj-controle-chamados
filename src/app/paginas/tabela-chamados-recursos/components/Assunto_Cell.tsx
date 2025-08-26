@@ -1,33 +1,36 @@
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
 import { FaEdit } from 'react-icons/fa';
-
 import { corrigirTextoCorrompido } from '@/lib/corrigirTextoCorrompido';
+// ================================================================================
 
-interface AssuntoEditavelProps {
+interface Props {
   assunto: string;
   codChamado: number;
   onUpdateAssunto?: (codChamado: number, novoAssunto: string) => Promise<void>;
 }
+// ================================================================================
 
-const AssuntoEditavel = ({
+export default function AssuntoCellEditavel({
   assunto,
   codChamado,
   onUpdateAssunto,
-}: AssuntoEditavelProps) => {
+}: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [novoAssunto, setNovoAssunto] = useState(assunto);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,7 +56,6 @@ const AssuntoEditavel = ({
       setIsModalOpen(false);
     } catch (error) {
       console.error('Erro ao atualizar assunto:', error);
-      // Aqui você pode adicionar uma notificação de erro (toast, etc.)
     } finally {
       setIsLoading(false);
     }
@@ -68,6 +70,7 @@ const AssuntoEditavel = ({
     setNovoAssunto(assunto);
     setIsModalOpen(true);
   };
+  // ================================================================================
 
   return (
     <>
@@ -80,103 +83,99 @@ const AssuntoEditavel = ({
             <span className="block pr-6">
               {corrigirTextoCorrompido(assunto)}
             </span>
-            <FaEdit className="absolute top-1/2 right-2 h-3 w-3 -translate-y-1/2 text-slate-500 opacity-0 transition-opacity duration-200 group-hover:opacity-60" />
+            <FaEdit
+              className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-700 opacity-0 transition-opacity duration-200 group-hover:opacity-60"
+              size={20}
+            />
           </div>
         </TooltipTrigger>
 
         <TooltipContent
           side="top"
-          align="end"
-          sideOffset={12}
-          className="max-w-xs border border-slate-300 bg-white text-base font-semibold tracking-wider text-slate-800"
+          align="center"
+          sideOffset={8}
+          className="bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
         >
           <div>
             <div className="break-words">
               {corrigirTextoCorrompido(assunto)}
             </div>
-            <div className="mt-1 text-xs font-normal text-slate-500">
+            <div className="mt-1 text-xs font-semibold tracking-wider text-gray-700 italic select-none">
               Clique para editar
             </div>
           </div>
         </TooltipContent>
       </Tooltip>
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="bg-white sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FaEdit className="h-4 w-4" />
+      <AlertDialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <AlertDialogContent className="!max-w-4xl bg-white p-6 shadow-md shadow-black">
+          <AlertDialogHeader className="space-y-4 pb-6">
+            <AlertDialogTitle className="flex items-center justify-center gap-4 text-center text-2xl font-bold tracking-wider text-gray-900 select-none">
+              <FaEdit className="text-gray-900" size={32} />
               Editar Assunto - Chamado #{codChamado}
-            </DialogTitle>
-          </DialogHeader>
+            </AlertDialogTitle>
 
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <label
-                htmlFor="assunto"
-                className="text-sm font-medium text-slate-700"
-              >
-                Assunto do Chamado
-              </label>
-              <Textarea
-                id="assunto"
-                value={novoAssunto}
-                onChange={e => setNovoAssunto(e.target.value)}
-                placeholder="Digite o assunto do chamado..."
-                className="min-h-[120px] resize-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500"
-                disabled={isLoading}
-                maxLength={500}
-              />
-              <div className="flex justify-between text-xs text-slate-500">
-                <span>Máximo 500 caracteres</span>
-                <span
-                  className={novoAssunto.length > 450 ? 'text-orange-600' : ''}
+            <div className="grid gap-4 py-4">
+              <div className="flex flex-col justify-center space-y-1">
+                <label
+                  htmlFor="assunto"
+                  className="text-base font-bold tracking-wider text-gray-900 select-none"
                 >
-                  {novoAssunto.length}/500
-                </span>
+                  Assunto do Chamado
+                </label>
+                <Textarea
+                  id="assunto"
+                  value={novoAssunto}
+                  onChange={e => setNovoAssunto(e.target.value)}
+                  placeholder="Digite o assunto do chamado..."
+                  className="min-h-[120px] resize-none bg-gray-50 shadow-md shadow-black focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  disabled={isLoading}
+                  maxLength={500}
+                />
+                <div className="mt-2 flex justify-between">
+                  <span className="text-sm font-semibold tracking-widest text-gray-900 italic select-none">
+                    Máximo de 500 caracteres
+                  </span>
+                  <span
+                    className={`text-sm font-semibold tracking-widest ${novoAssunto.length > 450 ? 'text-orange-600' : 'text-gray-900'} italic select-none`}
+                  >
+                    {novoAssunto.length}/500
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Preview do texto corrigido */}
-            {novoAssunto.trim() && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
-                  Preview (texto corrigido):
-                </label>
-                <div className="rounded-md border bg-slate-50 p-3 text-sm">
-                  {corrigirTextoCorrompido(novoAssunto)}
-                </div>
-              </div>
-            )}
-          </div>
+            <AlertDialogDescription className="text-center text-base font-semibold tracking-wider text-gray-900 select-none">
+              Esta ação será salva no banco de dados e não poderá ser desfeita
+              automaticamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
 
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
+          <AlertDialogFooter className="gap-6">
+            <AlertDialogCancel
               onClick={handleCancel}
-              disabled={isLoading}
+              className="cursor-pointer rounded-md border-none bg-red-600 px-6 py-2 text-lg font-extrabold tracking-widest text-white transition-all select-none hover:scale-105 hover:bg-red-800 hover:shadow-md hover:shadow-black"
             >
               Cancelar
-            </Button>
-            <Button
+            </AlertDialogCancel>
+
+            <AlertDialogAction
               onClick={handleSave}
               disabled={isLoading || novoAssunto.trim().length === 0}
-              className="bg-cyan-600 hover:bg-cyan-700"
+              className="cursor-pointer rounded-md border-none bg-green-600 px-6 py-2 text-lg font-extrabold tracking-widest text-white transition-all select-none hover:scale-105 hover:bg-green-800 hover:shadow-lg hover:shadow-black"
             >
               {isLoading ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
+                <div className="flex items-center justify-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
                   Salvando...
-                </>
+                </div>
               ) : (
-                'Salvar Alterações'
+                'Salvar Alteração'
               )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
-};
-
-export default AssuntoEditavel;
+}

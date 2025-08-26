@@ -6,10 +6,9 @@ import {
 import { ColumnDef } from '@tanstack/react-table';
 import Link from 'next/link';
 import { FaEye, FaDownload } from 'react-icons/fa';
-
-import { corrigirTextoCorrompido } from '@/lib/corrigirTextoCorrompido';
-import StatusCell from './Status_Cell';
-import AssuntoEditavel from './Assunto_Cell';
+import StatusCellClicavel from './Status_Cell';
+import AssuntoCellEditavel from './Assunto_Cell';
+// ================================================================================
 
 export interface ChamadosProps {
   COD_CHAMADO: number;
@@ -24,6 +23,7 @@ export interface AcoesProps {
   onVisualizarOS: (codChamado: number) => void;
   onUpdateAssunto?: (codChamado: number, novoAssunto: string) => Promise<void>;
 }
+// ================================================================================
 
 export const getStylesStatus = (status: string | undefined) => {
   switch (status?.toUpperCase()) {
@@ -52,6 +52,7 @@ export const getStylesStatus = (status: string | undefined) => {
       return 'bg-gray-700 text-white ring-1 ring-gray-300';
   }
 };
+// ================================================================================
 
 export const colunasTabela = (
   acoes: AcoesProps
@@ -76,7 +77,7 @@ export const colunasTabela = (
       const value = getValue() as string;
 
       return (
-        <AssuntoEditavel
+        <AssuntoCellEditavel
           assunto={value}
           codChamado={row.original.COD_CHAMADO}
           onUpdateAssunto={async (codChamado, novoAssunto) => {
@@ -180,7 +181,7 @@ export const colunasTabela = (
     accessorKey: 'STATUS_CHAMADO',
     header: () => <div className="text-center">Status</div>,
     cell: ({ row }) => (
-      <StatusCell
+      <StatusCellClicavel
         status={row.original.STATUS_CHAMADO}
         codChamado={row.original.COD_CHAMADO}
         onUpdateStatus={async (codChamado, newStatus) => {
