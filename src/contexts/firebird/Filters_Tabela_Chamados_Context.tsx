@@ -20,7 +20,7 @@ interface FiltersContextProps {
 }
 
 // Cria o contexto dos filtros de chamados abertos, inicialmente indefinido
-const FiltersTabelaChamadosAbertosContext = createContext<
+const FiltersTabelaChamadosContext = createContext<
   FiltersContextProps | undefined
 >(undefined);
 
@@ -38,7 +38,7 @@ const getInitialFilters = (): FiltersProps => {
 };
 
 // Componente provedor do contexto dos filtros de chamados abertos
-export function FiltersTabelaChamadosAbertosProvider({
+export function FiltersTabelaChamadosProvider({
   children,
 }: {
   children: React.ReactNode;
@@ -51,20 +51,20 @@ export function FiltersTabelaChamadosAbertosProvider({
 
   // Retorna o provedor do contexto, disponibilizando os valores e funções
   return (
-    <FiltersTabelaChamadosAbertosContext.Provider
+    <FiltersTabelaChamadosContext.Provider
       value={{ filters, setFilters, clearFilters }}
     >
       {children}
-    </FiltersTabelaChamadosAbertosContext.Provider>
+    </FiltersTabelaChamadosContext.Provider>
   );
 }
 
 // Hook customizado para acessar o contexto dos filtros de chamados abertos
-export function useFiltersTabelaChamadosAbertos() {
-  const context = useContext(FiltersTabelaChamadosAbertosContext);
+export function useFiltersTabelaChamados() {
+  const context = useContext(FiltersTabelaChamadosContext);
   if (context === undefined) {
     throw new Error(
-      'useFiltersTabelaChamadosAbertos deve ser chamado dentro de um FiltersTabelaChamadosAbertosProvider'
+      'useFiltersTabelaChamados deve ser chamado dentro de um FiltersTabelaChamadosProvider'
     );
   }
   return context;

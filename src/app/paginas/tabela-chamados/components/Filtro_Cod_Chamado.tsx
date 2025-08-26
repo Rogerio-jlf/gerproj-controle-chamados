@@ -1,8 +1,8 @@
 import { Input } from '@/components/ui/input';
-import { useFiltersTabelaChamadosAbertos } from '@/contexts/firebird/Filters_Tabela_Chamados_Abertos_Context';
+import { useFiltersTabelaChamadosAbertos } from '@/contexts/firebird/Filters_Tabela_Chamados_Context';
 import { useState } from 'react';
 import { Search, X, Hash, Loader2 } from 'lucide-react';
-import { FiltersProps } from '@/contexts/firebird/Filters_Tabela_Chamados_Abertos_Context';
+import { FiltersProps } from '@/contexts/firebird/Filters_Tabela_Chamados_Context';
 
 export default function FiltroNumeroChamado() {
   const { filters, setFilters } = useFiltersTabelaChamadosAbertos();

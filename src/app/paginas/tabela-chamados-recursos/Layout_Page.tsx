@@ -1,16 +1,15 @@
 'use client';
 
-import Filtros from '@/app/paginas/tabela-chamados/components/Filtros';
-import Tabela from '@/app/paginas/tabela-chamados-recursos/components/Tabela';
-import { useFiltersTabelaChamadosAbertos } from '@/contexts/firebird/Filters_Tabela_Chamados_Abertos_Context';
+import Filtros from './components/Filtros';
+import Tabela from './components/Tabela';
+import { useFiltersTabelaChamados } from '../../../contexts/firebird/Filters_Tabela_Chamados_Context';
 import { useCallback } from 'react';
-import { useAuth } from '../../../../contexts/Auth_Context';
-import Header from '../../../../components/Header';
+import Header from '../../../components/Header';
 import { HiDocumentPlus } from 'react-icons/hi2';
+// ================================================================================
 
 export default function LayoutPage() {
-  // const { isAdmin, codCliente } = useAuth();
-  const { filters, setFilters } = useFiltersTabelaChamadosAbertos();
+  const { filters, setFilters } = useFiltersTabelaChamados();
 
   const handleFiltersChange = useCallback(
     (newFilters: typeof filters) => {
@@ -19,6 +18,7 @@ export default function LayoutPage() {
     },
     [setFilters, filters]
   );
+  // ================================================================================
 
   return (
     <>
@@ -36,9 +36,7 @@ export default function LayoutPage() {
             />
 
             {/* filtros */}
-            <div className="max-w-full">
-              <Filtros onFiltersChange={handleFiltersChange} />
-            </div>
+            <Filtros onFiltersChange={handleFiltersChange} />
           </div>
 
           {/* tabela */}

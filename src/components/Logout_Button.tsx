@@ -1,34 +1,46 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
 import { FiLogOut } from 'react-icons/fi';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
-interface LogoutButtonProps {
-  className?: string;
-}
-
-export default function LogoutButton({ className }: LogoutButtonProps) {
+export default function LogoutButton() {
   const router = useRouter();
 
   const handleLogout = () => {
-    // Remove token
     localStorage.removeItem('token');
     localStorage.removeItem('rememberedEmail');
-
-    // Redireciona para login
     router.push('/');
   };
 
   return (
-    <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      onClick={handleLogout}
-      className={`flex items-center gap-2 rounded-md bg-red-500 px-4 py-2 font-semibold text-white shadow transition hover:bg-red-600 ${className}`}
-    >
-      <FiLogOut className="h-5 w-5" />
-      Logout
-    </motion.button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className="group w-fit cursor-pointer bg-gradient-to-br from-red-500 via-red-600 to-red-500 p-4 text-2xl text-white shadow-md shadow-black transition-all hover:scale-110 hover:bg-red-800 hover:shadow-lg hover:shadow-black active:scale-95"
+          style={{
+            borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%',
+            animation: 'blob 4s ease-in-out infinite',
+          }}
+          onClick={handleLogout} // ✅ Passa o click para a div
+        >
+          <button className="flex items-center transition-all group-hover:scale-110 group-hover:cursor-pointer">
+            <FiLogOut size={32} />
+          </button>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent
+        side="bottom"
+        align="center"
+        sideOffset={12}
+        className="bg-gray-900 px-6 text-lg font-semibold tracking-wider text-white select-none"
+      >
+        Sair
+      </TooltipContent>
+    </Tooltip>
   );
 }

@@ -6,9 +6,8 @@ import { AiOutlineFilePdf } from 'react-icons/ai';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
-} from './ui/tooltip';
+} from '@/components/ui/tooltip';
 
 // Define as propriedades aceitas pelo componente ExportaPDFButton.
 interface ExportaPDFButtonProps<T> {
@@ -32,7 +31,6 @@ export default function PDFButton<T extends Record<string, any>>({
   data,
   fileName,
   buttonText = 'PDF',
-  disabled = false,
   className = '',
   title = 'Relatório',
   columns,
@@ -165,13 +163,25 @@ export default function PDFButton<T extends Record<string, any>>({
   return (
     <>
       {data.length > 0 && (
-        <button
-          onClick={exportToPdf}
-          className={`group flex cursor-pointer items-center rounded-md border border-white/30 bg-white/10 px-6 py-3 text-base font-semibold tracking-wider text-slate-200 hover:scale-110 hover:border-white/30 hover:bg-red-800 active:scale-90 ${className}`}
-        >
-          <AiOutlineFilePdf className="mr-2 h-6 w-6 font-semibold text-red-500 group-hover:text-white" />
-          {buttonText}
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={exportToPdf}
+              className={`group flex cursor-pointer items-center gap-4 rounded-md border border-white/30 bg-white/10 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:bg-gray-500 ${className}`}
+            >
+              <AiOutlineFilePdf className="text-white" size={24} />
+              {buttonText}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent
+            side="top"
+            align="center"
+            sideOffset={8}
+            className="border border-black bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
+          >
+            Exportar para PDF
+          </TooltipContent>
+        </Tooltip>
       )}
     </>
   );

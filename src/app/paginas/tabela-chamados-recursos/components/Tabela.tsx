@@ -1,24 +1,43 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
-import { useFiltersTabelaChamadosAbertos } from '@/contexts/firebird/Filters_Tabela_Chamados_Abertos_Context';
+import { useFiltersTabelaChamados } from '@/contexts/firebird/Filters_Tabela_Chamados_Context';
 import { useQuery } from '@tanstack/react-query';
 import {
   flexRender,
   getCoreRowModel,
   useReactTable,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  ColumnFiltersState,
+  SortingState,
 } from '@tanstack/react-table';
 import { useMemo, useState, useCallback } from 'react';
 import { ChamadosProps, colunasTabela } from './Colunas';
 import ModalChamado from './Modal_Chamado';
-import { AlertCircle, Database, TriangleAlert, Lock } from 'lucide-react';
+import {
+  AlertCircle,
+  Database,
+  TriangleAlert,
+  Lock,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from 'lucide-react';
 import ExcelButton from '../../../../components/Excel_Button';
 import PDFButton from '../../../../components/PDF_Button';
+import { LuFilter } from 'react-icons/lu';
+import { LuFilterX } from 'react-icons/lu';
+import { BsEraserFill } from 'react-icons/bs';
+// ================================================================================
 
 // Novo componente Modal para OS
 import ModalOS from './Modal_OS';
 import IsLoading from './IsLoading';
-import Erro from './Erro';
+import IsError from './IsError';
 
 async function fetchChamados(
   params: URLSearchParams,
@@ -40,10 +59,56 @@ async function fetchChamados(
   return Array.isArray(data) ? data : data.chamados || [];
 }
 
+// Componente de filtro inline
+const FilterInput = ({
+  value,
+  onChange,
+  placeholder,
+  type = 'text',
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  type?: string;
+}) => (
+  <input
+    type={type}
+    value={value}
+    onChange={e => onChange(e.target.value)}
+    placeholder={placeholder}
+    className="w-full rounded-md border border-white/30 bg-gray-900 px-4 py-2 text-base text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+  />
+);
+
+const FilterSelect = ({
+  value,
+  onChange,
+  options,
+  placeholder,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  options: string[];
+  placeholder: string;
+}) => (
+  <select
+    value={value}
+    onChange={e => onChange(e.target.value)}
+    className="w-full rounded-md border border-white/30 bg-gray-900 px-4 py-2 text-base text-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+  >
+    <option value="">{placeholder}</option>
+    {options.map(option => (
+      <option key={option} value={option}>
+        {option}
+      </option>
+    ))}
+  </select>
+);
+
 export default function Tabela() {
-  const { filters } = useFiltersTabelaChamadosAbertos();
+  const { filters } = useFiltersTabelaChamados();
   const { ano, mes, cliente, recurso, status, codChamado } = filters;
-  const { user, loading } = useAuth(); // Usando o hook useAuth correto
+  const { user, loading } = useAuth();
 
   // Estados para modal do chamado
   const [modalOpen, setModalOpen] = useState(false);
@@ -57,6 +122,11 @@ export default function Tabela() {
     null
   );
 
+  // Estados para filtros e ordenação
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [showFilters, setShowFilters] = useState(false);
+
   const handleCloseModal = () => {
     setModalOpen(false);
     setSelectedChamado(null);
@@ -67,11 +137,8 @@ export default function Tabela() {
     setSelectedCodChamado(null);
   };
 
-  // Verifica se o usuário é ADM
-  // const isAdmin = user?.tipo === 'ADM';
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-
   const enabled = !!ano && !!mes && !!token && !!user;
 
   const queryParams = useMemo(() => {
@@ -82,7 +149,6 @@ export default function Tabela() {
       mes: String(mes),
     });
 
-    // Adiciona filtros opcionais
     if (cliente) params.append('cliente', cliente);
     if (recurso) params.append('recurso', recurso);
     if (status && status !== 'todos') params.append('status', status);
@@ -99,10 +165,8 @@ export default function Tabela() {
     retry: 2,
   });
 
-  // Funções para os botões de ação com useCallback para evitar re-renders desnecessários
   const handleVisualizarChamado = useCallback(
     (codChamado: number) => {
-      // Encontrar o chamado completo pelo código
       const chamado = data?.find(c => c.COD_CHAMADO === codChamado);
       if (chamado) {
         setSelectedChamado(chamado);
@@ -117,7 +181,6 @@ export default function Tabela() {
     setOsModalOpen(true);
   }, []);
 
-  // Colunas da tabela com as ações
   const colunas = useMemo(
     () =>
       colunasTabela({
@@ -131,20 +194,37 @@ export default function Tabela() {
     data: data ?? [],
     columns: colunas,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    onSortingChange: setSorting,
+    state: {
+      columnFilters,
+      sorting,
+    },
+    initialState: {
+      pagination: {
+        pageSize: 20,
+      },
+    },
   });
 
-  const stats = useMemo(() => {
-    const chamadosArray = Array.isArray(data) ? data : [];
-    const totalChamados = chamadosArray.length;
-
-    return {
-      totalChamados,
-    };
+  // Obter valores únicos para filtros de select
+  const statusOptions = useMemo(() => {
+    const statusSet = new Set<string>();
+    data?.forEach(item => {
+      if (item.STATUS_CHAMADO) statusSet.add(item.STATUS_CHAMADO);
+    });
+    return Array.from(statusSet).sort();
   }, [data]);
 
-  // -------------------------------------------------------------------
+  // Função para limpar todos os filtros
+  const clearFilters = () => {
+    setColumnFilters([]);
+  };
 
-  // LOADING - Verificando autenticação
+  // Estados de loading/erro/acesso
   if (loading) {
     return (
       <div className="min-h-[500px] rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
@@ -167,7 +247,6 @@ export default function Tabela() {
     );
   }
 
-  // ACESSO NEGADO - Usuário não logado
   if (!user || !token) {
     return (
       <div className="min-h-[500px] rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
@@ -191,36 +270,6 @@ export default function Tabela() {
     );
   }
 
-  // ACESSO NEGADO - Usuário não é ADM
-  // if (!isAdmin) {
-  //   return (
-  //     <div className="min-h-[500px] rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
-  //       <div className="flex h-full items-center justify-center p-12">
-  //         <div className="space-y-6 text-center">
-  //           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100">
-  //             <UserX className="h-10 w-10 text-amber-500" />
-  //           </div>
-  //           <div>
-  //             <h3 className="mb-2 text-xl font-bold tracking-wider text-slate-800 select-none">
-  //               Acesso restrito a administradores!
-  //             </h3>
-  //             <p className="mx-auto max-w-md tracking-wider text-slate-600 select-none">
-  //               Esta tabela de chamados está disponível apenas para usuários com
-  //               privilégios de administrador.
-  //             </p>
-  //             <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
-  //               <p className="text-sm text-amber-700">
-  //                 <strong>Usuário atual:</strong> {user.nome} ({user.tipo})
-  //               </p>
-  //             </div>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
-  // FILTROS OBRIGATÓRIOS - Ano e mês não definidos
   if (!ano || !mes) {
     return (
       <div className="min-h-[500px] rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
@@ -243,17 +292,13 @@ export default function Tabela() {
     );
   }
 
-  // LOADING CARREGAMENTO
   if (isLoading) {
-    return <IsLoading title={''} />;
+    return <IsLoading title="Carregando os dados da tabela" />;
   }
 
-  // ERRO MESSAGE
   if (isError) {
-    return <Erro error={error} />;
+    return <IsError error={error as Error} />;
   }
-
-  // ------------------------------------------------------------------------------------------
 
   return (
     <>
@@ -263,23 +308,17 @@ export default function Tabela() {
           <div className="flex items-center justify-between gap-8">
             {/* ícone, título, usuário e período */}
             <section className="flex items-center justify-center gap-6">
-              {/* ícone */}
               <div className="flex items-center justify-center rounded-xl border border-white/30 bg-white/10 p-4">
-                <Database className="text-cyan-400" size={44} />
+                <Database className="animate-pulse text-cyan-400" size={44} />
               </div>
-              {/* ===== */}
-              <div className="flex flex-col items-start justify-center">
-                {/* título */}
+              <div className="flex flex-col items-center justify-center">
                 <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-white select-none">
                   Tabela de Chamados
                 </h1>
-                {/* ===== */}
                 <div className="flex items-center gap-4">
-                  {/* nome usuário */}
                   <span className="rounded-full bg-green-800 px-4 py-1 text-sm font-bold tracking-widest text-white italic select-none">
                     {user.nome}
                   </span>
-                  {/* período */}
                   {Array.isArray(data) && data.length > 0 && (
                     <span className="rounded-full bg-blue-800 px-4 py-1 text-sm font-bold tracking-widest text-white italic select-none">
                       {mes.toString().padStart(2, '0')}/{ano}
@@ -290,75 +329,80 @@ export default function Tabela() {
             </section>
             {/* ===== */}
 
-            {/* botões de exportação, excel e PDF */}
+            {/* botões mostrar/ocultar filtros, limpar filtros, excel e PDF*/}
             <section className="flex items-center gap-6">
-              {/* excel */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none ${
+                  showFilters
+                    ? 'border border-white/30 bg-blue-600 hover:scale-105 hover:bg-blue-900 active:scale-95'
+                    : 'border border-white/30 bg-white/10 hover:scale-105 hover:bg-gray-500 active:scale-95'
+                }`}
+              >
+                {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
+                {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+              </button>
+              {/* ===== */}
+
+              {columnFilters.length > 0 && (
+                <button
+                  onClick={clearFilters}
+                  className="flex cursor-pointer gap-4 rounded-md border border-white/30 bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:bg-red-900 active:scale-95"
+                >
+                  <BsEraserFill className="text-white" size={24} />
+                  Limpar Filtros
+                </button>
+              )}
+              {/* ===== */}
+
               <ExcelButton
                 data={data ?? []}
                 fileName={`relatorio_de_chamados_${mes}_${ano}`}
                 title={`Relatório de Chamados - ${mes}/${ano}`}
                 columns={[
-                  { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
                   { key: 'COD_CHAMADO', label: 'Chamado' },
-                  { key: 'DATA_CHAMADO', label: 'Data' },
-                  { key: 'HORA_CHAMADO', label: 'Hora' },
                   { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
-                  { key: 'STATUS_CHAMADO', label: 'Status' },
-                  { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
-                  { key: 'NOME_RECURSO', label: 'Recurso' },
-                  { key: 'NOME_CLIENTE', label: 'Cliente' },
-                  { key: 'CODTRF_CHAMADO', label: 'Código Tarefa' },
                   { key: 'EMAIL_CHAMADO', label: 'Email' },
-                  { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
+                  { key: 'DATA_CHAMADO', label: 'Data' },
+                  { key: 'STATUS_CHAMADO', label: 'Status' },
                 ]}
                 autoFilter={true}
                 freezeHeader={true}
               />
+              {/* ===== */}
 
-              {/* PDF */}
               <PDFButton
                 data={data ?? []}
                 fileName={`relatorio_chamados_${mes}_${ano}`}
                 title={`Relatório de Chamados - ${mes}/${ano}`}
                 columns={[
-                  { key: 'PRIOR_CHAMADO', label: 'Prioridade' },
                   { key: 'COD_CHAMADO', label: 'Chamado' },
-                  { key: 'DATA_CHAMADO', label: 'Data' },
-                  { key: 'HORA_CHAMADO', label: 'Hora' },
                   { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
-                  { key: 'STATUS_CHAMADO', label: 'Status' },
-                  { key: 'COD_CLASSIFICACAO', label: 'Classificação' },
-                  { key: 'NOME_RECURSO', label: 'Recurso' },
-                  { key: 'NOME_CLIENTE', label: 'Cliente' },
-                  { key: 'CODTRF_CHAMADO', label: 'Código Tarefa' },
                   { key: 'EMAIL_CHAMADO', label: 'Email' },
-                  { key: 'CONCLUSAO_CHAMADO', label: 'Conclusão' },
+                  { key: 'DATA_CHAMADO', label: 'Data' },
+                  { key: 'STATUS_CHAMADO', label: 'Status' },
                 ]}
                 footerText="Gerado pelo sistema em"
               />
             </section>
-            {/* ===== */}
           </div>
         </header>
-        {/* ===== */}
 
         {/* ===== TABELA ===== */}
-        <div className="h-full w-full overflow-hidden bg-slate-900">
+        <div className="h-full w-full overflow-hidden bg-gray-900">
           <div
             className="scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 h-full overflow-y-auto"
             style={{ maxHeight: 'calc(100vh - 470px)' }}
           >
             <table className="w-full table-fixed border-collapse">
-              {/* cabeçalho da tabela */}
               <thead className="sticky top-0 z-20">
+                {/* Cabeçalho principal */}
                 {table.getHeaderGroups().map(headerGroup => (
-                  // linha do cabeçalho
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map(header => (
-                      // campos do cabeçalho
                       <th
                         key={header.id}
-                        className="bg-teal-800 p-3 font-semibold tracking-wider text-white select-none"
+                        className="bg-teal-800 py-4 font-extrabold tracking-wider text-white uppercase select-none"
                         style={{ width: getColumnWidth(header.column.id) }}
                       >
                         {header.isPlaceholder
@@ -371,15 +415,56 @@ export default function Tabela() {
                     ))}
                   </tr>
                 ))}
-              </thead>
-              {/* ===== */}
 
-              {/* corpo da tabela */}
+                {/* Linha de filtros */}
+                {showFilters && (
+                  <tr>
+                    {table.getAllColumns().map(column => (
+                      <th
+                        key={column.id}
+                        className="bg-teal-800 px-3 pb-6"
+                        style={{ width: getColumnWidth(column.id) }}
+                      >
+                        {column.id === 'ASSUNTO_CHAMADO' && (
+                          <FilterInput
+                            value={(column.getFilterValue() as string) ?? ''}
+                            onChange={value => column.setFilterValue(value)}
+                            placeholder="Filtrar assunto..."
+                          />
+                        )}
+                        {column.id === 'EMAIL_CHAMADO' && (
+                          <FilterInput
+                            value={(column.getFilterValue() as string) ?? ''}
+                            onChange={value => column.setFilterValue(value)}
+                            placeholder="Filtrar email..."
+                          />
+                        )}
+                        {column.id === 'DATA_CHAMADO' && (
+                          <FilterInput
+                            value={(column.getFilterValue() as string) ?? ''}
+                            onChange={value => column.setFilterValue(value)}
+                            placeholder="dd/mm/aaaa"
+                            type="text"
+                          />
+                        )}
+                        {column.id === 'STATUS_CHAMADO' && (
+                          <FilterSelect
+                            value={(column.getFilterValue() as string) ?? ''}
+                            onChange={value => column.setFilterValue(value)}
+                            options={statusOptions}
+                            placeholder="Status..."
+                          />
+                        )}
+                      </th>
+                    ))}
+                  </tr>
+                )}
+              </thead>
+
               <tbody>
                 {table.getRowModel().rows.length > 0 &&
                   !isLoading &&
                   table.getRowModel().rows.map((row, rowIndex) => (
-                    // linha da tabela
                     <tr
                       key={row.id}
                       className={`group border-b border-slate-700 transition-all duration-300 hover:bg-white/50 ${
@@ -387,7 +472,6 @@ export default function Tabela() {
                       }`}
                     >
                       {row.getVisibleCells().map(cell => (
-                        // células da tabela
                         <td
                           key={cell.id}
                           className="p-3 text-sm font-semibold tracking-wider text-white group-hover:text-black"
@@ -404,25 +488,154 @@ export default function Tabela() {
                     </tr>
                   ))}
               </tbody>
-              {/* ===== */}
             </table>
-            {/* ===== */}
           </div>
         </div>
 
-        {/* Mensagem quando não há chamado */}
+        {/* ===== PAGINAÇÃO ===== */}
+        {Array.isArray(data) && data.length > 0 && (
+          <div className="bg-gray-900 px-12 py-10">
+            <div className="flex items-center justify-between">
+              {/* Informações da página */}
+              <div className="flex items-center text-base font-semibold tracking-widest text-white italic select-none">
+                <span>
+                  {table.getFilteredRowModel().rows.length} registro
+                  {table.getFilteredRowModel().rows.length !== 1
+                    ? 's'
+                    : ''}{' '}
+                  encontrado
+                  {table.getFilteredRowModel().rows.length !== 1 ? 's' : ''}
+                </span>
+
+                {/* Filtros ativos */}
+                {columnFilters.length > 0 && (
+                  <span className="rounded-full bg-blue-600 px-4 py-1 text-base font-semibold tracking-widest text-white italic select-none">
+                    {columnFilters.length} filtro
+                    {columnFilters.length > 1 ? 's' : ''} ativo
+                    {columnFilters.length > 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
+
+              {/* Controles de paginação */}
+              <div className="flex items-center gap-3">
+                {/* Seletor de itens por página */}
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-semibold tracking-widest text-white italic select-none">
+                    Itens por página:
+                  </span>
+                  <select
+                    value={table.getState().pagination.pageSize}
+                    onChange={e => table.setPageSize(Number(e.target.value))}
+                    className="rounded-md border border-white/30 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-white italic select-none"
+                  >
+                    {[10, 25, 50, 100].map(pageSize => (
+                      <option
+                        key={pageSize}
+                        value={pageSize}
+                        className="bg-gray-800 text-base font-semibold tracking-widest text-white italic select-none"
+                      >
+                        {pageSize}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Botões de navegação */}
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => table.setPageIndex(0)}
+                    disabled={!table.getCanPreviousPage()}
+                    className="rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <ChevronsLeft className="text-white" size={24} />
+                  </button>
+
+                  <button
+                    onClick={() => table.previousPage()}
+                    disabled={!table.getCanPreviousPage()}
+                    className="rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <ChevronLeft className="text-white" size={24} />
+                  </button>
+
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-base font-semibold tracking-widest text-white italic select-none">
+                      Página{' '}
+                      <select
+                        value={table.getState().pagination.pageIndex + 1}
+                        onChange={e => {
+                          const page = Number(e.target.value) - 1;
+                          table.setPageIndex(page);
+                        }}
+                        className="rounded-md border border-white/30 bg-white/10 px-4 py-1 text-center font-semibold tracking-widest text-white italic select-none"
+                      >
+                        {Array.from(
+                          { length: table.getPageCount() },
+                          (_, i) => (
+                            <option
+                              key={i + 1}
+                              value={i + 1}
+                              className="bg-gray-800 text-base font-semibold tracking-widest text-white italic select-none"
+                            >
+                              {i + 1}
+                            </option>
+                          )
+                        )}
+                      </select>
+                    </span>
+                    <span className="text-base font-semibold tracking-widest text-white italic select-none">
+                      {' '}
+                      de {table.getPageCount()}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}
+                    className="rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <ChevronRight className="text-white" size={24} />
+                  </button>
+
+                  <button
+                    onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                    disabled={!table.getCanNextPage()}
+                    className="rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <ChevronsRight className="text-white" size={24} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mensagem quando não há chamados */}
         {Array.isArray(data) && data.length === 0 && !isLoading && (
           <div className="bg-slate-900 py-40 text-center">
-            {/* Ícone */}
             <TriangleAlert className="mx-auto mb-6 text-yellow-500" size={80} />
-
-            {/* Título */}
             <h3 className="text-2xl font-bold tracking-wider text-slate-200 italic select-none">
               Nenhum chamado encontrado, para o período de{' '}
               {mes.toString().padStart(2, '0')}/{ano}.
             </h3>
           </div>
         )}
+
+        {/* Mensagem quando filtros não retornam resultados */}
+        {Array.isArray(data) &&
+          data.length > 0 &&
+          table.getFilteredRowModel().rows.length === 0 && (
+            <div className="bg-slate-900 py-20 text-center">
+              <Filter className="mx-auto mb-4 text-cyan-400" size={60} />
+              <h3 className="text-xl font-bold tracking-wider text-slate-200 select-none">
+                Nenhum registro encontrado com os filtros aplicados
+              </h3>
+              <p className="mt-2 text-slate-400">
+                Tente ajustar os filtros ou limpe-os para ver todos os registros
+              </p>
+            </div>
+          )}
       </div>
 
       {/* Modal do Chamado */}
@@ -442,23 +655,16 @@ export default function Tabela() {
   );
 }
 
-// Função para largura fixa por coluna (atualizada com a nova coluna)
+// Função para largura fixa por coluna
 function getColumnWidth(columnId: string): string {
   const widthMap: Record<string, string> = {
-    PRIOR_CHAMADO: '80px',
     COD_CHAMADO: '100px',
-    DATA_CHAMADO: '130px',
-    HORA_CHAMADO: '80px',
-    ASSUNTO_CHAMADO: '230px',
-    STATUS_CHAMADO: '140px',
-    COD_CLASSIFICACAO: '100px',
-    NOME_RECURSO: '130px',
-    NOME_CLIENTE: '100px',
-    CODTRF_CHAMADO: '90px',
-    EMAIL_CHAMADO: '150px',
-    CONCLUSAO_CHAMADO: '140px',
-    actions: '110px',
+    ASSUNTO_CHAMADO: '300px',
+    EMAIL_CHAMADO: '160px',
+    DATA_CHAMADO: '80px',
+    STATUS_CHAMADO: '150px',
+    actions: '100px',
   };
 
-  return widthMap[columnId] || '100px'; // Valor padrão
+  return widthMap[columnId] || '100px';
 }

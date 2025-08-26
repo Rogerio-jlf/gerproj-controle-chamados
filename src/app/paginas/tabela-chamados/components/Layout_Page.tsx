@@ -2,7 +2,7 @@
 
 import Filtros from '@/app/paginas/tabela-chamados/components/Filtros';
 import Tabela from '@/app/paginas/tabela-chamados/components/Tabela';
-import { useFiltersTabelaChamadosAbertos } from '@/contexts/firebird/Filters_Tabela_Chamados_Abertos_Context';
+import { useFiltersTabelaChamadosAbertos } from '@/contexts/firebird/Filters_Tabela_Chamados_Context';
 import { useCallback } from 'react';
 import { useAuth } from '../../../../contexts/Auth_Context';
 import Header from '../../../../components/Header';

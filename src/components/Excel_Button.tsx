@@ -6,9 +6,8 @@ import { RiFileExcel2Line } from 'react-icons/ri';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
-} from './ui/tooltip';
+} from '@/components/ui/tooltip';
 
 interface ExportaExcelButtonProps<T> {
   data: T[];
@@ -29,7 +28,6 @@ export default function ExcelButton<T>({
   data,
   fileName,
   buttonText = 'Excel',
-  disabled = false,
   className = '',
   columns,
   autoFilter = true,
@@ -92,13 +90,25 @@ export default function ExcelButton<T>({
   return (
     <>
       {data.length > 0 && (
-        <button
-          onClick={exportToExcel}
-          className={`group flex cursor-pointer items-center rounded-md border border-white/30 bg-white/10 px-6 py-3 text-base font-semibold tracking-wider text-slate-200 hover:scale-110 hover:border-white/30 hover:bg-green-800 active:scale-90 ${className}`}
-        >
-          <RiFileExcel2Line className="mr-2 h-6 w-6 font-semibold text-green-500 group-hover:text-white" />
-          {buttonText}
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={exportToExcel}
+              className={`group flex cursor-pointer items-center gap-4 rounded-md border border-white/30 bg-white/10 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:bg-gray-500 active:scale-95 ${className}`}
+            >
+              <RiFileExcel2Line className="text-white" size={24} />
+              {buttonText}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent
+            side="top"
+            align="center"
+            sideOffset={8}
+            className="border border-black bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
+          >
+            Exportar para Excel
+          </TooltipContent>
+        </Tooltip>
       )}
     </>
   );

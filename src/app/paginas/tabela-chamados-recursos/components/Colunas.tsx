@@ -12,10 +12,20 @@ import AssuntoCellEditavel from './Assunto_Cell';
 
 export interface ChamadosProps {
   COD_CHAMADO: number;
+  DATA_CHAMADO: string;
+  HORA_CHAMADO: string;
+  CONCLUSAO_CHAMADO: string | null;
+  STATUS_CHAMADO: string;
+  DTENVIO_CHAMADO: string | null;
+  COD_RECURSO: number;
+  CODTRF_CHAMADO: string | null;
+  COD_CLIENTE: number;
   ASSUNTO_CHAMADO: string;
   EMAIL_CHAMADO: string;
-  DATA_CHAMADO: string;
-  STATUS_CHAMADO: string;
+  PRIOR_CHAMADO: string;
+  COD_CLASSIFICACAO: number;
+  NOME_CLIENTE: string;
+  NOME_RECURSO: string;
 }
 
 export interface AcoesProps {
@@ -138,10 +148,10 @@ export const colunasTabela = (
             </div>
           </TooltipTrigger>
           <TooltipContent
-            side="top" // (top, bottom, left, right) - aqui aparece acima
-            align="end" // start = esquerda, center = padrão, end = direita
-            sideOffset={12} // distância entre o trigger e o tooltip
-            className="border border-slate-300 bg-white text-base font-semibold tracking-wider text-slate-800"
+            side="top"
+            align="center"
+            sideOffset={8}
+            className="bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
           >
             {value}
           </TooltipContent>
@@ -230,14 +240,14 @@ export const colunasTabela = (
                 onClick={() => acoes.onVisualizarChamado(chamado.COD_CHAMADO)}
                 className="inline-flex items-center justify-center rounded-2xl bg-cyan-800 p-2 text-white ring-1 ring-cyan-300"
               >
-                <FaEye className="h-6 w-6" />
+                <FaEye size={24} />
               </button>
             </TooltipTrigger>
             <TooltipContent
               side="top"
-              align="end"
-              sideOffset={12}
-              className="border border-slate-300 bg-white text-base font-semibold tracking-wider text-slate-800"
+              align="center"
+              sideOffset={8}
+              className="bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
             >
               Visualizar Chamado
             </TooltipContent>
@@ -250,14 +260,14 @@ export const colunasTabela = (
                 onClick={() => acoes.onVisualizarOS(chamado.COD_CHAMADO)}
                 className="inline-flex items-center justify-center rounded-2xl bg-green-800 p-2 text-white ring-1 ring-green-300"
               >
-                <FaEye className="h-6 w-6" />
+                <FaEye size={24} />
               </button>
             </TooltipTrigger>
             <TooltipContent
               side="top"
-              align="end"
-              sideOffset={12}
-              className="border border-slate-300 bg-white text-base font-semibold tracking-wider text-slate-800"
+              align="center"
+              sideOffset={8}
+              className="bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
             >
               Visualizar OS
             </TooltipContent>
@@ -270,16 +280,16 @@ export const colunasTabela = (
                 onClick={handleDownload}
                 className="inline-flex items-center justify-center rounded-2xl bg-amber-800 p-2 text-white ring-1 ring-amber-300"
               >
-                <FaDownload className="h-6 w-6" />
+                <FaDownload size={24} />
               </button>
             </TooltipTrigger>
             <TooltipContent
               side="top"
-              align="end"
-              sideOffset={12}
-              className="border border-slate-300 bg-white text-base font-semibold tracking-wider text-slate-800"
+              align="center"
+              sideOffset={8}
+              className="bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
             >
-              Download do Chamado
+              Download
             </TooltipContent>
           </Tooltip>
         </div>
