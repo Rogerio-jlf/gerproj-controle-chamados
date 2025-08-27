@@ -4,6 +4,12 @@ import { useClientes } from '@/hooks/firebird/useClientes';
 import { useEmailAtribuirCahamados } from '@/hooks/firebird/useEmailAtribuirChamados';
 import { useRecursos } from '@/hooks/firebird/useRecursos';
 import { Card } from '@/components/ui/card';
+// Importar o hook ou context (escolha uma das opções)
+// Opção 1: Se usar o AuthContext melhorado
+import { useAuth } from '../../../../contexts/Auth_Context';
+// Opção 2: Se usar o hook simples
+// import { useIsAdmin } from '@/hooks/useIsAdmin';
+
 import {
   AlertCircle,
   Binary,
@@ -22,7 +28,7 @@ import {
   X,
 } from 'lucide-react';
 import { useState } from 'react';
-import { ChamadosProps } from './Colunas';
+import { ChamadosProps } from './Colunas_Tabela_Chamados';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 
 interface ModalChamadoProps {
@@ -51,6 +57,17 @@ export default function ModalChamado({
     enviarEmailCliente: false,
     enviarEmailRecurso: false,
   });
+
+  // Verificação de admin - escolha uma das opções:
+
+  // Opção 1: Usando AuthContext melhorado
+  const { isAdmin } = useAuth();
+
+  // Opção 2: Usando hook simples
+  // const { isAdmin, loading: adminLoading } = useIsAdmin();
+
+  // Se quiser usar adminLoading, descomente a linha abaixo e comente a linha acima:
+  // const { isAdmin, loading: adminLoading } = useIsAdmin();
 
   const { data: clientes = [], isLoading: loadingClientes } = useClientes();
   const { data: recursos = [], isLoading: loadingRecursos } = useRecursos();
@@ -147,7 +164,8 @@ export default function ModalChamado({
 
   if (!isOpen || !chamado) return null;
 
-  // ------------------------------------------------------------------------------------------
+  // Se ainda estiver carregando as informações de admin, pode mostrar um loader
+  // Removido o bloco adminLoading pois não está definido
 
   return (
     // ===== CONTAINER PRINCIPAL =====
@@ -388,9 +406,9 @@ export default function ModalChamado({
               </Card>
             </div>
 
-            {/* div - botão atribuir chamado */}
+            {/* div - botão atribuir chamado - ONLY ADMIN */}
             <div className="flex justify-end pt-2">
-              {!showForm && (
+              {!showForm && isAdmin && (
                 <button
                   onClick={() => setShowForm(true)}
                   className="rounded-md bg-blue-600 px-6 py-4 text-lg font-bold tracking-wider text-white shadow-sm shadow-black hover:scale-105 hover:bg-blue-800 hover:shadow-md hover:shadow-black active:scale-95"
@@ -402,7 +420,7 @@ export default function ModalChamado({
           </div>
 
           {/* ===== FORMULÁRIO ===== */}
-          {showForm && (
+          {showForm && isAdmin && (
             <div className="w-1/2 bg-white">
               <div className="h-full overflow-y-auto p-4">
                 {/* div título e subtítulo */}
@@ -552,20 +570,26 @@ export default function ModalChamado({
                     <button
                       type="submit"
                       disabled={isPending}
-                      className="rounded-md bg-green-600 px-6 py-4 text-lg font-bold tracking-wider text-white shadow-sm shadow-black hover:scale-105 hover:bg-green-800 hover:shadow-md hover:shadow-black active:scale-95"
+                      className="rounded-md bg-green-600 px-6 py-4 text-lg font-bold tracking-wider text-white shadow-sm shadow-black hover:scale-105 hover:bg-green-800 hover:shadow-md hover:shadow-black active:scale-95 disabled:opacity-70"
                     >
-                      {isPending ? (
-                        <div className="flex items-center gap-2">
-                          {/* ícone loader */}
-                          <Loader2 className="animate-spin" size={20} />
-                          Salvando...
-                        </div>
-                      ) : (
-                        'Salvar'
-                      )}
+                      {isPending ? 'Salvando...' : 'Salvar Atribuição'}
                     </button>
                   </div>
                 </form>
+
+                {/* Feedback de sucesso ou erro */}
+                {isSuccess && (
+                  <p className="mt-4 text-center font-semibold tracking-wider text-green-600">
+                    Atribuição realizada com sucesso!
+                  </p>
+                )}
+                {isError && (
+                  <p className="mt-4 text-center font-semibold tracking-wider text-red-600">
+                    {error instanceof Error
+                      ? error.message
+                      : 'Erro ao salvar atribuição.'}
+                  </p>
+                )}
               </div>
             </div>
           )}

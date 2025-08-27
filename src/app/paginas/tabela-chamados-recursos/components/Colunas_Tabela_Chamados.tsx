@@ -32,6 +32,7 @@ export interface AcoesProps {
   onVisualizarChamado: (codChamado: number) => void;
   onVisualizarOS: (codChamado: number) => void;
   onUpdateAssunto?: (codChamado: number, novoAssunto: string) => Promise<void>;
+  onVisualizarTarefas: () => void;
 }
 // ================================================================================
 
@@ -270,6 +271,26 @@ export const colunasTabela = (
               className="bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
             >
               Visualizar OS
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Botão visualizar Tarefas */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => acoes.onVisualizarTarefas()}
+                className="inline-flex items-center justify-center rounded-2xl bg-yellow-800 p-2 text-white ring-1 ring-yellow-300"
+              >
+                <FaEye size={24} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="top"
+              align="center"
+              sideOffset={8}
+              className="bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
+            >
+              Visualizar Tarefas
             </TooltipContent>
           </Tooltip>
 

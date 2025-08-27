@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { getStylesStatus } from './Colunas';
+import { getStylesStatus } from './Colunas_Tabela_Chamados';
 import {
   Tooltip,
   TooltipContent,

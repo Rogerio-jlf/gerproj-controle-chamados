@@ -5,7 +5,6 @@ import {
   X,
   FileText,
   TriangleAlert,
-  Clock,
   Filter,
   ChevronLeft,
   ChevronRight,
@@ -15,7 +14,6 @@ import {
 import IsLoading from './IsLoading';
 import Erro from './IsError';
 import { useQuery } from '@tanstack/react-query';
-import { corrigirTextoCorrompido } from '@/lib/corrigirTextoCorrompido';
 import ModalApontamentos from './Modal_Apontamentos';
 import {
   flexRender,
@@ -27,9 +25,10 @@ import {
   ColumnFiltersState,
   SortingState,
 } from '@tanstack/react-table';
-import { colunasOS } from './Coluna_OS'; // Vamos criar este arquivo
+import { colunasOS } from './Colunas_OS';
 import { BsEraserFill } from 'react-icons/bs';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
+// ================================================================================
 
 interface OSModalProps {
   isOpen: boolean;
@@ -60,6 +59,7 @@ export interface OSProps {
   OBS_OS: string;
   OBS: string;
 }
+// ================================================================================
 
 // Componente de filtro inline
 const FilterInput = ({
@@ -81,6 +81,7 @@ const FilterInput = ({
     className="w-full rounded-md border border-white/30 bg-gray-900 px-4 py-2 text-base text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
   />
 );
+// ================================================================================
 
 const FilterSelect = ({
   value,
@@ -106,6 +107,7 @@ const FilterSelect = ({
     ))}
   </select>
 );
+// ================================================================================
 
 export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
   // Estado para controlar o modal de apontamentos
@@ -200,6 +202,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
   };
 
   if (!isOpen) return null;
+  // ================================================================================
 
   return (
     <>
@@ -222,6 +225,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                   <FileText className="animate-pulse text-cyan-400" size={44} />
                 </div>
                 <div className="flex flex-col items-center justify-center">
+                  {/* Título */}
                   <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-white select-none">
                     Ordens de Serviço
                   </h1>
@@ -384,19 +388,22 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                       )}
                     </thead>
 
+                    {/* Corpo da tabela */}
                     <tbody>
                       {table.getRowModel().rows.length > 0 &&
                         !isLoading &&
                         table.getRowModel().rows.map((row, rowIndex) => (
+                          // Linha do corpo da tabela
                           <tr
                             key={row.id}
-                            className={`group border-b border-slate-700 transition-all duration-300 hover:bg-white/50 ${
+                            className={`group border-b border-gray-700 transition-all duration-300 hover:bg-white/50 ${
                               rowIndex % 2 === 0
-                                ? 'bg-slate-900'
-                                : 'bg-slate-800/50'
+                                ? 'bg-gray-900'
+                                : 'bg-gray-800/50'
                             }`}
                           >
                             {row.getVisibleCells().map(cell => (
+                              // Células da tabela
                               <td
                                 key={cell.id}
                                 className="p-3 text-sm font-semibold tracking-wider text-white group-hover:text-black"
@@ -585,23 +592,22 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
     </>
   );
 }
+// ================================================================================
 
-// Função para largura fixa por coluna
+// Função para largura fixa das colunas
 function getColumnWidth(columnId: string): string {
   const widthMap: Record<string, string> = {
-    COD_OS: '100px',
-    NUM_OS: '120px',
-    STATUS_OS: '150px',
-    DTINI_OS: '120px',
-    HRINI_OS: '100px',
-    VRHR_OS: '120px',
-    FATURADO_OS: '100px',
-    PRODUTIVO_OS: '150px',
-    RESPCLI_OS: '180px',
-    CODTRF_OS: '120px',
-    OBS_OS: '200px',
-    actions: '100px',
+    COD_OS: '70px',
+    NOME_CLIENTE: '150px',
+    CODTRF_OS: '80px',
+    OBS_OS: '300px',
+    DTINI_OS: '80px',
+    HRINI_OS: '80px',
+    HRFIM_OS: '80px',
+    QTD_HR_OS: '80px',
+    actions: '80px',
   };
 
   return widthMap[columnId] || '100px';
 }
+// ================================================================================

@@ -14,8 +14,8 @@ import {
   SortingState,
 } from '@tanstack/react-table';
 import { useMemo, useState, useCallback } from 'react';
-import { ChamadosProps, colunasTabela } from './Colunas';
-import ModalChamado from './Modal_Chamado';
+import { ChamadosProps, colunasTabela } from './Colunas_Tabela_Chamados';
+import ModalChamado from './Modal_Atribuir_Chamados';
 import {
   AlertCircle,
   Database,
@@ -38,6 +38,7 @@ import { BsEraserFill } from 'react-icons/bs';
 import ModalOS from './Modal_OS';
 import IsLoading from './IsLoading';
 import IsError from './IsError';
+import ModalTarefas from './Modal_Tarefas';
 
 async function fetchChamados(
   params: URLSearchParams,
@@ -127,6 +128,8 @@ export default function Tabela() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [showFilters, setShowFilters] = useState(false);
 
+  const [tarefasModalOpen, setTarefasModalOpen] = useState(false);
+
   const handleCloseModal = () => {
     setModalOpen(false);
     setSelectedChamado(null);
@@ -186,6 +189,7 @@ export default function Tabela() {
       colunasTabela({
         onVisualizarChamado: handleVisualizarChamado,
         onVisualizarOS: handleVisualizarOS,
+        onVisualizarTarefas: () => setTarefasModalOpen(true),
       }),
     [handleVisualizarChamado, handleVisualizarOS]
   );
@@ -650,6 +654,11 @@ export default function Tabela() {
         isOpen={osModalOpen}
         onClose={handleCloseOSModal}
         codChamado={selectedCodChamado}
+      />
+
+      <ModalTarefas
+        isOpen={tarefasModalOpen}
+        onClose={() => setTarefasModalOpen(false)}
       />
     </>
   );

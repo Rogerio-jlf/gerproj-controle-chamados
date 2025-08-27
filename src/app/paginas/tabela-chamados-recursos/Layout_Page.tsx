@@ -1,7 +1,7 @@
 'use client';
 
 import Filtros from './components/Filtros';
-import Tabela from './components/Tabela';
+import Tabela from './components/Tabela_Chamados';
 import { useFiltersTabelaChamados } from '../../../contexts/firebird/Filters_Tabela_Chamados_Context';
 import { useCallback } from 'react';
 import Header from '../../../components/Header';
