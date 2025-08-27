@@ -1,14 +1,10 @@
 'use client';
 
-import { useClientes } from '@/hooks/firebird/useClientes';
-import { useEmailAtribuirCahamados } from '@/hooks/firebird/useEmailAtribuirChamados';
-import { useRecursos } from '@/hooks/firebird/useRecursos';
+import { useClientes } from '../../../../hooks/firebird/useClientes';
+import { useEmailAtribuirCahamados } from '../../../../hooks/firebird/useEmailAtribuirChamados';
+import { useRecursos } from '../../../../hooks/firebird/useRecursos';
 import { Card } from '@/components/ui/card';
-// Importar o hook ou context (escolha uma das opções)
-// Opção 1: Se usar o AuthContext melhorado
 import { useAuth } from '../../../../contexts/Auth_Context';
-// Opção 2: Se usar o hook simples
-// import { useIsAdmin } from '@/hooks/useIsAdmin';
 
 import {
   AlertCircle,
@@ -58,16 +54,7 @@ export default function ModalChamado({
     enviarEmailRecurso: false,
   });
 
-  // Verificação de admin - escolha uma das opções:
-
-  // Opção 1: Usando AuthContext melhorado
   const { isAdmin } = useAuth();
-
-  // Opção 2: Usando hook simples
-  // const { isAdmin, loading: adminLoading } = useIsAdmin();
-
-  // Se quiser usar adminLoading, descomente a linha abaixo e comente a linha acima:
-  // const { isAdmin, loading: adminLoading } = useIsAdmin();
 
   const { data: clientes = [], isLoading: loadingClientes } = useClientes();
   const { data: recursos = [], isLoading: loadingRecursos } = useRecursos();

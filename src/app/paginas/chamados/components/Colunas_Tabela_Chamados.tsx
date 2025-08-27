@@ -84,47 +84,38 @@ export const colunasTabela = (
   {
     accessorKey: 'ASSUNTO_CHAMADO',
     header: () => <div className="text-center">Assunto</div>,
-    cell: ({ getValue, row }) => {
-      const value = getValue() as string;
-
-      return (
-        <AssuntoCellEditavel
-          assunto={value}
-          codChamado={row.original.COD_CHAMADO}
-          onUpdateAssunto={async (codChamado, novoAssunto) => {
-            try {
-              // Chama a API para atualizar o assunto
-              const response = await fetch(
-                `/api/atualizar-assunto/${codChamado}`,
-                {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ assunto: novoAssunto }),
-                }
-              );
-
-              if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(
-                  errorData.message || 'Erro ao atualizar assunto'
-                );
+    cell: ({ row }) => (
+      <AssuntoCellEditavel
+        assunto={row.original.ASSUNTO_CHAMADO}
+        codChamado={row.original.COD_CHAMADO}
+        onUpdateAssunto={async (codChamado, novoAssunto) => {
+          try {
+            const response = await fetch(
+              `/api/atualizar-assunto-chamado/${codChamado}`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  assuntoChamado: novoAssunto,
+                  codChamado: codChamado.toString(),
+                }),
               }
+            );
 
-              // Atualiza o valor local
-              row.original.ASSUNTO_CHAMADO = novoAssunto;
-
-              // Se você tem uma função de callback personalizada, chame ela
-              if (acoes.onUpdateAssunto) {
-                await acoes.onUpdateAssunto(codChamado, novoAssunto);
-              }
-            } catch (error) {
-              console.error('Erro ao atualizar assunto:', error);
-              throw error; // Re-throw para que o componente possa lidar com o erro
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || 'Erro ao atualizar Assunto');
             }
-          }}
-        />
-      );
-    },
+
+            // Atualizar o estado local apenas se a API retornou sucesso
+            row.original.ASSUNTO_CHAMADO = novoAssunto;
+          } catch (err) {
+            console.error('Erro ao atualizar Assunto:', err);
+            throw err; // Re-throw para que o componente AssuntoCellEditavel possa tratar
+          }
+        }}
+      />
+    ),
   },
   // =====
 
@@ -197,15 +188,28 @@ export const colunasTabela = (
         codChamado={row.original.COD_CHAMADO}
         onUpdateStatus={async (codChamado, newStatus) => {
           try {
-            await fetch(`/api/atualizar-status/${codChamado}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ status: newStatus }),
-            });
-            // opcional: atualizar cache do react-query ou estado local
+            const response = await fetch(
+              `/api/atualizar-status-chamado/${codChamado}`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  statusChamado: newStatus,
+                  codChamado: codChamado.toString(),
+                }),
+              }
+            );
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || 'Erro ao atualizar Status');
+            }
+
+            // Atualizar o estado local apenas se a API retornou sucesso
             row.original.STATUS_CHAMADO = newStatus;
           } catch (err) {
-            console.error('Erro ao atualizar status:', err);
+            console.error('Erro ao atualizar Status:', err);
+            throw err; // Re-throw para que o componente StatusCellClicavel possa tratar
           }
         }}
       />

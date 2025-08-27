@@ -16,7 +16,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
 import { FaEdit } from 'react-icons/fa';
-import { corrigirTextoCorrompido } from '@/lib/corrigirTextoCorrompido';
+import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 // ================================================================================
 
 interface Props {

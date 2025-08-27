@@ -17,20 +17,17 @@ export function useEmailAtribuirCahamados() {
       enviarEmailCliente,
       enviarEmailRecurso,
     }: NotificacaoPayload) => {
-      const response = await fetch(
-        '/api/firebird/chamados-abertos/atribuir-chamado',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            cod_chamado: codChamado,
-            cod_cliente: codCliente,
-            cod_recurso: codRecurso,
-            enviarEmailCliente,
-            enviarEmailRecurso,
-          }),
-        }
-      );
+      const response = await fetch('/api/atribuir-chamado', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cod_chamado: codChamado,
+          cod_cliente: codCliente,
+          cod_recurso: codRecurso,
+          enviarEmailCliente,
+          enviarEmailRecurso,
+        }),
+      });
 
       if (!response.ok) {
         const error = await response.json();

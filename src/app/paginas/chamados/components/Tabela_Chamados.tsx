@@ -1,7 +1,7 @@
 'use client';
 
-import { useAuth } from '@/hooks/useAuth';
-import { useFiltersTabelaChamados } from '@/contexts/firebird/Filters_Tabela_Chamados_Context';
+import { useAuth } from '../../../../hooks/useAuth';
+import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
 import { useQuery } from '@tanstack/react-query';
 import {
   flexRender,
@@ -27,8 +27,8 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from 'lucide-react';
-import ExcelButton from '../../../../components/Excel_Button';
-import PDFButton from '../../../../components/PDF_Button';
+import ExcelButton from '../../../../components/Button_Excel';
+import PDFButton from '../../../../components/Button_PDF';
 import { LuFilter } from 'react-icons/lu';
 import { LuFilterX } from 'react-icons/lu';
 import { BsEraserFill } from 'react-icons/bs';
@@ -44,7 +44,7 @@ async function fetchChamados(
   params: URLSearchParams,
   token: string
 ): Promise<ChamadosProps[]> {
-  const res = await fetch(`/api/tabela-chamados?${params}`, {
+  const res = await fetch(`/api/chamados?${params}`, {
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -667,12 +667,12 @@ export default function Tabela() {
 // Função para largura fixa por coluna
 function getColumnWidth(columnId: string): string {
   const widthMap: Record<string, string> = {
-    COD_CHAMADO: '100px',
+    COD_CHAMADO: '70px',
     ASSUNTO_CHAMADO: '300px',
-    EMAIL_CHAMADO: '160px',
+    EMAIL_CHAMADO: '150px',
     DATA_CHAMADO: '80px',
     STATUS_CHAMADO: '150px',
-    actions: '100px',
+    actions: '110px',
   };
 
   return widthMap[columnId] || '100px';

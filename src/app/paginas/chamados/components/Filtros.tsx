@@ -1,10 +1,10 @@
 'use client';
 
-import { useFiltersTabelaChamados } from '../../../../contexts/firebird/Filters_Tabela_Chamados_Context';
+import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import SelectAno from '../../../../components/filtros/Select_Ano';
-import SelectMes from '../../../../components/filtros/Select_Mes';
+import SelectAno from '../../../../components/Select_Ano';
+import SelectMes from '../../../../components/Select_Mes';
 // ================================================================================
 
 interface Props {
@@ -49,10 +49,14 @@ export default function Filtros({}: Props) {
   ]);
 
   return (
-    <div className="flex max-w-2xl items-center gap-6">
-      <SelectAno value={ano} onChange={setAno} />
+    <div className="flex w-full gap-4">
+      <div className="flex-1">
+        <SelectAno value={ano} onChange={setAno} />
+      </div>
 
-      <SelectMes value={mes} onChange={setMes} />
+      <div className="flex-1">
+        <SelectMes value={mes} onChange={setMes} />
+      </div>
     </div>
   );
 }

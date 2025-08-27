@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import Background from './Background';
-import LoginForm from './Form';
-import LogoHeader from './Logo_Header';
-import Info from './Info';
+import Background from './components/Background';
+import LoginForm from './components/Form';
+import LogoHeader from './components/Logo_Header';
+import Info from './components/Info';
 import { motion } from 'framer-motion';
 
 export default function LayoutPage() {
@@ -13,7 +13,7 @@ export default function LayoutPage() {
       <div className="absolute inset-0 z-0">
         <Background />
       </div>
-      
+
       {/* Partículas animadas */}
       <div className="absolute inset-0 z-0 opacity-30">
         <div className="particles-container">
@@ -43,7 +43,8 @@ export default function LayoutPage() {
                 width: Math.random() * 6 + 2 + 'px',
                 height: Math.random() * 6 + 2 + 'px',
                 borderRadius: '50%',
-                background: 'linear-gradient(to right, rgba(168, 85, 247, 0.4), rgba(236, 72, 153, 0.4))',
+                background:
+                  'linear-gradient(to right, rgba(168, 85, 247, 0.4), rgba(236, 72, 153, 0.4))',
                 boxShadow: '0 0 10px rgba(168, 85, 247, 0.6)',
               }}
             />
@@ -52,14 +53,14 @@ export default function LayoutPage() {
       </div>
 
       {/* Grid Principal com animação */}
-      <motion.div 
-        className="relative z-10 grid w-full max-w-7xl grid-cols-1 lg:grid-cols-2 items-center gap-8 px-6"
+      <motion.div
+        className="relative z-10 grid w-full max-w-7xl grid-cols-1 items-center gap-8 px-6 lg:grid-cols-2"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
         {/* Esquerda - Informações */}
-        <motion.div 
+        <motion.div
           className="hidden lg:flex lg:flex-col lg:items-start lg:justify-center lg:pl-8 xl:pl-12"
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -69,20 +70,20 @@ export default function LayoutPage() {
         </motion.div>
 
         {/* Direita - Formulário */}
-        <motion.div 
-          className="w-full max-w-md mx-auto lg:ml-auto lg:mr-8 xl:mr-12"
+        <motion.div
+          className="mx-auto w-full max-w-md lg:mr-8 lg:ml-auto xl:mr-12"
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          <motion.div 
+          <motion.div
             className="w-full overflow-hidden rounded-2xl border border-white/20 bg-white/10 shadow-2xl shadow-black/40 backdrop-blur-xl"
             whileHover={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}
             transition={{ duration: 0.3 }}
           >
             <div className="h-1.5 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500"></div>
 
-            <motion.div 
+            <motion.div
               className="relative px-8 pt-10 pb-6 text-center"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -97,7 +98,7 @@ export default function LayoutPage() {
               </p>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               className="px-8 pb-10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -107,7 +108,7 @@ export default function LayoutPage() {
             </motion.div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="mt-6 px-4 text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

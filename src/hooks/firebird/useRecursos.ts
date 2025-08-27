@@ -4,7 +4,7 @@ export function useRecursos() {
   return useQuery({
     queryKey: ['recursos'],
     queryFn: async () => {
-      const res = await fetch('/api/firebird-SQL/chamados-abertos/recursos');
+      const res = await fetch('/api/recursos');
       if (!res.ok) throw new Error('Erro ao buscar recursos');
       return res.json();
     },

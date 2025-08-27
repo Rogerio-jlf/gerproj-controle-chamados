@@ -9,9 +9,9 @@ export default function SelectAno({ value, onChange }: Props) {
   const arrayAnos = [2024, 2025, 2026];
 
   return (
-    <div className="group flex w-full flex-col gap-1">
-      <label className="flex items-center gap-3 text-xl font-bold tracking-widest text-gray-900 select-none">
-        <FiFilter className="text-gray-900" size={20} />
+    <div className="group flex w-full flex-col">
+      <label className="flex items-center gap-2 text-base font-bold tracking-widest text-gray-900 select-none">
+        <FiFilter className="text-gray-900" size={14} />
         Ano
       </label>
 

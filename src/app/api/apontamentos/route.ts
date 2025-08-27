@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { firebirdQuery } from '../../../lib/firebird/firebird-client';
+// import { firebirdQuery } from '../../../lib/firebird/firebird-client';
+import { firebirdQuery } from '../../../lib/firebird/firebird-test-mode';
 
 interface ApontamentoData {
   codOS: string;
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     if (!body.horaInicioOS || !body.horaFimOS) {
       return NextResponse.json(
-        { error: 'Hora início e hora fim são obrigatórias' },
+        { error: 'Hora início da OS e hora fim da OS são obrigatórias' },
         { status: 400 }
       );
     }
@@ -39,14 +40,14 @@ export async function POST(request: NextRequest) {
     // Validação de horário (hora fim deve ser maior que hora início)
     if (body.horaInicioOS >= body.horaFimOS) {
       return NextResponse.json(
-        { error: 'Hora fim deve ser maior que hora início' },
+        { error: 'Hora fim da OS deve ser maior que hora início da OS' },
         { status: 400 }
       );
     }
 
     if (!body.observacaoOS?.trim()) {
       return NextResponse.json(
-        { error: 'Observação é obrigatória' },
+        { error: 'Observação da OS é obrigatória' },
         { status: 400 }
       );
     }
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
       WHERE COD_OS = ?
     `;
 
-    // MODO TESTE: Comentar a linha abaixo para não executar o UPDATE
+    // // MODO TESTE: Comentar a linha abaixo para não executar o UPDATE
     // const result = await firebirdQuery(sql, [
     //   dataFormatada,
     //   body.horaInicioOS,
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
     //   body.codOS
     // ]);
 
-    // MODO TESTE: Simular resposta do banco
+    // // MODO TESTE: Simular resposta do banco
     console.log('TESTE - SQL que seria executado:', sql);
     console.log('TESTE - Parâmetros:', [
       dataFormatada,
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        message: 'Apontamento atualizado com sucesso',
+        message: 'Apontamento realizado com sucesso',
         data: {
           codOS: body.codOS,
           observacaoOS: body.observacaoOS,
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Erro ao salvar apontamento:', error);
+    console.error('Erro ao salvar Apontamento:', error);
 
     // Tratamento de erros específicos do Firebird
     if (error instanceof Error) {
@@ -121,7 +122,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Erro interno ao salvar apontamento' },
+      { error: 'Erro interno ao salvar Apontamento' },
       { status: 500 }
     );
   }

@@ -1,4 +1,4 @@
-import LayoutPage from '@/app/paginas/login/components/Layout_Page';
+import LayoutPage from '../login/Layout_Page';
 import './style.css';
 import './animations.css';
 

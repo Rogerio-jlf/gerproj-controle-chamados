@@ -39,7 +39,7 @@ export default function Form() {
           const decoded = jwtDecode<UserToken>(token);
 
           if (decoded.exp * 1000 > Date.now()) {
-            router.push('/paginas/tabela-chamados-recursos');
+            router.push('/paginas/chamados');
             return;
           } else {
             localStorage.removeItem('token');
@@ -100,7 +100,7 @@ export default function Form() {
 
       await sleep(500);
 
-      router.push('/paginas/tabela-chamados');
+      router.push('/paginas/chamados');
     } catch (err) {
       console.error('Erro no login:', err);
       setError(

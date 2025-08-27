@@ -120,7 +120,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
   const [showFilters, setShowFilters] = useState(false);
 
   const fetchDataOS = async (codChamado: number) => {
-    const response = await fetch(`/api/os/${codChamado}`);
+    const response = await fetch(`/api/ordens-servico/${codChamado}`);
 
     if (!response.ok) throw new Error(`Erro: ${response.status}`);
 

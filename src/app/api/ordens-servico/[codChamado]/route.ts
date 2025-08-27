@@ -104,10 +104,7 @@ export async function GET(
 
     // Verifica se foram encontrados registros
     if (!osData || osData.length === 0) {
-      return NextResponse.json(
-        { error: 'Nenhuma OS encontrada para o chamado especificado' },
-        { status: 404 }
-      );
+      return NextResponse.json([], { status: 200 });
     }
 
     return NextResponse.json(osData, { status: 200 });

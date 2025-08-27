@@ -26,8 +26,8 @@ import {
 } from 'lucide-react';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
 import { BsEraserFill } from 'react-icons/bs';
-import ExcelButton from '../../../../components/Excel_Button';
-import PDFButton from '../../../../components/PDF_Button';
+import ExcelButton from '../../../../components/Button_Excel';
+import PDFButton from '../../../../components/Button_PDF';
 
 interface ModalTarefasProps {
   isOpen: boolean;
