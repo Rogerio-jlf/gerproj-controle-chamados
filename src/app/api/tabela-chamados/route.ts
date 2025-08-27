@@ -113,7 +113,7 @@ export async function GET(request: Request) {
       LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
       LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = Chamado.COD_RECURSO
       ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
-      ORDER BY Chamado.DATA_CHAMADO DESC
+      ORDER BY Chamado.DATA_CHAMADO DESC, Chamado.COD_CHAMADO DESC
     `;
 
     const chamados = await firebirdQuery(sql, params);

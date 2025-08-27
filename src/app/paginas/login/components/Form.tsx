@@ -9,20 +9,13 @@ import Password_Input from './Password_Input';
 import Remember_Check from './Remember_Check';
 import Button_Submit from './Button_Submit';
 import { FiAlertCircle } from 'react-icons/fi';
-import jwtDecode from 'jwt-decode'; // ✅ Forma correta
+import jwtDecode from 'jwt-decode';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 interface UserToken {
   id: number;
   nome: string;
-  tipo: string;
-  recurso: {
-    id: number;
-    nome: string;
-    email: string;
-    ativo: number;
-  };
   exp: number;
 }
 
@@ -43,21 +36,15 @@ export default function Form() {
 
       if (token) {
         try {
-          const decoded = jwtDecode<UserToken>(token); // ✅ Tipo definido
+          const decoded = jwtDecode<UserToken>(token);
 
           if (decoded.exp * 1000 > Date.now()) {
-            if (decoded.tipo === 'ADM') {
-              router.push('/paginas/tabela-chamados');
-            } else if (decoded.recurso?.id) {
-              router.push('/paginas/tabela-chamados-recursos');
-            } else {
-              router.push('/paginas/tabela-chamados-recursos');
-            }
+            router.push('/paginas/tabela-chamados-recursos');
             return;
           } else {
             localStorage.removeItem('token');
           }
-        } catch (err) {
+        } catch {
           localStorage.removeItem('token');
         }
       }
@@ -105,8 +92,6 @@ export default function Form() {
         return;
       }
 
-      const userInfo = jwtDecode<UserToken>(token); // ✅ Decodificação limpa
-
       if (rememberMe) {
         localStorage.setItem('rememberedEmail', email);
       } else {
@@ -115,13 +100,7 @@ export default function Form() {
 
       await sleep(500);
 
-      if (userInfo.tipo === 'ADM') {
-        router.push('/paginas/tabela-chamados');
-      } else if (userInfo.recurso?.id) {
-        router.push('/paginas/tabela-chamados-recursos');
-      } else {
-        router.push('/paginas/tabela-chamados-recursos');
-      }
+      router.push('/paginas/tabela-chamados');
     } catch (err) {
       console.error('Erro no login:', err);
       setError(
