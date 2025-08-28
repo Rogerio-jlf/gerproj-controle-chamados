@@ -50,6 +50,7 @@ export default function StatusCellClicavel({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const selectRef = useRef<HTMLSelectElement>(null);
+  // ================================================================================
 
   // Abre automaticamente o select quando entra em modo de edição
   useEffect(() => {
@@ -164,6 +165,7 @@ export default function StatusCellClicavel({
           </TooltipProvider>
         )}
       </div>
+      {/* ===== */}
 
       {/* Dialog de Confirmação */}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
@@ -184,7 +186,7 @@ export default function StatusCellClicavel({
                   Alterar status do chamado
                 </p>
                 <div className="text-3xl font-bold tracking-widest text-gray-900 italic select-none">
-                  #{codChamado}
+                  {codChamado}
                 </div>
               </div>
               {/* ===== */}
@@ -247,6 +249,7 @@ export default function StatusCellClicavel({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* ===== */}
     </>
   );
 }

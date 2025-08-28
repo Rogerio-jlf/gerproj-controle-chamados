@@ -1,20 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  X,
-  FileText,
-  TriangleAlert,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-} from 'lucide-react';
-import IsLoading from './IsLoading';
-import Erro from './IsError';
 import { useQuery } from '@tanstack/react-query';
-import ModalApontamentos from './Modal_Apontamentos';
 import {
   flexRender,
   getCoreRowModel,
@@ -26,8 +13,24 @@ import {
   SortingState,
 } from '@tanstack/react-table';
 import { colunasOS } from './Colunas_OS';
+import IsLoading from './IsLoading';
+import IsError from './IsError';
+import ModalApontamentos from './Modal_Apontamentos';
+// ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
+import { FaExclamationTriangle } from 'react-icons/fa';
+import { FaFilter } from 'react-icons/fa6';
+import { FaFileAlt } from 'react-icons/fa';
+import { MdChevronLeft } from 'react-icons/md';
+import { FiChevronsLeft } from 'react-icons/fi';
+import { MdChevronRight } from 'react-icons/md';
+import { FiChevronsRight } from 'react-icons/fi';
+import { LuArrowUpDown } from 'react-icons/lu';
+import { FaArrowUpLong } from 'react-icons/fa6';
+import { FaArrowDownLong } from 'react-icons/fa6';
+import { IoClose } from 'react-icons/io5';
+// ================================================================================
 // ================================================================================
 
 interface OSModalProps {
@@ -58,10 +61,13 @@ export interface OSProps {
   COMP_OS: string;
   OBS_OS: string;
   OBS: string;
+  NOME_CLIENTE?: string;
+  HRFIM_OS?: string;
+  QTD_HR_OS?: number;
 }
 // ================================================================================
 
-// Componente de filtro inline
+// Componente para input de filtro
 const FilterInput = ({
   value,
   onChange,
@@ -81,8 +87,8 @@ const FilterInput = ({
     className="w-full rounded-md border border-white/30 bg-gray-900 px-4 py-2 text-base text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
   />
 );
-// ================================================================================
 
+// Componente para select de filtro
 const FilterSelect = ({
   value,
   onChange,
@@ -107,17 +113,42 @@ const FilterSelect = ({
     ))}
   </select>
 );
+
+// Componente para cabeçalho ordenável
+const SortableHeader = ({
+  column,
+  children,
+}: {
+  column: any;
+  children: React.ReactNode;
+}) => {
+  const sorted = column.getIsSorted();
+
+  return (
+    <div
+      className="flex cursor-pointer items-center justify-center gap-2 rounded-full py-2 hover:bg-teal-900"
+      onClick={column.getToggleSortingHandler()}
+    >
+      {children}
+      <div className="flex flex-col">
+        {sorted === 'asc' && <FaArrowUpLong size={20} />}
+        {sorted === 'desc' && <FaArrowDownLong size={20} />}
+        {!sorted && <LuArrowUpDown size={20} className="text-white" />}
+      </div>
+    </div>
+  );
+};
 // ================================================================================
 
 export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
-  // Estado para controlar o modal de apontamentos
   const [modalApontamentosOpen, setModalApontamentosOpen] = useState(false);
   const [selectedOS, setSelectedOS] = useState<string | null>(null);
-
-  // Estados para filtros e ordenação
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'COD_OS', desc: false },
+  ]);
   const [showFilters, setShowFilters] = useState(false);
+  // ==============================
 
   const fetchDataOS = async (codChamado: number) => {
     const response = await fetch(`/api/ordens-servico/${codChamado}`);
@@ -128,6 +159,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
 
     return Array.isArray(data) ? data : [data];
   };
+  // ==============================
 
   const {
     data: dataOS,
@@ -141,35 +173,41 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
     enabled: isOpen && !!codChamado,
     staleTime: 1000 * 60 * 1,
   });
+  // ==============================
 
   useEffect(() => {
     if (isOpen && codChamado) {
       refetch();
     }
   }, [isOpen, codChamado, refetch]);
+  // ==============================
 
   const handleClose = () => {
     setTimeout(() => {
       onClose();
     }, 300);
   };
+  // ==============================
 
   // Função para abrir modal de apontamentos
   const handleOpenApontamentos = (codOS: string) => {
     setSelectedOS(codOS);
     setModalApontamentosOpen(true);
   };
+  // ==============================
 
   // Função para fechar modal de apontamentos
   const handleCloseApontamentos = () => {
     setModalApontamentosOpen(false);
     setSelectedOS(null);
   };
+  // ==============================
 
   // Configuração da tabela
   const colunas = colunasOS({
     onVisualizarApontamentos: handleOpenApontamentos,
   });
+  // ==============================
 
   const table = useReactTable({
     data: (dataOS ?? []) as OSProps[],
@@ -189,146 +227,202 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
         pageSize: 10,
       },
     },
-  });
+    // Função de filtro personalizada
+    defaultColumn: {
+      filterFn: (row, columnId, filterValue) => {
+        if (!filterValue || filterValue === '') return true;
 
-  // Obter valores únicos para filtros de select
-  const statusOptions = Array.from(
-    new Set(dataOS?.map(item => item.STATUS_OS).filter(Boolean))
+        const cellValue = row.getValue(columnId);
+
+        // Converte ambos os valores para string e faz comparação case-insensitive
+        const cellString = String(cellValue || '').toLowerCase();
+        const filterString = String(filterValue).toLowerCase();
+
+        // Para campos específicos, permite busca parcial
+        if (columnId === 'COD_OS' || columnId === 'CODTRF_OS') {
+          return cellString.includes(filterString);
+        }
+
+        // Para data, formata antes de comparar
+        if (columnId === 'DTINI_OS') {
+          if (!cellValue) return false;
+          try {
+            const date = new Date(cellValue as string);
+            const formattedDate = date.toLocaleDateString('pt-BR');
+            return formattedDate.includes(filterString);
+          } catch {
+            return cellString.includes(filterString);
+          }
+        }
+
+        // Para outros campos, busca parcial
+        return cellString.includes(filterString);
+      },
+    },
+  });
+  // ==============================
+
+  // Obter valores únicos para filtros de select - usando useMemo para otimização
+  const clienteOptions = Array.from(
+    new Set(
+      dataOS
+        ?.map(item => item.NOME_CLIENTE)
+        .filter(Boolean)
+        .filter(cliente => cliente && cliente.trim() !== '')
+    )
   ).sort();
+  // ==============================
 
   // Função para limpar todos os filtros
   const clearFilters = () => {
     setColumnFilters([]);
   };
+  // ==============================
+
+  if (isLoading) {
+    return <IsLoading title="Carregando os dados da tabela" />;
+  }
+  // ==============================
+
+  if (isError) {
+    return <IsError error={error as Error} />;
+  }
+  // ==============================
 
   if (!isOpen) return null;
   // ================================================================================
 
   return (
     <>
-      {/* ===== CONTAINER PRINCIPAL ===== */}
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         {/* ===== OVERLAY ===== */}
         <div
-          className="absolute inset-0 bg-black/50 backdrop-blur-xs"
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
           onClick={onClose}
         />
-
         {/* ===== MODAL ===== */}
-        <div className="relative z-10 mx-4 max-h-[95vh] w-full max-w-[95vw] overflow-hidden rounded-2xl border border-slate-600">
+        <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-gray-300">
           {/* ===== HEADER ===== */}
-          <header className="bg-slate-950 p-6">
-            <div className="flex items-center justify-between gap-8">
-              {/* ícone, título e informações */}
-              <section className="flex items-center justify-center gap-6">
-                <div className="flex items-center justify-center rounded-xl border border-white/30 bg-white/10 p-4">
-                  <FileText className="animate-pulse text-cyan-400" size={44} />
-                </div>
-                <div className="flex flex-col items-center justify-center">
-                  {/* Título */}
-                  <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-white select-none">
-                    Ordens de Serviço
-                  </h1>
-                  <div className="flex items-center gap-4">
-                    <span className="rounded-full bg-blue-800 px-4 py-1 text-sm font-bold tracking-widest text-white italic select-none">
-                      Chamado #{codChamado}
+          <header className="flex items-center justify-between gap-8 bg-white/70 p-6">
+            {/* ===== ITENS DA ESQUERDA ===== */}
+            <section className="flex items-center justify-center gap-6">
+              {/* ícone */}
+              <div className="flex items-center justify-center rounded-xl border border-black/30 bg-white/10 p-4">
+                <FaFileAlt className="animate-pulse text-black" size={44} />
+              </div>
+              {/* ===== */}
+
+              <div className="flex flex-col items-center justify-center">
+                {/* título */}
+                <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
+                  Ordens de Serviço
+                </h1>
+                {/* ===== */}
+
+                <div className="flex items-center gap-4">
+                  {/* número do chamado*/}
+                  <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+                    Chamado - {codChamado}
+                  </span>
+                  {/* quantidade de OS's */}
+                  {dataOS && dataOS.length > 0 && (
+                    <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+                      {dataOS.length}{' '}
+                      {dataOS.length === 1
+                        ? '- OS encontrada'
+                        : "- OS's encontradas"}
                     </span>
-                    {dataOS && dataOS.length > 0 && (
-                      <span className="rounded-full bg-green-800 px-4 py-1 text-sm font-bold tracking-widest text-white italic select-none">
-                        {dataOS.length} OS encontrada(s)
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </section>
-
-              {/* botões de controle */}
-              <section className="flex items-center gap-6">
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none ${
-                    showFilters
-                      ? 'border border-white/30 bg-blue-600 hover:scale-105 hover:bg-blue-900 active:scale-95'
-                      : 'border border-white/30 bg-white/10 hover:scale-105 hover:bg-gray-500 active:scale-95'
-                  }`}
-                >
-                  {showFilters ? (
-                    <LuFilterX size={24} />
-                  ) : (
-                    <LuFilter size={24} />
                   )}
-                  {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
-                </button>
+                </div>
+              </div>
+            </section>
+            {/* ===== */}
 
-                {columnFilters.length > 0 && (
-                  <button
-                    onClick={clearFilters}
-                    className="flex cursor-pointer gap-4 rounded-md border border-white/30 bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:bg-red-900 active:scale-95"
-                  >
-                    <BsEraserFill className="text-white" size={24} />
-                    Limpar Filtros
-                  </button>
-                )}
+            {/* ===== ITENS DA DIREITA ===== */}
+            <section className="flex items-center gap-6">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                disabled={!dataOS || dataOS.length <= 1}
+                className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-black italic transition-all select-none disabled:border-gray-200 disabled:text-gray-200 ${
+                  showFilters
+                    ? 'border border-blue-800 bg-blue-600 text-white hover:scale-105 hover:bg-blue-900 hover:text-white active:scale-95'
+                    : 'border border-black/50 bg-white/10 hover:scale-105 hover:bg-gray-500 hover:text-white active:scale-95'
+                }`}
+              >
+                {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
+                {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+              </button>
 
-                {/* botão - fechar modal */}
+              {columnFilters.length > 0 && (
                 <button
-                  onClick={handleClose}
-                  className="group rounded-full p-2 text-slate-200 hover:scale-125 hover:bg-red-500/50 hover:text-red-500"
+                  onClick={clearFilters}
+                  className="flex cursor-pointer gap-4 rounded-md border border-white/30 bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:bg-red-900 active:scale-95"
                 >
-                  <X className="h-6 w-6" />
+                  <BsEraserFill className="text-white" size={24} />
+                  Limpar Filtros
                 </button>
-              </section>
-            </div>
+              )}
+
+              {/* botão - fechar modal */}
+              <button
+                onClick={handleClose}
+                className="group rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-90"
+              >
+                <IoClose size={24} />
+              </button>
+            </section>
           </header>
+          {/* ===== */}
 
           {/* ===== CONTEÚDO PRINCIPAL ===== */}
-          <div className="overflow-hidden rounded-xl border-t border-slate-300 bg-slate-900">
-            {/* loading */}
-            {isLoading && (
-              <div className="p-6">
-                <IsLoading title="Buscando ordens de serviço" />
-              </div>
-            )}
-
-            {/* erro */}
-            {isError && error && (
-              <div className="p-6">
-                <Erro error={error as Error} />
-              </div>
-            )}
-
-            {/* tabela de OS */}
+          <main className="overflow-hidden bg-black">
+            {/* ===== TABELA ===== */}
             {dataOS && dataOS.length > 0 && (
-              <div className="h-full w-full overflow-hidden bg-gray-900">
+              <section className="h-full w-full overflow-hidden bg-black">
                 <div
-                  className="scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 h-full overflow-y-auto"
-                  style={{ maxHeight: 'calc(95vh - 250px)' }}
+                  className="h-full overflow-y-auto"
+                  style={{ maxHeight: 'calc(100vh - 370px)' }}
                 >
                   <table className="w-full table-fixed border-collapse">
+                    {/* ===== CABEÇALHO DA TABELA ===== */}
                     <thead className="sticky top-0 z-20">
-                      {/* Cabeçalho principal */}
                       {table.getHeaderGroups().map(headerGroup => (
                         <tr key={headerGroup.id}>
                           {headerGroup.headers.map(header => (
                             <th
                               key={header.id}
-                              className="bg-teal-800 py-4 font-extrabold tracking-wider text-white uppercase select-none"
+                              className="bg-teal-800 py-6 font-extrabold tracking-wider text-white uppercase select-none"
                               style={{
                                 width: getColumnWidth(header.column.id),
                               }}
                             >
-                              {header.isPlaceholder
-                                ? null
-                                : flexRender(
+                              {header.isPlaceholder ? null : header.column
+                                  .id === 'COD_OS' ||
+                                header.column.id === 'NOME_CLIENTE' ||
+                                header.column.id === 'CODTRF_OS' ||
+                                header.column.id === 'DTINI_OS' ||
+                                header.column.id === 'HRINI_OS' ||
+                                header.column.id === 'HRFIM_OS' ||
+                                header.column.id === 'QTD_HR_OS' ? (
+                                <SortableHeader column={header.column}>
+                                  {flexRender(
                                     header.column.columnDef.header,
                                     header.getContext()
                                   )}
+                                </SortableHeader>
+                              ) : (
+                                flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )
+                              )}
                             </th>
                           ))}
                         </tr>
                       ))}
+                      {/* ===== */}
 
-                      {/* Linha de filtros */}
+                      {/* ===== FILTROS DA TABELA ===== */}
                       {showFilters && (
                         <tr>
                           {table.getAllColumns().map(column => (
@@ -337,7 +431,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                               className="bg-teal-800 px-3 pb-6"
                               style={{ width: getColumnWidth(column.id) }}
                             >
-                              {column.id === 'NUM_OS' && (
+                              {column.id === 'COD_OS' && (
                                 <FilterInput
                                   value={
                                     (column.getFilterValue() as string) ?? ''
@@ -345,10 +439,10 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                                   onChange={value =>
                                     column.setFilterValue(value)
                                   }
-                                  placeholder="Filtrar número..."
+                                  placeholder="Código..."
                                 />
                               )}
-                              {column.id === 'STATUS_OS' && (
+                              {column.id === 'NOME_CLIENTE' && (
                                 <FilterSelect
                                   value={
                                     (column.getFilterValue() as string) ?? ''
@@ -356,11 +450,11 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                                   onChange={value =>
                                     column.setFilterValue(value)
                                   }
-                                  options={statusOptions}
-                                  placeholder="Status..."
+                                  options={clienteOptions}
+                                  placeholder="Cliente..."
                                 />
                               )}
-                              {column.id === 'PRODUTIVO_OS' && (
+                              {column.id === 'CODTRF_OS' && (
                                 <FilterInput
                                   value={
                                     (column.getFilterValue() as string) ?? ''
@@ -368,10 +462,10 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                                   onChange={value =>
                                     column.setFilterValue(value)
                                   }
-                                  placeholder="Filtrar produtivo..."
+                                  placeholder="Código..."
                                 />
                               )}
-                              {column.id === 'RESPCLI_OS' && (
+                              {column.id === 'OBS_OS' && (
                                 <FilterInput
                                   value={
                                     (column.getFilterValue() as string) ?? ''
@@ -379,7 +473,41 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                                   onChange={value =>
                                     column.setFilterValue(value)
                                   }
-                                  placeholder="Filtrar responsável..."
+                                  placeholder="Observação..."
+                                />
+                              )}
+                              {column.id === 'DTINI_OS' && (
+                                <FilterInput
+                                  value={
+                                    (column.getFilterValue() as string) ?? ''
+                                  }
+                                  onChange={value =>
+                                    column.setFilterValue(value)
+                                  }
+                                  placeholder="dd/mm/aaaa"
+                                  type="text"
+                                />
+                              )}
+                              {column.id === 'HRINI_OS' && (
+                                <FilterInput
+                                  value={
+                                    (column.getFilterValue() as string) ?? ''
+                                  }
+                                  onChange={value =>
+                                    column.setFilterValue(value)
+                                  }
+                                  placeholder="HH:MM"
+                                />
+                              )}
+                              {column.id === 'HRFIM_OS' && (
+                                <FilterInput
+                                  value={
+                                    (column.getFilterValue() as string) ?? ''
+                                  }
+                                  onChange={value =>
+                                    column.setFilterValue(value)
+                                  }
+                                  placeholder="HH:MM"
                                 />
                               )}
                             </th>
@@ -387,8 +515,9 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                         </tr>
                       )}
                     </thead>
+                    {/* ===== */}
 
-                    {/* Corpo da tabela */}
+                    {/* ===== CORPO DA TABELA ===== */}
                     <tbody>
                       {table.getRowModel().rows.length > 0 &&
                         !isLoading &&
@@ -396,10 +525,10 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                           // Linha do corpo da tabela
                           <tr
                             key={row.id}
-                            className={`group border-b border-gray-700 transition-all duration-300 hover:bg-white/50 ${
+                            className={`group border-b border-gray-600 transition-all hover:bg-amber-200 ${
                               rowIndex % 2 === 0
-                                ? 'bg-gray-900'
-                                : 'bg-gray-800/50'
+                                ? 'bg-stone-600'
+                                : 'bg-stone-500'
                             }`}
                           >
                             {row.getVisibleCells().map(cell => (
@@ -425,11 +554,11 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                   </table>
                 </div>
 
-                {/* ===== PAGINAÇÃO ===== */}
-                <div className="bg-gray-900 px-12 py-6">
+                {/* ===== PAGINAÇÃO DA TABELA ===== */}
+                <section className="border-t border-black bg-white/70 px-12 py-4">
                   <div className="flex items-center justify-between">
                     {/* Informações da página */}
-                    <div className="flex items-center gap-4 text-base font-semibold tracking-widest text-white italic select-none">
+                    <div className="flex items-center gap-4 text-base font-semibold tracking-widest text-black italic select-none">
                       <span>
                         {table.getFilteredRowModel().rows.length} registro
                         {table.getFilteredRowModel().rows.length !== 1
@@ -455,7 +584,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                     <div className="flex items-center gap-3">
                       {/* Seletor de itens por página */}
                       <div className="flex items-center gap-2">
-                        <span className="text-base font-semibold tracking-widest text-white italic select-none">
+                        <span className="text-base font-semibold tracking-widest text-black italic select-none">
                           Itens por página:
                         </span>
                         <select
@@ -463,7 +592,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                           onChange={e =>
                             table.setPageSize(Number(e.target.value))
                           }
-                          className="rounded-md border border-white/30 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-white italic select-none"
+                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-black italic select-none"
                         >
                           {[5, 10, 15, 25].map(pageSize => (
                             <option
@@ -482,21 +611,21 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                         <button
                           onClick={() => table.setPageIndex(0)}
                           disabled={!table.getCanPreviousPage()}
-                          className="rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          <ChevronsLeft className="text-white" size={20} />
+                          <FiChevronsLeft className="text-black/30" size={20} />
                         </button>
 
                         <button
                           onClick={() => table.previousPage()}
                           disabled={!table.getCanPreviousPage()}
-                          className="rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black/30 transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          <ChevronLeft className="text-white" size={20} />
+                          <MdChevronLeft className="text-black/30" size={20} />
                         </button>
 
                         <div className="flex items-center justify-center gap-2">
-                          <span className="text-base font-semibold tracking-widest text-white italic select-none">
+                          <span className="text-base font-semibold tracking-widest text-black italic select-none">
                             Página{' '}
                             <select
                               value={table.getState().pagination.pageIndex + 1}
@@ -504,7 +633,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                                 const page = Number(e.target.value) - 1;
                                 table.setPageIndex(page);
                               }}
-                              className="rounded-md border border-white/30 bg-white/10 px-4 py-1 text-center font-semibold tracking-widest text-white italic select-none"
+                              className="rounded-md border border-black/30 bg-white/10 px-4 py-1 text-center font-semibold tracking-widest text-black italic select-none"
                             >
                               {Array.from(
                                 { length: table.getPageCount() },
@@ -520,7 +649,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                               )}
                             </select>
                           </span>
-                          <span className="text-base font-semibold tracking-widest text-white italic select-none">
+                          <span className="text-base font-semibold tracking-widest text-black italic select-none">
                             {' '}
                             de {table.getPageCount()}
                           </span>
@@ -529,9 +658,12 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                         <button
                           onClick={() => table.nextPage()}
                           disabled={!table.getCanNextPage()}
-                          className="rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          <ChevronRight className="text-white" size={20} />
+                          <FiChevronsRight
+                            className="text-black/30"
+                            size={20}
+                          />
                         </button>
 
                         <button
@@ -539,48 +671,59 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                             table.setPageIndex(table.getPageCount() - 1)
                           }
                           disabled={!table.getCanNextPage()}
-                          className="rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          <ChevronsRight className="text-white" size={20} />
+                          <MdChevronRight className="text-black/30" size={20} />
                         </button>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                </section>
+              </section>
             )}
+            {/* ===== */}
 
-            {/* Mensagem quando não há OS */}
+            {/* ===== MENSAGEM QUANDO NÃO HÁ OS ===== */}
             {dataOS && dataOS.length === 0 && !isLoading && (
-              <div className="bg-slate-900 py-40 text-center">
-                <TriangleAlert
+              <section className="bg-black py-40 text-center">
+                {/* ícone */}
+                <FaExclamationTriangle
                   className="mx-auto mb-6 text-yellow-500"
                   size={80}
                 />
-                <h3 className="text-2xl font-bold tracking-wider text-slate-200 italic select-none">
-                  Nenhuma OS foi encontrada para o chamado #{codChamado}.
+                {/* título */}
+                <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
+                  Nenhuma OS foi encontrada para o chamado {codChamado}.
                 </h3>
-              </div>
+              </section>
             )}
+            {/* ===== */}
 
-            {/* Mensagem quando filtros não retornam resultados */}
+            {/* ===== MENSAGEM QUANDO FILTROS NÃO RETORNAM RESULTADOS ===== */}
             {dataOS &&
               dataOS.length > 0 &&
               table.getFilteredRowModel().rows.length === 0 && (
-                <div className="bg-slate-900 py-20 text-center">
-                  <Filter className="mx-auto mb-4 text-cyan-400" size={60} />
+                <section className="bg-slate-900 py-20 text-center">
+                  {/* ícone */}
+                  <FaFilter className="mx-auto mb-4 text-cyan-400" size={60} />
+                  {/* título */}
                   <h3 className="text-xl font-bold tracking-wider text-slate-200 select-none">
-                    Nenhum registro encontrado com os filtros aplicados
+                    Nenhum registro encontrado para os filtros aplicados
                   </h3>
+                  {/* sub-título */}
                   <p className="mt-2 text-slate-400">
-                    Tente ajustar os filtros ou limpe-os para ver todos os
-                    registros
+                    Tente ajustar os filtros ou limpe-os para visualizar todos
+                    os registros
                   </p>
-                </div>
+                </section>
               )}
-          </div>
+            {/* ===== */}
+          </main>
+          {/* ===== */}
         </div>
+        {/* ===== */}
       </div>
+      {/* ===== */}
 
       {/* ===== MODAL DE APONTAMENTOS ===== */}
       <ModalApontamentos
@@ -589,6 +732,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
         codChamado={codChamado}
         codOS={selectedOS}
       />
+      {/* ===== */}
     </>
   );
 }
@@ -599,15 +743,14 @@ function getColumnWidth(columnId: string): string {
   const widthMap: Record<string, string> = {
     COD_OS: '70px',
     NOME_CLIENTE: '150px',
-    CODTRF_OS: '80px',
-    OBS_OS: '300px',
-    DTINI_OS: '80px',
-    HRINI_OS: '80px',
-    HRFIM_OS: '80px',
-    QTD_HR_OS: '80px',
+    CODTRF_OS: '100px',
+    OBS_OS: '250px',
+    DTINI_OS: '100px',
+    HRINI_OS: '100px',
+    HRFIM_OS: '100px',
+    QTD_HR_OS: '100px',
     actions: '80px',
   };
 
   return widthMap[columnId] || '100px';
 }
-// ================================================================================

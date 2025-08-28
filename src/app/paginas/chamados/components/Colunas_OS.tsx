@@ -5,7 +5,9 @@ import {
 } from '@/components/ui/tooltip';
 import { ColumnDef } from '@tanstack/react-table';
 import { OSProps } from './Modal_OS';
+// ================================================================================
 import { FaHandPointUp } from 'react-icons/fa';
+// ================================================================================
 // ================================================================================
 
 export interface AcoesOSProps {
@@ -58,7 +60,7 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
     cell: ({ getValue }) => {
       const value = getValue() as string;
       return (
-        <div className="rounded-md bg-cyan-800 p-2 text-center text-white ring-1 ring-cyan-300">
+        <div className="rounded-md bg-pink-600 p-2 text-center text-white ring-1 ring-white">
           {value}
         </div>
       );
@@ -91,7 +93,21 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
     header: () => <div className="text-center">OBS. OS</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string;
-      return <div className="text-left">{value || '-'}</div>;
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="text-left">{value || '-'}</div>
+          </TooltipTrigger>
+          <TooltipContent
+            side="top"
+            align="center"
+            sideOffset={8}
+            className="bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
+          >
+            {value || '-'}
+          </TooltipContent>
+        </Tooltip>
+      );
     },
   },
 
@@ -166,14 +182,14 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
       const os = row.original;
 
       return (
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex items-center justify-center">
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 onClick={() => acoes.onVisualizarApontamentos(os.COD_OS)}
                 className="transition-all hover:scale-110"
               >
-                <FaHandPointUp size={28} />
+                <FaHandPointUp size={32} />
               </button>
             </TooltipTrigger>
             <TooltipContent

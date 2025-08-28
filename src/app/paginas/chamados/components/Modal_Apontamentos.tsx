@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { X, Clock, Save, Calendar } from 'lucide-react';
+import {
+  X,
+  Clock,
+  Save,
+  Calendar,
+  FileText,
+  AlertCircle,
+  CheckCircle,
+  Info,
+} from 'lucide-react';
 
 interface ModalApontamentosProps {
   isOpen: boolean;
@@ -16,7 +25,7 @@ export default function ModalApontamentos({
 }: ModalApontamentosProps) {
   const [formData, setFormData] = useState({
     observacaoOS: '',
-    dataInicioOS: new Date().toISOString().split('T')[0], // data atual
+    dataInicioOS: new Date().toISOString().split('T')[0],
     horaInicioOS: '',
     horaFimOS: '',
   });
@@ -39,7 +48,7 @@ export default function ModalApontamentos({
     setError(null);
 
     try {
-      // Validações básicas (redundantes, mas mantidas para UX)
+      // Validações básicas
       if (!formData.observacaoOS.trim()) {
         throw new Error('Observação é obrigatória');
       }
@@ -50,9 +59,8 @@ export default function ModalApontamentos({
         throw new Error('Hora fim deve ser maior que hora início');
       }
 
-      // Dados que serão enviados para a API (nomes corretos)
       const payload = {
-        codOS: codOS, // Vem das props
+        codOS: codOS,
         dataInicioOS: formData.dataInicioOS,
         horaInicioOS: formData.horaInicioOS,
         horaFimOS: formData.horaFimOS,
@@ -78,7 +86,6 @@ export default function ModalApontamentos({
 
       setSuccess(true);
 
-      // Resetar form após sucesso
       setTimeout(() => {
         setFormData({
           observacaoOS: '',
@@ -113,157 +120,172 @@ export default function ModalApontamentos({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center">
-      {/* Overlay */}
+    <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
+      {/* Overlay com blur melhorado */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={handleClose}
       />
 
-      {/* Modal */}
-      <div className="relative z-10 mx-4 w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-600">
-        {/* Header */}
-        <header className="relative flex items-center justify-between bg-slate-950 p-6">
-          <div className="flex items-center gap-4">
-            <div className="rounded-full bg-blue-400/40 p-3">
-              <Clock className="text-blue-400" size={32} />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-wider text-slate-200 select-none">
-                Atualizar Apontamento
-              </h1>
-              <p className="text-sm font-semibold tracking-wider text-slate-300 italic select-none">
-                Chamado #{codChamado} {codOS && `- OS ${codOS}`}
-              </p>
-            </div>
-          </div>
+      {/* Modal Container */}
+      <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-3xl border border-gray-200/50 bg-white shadow-2xl transition-all duration-500 ease-out">
+        {/* Header com gradiente */}
+        <header className="relative bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              {/* Ícone com animação */}
+              <div className="rounded-2xl border border-blue-400/30 bg-gradient-to-br from-blue-400/20 to-cyan-500/20 p-4 backdrop-blur-sm">
+                <Clock className="drop-shadow-glow text-blue-400" size={32} />
+              </div>
 
-          <button
-            onClick={handleClose}
-            disabled={isLoading}
-            className="group rounded-full p-2 text-slate-200 hover:scale-110 hover:bg-red-500/50 hover:text-red-500 disabled:opacity-50"
-          >
-            <X className="h-5 w-5" />
-          </button>
+              <div>
+                <h1 className="text-2xl font-bold tracking-wide text-white drop-shadow-sm">
+                  Atualizar Apontamento
+                </h1>
+                <p className="mt-1 text-sm font-medium text-slate-300">
+                  Chamado #{codChamado} {codOS && `• OS ${codOS}`}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleClose}
+              disabled={isLoading}
+              className="group rounded-full border border-transparent p-3 text-white transition-all duration-200 hover:border-red-400/50 hover:bg-red-500/20 disabled:opacity-50"
+            >
+              <X className="h-5 w-5 transition-transform group-hover:scale-110" />
+            </button>
+          </div>
         </header>
 
-        {/* Content */}
-        <div className="bg-white p-6">
+        {/* Conteúdo Principal */}
+        <div className="max-h-[calc(90vh-140px)] overflow-y-auto bg-gradient-to-br from-gray-50 to-white p-6">
+          {/* Alertas de Feedback */}
           {success && (
-            <div className="mb-4 rounded-lg border border-green-300 bg-green-100 p-4">
-              <p className="font-semibold text-green-800">
-                ✅ Apontamento atualizado com sucesso!
-              </p>
+            <div className="mb-6 rounded-2xl border border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 p-4 shadow-sm">
+              <div className="flex items-center gap-3">
+                <CheckCircle className="text-green-600" size={20} />
+                <p className="font-semibold text-green-800">
+                  Apontamento atualizado com sucesso!
+                </p>
+              </div>
             </div>
           )}
 
           {error && (
-            <div className="mb-4 rounded-lg border border-red-300 bg-red-100 p-4">
-              <p className="font-semibold text-red-800">❌ {error}</p>
+            <div className="mb-6 rounded-2xl border border-red-200 bg-gradient-to-r from-red-50 to-pink-50 p-4 shadow-sm">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="text-red-600" size={20} />
+                <p className="font-semibold text-red-800">{error}</p>
+              </div>
             </div>
           )}
 
-          {/* INFO DE TESTE */}
-          <div className="mb-4 rounded-lg border border-blue-300 bg-blue-50 p-4">
-            <p className="text-sm text-blue-800">
-              <strong>MODO TESTE:</strong> Abra o DevTools (F12) → Console para
-              ver os dados enviados e respostas da API
-            </p>
-            <p className="mt-1 text-xs text-blue-600">
-              codOS que será enviado:{' '}
-              <strong>{codOS || 'não informado'}</strong>
-            </p>
-          </div>
-
+          {/* Formulário */}
           <div className="space-y-6">
             {/* Data */}
-            <div>
-              <label className="mb-2 block text-sm font-bold text-slate-700">
-                <Calendar className="mr-1 inline h-4 w-4" />
-                Data do Apontamento
-              </label>
+            <FormSection
+              title="Data do Apontamento"
+              icon={<Calendar className="text-emerald-500" size={18} />}
+            >
               <input
                 type="date"
                 name="dataInicioOS"
                 value={formData.dataInicioOS}
                 onChange={handleInputChange}
                 disabled={isLoading}
-                className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                className="w-full rounded-xl border border-gray-300 bg-white p-4 font-medium text-slate-700 shadow-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50"
               />
-            </div>
+            </FormSection>
 
             {/* Horários */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="mb-2 block text-sm font-bold text-slate-700">
-                  <Clock className="mr-1 inline h-4 w-4" />
-                  Hora Início
-                </label>
-                <input
-                  type="time"
-                  name="horaInicioOS"
-                  value={formData.horaInicioOS}
-                  onChange={handleInputChange}
-                  disabled={isLoading}
-                  className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                />
-              </div>
+            <FormSection
+              title="Horário de Execução"
+              icon={<Clock className="text-purple-500" size={18} />}
+            >
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">
+                    Hora Início
+                  </label>
+                  <input
+                    type="time"
+                    name="horaInicioOS"
+                    value={formData.horaInicioOS}
+                    onChange={handleInputChange}
+                    disabled={isLoading}
+                    className="w-full rounded-xl border border-gray-300 bg-white p-4 font-medium text-slate-700 shadow-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:opacity-50"
+                  />
+                </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-bold text-slate-700">
-                  <Clock className="mr-1 inline h-4 w-4" />
-                  Hora Fim
-                </label>
-                <input
-                  type="time"
-                  name="horaFimOS"
-                  value={formData.horaFimOS}
-                  onChange={handleInputChange}
-                  disabled={isLoading}
-                  className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                />
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">
+                    Hora Fim
+                  </label>
+                  <input
+                    type="time"
+                    name="horaFimOS"
+                    value={formData.horaFimOS}
+                    onChange={handleInputChange}
+                    disabled={isLoading}
+                    className="w-full rounded-xl border border-gray-300 bg-white p-4 font-medium text-slate-700 shadow-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:opacity-50"
+                  />
+                </div>
               </div>
-            </div>
+            </FormSection>
 
             {/* Observação */}
-            <div>
-              <label className="mb-2 block text-sm font-bold text-slate-700">
-                Observação do Serviço
-              </label>
+            <FormSection
+              title="Observação do Serviço"
+              icon={<FileText className="text-blue-500" size={18} />}
+            >
               <textarea
                 name="observacaoOS"
                 value={formData.observacaoOS}
                 onChange={handleInputChange}
                 disabled={isLoading}
                 rows={4}
-                className="w-full resize-none rounded-lg border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                placeholder="Descreva detalhadamente o serviço realizado..."
+                className="w-full resize-none rounded-xl border border-gray-300 bg-white p-4 font-medium text-slate-700 shadow-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:opacity-50"
+                placeholder="Descreva detalhadamente o serviço realizado, procedimentos executados, materiais utilizados e resultados obtidos..."
               />
-            </div>
+              <div className="mt-2 flex items-center justify-between">
+                <p className="text-xs text-gray-500">
+                  Seja específico sobre o trabalho realizado
+                </p>
+                <p className="text-xs text-gray-400">
+                  {formData.observacaoOS.length}/1000
+                </p>
+              </div>
+            </FormSection>
 
-            {/* Botões */}
-            <div className="flex justify-end gap-3 pt-4">
+            {/* Botões de Ação */}
+            <div className="flex gap-4 border-t border-gray-200 pt-4">
               <button
                 onClick={handleClose}
                 disabled={isLoading}
-                className="rounded-lg border border-slate-300 px-6 py-3 font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                className="flex-1 rounded-xl bg-gray-100 px-6 py-4 font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 disabled:opacity-50"
               >
                 Cancelar
               </button>
 
               <button
                 onClick={handleSubmit}
-                disabled={isLoading}
-                className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                disabled={
+                  isLoading ||
+                  !formData.observacaoOS.trim() ||
+                  !formData.horaInicioOS ||
+                  !formData.horaFimOS
+                }
+                className="flex flex-1 items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-blue-800 hover:shadow-blue-500/25 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isLoading ? (
                   <>
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                     Salvando...
                   </>
                 ) : (
                   <>
-                    <Save className="h-4 w-4" />
+                    <Save size={18} />
                     Atualizar Apontamento
                   </>
                 )}
@@ -275,3 +297,24 @@ export default function ModalApontamentos({
     </div>
   );
 }
+
+// Componente auxiliar para seções do formulário
+const FormSection = ({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) => (
+  <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div className="border-b border-gray-100 bg-gradient-to-r from-gray-50 to-slate-50 p-4">
+      <h3 className="flex items-center gap-2 font-bold text-slate-800">
+        {icon}
+        {title}
+      </h3>
+    </div>
+    <div className="p-6">{children}</div>
+  </div>
+);

@@ -30,7 +30,7 @@ export default function Header({ titulo, icon }: Props) {
 
   return (
     <header>
-      <div className="grid grid-cols-[30%_40%_30%] border-b-2 border-red-500 bg-white pb-6">
+      <div className="grid grid-cols-[30%_40%_30%] border-b-2 border-red-500 bg-gray-100 pb-6">
         {/* Itens da esquerda */}
         <section className="flex items-center gap-4">
           {/* Ícone */}

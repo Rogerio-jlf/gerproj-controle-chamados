@@ -49,7 +49,7 @@ export default function Filtros({}: Props) {
   ]);
 
   return (
-    <div className="flex w-full gap-4">
+    <div className="flex w-full gap-6">
       <div className="flex-1">
         <SelectAno value={ano} onChange={setAno} />
       </div>

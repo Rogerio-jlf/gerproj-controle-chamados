@@ -15,30 +15,31 @@ import {
 } from '@tanstack/react-table';
 import { useMemo, useState, useCallback } from 'react';
 import { ChamadosProps, colunasTabela } from './Colunas_Tabela_Chamados';
-import ModalChamado from './Modal_Atribuir_Chamados';
 import {
   AlertCircle,
   Database,
-  TriangleAlert,
   Lock,
   Filter,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import ExcelButton from '../../../../components/Button_Excel';
 import PDFButton from '../../../../components/Button_PDF';
 import { LuFilter } from 'react-icons/lu';
 import { LuFilterX } from 'react-icons/lu';
 import { BsEraserFill } from 'react-icons/bs';
-// ================================================================================
-
-// Novo componente Modal para OS
+import ModalChamado from './Modal_Chamados_Atribuir_Chamados';
 import ModalOS from './Modal_OS';
+import ModalTarefas from './Modal_Tarefas';
 import IsLoading from './IsLoading';
 import IsError from './IsError';
-import ModalTarefas from './Modal_Tarefas';
+import { FaExclamationTriangle } from 'react-icons/fa';
+// ================================================================================
 
 async function fetchChamados(
   params: URLSearchParams,
@@ -59,8 +60,8 @@ async function fetchChamados(
   const data = await res.json();
   return Array.isArray(data) ? data : data.chamados || [];
 }
+// ================================================================================
 
-// Componente de filtro inline
 const FilterInput = ({
   value,
   onChange,
@@ -106,6 +107,33 @@ const FilterSelect = ({
   </select>
 );
 
+// Componente para cabeçalho ordenável
+const SortableHeader = ({
+  column,
+  children,
+}: {
+  column: any;
+  children: React.ReactNode;
+}) => {
+  const sorted = column.getIsSorted();
+
+  return (
+    <div
+      className="flex cursor-pointer items-center justify-center gap-2 rounded-full py-2 hover:bg-teal-900"
+      onClick={column.getToggleSortingHandler()}
+    >
+      {children}
+      <div className="flex flex-col">
+        {sorted === 'asc' && <ArrowUp size={20} />}
+        {sorted === 'desc' && <ArrowDown size={20} />}
+        {!sorted && <ArrowUpDown size={20} className="text-white" />}
+      </div>
+    </div>
+  );
+};
+
+// ================================================================================
+
 export default function Tabela() {
   const { filters } = useFiltersTabelaChamados();
   const { ano, mes, cliente, recurso, status, codChamado } = filters;
@@ -125,10 +153,13 @@ export default function Tabela() {
 
   // Estados para filtros e ordenação
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'COD_CHAMADO', desc: true }, // Ordenação padrão por código decrescente
+  ]);
   const [showFilters, setShowFilters] = useState(false);
 
   const [tarefasModalOpen, setTarefasModalOpen] = useState(false);
+  // ================================================================================
 
   const handleCloseModal = () => {
     setModalOpen(false);
@@ -139,9 +170,11 @@ export default function Tabela() {
     setOsModalOpen(false);
     setSelectedCodChamado(null);
   };
+  // ================================================================================
 
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
   const enabled = !!ano && !!mes && !!token && !!user;
 
   const queryParams = useMemo(() => {
@@ -212,6 +245,56 @@ export default function Tabela() {
         pageSize: 20,
       },
     },
+    // Função de filtro personalizada que funciona para todos os tipos
+    filterFns: {
+      customFilter: (row, columnId, filterValue) => {
+        if (!filterValue || filterValue === '') return true;
+
+        const cellValue = row.getValue(columnId);
+
+        // Converte ambos os valores para string e faz comparação case-insensitive
+        const cellString = String(cellValue || '').toLowerCase();
+        const filterString = String(filterValue).toLowerCase();
+
+        // Para COD_CHAMADO, permite busca parcial em números
+        if (columnId === 'COD_CHAMADO') {
+          return cellString.includes(filterString);
+        }
+
+        // Para STATUS_CHAMADO, busca exata se for um valor do select
+        if (columnId === 'STATUS_CHAMADO' && filterValue !== '') {
+          return cellString === filterString;
+        }
+
+        // Para outros campos, busca parcial
+        return cellString.includes(filterString);
+      },
+    },
+    // Aplica o filtro customizado para todas as colunas
+    defaultColumn: {
+      filterFn: (row, columnId, filterValue) => {
+        if (!filterValue || filterValue === '') return true;
+
+        const cellValue = row.getValue(columnId);
+
+        // Converte ambos os valores para string e faz comparação case-insensitive
+        const cellString = String(cellValue || '').toLowerCase();
+        const filterString = String(filterValue).toLowerCase();
+
+        // Para COD_CHAMADO, permite busca parcial em números
+        if (columnId === 'COD_CHAMADO') {
+          return cellString.includes(filterString);
+        }
+
+        // Para STATUS_CHAMADO, busca exata se for um valor do select
+        if (columnId === 'STATUS_CHAMADO' && filterValue !== '') {
+          return cellString === filterString;
+        }
+
+        // Para outros campos, busca parcial
+        return cellString.includes(filterString);
+      },
+    },
   });
 
   // Obter valores únicos para filtros de select
@@ -227,8 +310,8 @@ export default function Tabela() {
   const clearFilters = () => {
     setColumnFilters([]);
   };
+  // ================================================================================
 
-  // Estados de loading/erro/acesso
   if (loading) {
     return (
       <div className="min-h-[500px] rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
@@ -303,10 +386,11 @@ export default function Tabela() {
   if (isError) {
     return <IsError error={error as Error} />;
   }
+  // ================================================================================
 
   return (
     <>
-      <div className="overflow-hidden rounded-xl border border-slate-300 bg-slate-900">
+      <div className="overflow-hidden rounded-xl border border-gray-300 bg-black">
         {/* ===== HEADER ===== */}
         <header className="bg-slate-950 p-6">
           <div className="flex items-center justify-between gap-8">
@@ -320,11 +404,11 @@ export default function Tabela() {
                   Tabela de Chamados
                 </h1>
                 <div className="flex items-center gap-4">
-                  <span className="rounded-full bg-green-800 px-4 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+                  <span className="rounded-full bg-white px-6 py-1 text-sm font-bold tracking-widest text-black italic select-none">
                     {user.nome}
                   </span>
                   {Array.isArray(data) && data.length > 0 && (
-                    <span className="rounded-full bg-blue-800 px-4 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+                    <span className="rounded-full bg-white px-6 py-1 text-sm font-bold tracking-widest text-black italic select-none">
                       {mes.toString().padStart(2, '0')}/{ano}
                     </span>
                   )}
@@ -391,56 +475,63 @@ export default function Tabela() {
             </section>
           </div>
         </header>
+        {/* ===== */}
 
         {/* ===== TABELA ===== */}
-        <div className="h-full w-full overflow-hidden bg-gray-900">
+        <section className="h-full w-full overflow-hidden bg-black">
           <div
-            className="scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 h-full overflow-y-auto"
-            style={{ maxHeight: 'calc(100vh - 470px)' }}
+            className="h-full overflow-y-auto"
+            style={{ maxHeight: 'calc(100vh - 370px)' }}
           >
             <table className="w-full table-fixed border-collapse">
+              {/* ===== CABEÇALHO DA TABELA ===== */}
               <thead className="sticky top-0 z-20">
-                {/* Cabeçalho principal */}
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map(header => (
                       <th
                         key={header.id}
-                        className="bg-teal-800 py-4 font-extrabold tracking-wider text-white uppercase select-none"
+                        className="bg-teal-700 py-6 font-extrabold tracking-wider text-white uppercase select-none"
                         style={{ width: getColumnWidth(header.column.id) }}
                       >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
+                        {header.isPlaceholder ? null : header.column.id ===
+                            'COD_CHAMADO' ||
+                          header.column.id === 'DATA_CHAMADO' ||
+                          header.column.id === 'STATUS_CHAMADO' ||
+                          header.column.id === 'ASSUNTO_CHAMADO' ? (
+                          <SortableHeader column={header.column}>
+                            {flexRender(
                               header.column.columnDef.header,
                               header.getContext()
                             )}
+                          </SortableHeader>
+                        ) : (
+                          flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )
+                        )}
                       </th>
                     ))}
                   </tr>
                 ))}
+                {/* ===== */}
 
-                {/* Linha de filtros */}
+                {/* ===== FILTROS DA TABELA ===== */}
                 {showFilters && (
                   <tr>
                     {table.getAllColumns().map(column => (
                       <th
                         key={column.id}
-                        className="bg-teal-800 px-3 pb-6"
+                        className="bg-teal-700 px-3 pb-6"
                         style={{ width: getColumnWidth(column.id) }}
                       >
-                        {column.id === 'ASSUNTO_CHAMADO' && (
+                        {column.id === 'COD_CHAMADO' && (
                           <FilterInput
                             value={(column.getFilterValue() as string) ?? ''}
                             onChange={value => column.setFilterValue(value)}
-                            placeholder="Filtrar assunto..."
-                          />
-                        )}
-                        {column.id === 'EMAIL_CHAMADO' && (
-                          <FilterInput
-                            value={(column.getFilterValue() as string) ?? ''}
-                            onChange={value => column.setFilterValue(value)}
-                            placeholder="Filtrar email..."
+                            placeholder="Código..."
+                            type="text"
                           />
                         )}
                         {column.id === 'DATA_CHAMADO' && (
@@ -451,12 +542,26 @@ export default function Tabela() {
                             type="text"
                           />
                         )}
+                        {column.id === 'ASSUNTO_CHAMADO' && (
+                          <FilterInput
+                            value={(column.getFilterValue() as string) ?? ''}
+                            onChange={value => column.setFilterValue(value)}
+                            placeholder="Filtrar por assunto..."
+                          />
+                        )}
                         {column.id === 'STATUS_CHAMADO' && (
                           <FilterSelect
                             value={(column.getFilterValue() as string) ?? ''}
                             onChange={value => column.setFilterValue(value)}
                             options={statusOptions}
-                            placeholder="Status..."
+                            placeholder="Filtrar por status..."
+                          />
+                        )}
+                        {column.id === 'EMAIL_CHAMADO' && (
+                          <FilterInput
+                            value={(column.getFilterValue() as string) ?? ''}
+                            onChange={value => column.setFilterValue(value)}
+                            placeholder="Filtrar por email..."
                           />
                         )}
                       </th>
@@ -464,15 +569,17 @@ export default function Tabela() {
                   </tr>
                 )}
               </thead>
+              {/* ===== */}
 
+              {/* ===== CORPO DA TABELA ===== */}
               <tbody>
                 {table.getRowModel().rows.length > 0 &&
                   !isLoading &&
                   table.getRowModel().rows.map((row, rowIndex) => (
                     <tr
                       key={row.id}
-                      className={`group border-b border-slate-700 transition-all duration-300 hover:bg-white/50 ${
-                        rowIndex % 2 === 0 ? 'bg-slate-900' : 'bg-slate-800/50'
+                      className={`group border-b border-gray-600 transition-all hover:bg-amber-200 ${
+                        rowIndex % 2 === 0 ? 'bg-stone-800' : 'bg-stone-700'
                       }`}
                     >
                       {row.getVisibleCells().map(cell => (
@@ -492,16 +599,20 @@ export default function Tabela() {
                     </tr>
                   ))}
               </tbody>
+              {/* ===== */}
             </table>
+            {/* ===== */}
           </div>
-        </div>
+          {/* ===== */}
+        </section>
+        {/* ===== */}
 
-        {/* ===== PAGINAÇÃO ===== */}
+        {/* ===== PAGINAÇÃO DA TABELA ===== */}
         {Array.isArray(data) && data.length > 0 && (
-          <div className="bg-gray-900 px-12 py-10">
+          <section className="border-t border-white bg-black px-12 py-4">
             <div className="flex items-center justify-between">
               {/* Informações da página */}
-              <div className="flex items-center text-base font-semibold tracking-widest text-white italic select-none">
+              <div className="flex items-center gap-4 text-base font-semibold tracking-widest text-white italic select-none">
                 <span>
                   {table.getFilteredRowModel().rows.length} registro
                   {table.getFilteredRowModel().rows.length !== 1
@@ -612,54 +723,62 @@ export default function Tabela() {
                 </div>
               </div>
             </div>
-          </div>
+          </section>
         )}
+        {/* ===== */}
 
-        {/* Mensagem quando não há chamados */}
+        {/* ===== MENSAGEM QUANDO NÃO HÁ CHAMADOS ===== */}
         {Array.isArray(data) && data.length === 0 && !isLoading && (
           <div className="bg-slate-900 py-40 text-center">
-            <TriangleAlert className="mx-auto mb-6 text-yellow-500" size={80} />
+            <FaExclamationTriangle
+              className="mx-auto mb-6 text-yellow-500"
+              size={80}
+            />
             <h3 className="text-2xl font-bold tracking-wider text-slate-200 italic select-none">
-              Nenhum chamado encontrado, para o período de{' '}
+              Nenhum chamado foi encontrado, para o período de{' '}
               {mes.toString().padStart(2, '0')}/{ano}.
             </h3>
           </div>
         )}
+        {/* ===== */}
 
-        {/* Mensagem quando filtros não retornam resultados */}
+        {/* ===== MENSAGEM QUANDO FILTROS NÃO RETORNAM RESULTADOS ===== */}
         {Array.isArray(data) &&
           data.length > 0 &&
           table.getFilteredRowModel().rows.length === 0 && (
             <div className="bg-slate-900 py-20 text-center">
               <Filter className="mx-auto mb-4 text-cyan-400" size={60} />
               <h3 className="text-xl font-bold tracking-wider text-slate-200 select-none">
-                Nenhum registro encontrado com os filtros aplicados
+                Nenhum registro encontrado para os filtros aplicados
               </h3>
               <p className="mt-2 text-slate-400">
-                Tente ajustar os filtros ou limpe-os para ver todos os registros
+                Tente ajustar os filtros ou limpe-os para visualizar todos os
+                registros
               </p>
             </div>
           )}
+        {/* ===== */}
       </div>
+      {/* ===== */}
 
-      {/* Modal do Chamado */}
+      {/* ===== MODAL CHAMADO ===== */}
       <ModalChamado
         isOpen={modalOpen}
         onClose={handleCloseModal}
         chamado={selectedChamado}
       />
-
-      {/* Modal da OS */}
+      {/* ===== MODAL OS ===== */}
       <ModalOS
         isOpen={osModalOpen}
         onClose={handleCloseOSModal}
         codChamado={selectedCodChamado}
       />
-
+      {/* ===== MODAL TAREFAS ===== */}
       <ModalTarefas
         isOpen={tarefasModalOpen}
         onClose={() => setTarefasModalOpen(false)}
       />
+      {/* ===== */}
     </>
   );
 }
@@ -672,7 +791,7 @@ function getColumnWidth(columnId: string): string {
     EMAIL_CHAMADO: '150px',
     DATA_CHAMADO: '80px',
     STATUS_CHAMADO: '150px',
-    actions: '110px',
+    actions: '80px',
   };
 
   return widthMap[columnId] || '100px';

@@ -1,9 +1,11 @@
 import { FiFilter } from 'react-icons/fi';
+// ================================================================================
 
 interface Props {
   value: number;
   onChange: (value: number) => void;
 }
+// ================================================================================
 
 export default function SelectMes({ value, onChange }: Props) {
   const arrayMeses = [
@@ -20,6 +22,7 @@ export default function SelectMes({ value, onChange }: Props) {
     'Novembro',
     'Dezembro',
   ];
+  // ================================================================================
 
   return (
     <div className="group flex w-full flex-col">
@@ -27,6 +30,7 @@ export default function SelectMes({ value, onChange }: Props) {
         <FiFilter className="text-gray-900" size={14} />
         Mês
       </label>
+      {/* ===== */}
 
       <select
         value={value}

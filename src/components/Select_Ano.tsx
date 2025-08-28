@@ -1,9 +1,11 @@
 import { FiFilter } from 'react-icons/fi';
+// ================================================================================
 
 interface Props {
   value: number;
   onChange: (value: number) => void;
 }
+// ================================================================================
 
 export default function SelectAno({ value, onChange }: Props) {
   const arrayAnos = [2024, 2025, 2026];
@@ -14,11 +16,12 @@ export default function SelectAno({ value, onChange }: Props) {
         <FiFilter className="text-gray-900" size={14} />
         Ano
       </label>
+      {/* ===== */}
 
       <select
         value={value}
         onChange={e => onChange(Number(e.target.value))}
-        className="w-full cursor-pointer rounded-md border-none bg-white px-4 py-2 text-lg font-semibold tracking-wider text-gray-900 italic shadow-sm shadow-black transition-all hover:scale-105 hover:shadow-lg hover:shadow-black focus:outline-none"
+        className="w-full cursor-pointer rounded-md border-none bg-white px-4 py-2 text-base font-semibold tracking-wider text-gray-900 italic shadow-sm shadow-black transition-all hover:scale-105 hover:shadow-lg hover:shadow-black focus:outline-none"
       >
         {arrayAnos.map(ano => (
           <option

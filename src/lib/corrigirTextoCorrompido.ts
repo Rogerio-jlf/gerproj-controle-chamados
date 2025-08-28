@@ -29,6 +29,8 @@ export function corrigirTextoCorrompido(texto: string): string {
     .replace(/�no�/g, ' no ')
     .replace(/�de�/g, ' de ')
     .replace(/��o/g, 'ção')
+    .replace(/��O/g, 'ÇÃO')
+    .replace(/�S/g, 'ÍS')
     .replace(/�o�/g, 'ão ')
     .replace(/�rio�/g, 'ório ')
     .replace(/�do�/g, ' do ')
@@ -36,8 +38,7 @@ export function corrigirTextoCorrompido(texto: string): string {
     .replace(/�em�/g, ' em ')
     .replace(/�para�/g, ' para ')
     .replace(/�com�/g, ' com ')
-    .replace(/�es�/g, 'ões')
-    .replace(/�/g, 'Ç');
+    .replace(/�es�/g, 'ões');
 
   // Limpa espaços duplos que podem ter sido criados
   textoCorrigido = textoCorrigido.replace(/\s+/g, ' ').trim();

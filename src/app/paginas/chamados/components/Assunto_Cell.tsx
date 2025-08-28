@@ -77,14 +77,14 @@ export default function AssuntoCellEditavel({
       <Tooltip>
         <TooltipTrigger asChild>
           <div
-            className="group relative cursor-pointer truncate rounded p-2 text-left transition-colors duration-200 hover:bg-slate-50"
+            className="group relative cursor-pointer truncate rounded p-2 text-left transition-all"
             onClick={handleOpenModal}
           >
             <span className="block pr-6">
               {corrigirTextoCorrompido(assunto)}
             </span>
             <FaEdit
-              className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-700 opacity-0 transition-opacity duration-200 group-hover:opacity-60"
+              className="absolute top-1/2 right-2 -translate-y-1/2 text-black opacity-0 transition-opacity group-hover:opacity-100"
               size={20}
             />
           </div>
@@ -112,7 +112,7 @@ export default function AssuntoCellEditavel({
           <AlertDialogHeader className="space-y-4 pb-6">
             <AlertDialogTitle className="flex items-center justify-center gap-4 text-center text-2xl font-bold tracking-wider text-gray-900 select-none">
               <FaEdit className="text-gray-900" size={32} />
-              Editar Assunto - Chamado #{codChamado}
+              Editar Assunto - Chamado - {codChamado}
             </AlertDialogTitle>
 
             <div className="grid gap-4 py-4">

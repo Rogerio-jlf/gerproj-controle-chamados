@@ -1,12 +1,15 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { FaDownload } from 'react-icons/fa';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+// ================================================================================
+import { FaDownload } from 'react-icons/fa';
+import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
+// ================================================================================
+// ================================================================================
 
-// Interface para as tarefas
 export interface TarefasProps {
   COD_TAREFA: number;
   NOME_TAREFA: string;
@@ -14,14 +17,15 @@ export interface TarefasProps {
   DTSOL_TAREFA: string;
   HREST_TAREFA: number;
 }
+// ================================================================================
 
 export const colunasTabela = (): ColumnDef<TarefasProps>[] => [
   // código da tarefa
   {
     accessorKey: 'COD_TAREFA',
-    header: () => <div className="text-center">Código</div>,
+    header: () => <div className="text-center">CÓD. Tarefa</div>,
     cell: ({ getValue }) => (
-      <div className="rounded-md bg-cyan-800 p-2 text-center text-white ring-1 ring-cyan-300">
+      <div className="rounded-md bg-pink-600 p-2 text-center text-white ring-1 ring-white">
         {getValue() as string}
       </div>
     ),
@@ -30,31 +34,19 @@ export const colunasTabela = (): ColumnDef<TarefasProps>[] => [
   // nome da tarefa
   {
     accessorKey: 'NOME_TAREFA',
-    header: () => <div className="text-center">Nome da Tarefa</div>,
+    header: () => <div className="text-center">Tarefa</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string;
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="truncate px-2 py-1">{value?.trim() || '-'}</div>
-          </TooltipTrigger>
-          <TooltipContent
-            side="top"
-            align="center"
-            sideOffset={8}
-            className="max-w-xs bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
-          >
-            {value?.trim() || 'Sem nome'}
-          </TooltipContent>
-        </Tooltip>
-      );
+      const textoCorrigido = corrigirTextoCorrompido(value);
+
+      return <div className="truncate px-2 py-1">{textoCorrigido || '-'}</div>;
     },
   },
 
   // data de solicitação
   {
     accessorKey: 'DTSOL_TAREFA',
-    header: () => <div className="text-center">Data Solicitação</div>,
+    header: () => <div className="text-center">DT. Solicitação</div>,
     cell: ({ getValue }) => {
       const dateString = getValue() as string;
 
@@ -80,25 +72,13 @@ export const colunasTabela = (): ColumnDef<TarefasProps>[] => [
   // horas restantes
   {
     accessorKey: 'HREST_TAREFA',
-    header: () => <div className="text-center">Horas Restantes</div>,
+    header: () => <div className="text-center">QTD. HR's Estipuladas</div>,
     cell: ({ getValue }) => {
       const value = getValue() as number;
 
-      if (value === null || value === undefined) {
-        return <div className="text-center">-</div>;
-      }
-
-      const getStyleByHours = (hours: number) => {
-        if (hours <= 0) return 'bg-red-700 text-white ring-1 ring-red-300';
-        if (hours <= 8)
-          return 'bg-yellow-700 text-white ring-1 ring-yellow-300';
-        if (hours <= 16) return 'bg-blue-700 text-white ring-1 ring-blue-300';
-        return 'bg-green-700 text-white ring-1 ring-green-300';
-      };
-
       return (
-        <div className={`rounded-md p-2 text-center ${getStyleByHours(value)}`}>
-          {value.toFixed(1)}h
+        <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
+          {value !== null && value !== undefined ? value.toFixed(2) : '-'}
         </div>
       );
     },
@@ -129,9 +109,9 @@ export const colunasTabela = (): ColumnDef<TarefasProps>[] => [
             <TooltipTrigger asChild>
               <button
                 onClick={handleDownload}
-                className="inline-flex items-center justify-center rounded-2xl bg-amber-800 p-2 text-white ring-1 ring-amber-300"
+                className="transition-all hover:scale-110"
               >
-                <FaDownload size={20} />
+                <FaDownload size={32} />
               </button>
             </TooltipTrigger>
             <TooltipContent

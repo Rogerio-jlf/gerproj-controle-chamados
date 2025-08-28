@@ -7,7 +7,7 @@ import { HiDocumentPlus } from 'react-icons/hi2';
 
 export default function LayoutPage() {
   return (
-    <main>
+    <main className="bg-gray-100">
       <div className="h-screen w-screen overflow-hidden">
         <div className="flex flex-col space-y-6 p-6">
           <Header

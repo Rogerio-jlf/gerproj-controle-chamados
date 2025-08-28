@@ -11,8 +11,8 @@ const kodchasan = Kodchasan({
 
 // ✅ Export de metadata (sem themeColor)
 export const metadata: Metadata = {
-  title: 'Solutii - Dashboard Cliente',
-  description: 'Painel de controle para clientes da Solutii',
+  title: 'Solutii - GERPROJ',
+  description: 'Sistema de controle de chamados',
   manifest: '/manifest.json',
   icons: {
     icon: [
