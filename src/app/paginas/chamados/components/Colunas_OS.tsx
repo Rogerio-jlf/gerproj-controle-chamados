@@ -7,11 +7,14 @@ import { ColumnDef } from '@tanstack/react-table';
 import { OSProps } from './Modal_OS';
 // ================================================================================
 import { FaHandPointUp } from 'react-icons/fa';
+import { MdEditDocument } from 'react-icons/md';
+import { MdDelete } from 'react-icons/md'; // Novo ícone para exclusão
 // ================================================================================
 // ================================================================================
 
 export interface AcoesOSProps {
   onVisualizarApontamentos: (codOS: string) => void;
+  onExcluirOS: (codOS: string) => void; // Nova função para exclusão
 }
 // ================================================================================
 
@@ -99,10 +102,10 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
             <div className="text-left">{value || '-'}</div>
           </TooltipTrigger>
           <TooltipContent
-            side="top"
-            align="center"
+            side="left"
+            align="end"
             sideOffset={8}
-            className="bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
+            className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
           >
             {value || '-'}
           </TooltipContent>
@@ -123,9 +126,17 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
       try {
         const date = new Date(dateString);
         const formattedDate = date.toLocaleDateString('pt-BR');
-        return <div className="text-center">{formattedDate}</div>;
+        return (
+          <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
+            {formattedDate}
+          </div>
+        );
       } catch {
-        return <div className="text-center">{dateString}</div>;
+        return (
+          <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
+            {dateString}
+          </div>
+        );
       }
     },
   },
@@ -143,7 +154,9 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
       const hh = hora.slice(0, 2);
       const mm = hora.slice(2, 4);
 
-      return <div className="text-center">{`${hh}:${mm}`}</div>;
+      return (
+        <div className="rounded-md bg-orange-600 p-2 text-center text-white ring-1 ring-white">{`${hh}:${mm}`}</div>
+      );
     },
   },
 
@@ -160,7 +173,9 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
       const hh = hora.slice(0, 2);
       const mm = hora.slice(2, 4);
 
-      return <div className="text-center">{`${hh}:${mm}`}</div>;
+      return (
+        <div className="rounded-md bg-orange-600 p-2 text-center text-white ring-1 ring-white">{`${hh}:${mm}`}</div>
+      );
     },
   },
 
@@ -170,11 +185,15 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
     header: () => <div className="text-center">QTD. Horas</div>,
     cell: ({ getValue }) => {
       const value = getValue() as number;
-      return <div className="text-center">{formatDecimalToTime(value)}</div>;
+      return (
+        <div className="rounded-md bg-green-600 p-2 text-center text-white ring-1 ring-white">
+          {formatDecimalToTime(value)}
+        </div>
+      );
     },
   },
 
-  // botão fazer apontamento
+  // Botão para excluir OS
   {
     id: 'actions',
     header: () => <div className="text-center">Ações</div>,
@@ -182,23 +201,44 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
       const os = row.original;
 
       return (
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center gap-2">
+          {/* Botão Realizar Apontamento */}
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 onClick={() => acoes.onVisualizarApontamentos(os.COD_OS)}
-                className="transition-all hover:scale-110"
+                className="cursor-pointer transition-all hover:scale-110"
               >
-                <FaHandPointUp size={32} />
+                <MdEditDocument size={32} />
               </button>
             </TooltipTrigger>
             <TooltipContent
-              side="top"
+              side="left"
               align="center"
               sideOffset={8}
-              className="bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
+              className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
             >
               Realizar Apontamento
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Botão Excluir */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => acoes.onExcluirOS(os.COD_OS)}
+                className="cursor-pointer text-red-600 transition-all hover:scale-110 hover:text-red-800"
+              >
+                <MdDelete size={32} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="left"
+              align="center"
+              sideOffset={8}
+              className="border-t-4 border-red-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+            >
+              Excluir OS
             </TooltipContent>
           </Tooltip>
         </div>

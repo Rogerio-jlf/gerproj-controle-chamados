@@ -2,14 +2,16 @@
 
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { AiOutlineFilePdf } from 'react-icons/ai';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+// ================================================================================
+import { FaFilePdf } from 'react-icons/fa';
+// ================================================================================
+// ================================================================================
 
-// Define as propriedades aceitas pelo componente ExportaPDFButton.
 interface ExportaPDFButtonProps<T> {
   data: T[]; // Dados a serem exportados para o PDF.
   fileName: string; // Nome do arquivo PDF gerado.
@@ -25,6 +27,7 @@ interface ExportaPDFButtonProps<T> {
   logoUrl?: string; // URL do logo a ser exibido no PDF.
   footerText?: string; // Texto do rodapé.
 }
+// ================================================================================
 
 // Componente principal que renderiza o botão de exportação para PDF.
 export default function PDFButton<T extends Record<string, any>>({
@@ -169,15 +172,15 @@ export default function PDFButton<T extends Record<string, any>>({
               onClick={exportToPdf}
               className={`group flex cursor-pointer items-center gap-4 rounded-md border border-white/30 bg-white/10 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:bg-gray-500 ${className}`}
             >
-              <AiOutlineFilePdf className="text-white" size={24} />
+              <FaFilePdf className="text-white" size={24} />
               {buttonText}
             </button>
           </TooltipTrigger>
           <TooltipContent
             side="top"
-            align="center"
+            align="end"
             sideOffset={8}
-            className="border border-black bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
+            className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
           >
             Exportar para PDF
           </TooltipContent>

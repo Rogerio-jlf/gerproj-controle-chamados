@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-// import { firebirdQuery } from '../../../lib/firebird/firebird-client';
-import { firebirdQuery } from '../../../lib/firebird/firebird-test-mode';
+
+// 🎯 Importa automaticamente baseado na variável de ambiente
+const testMode = process.env.FIREBIRD_TEST_MODE === 'true';
+const { firebirdQuery } = testMode
+  ? require('../../../lib/firebird/firebird-test-mode')
+  : require('../../../lib/firebird/firebird-client');
 
 interface ApontamentoData {
   codOS: string;
@@ -66,28 +70,25 @@ export async function POST(request: NextRequest) {
       WHERE COD_OS = ?
     `;
 
-    // // MODO TESTE: Comentar a linha abaixo para não executar o UPDATE
-    // const result = await firebirdQuery(sql, [
-    //   dataFormatada,
-    //   body.horaInicioOS,
-    //   body.horaFimOS,
-    //   body.observacaoOS.trim(),
-    //   body.codOS
-    // ]);
-
-    // // MODO TESTE: Simular resposta do banco
-    console.log('TESTE - SQL que seria executado:', sql);
-    console.log('TESTE - Parâmetros:', [
+    const params = [
       dataFormatada,
       body.horaInicioOS,
       body.horaFimOS,
       body.observacaoOS.trim(),
       body.codOS,
-    ]);
+    ];
+
+    // 🔄 Executa o UPDATE (com rollback automático se testMode = true)
+    const result = await firebirdQuery(sql, params);
+
+    if (testMode) {
+      console.log('[TEST MODE] SQL executado (com rollback):', sql);
+      console.log('[TEST MODE] Parâmetros:', params);
+    }
 
     return NextResponse.json(
       {
-        message: 'Apontamento realizado com sucesso',
+        message: `Apontamento ${testMode ? '[TESTE - SEM COMMIT]' : ''} realizado com sucesso`,
         data: {
           codOS: body.codOS,
           observacaoOS: body.observacaoOS,

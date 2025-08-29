@@ -1,13 +1,17 @@
-import { RefreshCw } from 'lucide-react';
+import { useCallback } from 'react';
+// ================================================================================
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+// ================================================================================
 import LogoutButton from './Button_Logout';
 import Filtros from '../app/paginas/chamados/components/Filtros';
 import { useFiltersTabelaChamados } from '../contexts/Filters_Context';
-import { useCallback } from 'react';
+// ================================================================================
+import { LuRefreshCw } from 'react-icons/lu';
+// ================================================================================
 // ================================================================================
 
 interface Props {
@@ -78,8 +82,8 @@ export default function Header({ titulo, icon }: Props) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button onClick={() => window.location.reload()}>
-                  <RefreshCw
-                    className="cursor-pointer text-red-500 transition-all hover:scale-125 hover:rotate-180 hover:text-blue-500"
+                  <LuRefreshCw
+                    className="cursor-pointer text-red-500 transition-all hover:scale-125 hover:rotate-180 hover:text-blue-500 active:scale-95"
                     size={40}
                   />
                 </button>
@@ -88,7 +92,7 @@ export default function Header({ titulo, icon }: Props) {
                 side="bottom"
                 align="center"
                 sideOffset={2}
-                className="bg-gray-900 px-6 text-sm font-semibold tracking-wider text-white select-none"
+                className="border-b-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
               >
                 Atualizar dados
               </TooltipContent>

@@ -16,6 +16,7 @@ import { colunasOS } from './Colunas_OS';
 import IsLoading from './IsLoading';
 import IsError from './IsError';
 import ModalApontamentos from './Modal_Apontamentos';
+import { ModalExcluirOS } from './Modal_Delete';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
@@ -103,7 +104,7 @@ const FilterSelect = ({
   <select
     value={value}
     onChange={e => onChange(e.target.value)}
-    className="w-full rounded-md border border-white/30 bg-gray-900 px-4 py-2 text-base text-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+    className="w-full cursor-pointer rounded-md border border-white/30 bg-gray-900 px-4 py-2 text-base text-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
   >
     <option value="">{placeholder}</option>
     {options.map(option => (
@@ -148,6 +149,8 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
     { id: 'COD_OS', desc: false },
   ]);
   const [showFilters, setShowFilters] = useState(false);
+  const [osParaExcluir, setOsParaExcluir] = useState<string | null>(null);
+  const [isExcluindo, setIsExcluindo] = useState(false);
   // ==============================
 
   const fetchDataOS = async (codChamado: number) => {
@@ -203,9 +206,48 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
   };
   // ==============================
 
+  // Função para abrir modal de exclusão
+  const handleAbrirModalExclusao = (codOS: string) => {
+    setOsParaExcluir(codOS);
+  };
+
+  // Função para fechar modal de exclusão
+  const handleFecharModalExclusao = () => {
+    setOsParaExcluir(null);
+    setIsExcluindo(false);
+  };
+
+  // Função para confirmar exclusão
+  const handleConfirmarExclusao = async (codOS: string) => {
+    setIsExcluindo(true);
+    try {
+      const response = await fetch(`/api/os?codOS=${codOS}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao excluir OS');
+      }
+
+      // Recarregar os dados após exclusão bem-sucedida
+      await refetch();
+
+      // Fechar o modal
+      handleFecharModalExclusao();
+    } catch (error) {
+      console.error('Erro ao excluir OS:', error);
+      throw error;
+    } finally {
+      setIsExcluindo(false);
+    }
+  };
+  // ==============================
+
   // Configuração da tabela
   const colunas = colunasOS({
     onVisualizarApontamentos: handleOpenApontamentos,
+    onExcluirOS: handleAbrirModalExclusao,
   });
   // ==============================
 
@@ -297,7 +339,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         {/* ===== OVERLAY ===== */}
         <div
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/50 backdrop-blur-xl"
           onClick={onClose}
         />
         {/* ===== MODAL ===== */}
@@ -339,7 +381,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
             {/* ===== */}
 
             {/* ===== ITENS DA DIREITA ===== */}
-            <section className="flex items-center gap-6">
+            <section className="flex items-center gap-20">
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 disabled={!dataOS || dataOS.length <= 1}
@@ -366,7 +408,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
               {/* botão - fechar modal */}
               <button
                 onClick={handleClose}
-                className="group rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-90"
+                className="group cursor-pointer rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
               >
                 <IoClose size={24} />
               </button>
@@ -535,7 +577,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                               // Células da tabela
                               <td
                                 key={cell.id}
-                                className="p-3 text-sm font-semibold tracking-wider text-white group-hover:text-black"
+                                className="p-3 text-sm font-semibold tracking-wider text-white select-none group-hover:text-black"
                                 style={{
                                   width: getColumnWidth(cell.column.id),
                                 }}
@@ -592,13 +634,13 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                           onChange={e =>
                             table.setPageSize(Number(e.target.value))
                           }
-                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-black italic select-none"
+                          className="cursor-pointer rounded-md border border-black/40 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-black italic select-none"
                         >
                           {[5, 10, 15, 25].map(pageSize => (
                             <option
                               key={pageSize}
                               value={pageSize}
-                              className="bg-gray-800 text-base font-semibold tracking-widest text-white italic select-none"
+                              className="cursor-pointer bg-gray-800 text-base font-semibold tracking-widest text-white italic select-none"
                             >
                               {pageSize}
                             </option>
@@ -611,7 +653,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                         <button
                           onClick={() => table.setPageIndex(0)}
                           disabled={!table.getCanPreviousPage()}
-                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <FiChevronsLeft className="text-black/30" size={20} />
                         </button>
@@ -619,7 +661,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                         <button
                           onClick={() => table.previousPage()}
                           disabled={!table.getCanPreviousPage()}
-                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black/30 transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black/30 transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <MdChevronLeft className="text-black/30" size={20} />
                         </button>
@@ -633,7 +675,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                                 const page = Number(e.target.value) - 1;
                                 table.setPageIndex(page);
                               }}
-                              className="rounded-md border border-black/30 bg-white/10 px-4 py-1 text-center font-semibold tracking-widest text-black italic select-none"
+                              className="cursor-pointer rounded-md border border-black/30 bg-white/10 px-4 py-1 text-center font-semibold tracking-widest text-black italic select-none"
                             >
                               {Array.from(
                                 { length: table.getPageCount() },
@@ -658,7 +700,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                         <button
                           onClick={() => table.nextPage()}
                           disabled={!table.getCanNextPage()}
-                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <FiChevronsRight
                             className="text-black/30"
@@ -671,7 +713,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
                             table.setPageIndex(table.getPageCount() - 1)
                           }
                           disabled={!table.getCanNextPage()}
-                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <MdChevronRight className="text-black/30" size={20} />
                         </button>
@@ -732,7 +774,15 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
         codChamado={codChamado}
         codOS={selectedOS}
       />
-      {/* ===== */}
+
+      {/* ===== MODAL DE EXCLUSÃO ===== */}
+      <ModalExcluirOS
+        isOpen={!!osParaExcluir}
+        onClose={handleFecharModalExclusao}
+        onConfirm={handleConfirmarExclusao}
+        codOS={osParaExcluir}
+        isLoading={isExcluindo}
+      />
     </>
   );
 }

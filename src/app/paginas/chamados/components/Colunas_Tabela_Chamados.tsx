@@ -1,19 +1,22 @@
 import { useState } from 'react';
+import { ColumnDef } from '@tanstack/react-table';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
+// ================================================================================
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { ColumnDef } from '@tanstack/react-table';
-import Link from 'next/link';
-import { FaDownload, FaTasks } from 'react-icons/fa';
+// ================================================================================
 import StatusCellClicavel from './Status_Cell';
 import AssuntoCellEditavel from './Assunto_Cell';
+// ================================================================================
+import { FaDownload, FaTasks } from 'react-icons/fa';
 import { IoCall } from 'react-icons/io5';
 import { GrServicePlay } from 'react-icons/gr';
 import { HiMiniSquaresPlus } from 'react-icons/hi2';
-
+// ================================================================================
 // ================================================================================
 
 export interface ChamadosProps {
@@ -318,6 +321,9 @@ export const colunasTabela = (
             console.error('Erro ao atualizar Assunto:', err);
             throw err; // Re-throw para que o componente AssuntoCellEditavel possa tratar
           }
+        }}
+        onClose={function (): void {
+          throw new Error('Function not implemented.');
         }}
       />
     ),

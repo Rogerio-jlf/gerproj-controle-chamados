@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
+
+// 🎯 Importa automaticamente baseado na variável de ambiente
+const testMode = process.env.FIREBIRD_TEST_MODE === 'true';
+const { firebirdQuery } = testMode
+  ? require('../../../../lib/firebird/firebird-test-mode')
+  : require('../../../../lib/firebird/firebird-client');
 
 interface AssuntoData {
   codChamado: string;
@@ -33,19 +38,19 @@ export async function POST(request: NextRequest) {
       WHERE COD_CHAMADO = ?
     `;
 
-    // MODO TESTE: Comentar a linha abaixo para não executar o UPDATE
-    // const result = await firebirdQuery(sql, [
-    //   body.assuntoChamado,
-    //   body.codChamado
-    // ]);
+    const params = [body.assuntoChamado, body.codChamado];
 
-    // MODO TESTE: Simular resposta do banco
-    console.log('TESTE - SQL que seria executado:', sql);
-    console.log('TESTE - Parâmetros:', [body.assuntoChamado, body.codChamado]);
+    // 🔄 Executa o UPDATE (com rollback automático se testMode = true)
+    const result = await firebirdQuery(sql, params);
+
+    if (testMode) {
+      console.log('[TEST MODE] SQL executado (com rollback):', sql);
+      console.log('[TEST MODE] Parâmetros:', params);
+    }
 
     return NextResponse.json(
       {
-        message: 'Assunto atualizado com sucesso',
+        message: `Assunto ${testMode ? '[TESTE - SEM COMMIT]' : ''} atualizado com sucesso`,
         data: {
           codChamado: body.codChamado,
           assuntoChamado: body.assuntoChamado,

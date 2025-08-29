@@ -5,7 +5,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 // ================================================================================
-import { FaDownload } from 'react-icons/fa';
+import { FaDownload, FaEye } from 'react-icons/fa';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 // ================================================================================
 // ================================================================================
@@ -17,9 +17,16 @@ export interface TarefasProps {
   DTSOL_TAREFA: string;
   HREST_TAREFA: number;
 }
+
+// Interface para as props das colunas
+interface ColunasProps {
+  onVisualizarOS?: (codTarefa: number) => void;
+}
 // ================================================================================
 
-export const colunasTabela = (): ColumnDef<TarefasProps>[] => [
+export const colunasTabela = (
+  props?: ColunasProps
+): ColumnDef<TarefasProps>[] => [
   // código da tarefa
   {
     accessorKey: 'COD_TAREFA',
@@ -103,15 +110,22 @@ export const colunasTabela = (): ColumnDef<TarefasProps>[] => [
         URL.revokeObjectURL(url);
       };
 
+      const handleVisualizarOS = () => {
+        if (props?.onVisualizarOS) {
+          props.onVisualizarOS(tarefa.COD_TAREFA);
+        }
+      };
+
       return (
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center gap-2">
+          {/* Botão Download */}
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 onClick={handleDownload}
                 className="transition-all hover:scale-110"
               >
-                <FaDownload size={32} />
+                <FaDownload size={28} />
               </button>
             </TooltipTrigger>
             <TooltipContent
@@ -121,6 +135,26 @@ export const colunasTabela = (): ColumnDef<TarefasProps>[] => [
               className="bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
             >
               Download
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Botão Visualizar OS */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleVisualizarOS}
+                className="text-blue-600 transition-all hover:scale-110 hover:text-blue-800"
+              >
+                <FaEye size={28} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="top"
+              align="center"
+              sideOffset={8}
+              className="bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
+            >
+              Visualizar OS
             </TooltipContent>
           </Tooltip>
         </div>

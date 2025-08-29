@@ -2,12 +2,15 @@
 
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { RiFileExcel2Line } from 'react-icons/ri';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+// ================================================================================
+import { RiFileExcel2Fill } from 'react-icons/ri';
+// ================================================================================
+// ================================================================================
 
 interface ExportaExcelButtonProps<T> {
   data: T[];
@@ -23,6 +26,7 @@ interface ExportaExcelButtonProps<T> {
   autoFilter?: boolean;
   freezeHeader?: boolean;
 }
+// ================================================================================
 
 export default function ExcelButton<T>({
   data,
@@ -96,15 +100,15 @@ export default function ExcelButton<T>({
               onClick={exportToExcel}
               className={`group flex cursor-pointer items-center gap-4 rounded-md border border-white/30 bg-white/10 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:bg-gray-500 active:scale-95 ${className}`}
             >
-              <RiFileExcel2Line className="text-white" size={24} />
+              <RiFileExcel2Fill className="text-white" size={24} />
               {buttonText}
             </button>
           </TooltipTrigger>
           <TooltipContent
             side="top"
-            align="center"
+            align="start"
             sideOffset={8}
-            className="border border-black bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
+            className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
           >
             Exportar para Excel
           </TooltipContent>

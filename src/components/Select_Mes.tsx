@@ -1,4 +1,5 @@
-import { FiFilter } from 'react-icons/fi';
+import { FaFilter } from 'react-icons/fa6';
+// ================================================================================
 // ================================================================================
 
 interface Props {
@@ -27,7 +28,7 @@ export default function SelectMes({ value, onChange }: Props) {
   return (
     <div className="group flex w-full flex-col">
       <label className="flex items-center gap-2 text-base font-bold tracking-widest text-gray-900 select-none">
-        <FiFilter className="text-gray-900" size={14} />
+        <FaFilter className="text-gray-900" size={16} />
         Mês
       </label>
       {/* ===== */}
@@ -35,7 +36,7 @@ export default function SelectMes({ value, onChange }: Props) {
       <select
         value={value}
         onChange={e => onChange(Number(e.target.value))}
-        className="w-full cursor-pointer rounded-md border-none bg-white px-4 py-2 text-base font-semibold tracking-wider text-gray-900 italic shadow-sm shadow-black transition-all hover:scale-105 hover:shadow-lg hover:shadow-black focus:outline-none"
+        className="w-full cursor-pointer rounded-md border-none bg-white px-4 py-2 text-base font-semibold tracking-wider text-gray-900 italic shadow-md shadow-black transition-all hover:scale-105 hover:shadow-lg hover:shadow-black focus:outline-none active:scale-95"
       >
         {arrayMeses.map((mes, i) => (
           <option

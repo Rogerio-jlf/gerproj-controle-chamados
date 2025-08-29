@@ -1,8 +1,7 @@
 'use client';
 
-import { useAuth } from '../../../../hooks/useAuth';
-import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
 import { useQuery } from '@tanstack/react-query';
+import { useMemo, useState, useCallback } from 'react';
 import {
   flexRender,
   getCoreRowModel,
@@ -13,32 +12,32 @@ import {
   ColumnFiltersState,
   SortingState,
 } from '@tanstack/react-table';
-import { useMemo, useState, useCallback } from 'react';
+// ================================================================================
+import { useAuth } from '../../../../hooks/useAuth';
+import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
 import { ChamadosProps, colunasTabela } from './Colunas_Tabela_Chamados';
-import {
-  AlertCircle,
-  Database,
-  Lock,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-} from 'lucide-react';
-import ExcelButton from '../../../../components/Button_Excel';
-import PDFButton from '../../../../components/Button_PDF';
-import { LuFilter } from 'react-icons/lu';
-import { LuFilterX } from 'react-icons/lu';
-import { BsEraserFill } from 'react-icons/bs';
+import ButtonExcel from '../../../../components/Button_Excel';
+import ButtonPDF from '../../../../components/Button_PDF';
 import ModalChamado from './Modal_Chamados_Atribuir_Chamados';
 import ModalOS from './Modal_OS';
 import ModalTarefas from './Modal_Tarefas';
 import IsLoading from './IsLoading';
 import IsError from './IsError';
+// ================================================================================
+import { BsEraserFill } from 'react-icons/bs';
 import { FaExclamationTriangle } from 'react-icons/fa';
+import { FaDatabase } from 'react-icons/fa';
+import { FaUserLock } from 'react-icons/fa';
+import { MdChevronLeft } from 'react-icons/md';
+import { FiChevronsLeft } from 'react-icons/fi';
+import { MdChevronRight } from 'react-icons/md';
+import { FiChevronsRight } from 'react-icons/fi';
+import { RiArrowUpDownLine } from 'react-icons/ri';
+import { IoArrowUp } from 'react-icons/io5';
+import { IoArrowDown } from 'react-icons/io5';
+import { FaFilterCircleXmark } from 'react-icons/fa6';
+import { FaFilter } from 'react-icons/fa6';
+// ================================================================================
 // ================================================================================
 
 async function fetchChamados(
@@ -124,9 +123,9 @@ const SortableHeader = ({
     >
       {children}
       <div className="flex flex-col">
-        {sorted === 'asc' && <ArrowUp size={20} />}
-        {sorted === 'desc' && <ArrowDown size={20} />}
-        {!sorted && <ArrowUpDown size={20} className="text-white" />}
+        {sorted === 'asc' && <IoArrowUp size={20} />}
+        {sorted === 'desc' && <IoArrowDown size={20} />}
+        {!sorted && <RiArrowUpDownLine size={20} className="text-white" />}
       </div>
     </div>
   );
@@ -318,7 +317,7 @@ export default function Tabela() {
         <div className="flex h-full items-center justify-center p-12">
           <div className="space-y-6 text-center">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
-              <Lock className="h-10 w-10 animate-pulse text-blue-400" />
+              <FaUserLock className="h-10 w-10 animate-pulse text-blue-400" />
             </div>
             <div>
               <h3 className="mb-2 text-xl font-bold tracking-wider text-slate-800 select-none">
@@ -340,7 +339,7 @@ export default function Tabela() {
         <div className="flex h-full items-center justify-center p-12">
           <div className="space-y-6 text-center">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-red-200 bg-gradient-to-br from-red-50 to-red-100">
-              <AlertCircle className="h-10 w-10 text-red-400" />
+              <FaExclamationTriangle className="h-10 w-10 text-red-400" />
             </div>
             <div>
               <h3 className="mb-2 text-xl font-bold tracking-wider text-slate-800 select-none">
@@ -363,7 +362,7 @@ export default function Tabela() {
         <div className="flex h-full items-center justify-center p-12">
           <div className="space-y-6 text-center">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
-              <AlertCircle className="h-10 w-10 text-blue-400" />
+              <FaExclamationTriangle className="h-10 w-10 text-blue-400" />
             </div>
             <div>
               <h3 className="mb-2 text-xl font-bold tracking-wider text-slate-800 select-none">
@@ -397,7 +396,7 @@ export default function Tabela() {
             {/* ícone, título, usuário e período */}
             <section className="flex items-center justify-center gap-6">
               <div className="flex items-center justify-center rounded-xl border border-white/30 bg-white/10 p-4">
-                <Database className="animate-pulse text-cyan-400" size={44} />
+                <FaDatabase className="animate-pulse text-cyan-400" size={44} />
               </div>
               <div className="flex flex-col items-center justify-center">
                 <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-white select-none">
@@ -427,7 +426,11 @@ export default function Tabela() {
                     : 'border border-white/30 bg-white/10 hover:scale-105 hover:bg-gray-500 active:scale-95'
                 }`}
               >
-                {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
+                {showFilters ? (
+                  <FaFilterCircleXmark size={24} />
+                ) : (
+                  <FaFilter size={24} />
+                )}
                 {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
               </button>
               {/* ===== */}
@@ -443,7 +446,7 @@ export default function Tabela() {
               )}
               {/* ===== */}
 
-              <ExcelButton
+              <ButtonExcel
                 data={data ?? []}
                 fileName={`relatorio_de_chamados_${mes}_${ano}`}
                 title={`Relatório de Chamados - ${mes}/${ano}`}
@@ -459,7 +462,7 @@ export default function Tabela() {
               />
               {/* ===== */}
 
-              <PDFButton
+              <ButtonPDF
                 data={data ?? []}
                 fileName={`relatorio_chamados_${mes}_${ano}`}
                 title={`Relatório de Chamados - ${mes}/${ano}`}
@@ -663,7 +666,7 @@ export default function Tabela() {
                     disabled={!table.getCanPreviousPage()}
                     className="rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <ChevronsLeft className="text-white" size={24} />
+                    <FiChevronsLeft className="text-white" size={24} />
                   </button>
 
                   <button
@@ -671,7 +674,7 @@ export default function Tabela() {
                     disabled={!table.getCanPreviousPage()}
                     className="rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <ChevronLeft className="text-white" size={24} />
+                    <MdChevronLeft className="text-white" size={24} />
                   </button>
 
                   <div className="flex items-center justify-center gap-2">
@@ -710,7 +713,7 @@ export default function Tabela() {
                     disabled={!table.getCanNextPage()}
                     className="rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <ChevronRight className="text-white" size={24} />
+                    <MdChevronRight className="text-white" size={24} />
                   </button>
 
                   <button
@@ -718,7 +721,7 @@ export default function Tabela() {
                     disabled={!table.getCanNextPage()}
                     className="rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <ChevronsRight className="text-white" size={24} />
+                    <FiChevronsRight className="text-white" size={24} />
                   </button>
                 </div>
               </div>
@@ -747,7 +750,7 @@ export default function Tabela() {
           data.length > 0 &&
           table.getFilteredRowModel().rows.length === 0 && (
             <div className="bg-slate-900 py-20 text-center">
-              <Filter className="mx-auto mb-4 text-cyan-400" size={60} />
+              <FaFilter className="mx-auto mb-4 text-cyan-400" size={60} />
               <h3 className="text-xl font-bold tracking-wider text-slate-200 select-none">
                 Nenhum registro encontrado para os filtros aplicados
               </h3>

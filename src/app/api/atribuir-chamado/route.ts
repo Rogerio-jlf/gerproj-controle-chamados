@@ -1,7 +1,12 @@
 import transporter from '@/lib/email/transporter';
 import { gerarTemplateEmailChamado } from '@/lib/templates/email_atribuir_chamados';
 import { NextResponse } from 'next/server';
-import { firebirdQuery } from '../../../lib/firebird/firebird-test-mode';
+
+// Importa a função correta baseada na variável de ambiente
+const testMode = process.env.FIREBIRD_TEST_MODE === 'true';
+const { firebirdQuery } = testMode
+  ? require('../../../lib/firebird/firebird-test-mode')
+  : require('../../../lib/firebird/firebird-client');
 
 export async function POST(request: Request) {
   try {
@@ -25,9 +30,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // 🔁 Modo de teste ativado por variável de ambiente
-    const testMode = process.env.FIREBIRD_TEST_MODE === 'true';
-
     const updateSql = `
       UPDATE CHAMADO
       SET COD_CLIENTE = ?, COD_RECURSO = ?, STATUS_CHAMADO = 'ATRIBUIDO'
@@ -35,7 +37,8 @@ export async function POST(request: Request) {
     `;
     const updateParams = [codClienteNum, codRecursoNum, codChamadoNum];
 
-    await firebirdQuery(updateSql, updateParams, testMode);
+    // Agora não precisa mais do parâmetro testMode na função
+    await firebirdQuery(updateSql, updateParams);
 
     const destinatarios: string[] = [];
 

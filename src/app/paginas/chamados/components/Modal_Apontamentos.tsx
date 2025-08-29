@@ -69,7 +69,7 @@ export default function ModalApontamentos({
 
       console.log('TESTE - Dados enviados para API:', payload);
 
-      const response = await fetch('/api/apontamentos', {
+      const response = await fetch('/api/apontamentos/update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

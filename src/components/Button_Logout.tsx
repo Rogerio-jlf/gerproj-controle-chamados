@@ -1,12 +1,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { FiLogOut } from 'react-icons/fi';
+// ================================================================================
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+// ================================================================================
+import { FiLogOut } from 'react-icons/fi';
+// ================================================================================
 // ================================================================================
 
 export default function LogoutButton() {
@@ -39,7 +42,7 @@ export default function LogoutButton() {
         side="bottom"
         align="center"
         sideOffset={2}
-        className="bg-gray-900 px-6 text-sm font-semibold tracking-wider text-white select-none"
+        className="border-b-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
       >
         Sair
       </TooltipContent>

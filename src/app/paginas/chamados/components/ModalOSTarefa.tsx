@@ -1,8 +1,7 @@
 'use client';
 
-import { useAuth } from '@/hooks/useAuth';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
 import {
   flexRender,
   getCoreRowModel,
@@ -13,8 +12,7 @@ import {
   ColumnFiltersState,
   SortingState,
 } from '@tanstack/react-table';
-import { TarefasProps, colunasTabela } from './Colunas_Tarefas';
-import ModalOSTarefa from './ModalOSTarefa'; // NOVO IMPORT
+import { colunasOSTarefa } from './Colunas_OS_Tarefas';
 import IsLoading from './IsLoading';
 import IsError from './IsError';
 // ================================================================================
@@ -34,28 +32,43 @@ import { IoClose } from 'react-icons/io5';
 // ================================================================================
 // ================================================================================
 
-interface ModalTarefasProps {
+interface ModalOSTarefaProps {
   isOpen: boolean;
   onClose: () => void;
+  codTarefa: number | null;
 }
-// ================================================================================
 
-// Função para buscar tarefas do banco de dados
-async function fetchTarefas(token: string): Promise<TarefasProps[]> {
-  const res = await fetch('/api/tarefas', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.error || 'Erro ao buscar tarefas');
-  }
-
-  const data = await res.json();
-  return Array.isArray(data) ? data : [];
+export interface OSTarefaProps {
+  COD_OS: string;
+  CODTRF_OS: string;
+  DTINI_OS: string | null;
+  HRINI_OS: string | null;
+  HRFIM_OS: string | null;
+  OBS_OS: string;
+  STATUS_OS: string;
+  PRODUTIVO_OS: string;
+  CODREC_OS: string;
+  PRODUTIVO2_OS: string;
+  RESPCLI_OS: string;
+  REMDES_OS: string;
+  ABONO_OS: string;
+  DESLOC_OS: string;
+  OBS: string;
+  DTINC_OS: string | null;
+  FATURADO_OS: string;
+  PERC_OS: string | null;
+  COD_FATURAMENTO: string;
+  COMP_OS: string;
+  VALID_OS: string;
+  VRHR_OS: string | null;
+  NUM_OS: string;
+  CHAMADO_OS: string;
+  COD_CHAMADO: string;
+  COD_CLIENTE: string;
+  NOME_CLIENTE: string;
+  COD_TAREFA: string;
+  NOME_TAREFA: string;
+  QTD_HR_OS?: number;
 }
 // ================================================================================
 
@@ -78,6 +91,32 @@ const FilterInput = ({
     placeholder={placeholder}
     className="w-full rounded-md border border-white/30 bg-gray-900 px-4 py-2 text-base text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
   />
+);
+
+// Componente para select de filtro
+const FilterSelect = ({
+  value,
+  onChange,
+  options,
+  placeholder,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  options: string[];
+  placeholder: string;
+}) => (
+  <select
+    value={value}
+    onChange={e => onChange(e.target.value)}
+    className="w-full cursor-pointer rounded-md border border-white/30 bg-gray-900 px-4 py-2 text-base text-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+  >
+    <option value="">{placeholder}</option>
+    {options.map(option => (
+      <option key={option} value={option}>
+        {option}
+      </option>
+    ))}
+  </select>
 );
 
 // Componente para cabeçalho ordenável
@@ -106,38 +145,55 @@ const SortableHeader = ({
 };
 // ================================================================================
 
-export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
-  const { user } = useAuth();
+export default function ModalOSTarefa({
+  isOpen,
+  onClose,
+  codTarefa,
+}: ModalOSTarefaProps) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<SortingState>([
-    { id: 'COD_TAREFA', desc: false },
+    { id: 'COD_OS', desc: false },
   ]);
   const [showFilters, setShowFilters] = useState(false);
-
-  // NOVOS ESTADOS PARA O MODAL DE OS
-  const [isModalOSOpen, setIsModalOSOpen] = useState(false);
-  const [selectedTarefaCodigo, setSelectedTarefaCodigo] = useState<
-    number | null
-  >(null);
 
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-  const enabled = !!token && !!user && isOpen;
+  const fetchDataOSTarefa = async (codTarefa: number) => {
+    const response = await fetch(`/api/ordens-servico-tarefas/${codTarefa}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Erro: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return Array.isArray(data) ? data : [data];
+  };
 
   const {
-    data: dataTarefas,
-    isLoading,
-    isError,
+    data: dataOSTarefa,
+    isLoading: isLoading,
+    isError: isError,
     error,
     refetch,
   } = useQuery({
-    queryKey: ['tarefas', token],
-    queryFn: () => fetchTarefas(token!),
-    enabled,
-    staleTime: 1000 * 60 * 5,
-    retry: 2,
+    queryKey: ['dataOSTarefa', codTarefa],
+    queryFn: () => fetchDataOSTarefa(codTarefa!),
+    enabled: isOpen && !!codTarefa && !!token,
+    staleTime: 1000 * 60 * 1,
   });
+
+  useEffect(() => {
+    if (isOpen && codTarefa) {
+      refetch();
+    }
+  }, [isOpen, codTarefa, refetch]);
 
   const handleClose = () => {
     setTimeout(() => {
@@ -145,26 +201,11 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
     }, 300);
   };
 
-  // NOVA FUNÇÃO PARA ABRIR O MODAL DE OS
-  const handleVisualizarOS = (codTarefa: number) => {
-    setSelectedTarefaCodigo(codTarefa);
-    setIsModalOSOpen(true);
-  };
-
-  // NOVA FUNÇÃO PARA FECHAR O MODAL DE OS
-  const handleCloseModalOS = () => {
-    setIsModalOSOpen(false);
-    setSelectedTarefaCodigo(null);
-  };
-
-  // ATUALIZADO PARA PASSAR A FUNÇÃO onVisualizarOS
-  const colunas = useMemo(
-    () => colunasTabela({ onVisualizarOS: handleVisualizarOS }),
-    []
-  );
+  // Configuração da tabela
+  const colunas = colunasOSTarefa();
 
   const table = useReactTable({
-    data: (dataTarefas ?? []) as TarefasProps[],
+    data: (dataOSTarefa ?? []) as OSTarefaProps[],
     columns: colunas,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -193,18 +234,14 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
         const filterString = String(filterValue).toLowerCase();
 
         // Para campos específicos, permite busca parcial
-        if (columnId === 'COD_TAREFA') {
+        if (columnId === 'COD_OS' || columnId === 'CHAMADO_OS') {
           return cellString.includes(filterString);
         }
 
         // Para data, formata antes de comparar
-        if (columnId === 'DTSOL_TAREFA') {
+        if (columnId === 'DTINI_OS') {
           if (!cellValue) return false;
           try {
-            // Se já está no formato dd/mm/yyyy
-            if (/^\d{2}\/\d{2}\/\d{4}$/.test(cellValue as string)) {
-              return (cellValue as string).includes(filterString);
-            }
             const date = new Date(cellValue as string);
             const formattedDate = date.toLocaleDateString('pt-BR');
             return formattedDate.includes(filterString);
@@ -218,6 +255,25 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
       },
     },
   });
+
+  // Obter valores únicos para filtros de select
+  const clienteOptions = Array.from(
+    new Set(
+      dataOSTarefa
+        ?.map(item => item.NOME_CLIENTE)
+        .filter(Boolean)
+        .filter(cliente => cliente && cliente.trim() !== '')
+    )
+  ).sort();
+
+  const statusOptions = Array.from(
+    new Set(
+      dataOSTarefa
+        ?.map(item => item.STATUS_OS)
+        .filter(Boolean)
+        .filter(status => String(status).trim() !== '')
+    )
+  ).sort();
 
   // Função para limpar todos os filtros
   const clearFilters = () => {
@@ -240,7 +296,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         {/* ===== OVERLAY ===== */}
         <div
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/50 backdrop-blur-xl"
           onClick={onClose}
         />
         {/* ===== MODAL ===== */}
@@ -258,24 +314,22 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
               <div className="flex flex-col items-center justify-center">
                 {/* título */}
                 <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
-                  Minhas Tarefas
+                  Ordens de Serviço da Tarefa
                 </h1>
                 {/* ===== */}
 
                 <div className="flex items-center gap-4">
-                  {/* usuário logado*/}
-                  {user && (
+                  {/* código da tarefa*/}
+                  <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+                    Tarefa - {codTarefa}
+                  </span>
+                  {/* quantidade de OS's */}
+                  {dataOSTarefa && dataOSTarefa.length > 0 && (
                     <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
-                      {user.nome}
-                    </span>
-                  )}
-                  {/* quantidade de tarefas */}
-                  {dataTarefas && dataTarefas.length > 0 && (
-                    <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
-                      {dataTarefas.length}{' '}
-                      {dataTarefas.length === 1
-                        ? '- Tarefa encontrada'
-                        : '- Tarefas encontradas'}
+                      {dataOSTarefa.length}{' '}
+                      {dataOSTarefa.length === 1
+                        ? '- OS encontrada'
+                        : "- OS's encontradas"}
                     </span>
                   )}
                 </div>
@@ -287,7 +341,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
             <section className="flex items-center gap-20">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                disabled={!dataTarefas || dataTarefas.length <= 1}
+                disabled={!dataOSTarefa || dataOSTarefa.length <= 1}
                 className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-black italic transition-all select-none disabled:border-gray-200 disabled:text-gray-200 ${
                   showFilters
                     ? 'border border-blue-800 bg-blue-600 text-white hover:scale-105 hover:bg-blue-900 hover:text-white active:scale-95'
@@ -308,12 +362,12 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                 </button>
               )}
 
-              {/* botão fechar modal */}
+              {/* botão - fechar modal */}
               <button
                 onClick={handleClose}
-                className="group rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-90"
+                className="group cursor-pointer rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
               >
-                <IoClose size={32} />
+                <IoClose size={24} />
               </button>
             </section>
           </header>
@@ -322,7 +376,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
           {/* ===== CONTEÚDO PRINCIPAL ===== */}
           <main className="overflow-hidden bg-black">
             {/* ===== TABELA ===== */}
-            {dataTarefas && dataTarefas.length > 0 && (
+            {dataOSTarefa && dataOSTarefa.length > 0 && (
               <section className="h-full w-full overflow-hidden bg-black">
                 <div
                   className="h-full overflow-y-auto"
@@ -342,10 +396,14 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                               }}
                             >
                               {header.isPlaceholder ? null : header.column
-                                  .id === 'COD_TAREFA' ||
-                                header.column.id === 'NOME_TAREFA' ||
-                                header.column.id === 'DTSOL_TAREFA' ||
-                                header.column.id === 'HREST_TAREFA' ? (
+                                  .id === 'COD_OS' ||
+                                header.column.id === 'NOME_CLIENTE' ||
+                                header.column.id === 'CHAMADO_OS' ||
+                                header.column.id === 'STATUS_OS' ||
+                                header.column.id === 'DTINI_OS' ||
+                                header.column.id === 'HRINI_OS' ||
+                                header.column.id === 'HRFIM_OS' ||
+                                header.column.id === 'QTD_HR_OS' ? (
                                 <SortableHeader column={header.column}>
                                   {flexRender(
                                     header.column.columnDef.header,
@@ -373,7 +431,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                               className="bg-teal-800 px-3 pb-6"
                               style={{ width: getColumnWidth(column.id) }}
                             >
-                              {column.id === 'COD_TAREFA' && (
+                              {column.id === 'COD_OS' && (
                                 <FilterInput
                                   value={
                                     (column.getFilterValue() as string) ?? ''
@@ -384,7 +442,19 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                                   placeholder="Código..."
                                 />
                               )}
-                              {column.id === 'NOME_TAREFA' && (
+                              {column.id === 'NOME_CLIENTE' && (
+                                <FilterSelect
+                                  value={
+                                    (column.getFilterValue() as string) ?? ''
+                                  }
+                                  onChange={value =>
+                                    column.setFilterValue(value)
+                                  }
+                                  options={clienteOptions}
+                                  placeholder="Cliente..."
+                                />
+                              )}
+                              {column.id === 'CHAMADO_OS' && (
                                 <FilterInput
                                   value={
                                     (column.getFilterValue() as string) ?? ''
@@ -392,10 +462,33 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                                   onChange={value =>
                                     column.setFilterValue(value)
                                   }
-                                  placeholder="Nome da tarefa..."
+                                  placeholder="Chamado..."
                                 />
                               )}
-                              {column.id === 'DTSOL_TAREFA' && (
+                              {column.id === 'STATUS_OS' && (
+                                <FilterSelect
+                                  value={
+                                    (column.getFilterValue() as string) ?? ''
+                                  }
+                                  onChange={value =>
+                                    column.setFilterValue(value)
+                                  }
+                                  options={statusOptions}
+                                  placeholder="Status..."
+                                />
+                              )}
+                              {column.id === 'OBS_OS' && (
+                                <FilterInput
+                                  value={
+                                    (column.getFilterValue() as string) ?? ''
+                                  }
+                                  onChange={value =>
+                                    column.setFilterValue(value)
+                                  }
+                                  placeholder="Observação..."
+                                />
+                              )}
+                              {column.id === 'DTINI_OS' && (
                                 <FilterInput
                                   value={
                                     (column.getFilterValue() as string) ?? ''
@@ -407,7 +500,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                                   type="text"
                                 />
                               )}
-                              {column.id === 'HREST_TAREFA' && (
+                              {column.id === 'HRINI_OS' && (
                                 <FilterInput
                                   value={
                                     (column.getFilterValue() as string) ?? ''
@@ -415,7 +508,18 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                                   onChange={value =>
                                     column.setFilterValue(value)
                                   }
-                                  placeholder="Horas..."
+                                  placeholder="HH:MM"
+                                />
+                              )}
+                              {column.id === 'HRFIM_OS' && (
+                                <FilterInput
+                                  value={
+                                    (column.getFilterValue() as string) ?? ''
+                                  }
+                                  onChange={value =>
+                                    column.setFilterValue(value)
+                                  }
+                                  placeholder="HH:MM"
                                 />
                               )}
                             </th>
@@ -443,7 +547,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                               // Células da tabela
                               <td
                                 key={cell.id}
-                                className="p-3 text-sm font-semibold tracking-wider text-white group-hover:text-black"
+                                className="p-3 text-sm font-semibold tracking-wider text-white select-none group-hover:text-black"
                                 style={{
                                   width: getColumnWidth(cell.column.id),
                                 }}
@@ -468,11 +572,11 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                     {/* Informações da página */}
                     <div className="flex items-center gap-4 text-base font-semibold tracking-widest text-black italic select-none">
                       <span>
-                        {table.getFilteredRowModel().rows.length} tarefa
+                        {table.getFilteredRowModel().rows.length} registro
                         {table.getFilteredRowModel().rows.length !== 1
                           ? 's'
                           : ''}{' '}
-                        encontrada
+                        encontrado
                         {table.getFilteredRowModel().rows.length !== 1
                           ? 's'
                           : ''}
@@ -500,13 +604,13 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                           onChange={e =>
                             table.setPageSize(Number(e.target.value))
                           }
-                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-black italic select-none"
+                          className="cursor-pointer rounded-md border border-black/40 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-black italic select-none"
                         >
                           {[5, 10, 15, 25].map(pageSize => (
                             <option
                               key={pageSize}
                               value={pageSize}
-                              className="bg-gray-800 text-base font-semibold tracking-widest text-white italic select-none"
+                              className="cursor-pointer bg-gray-800 text-base font-semibold tracking-widest text-white italic select-none"
                             >
                               {pageSize}
                             </option>
@@ -519,7 +623,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                         <button
                           onClick={() => table.setPageIndex(0)}
                           disabled={!table.getCanPreviousPage()}
-                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <FiChevronsLeft className="text-black/30" size={20} />
                         </button>
@@ -527,7 +631,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                         <button
                           onClick={() => table.previousPage()}
                           disabled={!table.getCanPreviousPage()}
-                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black/30 transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black/30 transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <MdChevronLeft className="text-black/30" size={20} />
                         </button>
@@ -541,7 +645,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                                 const page = Number(e.target.value) - 1;
                                 table.setPageIndex(page);
                               }}
-                              className="rounded-md border border-black/30 bg-white/10 px-4 py-1 text-center font-semibold tracking-widest text-black italic select-none"
+                              className="cursor-pointer rounded-md border border-black/30 bg-white/10 px-4 py-1 text-center font-semibold tracking-widest text-black italic select-none"
                             >
                               {Array.from(
                                 { length: table.getPageCount() },
@@ -566,7 +670,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                         <button
                           onClick={() => table.nextPage()}
                           disabled={!table.getCanNextPage()}
-                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <FiChevronsRight
                             className="text-black/30"
@@ -579,7 +683,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                             table.setPageIndex(table.getPageCount() - 1)
                           }
                           disabled={!table.getCanNextPage()}
-                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <MdChevronRight className="text-black/30" size={20} />
                         </button>
@@ -591,8 +695,8 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
             )}
             {/* ===== */}
 
-            {/* ===== MENSAGEM QUANDO NÃO HÁ TAREFAS ===== */}
-            {dataTarefas && dataTarefas.length === 0 && !isLoading && (
+            {/* ===== MENSAGEM QUANDO NÃO HÁ OS ===== */}
+            {dataOSTarefa && dataOSTarefa.length === 0 && !isLoading && (
               <section className="bg-black py-40 text-center">
                 {/* ícone */}
                 <FaExclamationTriangle
@@ -601,31 +705,27 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                 />
                 {/* título */}
                 <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
-                  Nenhuma tarefa foi encontrada.
+                  Nenhuma OS foi encontrada para a tarefa {codTarefa}.
                 </h3>
-                {/* subtítulo */}
-                <p className="mt-2 text-lg text-gray-400">
-                  Você não possui tarefas atribuídas no momento
-                </p>
               </section>
             )}
             {/* ===== */}
 
             {/* ===== MENSAGEM QUANDO FILTROS NÃO RETORNAM RESULTADOS ===== */}
-            {dataTarefas &&
-              dataTarefas.length > 0 &&
+            {dataOSTarefa &&
+              dataOSTarefa.length > 0 &&
               table.getFilteredRowModel().rows.length === 0 && (
                 <section className="bg-slate-900 py-20 text-center">
                   {/* ícone */}
                   <FaFilter className="mx-auto mb-4 text-cyan-400" size={60} />
                   {/* título */}
                   <h3 className="text-xl font-bold tracking-wider text-slate-200 select-none">
-                    Nenhuma tarefa encontrada para os filtros aplicados
+                    Nenhum registro encontrado para os filtros aplicados
                   </h3>
-                  {/* subtítulo */}
+                  {/* sub-título */}
                   <p className="mt-2 text-slate-400">
-                    Tente ajustar os filtros ou limpe-os para visualizar todas
-                    as tarefas
+                    Tente ajustar os filtros ou limpe-os para visualizar todos
+                    os registros
                   </p>
                 </section>
               )}
@@ -635,25 +735,24 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
         </div>
         {/* ===== */}
       </div>
-
-      {/* NOVO MODAL DE OS DA TAREFA */}
-      <ModalOSTarefa
-        isOpen={isModalOSOpen}
-        onClose={handleCloseModalOS}
-        codTarefa={selectedTarefaCodigo}
-      />
+      {/* ===== */}
     </>
   );
 }
+// ================================================================================
 
-// Função para largura fixa das colunas - ATUALIZADA PARA INCLUIR ACTIONS
+// Função para largura fixa das colunas
 function getColumnWidth(columnId: string): string {
   const widthMap: Record<string, string> = {
-    COD_TAREFA: '80px',
-    NOME_TAREFA: '300px',
-    DTSOL_TAREFA: '120px',
-    HREST_TAREFA: '120px',
-    actions: '120px', // NOVA LARGURA PARA A COLUNA DE AÇÕES
+    COD_OS: '70px',
+    NOME_CLIENTE: '150px',
+    CHAMADO_OS: '100px',
+    OBS_OS: '250px',
+    DTINI_OS: '100px',
+    HRINI_OS: '100px',
+    HRFIM_OS: '100px',
+    QTD_HR_OS: '100px',
+    actions: '80px',
   };
 
   return widthMap[columnId] || '100px';
