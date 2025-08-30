@@ -18,11 +18,11 @@ import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
 import { ChamadosProps, colunasTabela } from './Colunas_Tabela_Chamados';
 import ButtonExcel from '../../../../components/Button_Excel';
 import ButtonPDF from '../../../../components/Button_PDF';
-import ModalChamado from './Modal_Chamados_Atribuir_Chamados';
-import ModalOS from './Modal_OS';
-import ModalTarefas from './Modal_Tarefas';
-import IsLoading from './IsLoading';
-import IsError from './IsError';
+import ModalChamado from './Modal_Atribuir_Chamado';
+import ModalOS from './Tabela_OS';
+import ModalTarefas from './Tabela_Tarefas';
+import IsLoading from './Loading';
+import IsError from './Error';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
 import { FaExclamationTriangle } from 'react-icons/fa';
@@ -389,109 +389,122 @@ export default function Tabela() {
 
   return (
     <>
-      <div className="overflow-hidden rounded-xl border border-gray-300 bg-black">
+      <div className="overflow-hidden rounded-xl border border-gray-500 bg-black">
         {/* ===== HEADER ===== */}
-        <header className="bg-slate-950 p-6">
-          <div className="flex items-center justify-between gap-8">
-            {/* ícone, título, usuário e período */}
-            <section className="flex items-center justify-center gap-6">
-              <div className="flex items-center justify-center rounded-xl border border-white/30 bg-white/10 p-4">
-                <FaDatabase className="animate-pulse text-cyan-400" size={44} />
-              </div>
-              <div className="flex flex-col items-center justify-center">
-                <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-white select-none">
-                  Tabela de Chamados
-                </h1>
-                <div className="flex items-center gap-4">
+        <header className="flex items-center justify-between gap-8 bg-black p-6">
+          {/* ===== ITENS DA ESQUERDA ===== */}
+          <section className="flex items-center justify-center gap-6">
+            {/* ícone */}
+            <div className="flex items-center justify-center rounded-xl border border-white/50 p-4">
+              <FaDatabase className="text-cyan-400" size={44} />
+            </div>
+            {/* ===== */}
+            <div className="flex flex-col items-start justify-center">
+              {/* título */}
+              <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-white select-none">
+                Tabela de Chamados
+              </h1>
+              {/* ===== */}
+              <div className="flex items-center gap-4">
+                {/* nome usuário */}
+                <span className="rounded-full bg-white px-6 py-1 text-sm font-bold tracking-widest text-black italic select-none">
+                  {user.nome}
+                </span>
+                {/* período */}
+                {Array.isArray(data) && data.length > 0 && (
                   <span className="rounded-full bg-white px-6 py-1 text-sm font-bold tracking-widest text-black italic select-none">
-                    {user.nome}
+                    {mes.toString().padStart(2, '0')}/{ano}
                   </span>
-                  {Array.isArray(data) && data.length > 0 && (
-                    <span className="rounded-full bg-white px-6 py-1 text-sm font-bold tracking-widest text-black italic select-none">
-                      {mes.toString().padStart(2, '0')}/{ano}
-                    </span>
-                  )}
-                </div>
+                )}
               </div>
-            </section>
+              {/* ===== */}
+            </div>
+            {/* ===== */}
+          </section>
+          {/* ===== */}
+
+          {/* ===== ITENS DA DIREITA ===== */}
+          <section className="flex items-center gap-6">
+            {/* botão mostrar/ocultar filtros */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none ${
+                showFilters
+                  ? 'bg-blue-600 hover:scale-105 hover:bg-blue-900 active:scale-95'
+                  : 'border border-white/50 bg-white/10 hover:scale-105 active:scale-95'
+              }`}
+            >
+              {showFilters ? (
+                <FaFilterCircleXmark size={24} />
+              ) : (
+                <FaFilter size={24} />
+              )}
+              {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+            </button>
             {/* ===== */}
 
-            {/* botões mostrar/ocultar filtros, limpar filtros, excel e PDF*/}
-            <section className="flex items-center gap-6">
+            {/* botão limpar filtros */}
+            {columnFilters.length > 0 && (
               <button
-                onClick={() => setShowFilters(!showFilters)}
-                className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none ${
-                  showFilters
-                    ? 'border border-white/30 bg-blue-600 hover:scale-105 hover:bg-blue-900 active:scale-95'
-                    : 'border border-white/30 bg-white/10 hover:scale-105 hover:bg-gray-500 active:scale-95'
-                }`}
+                onClick={clearFilters}
+                className="flex cursor-pointer gap-4 rounded-md border border-white/30 bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:bg-red-900 active:scale-95"
               >
-                {showFilters ? (
-                  <FaFilterCircleXmark size={24} />
-                ) : (
-                  <FaFilter size={24} />
-                )}
-                {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+                <BsEraserFill className="text-white" size={24} />
+                Limpar Filtros
               </button>
-              {/* ===== */}
+            )}
+            {/* ===== */}
 
-              {columnFilters.length > 0 && (
-                <button
-                  onClick={clearFilters}
-                  className="flex cursor-pointer gap-4 rounded-md border border-white/30 bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:bg-red-900 active:scale-95"
-                >
-                  <BsEraserFill className="text-white" size={24} />
-                  Limpar Filtros
-                </button>
-              )}
-              {/* ===== */}
+            {/* botão exportar para excel */}
+            {/* <ButtonExcel
+              data={data ?? []}
+              fileName={`relatorio_de_chamados_${mes}_${ano}`}
+              title={`Relatório de Chamados - ${mes}/${ano}`}
+              columns={[
+                { key: 'COD_CHAMADO', label: 'Chamado' },
+                { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
+                { key: 'EMAIL_CHAMADO', label: 'Email' },
+                { key: 'DATA_CHAMADO', label: 'Data' },
+                { key: 'STATUS_CHAMADO', label: 'Status' },
+              ]}
+              autoFilter={true}
+              freezeHeader={true}
+            /> */}
+            {/* ===== */}
 
-              <ButtonExcel
-                data={data ?? []}
-                fileName={`relatorio_de_chamados_${mes}_${ano}`}
-                title={`Relatório de Chamados - ${mes}/${ano}`}
-                columns={[
-                  { key: 'COD_CHAMADO', label: 'Chamado' },
-                  { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
-                  { key: 'EMAIL_CHAMADO', label: 'Email' },
-                  { key: 'DATA_CHAMADO', label: 'Data' },
-                  { key: 'STATUS_CHAMADO', label: 'Status' },
-                ]}
-                autoFilter={true}
-                freezeHeader={true}
-              />
-              {/* ===== */}
-
-              <ButtonPDF
-                data={data ?? []}
-                fileName={`relatorio_chamados_${mes}_${ano}`}
-                title={`Relatório de Chamados - ${mes}/${ano}`}
-                columns={[
-                  { key: 'COD_CHAMADO', label: 'Chamado' },
-                  { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
-                  { key: 'EMAIL_CHAMADO', label: 'Email' },
-                  { key: 'DATA_CHAMADO', label: 'Data' },
-                  { key: 'STATUS_CHAMADO', label: 'Status' },
-                ]}
-                footerText="Gerado pelo sistema em"
-              />
-            </section>
-          </div>
+            {/* botão exportar para PDF */}
+            {/* <ButtonPDF
+              data={data ?? []}
+              fileName={`relatorio_chamados_${mes}_${ano}`}
+              title={`Relatório de Chamados - ${mes}/${ano}`}
+              columns={[
+                { key: 'COD_CHAMADO', label: 'Chamado' },
+                { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
+                { key: 'EMAIL_CHAMADO', label: 'Email' },
+                { key: 'DATA_CHAMADO', label: 'Data' },
+                { key: 'STATUS_CHAMADO', label: 'Status' },
+              ]}
+              footerText="Gerado pelo sistema em"
+            /> */}
+          </section>
         </header>
         {/* ===== */}
 
-        {/* ===== TABELA ===== */}
-        <section className="h-full w-full overflow-hidden bg-black">
+        {/* ===== CONTEÚDO ===== */}
+        <main className="h-full w-full overflow-hidden bg-black">
           <div
             className="h-full overflow-y-auto"
             style={{ maxHeight: 'calc(100vh - 370px)' }}
           >
+            {/* ===== TABELA ===== */}
             <table className="w-full table-fixed border-collapse">
               {/* ===== CABEÇALHO DA TABELA ===== */}
               <thead className="sticky top-0 z-20">
                 {table.getHeaderGroups().map(headerGroup => (
+                  // linha do cabeçalho
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map(header => (
+                      // células do cabeçalho
                       <th
                         key={header.id}
                         className="bg-teal-700 py-6 font-extrabold tracking-wider text-white uppercase select-none"
@@ -500,8 +513,8 @@ export default function Tabela() {
                         {header.isPlaceholder ? null : header.column.id ===
                             'COD_CHAMADO' ||
                           header.column.id === 'DATA_CHAMADO' ||
-                          header.column.id === 'STATUS_CHAMADO' ||
-                          header.column.id === 'ASSUNTO_CHAMADO' ? (
+                          header.column.id === 'ASSUNTO_CHAMADO' ||
+                          header.column.id === 'STATUS_CHAMADO' ? (
                           <SortableHeader column={header.column}>
                             {flexRender(
                               header.column.columnDef.header,
@@ -579,6 +592,7 @@ export default function Tabela() {
                 {table.getRowModel().rows.length > 0 &&
                   !isLoading &&
                   table.getRowModel().rows.map((row, rowIndex) => (
+                    // linhas do corpo da tabela
                     <tr
                       key={row.id}
                       className={`group border-b border-gray-600 transition-all hover:bg-amber-200 ${
@@ -586,9 +600,10 @@ export default function Tabela() {
                       }`}
                     >
                       {row.getVisibleCells().map(cell => (
+                        // células do corpo da tabela
                         <td
                           key={cell.id}
-                          className="p-3 text-sm font-semibold tracking-wider text-white group-hover:text-black"
+                          className="p-3 text-sm font-semibold tracking-wider text-white select-none group-hover:text-black"
                           style={{ width: getColumnWidth(cell.column.id) }}
                         >
                           <div className="overflow-hidden">
@@ -607,7 +622,7 @@ export default function Tabela() {
             {/* ===== */}
           </div>
           {/* ===== */}
-        </section>
+        </main>
         {/* ===== */}
 
         {/* ===== PAGINAÇÃO DA TABELA ===== */}
@@ -645,7 +660,7 @@ export default function Tabela() {
                   <select
                     value={table.getState().pagination.pageSize}
                     onChange={e => table.setPageSize(Number(e.target.value))}
-                    className="rounded-md border border-white/30 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-white italic select-none"
+                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-white italic select-none"
                   >
                     {[10, 25, 50, 100].map(pageSize => (
                       <option
@@ -664,7 +679,7 @@ export default function Tabela() {
                   <button
                     onClick={() => table.setPageIndex(0)}
                     disabled={!table.getCanPreviousPage()}
-                    className="rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <FiChevronsLeft className="text-white" size={24} />
                   </button>
@@ -672,7 +687,7 @@ export default function Tabela() {
                   <button
                     onClick={() => table.previousPage()}
                     disabled={!table.getCanPreviousPage()}
-                    className="rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <MdChevronLeft className="text-white" size={24} />
                   </button>
@@ -686,7 +701,7 @@ export default function Tabela() {
                           const page = Number(e.target.value) - 1;
                           table.setPageIndex(page);
                         }}
-                        className="rounded-md border border-white/30 bg-white/10 px-4 py-1 text-center font-semibold tracking-widest text-white italic select-none"
+                        className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 text-center font-semibold tracking-widest text-white italic select-none"
                       >
                         {Array.from(
                           { length: table.getPageCount() },
@@ -711,7 +726,7 @@ export default function Tabela() {
                   <button
                     onClick={() => table.nextPage()}
                     disabled={!table.getCanNextPage()}
-                    className="rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <MdChevronRight className="text-white" size={24} />
                   </button>
@@ -719,7 +734,7 @@ export default function Tabela() {
                   <button
                     onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                     disabled={!table.getCanNextPage()}
-                    className="rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <FiChevronsRight className="text-white" size={24} />
                   </button>

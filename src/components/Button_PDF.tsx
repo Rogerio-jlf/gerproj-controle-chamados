@@ -170,7 +170,7 @@ export default function PDFButton<T extends Record<string, any>>({
           <TooltipTrigger asChild>
             <button
               onClick={exportToPdf}
-              className={`group flex cursor-pointer items-center gap-4 rounded-md border border-white/30 bg-white/10 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:bg-gray-500 ${className}`}
+              className={`group flex cursor-pointer items-center gap-4 rounded-md border border-white/50 bg-white/10 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 active:scale-105 ${className}`}
             >
               <FaFilePdf className="text-white" size={24} />
               {buttonText}

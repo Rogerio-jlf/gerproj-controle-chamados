@@ -1,5 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { OSTarefaProps } from './ModalOSTarefa';
+import { OSTarefaProps } from './Tabela_OS_Tarefa';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 // ================================================================================
 // ================================================================================

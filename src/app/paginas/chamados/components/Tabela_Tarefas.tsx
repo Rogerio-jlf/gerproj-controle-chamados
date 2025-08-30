@@ -13,10 +13,10 @@ import {
   ColumnFiltersState,
   SortingState,
 } from '@tanstack/react-table';
-import { TarefasProps, colunasTabela } from './Colunas_Tarefas';
-import ModalOSTarefa from './ModalOSTarefa'; // NOVO IMPORT
-import IsLoading from './IsLoading';
-import IsError from './IsError';
+import { TarefasProps, colunasTabela } from './Colunas_Tabela_Tarefas';
+import ModalOSTarefa from './Tabela_OS_Tarefa'; // NOVO IMPORT
+import IsLoading from './Loading';
+import IsError from './Error';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
@@ -224,6 +224,8 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
     setColumnFilters([]);
   };
 
+  if (!isOpen) return null;
+
   if (isLoading) {
     return <IsLoading title="Carregando os dados da tabela" />;
   }
@@ -231,8 +233,6 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
   if (isError) {
     return <IsError error={error as Error} />;
   }
-
-  if (!isOpen) return null;
   // ================================================================================
 
   return (
@@ -244,21 +244,21 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
           onClick={onClose}
         />
         {/* ===== MODAL ===== */}
-        <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-gray-300">
+        <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-black">
           {/* ===== HEADER ===== */}
           <header className="flex items-center justify-between gap-8 bg-white/70 p-6">
             {/* ===== ITENS DA ESQUERDA ===== */}
             <section className="flex items-center justify-center gap-6">
               {/* ícone */}
-              <div className="flex items-center justify-center rounded-xl border border-black/30 bg-white/10 p-4">
-                <FaTasks className="animate-pulse text-black" size={44} />
+              <div className="flex items-center justify-center rounded-xl border border-black/30 p-4">
+                <FaTasks className="text-black" size={44} />
               </div>
               {/* ===== */}
 
-              <div className="flex flex-col items-center justify-center">
+              <div className="flex flex-col items-start justify-center">
                 {/* título */}
                 <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
-                  Minhas Tarefas
+                  Tarefas
                 </h1>
                 {/* ===== */}
 
@@ -288,10 +288,10 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 disabled={!dataTarefas || dataTarefas.length <= 1}
-                className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-black italic transition-all select-none disabled:border-gray-200 disabled:text-gray-200 ${
+                className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-black italic transition-all select-none disabled:border-black/30 disabled:text-gray-500 ${
                   showFilters
-                    ? 'border border-blue-800 bg-blue-600 text-white hover:scale-105 hover:bg-blue-900 hover:text-white active:scale-95'
-                    : 'border border-black/50 bg-white/10 hover:scale-105 hover:bg-gray-500 hover:text-white active:scale-95'
+                    ? 'bg-blue-600 text-white hover:scale-110 hover:bg-blue-900 active:scale-95'
+                    : 'bg-black/50 text-white hover:scale-110 hover:bg-black active:scale-95'
                 }`}
               >
                 {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
@@ -311,7 +311,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
               {/* botão fechar modal */}
               <button
                 onClick={handleClose}
-                className="group rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-90"
+                className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
               >
                 <IoClose size={32} />
               </button>
@@ -443,7 +443,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                               // Células da tabela
                               <td
                                 key={cell.id}
-                                className="p-3 text-sm font-semibold tracking-wider text-white group-hover:text-black"
+                                className="p-3 text-sm font-semibold tracking-wider text-white select-none group-hover:text-black"
                                 style={{
                                   width: getColumnWidth(cell.column.id),
                                 }}
@@ -487,6 +487,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                         </span>
                       )}
                     </div>
+                    {/* ===== */}
 
                     {/* Controles de paginação */}
                     <div className="flex items-center gap-3">
@@ -500,37 +501,46 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                           onChange={e =>
                             table.setPageSize(Number(e.target.value))
                           }
-                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-black italic select-none"
+                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 text-base font-semibold tracking-widest text-black italic hover:bg-gray-500 hover:text-white"
                         >
                           {[5, 10, 15, 25].map(pageSize => (
                             <option
                               key={pageSize}
                               value={pageSize}
-                              className="bg-gray-800 text-base font-semibold tracking-widest text-white italic select-none"
+                              className="text-base font-semibold tracking-widest text-black italic"
                             >
                               {pageSize}
                             </option>
                           ))}
                         </select>
                       </div>
+                      {/* ===== */}
 
                       {/* Botões de navegação */}
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() => table.setPageIndex(0)}
                           disabled={!table.getCanPreviousPage()}
-                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                          <FiChevronsLeft className="text-black/30" size={20} />
+                          <FiChevronsLeft
+                            className="text-black hover:text-white"
+                            size={20}
+                          />
                         </button>
+                        {/* ===== */}
 
                         <button
                           onClick={() => table.previousPage()}
                           disabled={!table.getCanPreviousPage()}
-                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black/30 transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                          <MdChevronLeft className="text-black/30" size={20} />
+                          <MdChevronLeft
+                            className="text-black hover:text-white"
+                            size={20}
+                          />
                         </button>
+                        {/* ===== */}
 
                         <div className="flex items-center justify-center gap-2">
                           <span className="text-base font-semibold tracking-widest text-black italic select-none">
@@ -541,7 +551,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                                 const page = Number(e.target.value) - 1;
                                 table.setPageIndex(page);
                               }}
-                              className="rounded-md border border-black/30 bg-white/10 px-4 py-1 text-center font-semibold tracking-widest text-black italic select-none"
+                              className="cursor-pointer rounded-md border border-black/30 px-4 py-1 text-base font-semibold tracking-widest text-black italic hover:bg-gray-500 hover:text-white"
                             >
                               {Array.from(
                                 { length: table.getPageCount() },
@@ -549,7 +559,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                                   <option
                                     key={i + 1}
                                     value={i + 1}
-                                    className="bg-gray-800 text-base font-semibold tracking-widest text-white italic select-none"
+                                    className="text-base font-semibold tracking-widest text-black italic"
                                   >
                                     {i + 1}
                                   </option>
@@ -562,14 +572,15 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                             de {table.getPageCount()}
                           </span>
                         </div>
+                        {/* ===== */}
 
                         <button
                           onClick={() => table.nextPage()}
                           disabled={!table.getCanNextPage()}
-                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                          <FiChevronsRight
-                            className="text-black/30"
+                          <MdChevronRight
+                            className="text-black hover:text-white"
                             size={20}
                           />
                         </button>
@@ -579,9 +590,12 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                             table.setPageIndex(table.getPageCount() - 1)
                           }
                           disabled={!table.getCanNextPage()}
-                          className="rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                          <MdChevronRight className="text-black/30" size={20} />
+                          <FiChevronsRight
+                            className="text-black hover:text-white"
+                            size={20}
+                          />
                         </button>
                       </div>
                     </div>

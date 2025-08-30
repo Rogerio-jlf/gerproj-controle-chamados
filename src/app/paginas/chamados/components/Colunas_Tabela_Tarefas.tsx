@@ -117,22 +117,22 @@ export const colunasTabela = (
       };
 
       return (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-6">
           {/* Botão Download */}
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 onClick={handleDownload}
-                className="transition-all hover:scale-110"
+                className="cursor-pointer transition-all hover:scale-110"
               >
-                <FaDownload size={28} />
+                <FaDownload size={32} />
               </button>
             </TooltipTrigger>
             <TooltipContent
-              side="top"
-              align="center"
+              side="left"
+              align="end"
               sideOffset={8}
-              className="bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
+              className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
             >
               Download
             </TooltipContent>
@@ -143,16 +143,16 @@ export const colunasTabela = (
             <TooltipTrigger asChild>
               <button
                 onClick={handleVisualizarOS}
-                className="text-blue-600 transition-all hover:scale-110 hover:text-blue-800"
+                className="cursor-pointer transition-all hover:scale-110"
               >
-                <FaEye size={28} />
+                <FaEye size={32} />
               </button>
             </TooltipTrigger>
             <TooltipContent
-              side="top"
-              align="center"
+              side="right"
+              align="end"
               sideOffset={8}
-              className="bg-white text-sm font-semibold tracking-wider text-gray-900 select-none"
+              className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
             >
               Visualizar OS
             </TooltipContent>

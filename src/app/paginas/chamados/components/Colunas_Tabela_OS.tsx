@@ -4,11 +4,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { ColumnDef } from '@tanstack/react-table';
-import { OSProps } from './Modal_OS';
+import { OSProps } from './Tabela_OS';
 // ================================================================================
-import { FaHandPointUp } from 'react-icons/fa';
 import { MdEditDocument } from 'react-icons/md';
-import { MdDelete } from 'react-icons/md'; // Novo ícone para exclusão
+import { RiDeleteBin5Fill } from 'react-icons/ri';
 // ================================================================================
 // ================================================================================
 
@@ -201,7 +200,7 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
       const os = row.original;
 
       return (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-6">
           {/* Botão Realizar Apontamento */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -214,7 +213,7 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
             </TooltipTrigger>
             <TooltipContent
               side="left"
-              align="center"
+              align="end"
               sideOffset={8}
               className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
             >
@@ -227,14 +226,14 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
             <TooltipTrigger asChild>
               <button
                 onClick={() => acoes.onExcluirOS(os.COD_OS)}
-                className="cursor-pointer text-red-600 transition-all hover:scale-110 hover:text-red-800"
+                className="cursor-pointer transition-all hover:scale-110"
               >
-                <MdDelete size={32} />
+                <RiDeleteBin5Fill size={32} />
               </button>
             </TooltipTrigger>
             <TooltipContent
-              side="left"
-              align="center"
+              side="top"
+              align="end"
               sideOffset={8}
               className="border-t-4 border-red-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
             >

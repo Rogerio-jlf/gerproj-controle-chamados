@@ -9,8 +9,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 // ================================================================================
-import StatusCellClicavel from './Status_Cell';
-import AssuntoCellEditavel from './Assunto_Cell';
+import StatusCellClicavel from './Cell_Status';
+import AssuntoCellEditavel from './Cell_Assunto';
 // ================================================================================
 import { FaDownload, FaTasks } from 'react-icons/fa';
 import { IoCall } from 'react-icons/io5';

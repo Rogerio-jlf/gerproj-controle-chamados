@@ -12,9 +12,9 @@ import {
   ColumnFiltersState,
   SortingState,
 } from '@tanstack/react-table';
-import { colunasOSTarefa } from './Colunas_OS_Tarefas';
-import IsLoading from './IsLoading';
-import IsError from './IsError';
+import { colunasOSTarefa } from './Colunas_Tabela_OS_Tarefa';
+import IsLoading from './Loading';
+import IsError from './Error';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
@@ -280,6 +280,8 @@ export default function ModalOSTarefa({
     setColumnFilters([]);
   };
 
+  if (!isOpen) return null;
+
   if (isLoading) {
     return <IsLoading title="Carregando os dados da tabela" />;
   }
@@ -287,8 +289,6 @@ export default function ModalOSTarefa({
   if (isError) {
     return <IsError error={error as Error} />;
   }
-
-  if (!isOpen) return null;
   // ================================================================================
 
   return (
@@ -604,13 +604,13 @@ export default function ModalOSTarefa({
                           onChange={e =>
                             table.setPageSize(Number(e.target.value))
                           }
-                          className="cursor-pointer rounded-md border border-black/40 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-black italic select-none"
+                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 text-base font-semibold tracking-widest text-black italic hover:bg-gray-500 hover:text-white"
                         >
                           {[5, 10, 15, 25].map(pageSize => (
                             <option
                               key={pageSize}
                               value={pageSize}
-                              className="cursor-pointer bg-gray-800 text-base font-semibold tracking-widest text-white italic select-none"
+                              className="text-base font-semibold tracking-widest text-black italic"
                             >
                               {pageSize}
                             </option>
@@ -623,17 +623,17 @@ export default function ModalOSTarefa({
                         <button
                           onClick={() => table.setPageIndex(0)}
                           disabled={!table.getCanPreviousPage()}
-                          className="cursor-pointer rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 tracking-widest select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
                         >
-                          <FiChevronsLeft className="text-black/30" size={20} />
+                          <FiChevronsLeft className="text-white" size={24} />
                         </button>
 
                         <button
                           onClick={() => table.previousPage()}
                           disabled={!table.getCanPreviousPage()}
-                          className="cursor-pointer rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black/30 transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 tracking-widest select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
                         >
-                          <MdChevronLeft className="text-black/30" size={20} />
+                          <MdChevronLeft className="text-white" size={24} />
                         </button>
 
                         <div className="flex items-center justify-center gap-2">
@@ -645,7 +645,7 @@ export default function ModalOSTarefa({
                                 const page = Number(e.target.value) - 1;
                                 table.setPageIndex(page);
                               }}
-                              className="cursor-pointer rounded-md border border-black/30 bg-white/10 px-4 py-1 text-center font-semibold tracking-widest text-black italic select-none"
+                              className="cursor-pointer rounded-md border border-black/30 px-4 py-1 text-base font-semibold tracking-widest text-black italic hover:bg-gray-500 hover:text-white"
                             >
                               {Array.from(
                                 { length: table.getPageCount() },
@@ -653,7 +653,7 @@ export default function ModalOSTarefa({
                                   <option
                                     key={i + 1}
                                     value={i + 1}
-                                    className="bg-gray-800 text-base font-semibold tracking-widest text-white italic select-none"
+                                    className="text-base font-semibold tracking-widest text-black italic"
                                   >
                                     {i + 1}
                                   </option>
@@ -670,12 +670,9 @@ export default function ModalOSTarefa({
                         <button
                           onClick={() => table.nextPage()}
                           disabled={!table.getCanNextPage()}
-                          className="cursor-pointer rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 tracking-widest select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
                         >
-                          <FiChevronsRight
-                            className="text-black/30"
-                            size={20}
-                          />
+                          <MdChevronRight className="text-white" size={24} />
                         </button>
 
                         <button
@@ -683,9 +680,9 @@ export default function ModalOSTarefa({
                             table.setPageIndex(table.getPageCount() - 1)
                           }
                           disabled={!table.getCanNextPage()}
-                          className="cursor-pointer rounded-md border border-black/40 bg-white/10 px-4 py-1 tracking-widest text-black transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 tracking-widest select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
                         >
-                          <MdChevronRight className="text-black/30" size={20} />
+                          <FiChevronsRight className="text-white" size={24} />
                         </button>
                       </div>
                     </div>
