@@ -5,7 +5,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 // ================================================================================
-import { FaDownload, FaEye } from 'react-icons/fa';
+import { FaDownload, FaEye, FaPhoneAlt } from 'react-icons/fa';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 // ================================================================================
 // ================================================================================
@@ -21,6 +21,7 @@ export interface TarefasProps {
 // Interface para as props das colunas
 interface ColunasProps {
   onVisualizarOS?: (codTarefa: number) => void;
+  onAbrirChamados?: (tarefa: TarefasProps) => void; // NOVA FUNÇÃO
 }
 // ================================================================================
 
@@ -116,8 +117,15 @@ export const colunasTabela = (
         }
       };
 
+      // NOVA FUNÇÃO PARA ABRIR CHAMADOS
+      const handleAbrirChamados = () => {
+        if (props?.onAbrirChamados) {
+          props.onAbrirChamados(tarefa);
+        }
+      };
+
       return (
-        <div className="flex items-center justify-center gap-6">
+        <div className="flex items-center justify-center gap-4">
           {/* Botão Download */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -125,7 +133,7 @@ export const colunasTabela = (
                 onClick={handleDownload}
                 className="cursor-pointer transition-all hover:scale-110"
               >
-                <FaDownload size={32} />
+                <FaDownload size={24} />
               </button>
             </TooltipTrigger>
             <TooltipContent
@@ -145,16 +153,36 @@ export const colunasTabela = (
                 onClick={handleVisualizarOS}
                 className="cursor-pointer transition-all hover:scale-110"
               >
-                <FaEye size={32} />
+                <FaEye size={24} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="top"
+              align="center"
+              sideOffset={8}
+              className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+            >
+              Visualizar OS
+            </TooltipContent>
+          </Tooltip>
+
+          {/* NOVO BOTÃO VER CHAMADOS */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleAbrirChamados}
+                className="cursor-pointer text-orange-600 transition-all hover:scale-110 hover:text-orange-700"
+              >
+                <FaPhoneAlt size={24} />
               </button>
             </TooltipTrigger>
             <TooltipContent
               side="right"
               align="end"
               sideOffset={8}
-              className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+              className="border-t-4 border-orange-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
             >
-              Visualizar OS
+              Ver Chamados
             </TooltipContent>
           </Tooltip>
         </div>

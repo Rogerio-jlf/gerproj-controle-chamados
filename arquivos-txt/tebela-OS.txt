@@ -1,0 +1,10 @@
+===== TABELA OS =====
+Código da OS
+  tabela OS;
+  COD_OS - INTEGER/NOT NULL
+
+Nome do cliente
+  tabela CLIENTE;
+
+  Eu criei essa api, para criar, inserir novas ordens de serviço no banco de dados. Preciso criar, o componente tabela, cpmponente colunas e um modal, baseado nos exemploq eu te mandei acima, para essa minha api de criação de ordens de serviço. Ou seja, no componente Colunas_Tabela_Tarefas.tsx, preciso que tenha um novo botão de ação, que abrirá um modal, onde  
+  

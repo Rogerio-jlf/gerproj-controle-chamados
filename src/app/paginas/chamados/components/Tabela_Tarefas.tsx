@@ -14,7 +14,8 @@ import {
   SortingState,
 } from '@tanstack/react-table';
 import { TarefasProps, colunasTabela } from './Colunas_Tabela_Tarefas';
-import ModalOSTarefa from './Tabela_OS_Tarefa'; // NOVO IMPORT
+import TabelaChamadosTarefa from './Tabela_Chamados_Tarefas';
+import ModalOSTarefa from './Tabela_OS_Tarefa';
 import IsLoading from './Loading';
 import IsError from './Error';
 // ================================================================================
@@ -112,9 +113,14 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'COD_TAREFA', desc: false },
   ]);
+
+  const [isTabelaChamadosOpen, setIsTabelaChamadosOpen] = useState(false);
+  const [selectedTarefaParaChamados, setSelectedTarefaParaChamados] =
+    useState<TarefasProps | null>(null);
+
   const [showFilters, setShowFilters] = useState(false);
 
-  // NOVOS ESTADOS PARA O MODAL DE OS
+  // ESTADOS PARA O MODAL DE OS (VISUALIZAR)
   const [isModalOSOpen, setIsModalOSOpen] = useState(false);
   const [selectedTarefaCodigo, setSelectedTarefaCodigo] = useState<
     number | null
@@ -145,21 +151,37 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
     }, 300);
   };
 
-  // NOVA FUNÇÃO PARA ABRIR O MODAL DE OS
+  // Adicionar esta nova função:
+  const handleAbrirChamados = (tarefa: TarefasProps) => {
+    setSelectedTarefaParaChamados(tarefa);
+    setIsTabelaChamadosOpen(true);
+  };
+
+  // Adicionar esta nova função para fechar:
+  const handleCloseTabelaChamados = () => {
+    setIsTabelaChamadosOpen(false);
+    setSelectedTarefaParaChamados(null);
+  };
+
+  // FUNÇÃO PARA ABRIR O MODAL DE VISUALIZAR OS
   const handleVisualizarOS = (codTarefa: number) => {
     setSelectedTarefaCodigo(codTarefa);
     setIsModalOSOpen(true);
   };
 
-  // NOVA FUNÇÃO PARA FECHAR O MODAL DE OS
+  // FUNÇÃO PARA FECHAR O MODAL DE VISUALIZAR OS
   const handleCloseModalOS = () => {
     setIsModalOSOpen(false);
     setSelectedTarefaCodigo(null);
   };
 
-  // ATUALIZADO PARA PASSAR A FUNÇÃO onVisualizarOS
+  // ATUALIZADO PARA INCLUIR A NOVA FUNÇÃO onCriarOS
   const colunas = useMemo(
-    () => colunasTabela({ onVisualizarOS: handleVisualizarOS }),
+    () =>
+      colunasTabela({
+        onVisualizarOS: handleVisualizarOS,
+        onAbrirChamados: handleAbrirChamados, // NOVA FUNÇÃO
+      }),
     []
   );
 
@@ -285,6 +307,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
 
             {/* ===== ITENS DA DIREITA ===== */}
             <section className="flex items-center gap-20">
+              {/* botão mostrar/ocultar filtros */}
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 disabled={!dataTarefas || dataTarefas.length <= 1}
@@ -297,7 +320,9 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                 {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
                 {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
               </button>
+              {/* ===== */}
 
+              {/* botão limpar filtros */}
               {columnFilters.length > 0 && (
                 <button
                   onClick={clearFilters}
@@ -307,6 +332,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                   Limpar Filtros
                 </button>
               )}
+              {/* ===== */}
 
               {/* botão fechar modal */}
               <button
@@ -315,25 +341,28 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
               >
                 <IoClose size={32} />
               </button>
+              {/* ===== */}
             </section>
           </header>
           {/* ===== */}
 
-          {/* ===== CONTEÚDO PRINCIPAL ===== */}
+          {/* ===== CONTEÚDO ===== */}
           <main className="overflow-hidden bg-black">
-            {/* ===== TABELA ===== */}
             {dataTarefas && dataTarefas.length > 0 && (
               <section className="h-full w-full overflow-hidden bg-black">
                 <div
                   className="h-full overflow-y-auto"
                   style={{ maxHeight: 'calc(100vh - 370px)' }}
                 >
+                  {/* ===== TABELA ===== */}
                   <table className="w-full table-fixed border-collapse">
                     {/* ===== CABEÇALHO DA TABELA ===== */}
                     <thead className="sticky top-0 z-20">
                       {table.getHeaderGroups().map(headerGroup => (
+                        // linha do cabeçalho da tabela
                         <tr key={headerGroup.id}>
                           {headerGroup.headers.map(header => (
+                            // células do cabeçalho da tabela
                             <th
                               key={header.id}
                               className="bg-teal-800 py-6 font-extrabold tracking-wider text-white uppercase select-none"
@@ -430,7 +459,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                       {table.getRowModel().rows.length > 0 &&
                         !isLoading &&
                         table.getRowModel().rows.map((row, rowIndex) => (
-                          // Linha do corpo da tabela
+                          // Linhas do corpo da tabela
                           <tr
                             key={row.id}
                             className={`group border-b border-gray-600 transition-all hover:bg-amber-200 ${
@@ -440,7 +469,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                             }`}
                           >
                             {row.getVisibleCells().map(cell => (
-                              // Células da tabela
+                              // células do corpo da tabela
                               <td
                                 key={cell.id}
                                 className="p-3 text-sm font-semibold tracking-wider text-white select-none group-hover:text-black"
@@ -459,6 +488,7 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                           </tr>
                         ))}
                     </tbody>
+                    {/* ===== */}
                   </table>
                 </div>
 
@@ -650,11 +680,16 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
         {/* ===== */}
       </div>
 
-      {/* NOVO MODAL DE OS DA TAREFA */}
+      {/* MODAL DE VISUALIZAR OS DA TAREFA */}
       <ModalOSTarefa
         isOpen={isModalOSOpen}
         onClose={handleCloseModalOS}
         codTarefa={selectedTarefaCodigo}
+      />
+
+      <TabelaChamadosTarefa
+        isOpen={isTabelaChamadosOpen}
+        onClose={handleCloseTabelaChamados}
       />
     </>
   );
@@ -667,7 +702,7 @@ function getColumnWidth(columnId: string): string {
     NOME_TAREFA: '300px',
     DTSOL_TAREFA: '120px',
     HREST_TAREFA: '120px',
-    actions: '120px', // NOVA LARGURA PARA A COLUNA DE AÇÕES
+    actions: '160px', // AUMENTADA PARA ACOMODAR O NOVO BOTÃO
   };
 
   return widthMap[columnId] || '100px';

@@ -128,7 +128,7 @@ GET http://localhost:3000/api/firebird-SQL/cache
 
 
 
-### Teste: atribuir chamado (modo teste, sem alterar o banco)
+### realizar login e obter token jwt
 POST http://localhost:3000/api/login
 Content-Type: application/json
 
@@ -136,3 +136,7 @@ Content-Type: application/json
   "login": "ANA.A",
   "senha": "&"
 }
+
+### 2. Buscar todos os chamados (sem filtros) - Recurso 144
+GET http://localhost:3000/api/chamados-tarefa
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1NjY0Nzc4NCwiZXhwIjoxNzU2NjUxMzg0fQ.4-IKjbny00FYgTA5hkV4VgvgFEh-TS6GCwliTTe79_E

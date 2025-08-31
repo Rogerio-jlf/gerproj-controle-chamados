@@ -1,0 +1,61 @@
+===== MODAL CHAMADO =====
+Código do chamado
+	tabela CHAMADO;
+	COD_CHAMADO - INTEGER/NOT NULL;
+
+Data do chamado
+	tabela CHAMADO;
+	DATA_CHAMADO - DATE/NOT NULL;
+
+Hora do chamado
+	tabela CHAMADO;
+	HORA_CHAMADO - CHAR/NOT NULL;
+
+Status do chamado
+	tabela CHAMADO;
+	STATUS_CHAMADO - VARCHAR/NOT NULL;
+
+Código do recurso para o chamado
+	tabela CHAMADO;
+	COD_RECURSO - INTEGER;
+
+Nome do recurso para o chamado
+	tabela RECURSO;
+	COD_RECURSO - INTEGER/NOT NULL;
+	NOME_RECURSO - VARCHAR/NOT NULL;
+	
+Código da tarefa
+	tabela CHAMADO;
+	CODTRF_CHAMADO - INTEGER;
+  
+Código do cliente
+	tabela CHAMADO;
+	COD_CLIENTE - INTEGER;
+
+Nome do cliente no chamado
+	tabela CLIENTE
+	COD_CLIENTE - INTEGER/NOT NULL;
+	NOME_CLIENTE - VARCHAR/NOT NULL;
+	
+Assunto do chamado
+	tabela CHAMADO;
+	ASSUNTO_CHAMADO - VARCHAR;
+
+E-mail do chamado
+	tabela CHAMADO;
+	EMAIL_CHAMADO - VARCHAR;
+
+Prioridade do chamado
+	tabela CHAMADO;
+	PRIOR_CHAMADO - INTEGER;
+
+Código de classificação do chamado
+	tabela CHAMADO;
+	COD_CLASSIFICACAO - INTEGER;
+
+
+
+
+
+
+

@@ -16,8 +16,8 @@ import {
 import { useAuth } from '../../../../hooks/useAuth';
 import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
 import { ChamadosProps, colunasTabela } from './Colunas_Tabela_Chamados';
-import ButtonExcel from '../../../../components/Button_Excel';
-import ButtonPDF from '../../../../components/Button_PDF';
+// import ButtonExcel from '../../../../components/Button_Excel';
+// import ButtonPDF from '../../../../components/Button_PDF';
 import ModalChamado from './Modal_Atribuir_Chamado';
 import ModalOS from './Tabela_OS';
 import ModalTarefas from './Tabela_Tarefas';
@@ -37,6 +37,11 @@ import { IoArrowUp } from 'react-icons/io5';
 import { IoArrowDown } from 'react-icons/io5';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { FaFilter } from 'react-icons/fa6';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '../../../../components/ui/tooltip';
 // ================================================================================
 // ================================================================================
 
@@ -77,7 +82,7 @@ const FilterInput = ({
     value={value}
     onChange={e => onChange(e.target.value)}
     placeholder={placeholder}
-    className="w-full rounded-md border border-white/30 bg-gray-900 px-4 py-2 text-base text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+    className="w-full rounded-md bg-black px-4 py-2 text-base text-white placeholder-gray-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none"
   />
 );
 
@@ -95,9 +100,11 @@ const FilterSelect = ({
   <select
     value={value}
     onChange={e => onChange(e.target.value)}
-    className="w-full rounded-md border border-white/30 bg-gray-900 px-4 py-2 text-base text-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+    className="w-full cursor-pointer rounded-md bg-black px-4 py-2 text-base text-white placeholder-gray-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none"
   >
-    <option value="">{placeholder}</option>
+    <option value="" className="placeholder:text-gray-400">
+      {placeholder}
+    </option>
     {options.map(option => (
       <option key={option} value={option}>
         {option}
@@ -106,7 +113,7 @@ const FilterSelect = ({
   </select>
 );
 
-// Componente para cabeçalho ordenável
+// Componente para ordenação do cabeçalho da tabela
 const SortableHeader = ({
   column,
   children,
@@ -117,17 +124,35 @@ const SortableHeader = ({
   const sorted = column.getIsSorted();
 
   return (
-    <div
-      className="flex cursor-pointer items-center justify-center gap-2 rounded-full py-2 hover:bg-teal-900"
-      onClick={column.getToggleSortingHandler()}
-    >
-      {children}
-      <div className="flex flex-col">
-        {sorted === 'asc' && <IoArrowUp size={20} />}
-        {sorted === 'desc' && <IoArrowDown size={20} />}
-        {!sorted && <RiArrowUpDownLine size={20} className="text-white" />}
-      </div>
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className="flex cursor-pointer items-center justify-center gap-2 rounded-md py-2 transition-all hover:bg-teal-900 active:scale-95"
+          onClick={column.getToggleSortingHandler()}
+        >
+          {children}
+          <div className="flex flex-col">
+            {sorted === 'asc' && <IoArrowUp size={20} />}
+            {sorted === 'desc' && <IoArrowDown size={20} />}
+            {!sorted && <RiArrowUpDownLine size={20} className="text-white" />}
+          </div>
+        </div>
+      </TooltipTrigger>
+
+      <TooltipContent
+        side="top"
+        align="center"
+        sideOffset={8}
+        className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+      >
+        Clique para ordenar{' '}
+        {sorted === 'asc'
+          ? '(ascendente)'
+          : sorted === 'desc'
+            ? '(descendente)'
+            : ''}
+      </TooltipContent>
+    </Tooltip>
   );
 };
 
@@ -431,7 +456,7 @@ export default function Tabela() {
               className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none ${
                 showFilters
                   ? 'bg-blue-600 hover:scale-105 hover:bg-blue-900 active:scale-95'
-                  : 'border border-white/50 bg-white/10 hover:scale-105 active:scale-95'
+                  : 'border border-white/50 bg-white/10 hover:scale-105 hover:bg-white/30 active:scale-95'
               }`}
             >
               {showFilters ? (
@@ -486,6 +511,7 @@ export default function Tabela() {
               ]}
               footerText="Gerado pelo sistema em"
             /> */}
+            {/* ===== */}
           </section>
         </header>
         {/* ===== */}
@@ -660,13 +686,13 @@ export default function Tabela() {
                   <select
                     value={table.getState().pagination.pageSize}
                     onChange={e => table.setPageSize(Number(e.target.value))}
-                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-white italic select-none"
+                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-white italic hover:bg-gray-500"
                   >
                     {[10, 25, 50, 100].map(pageSize => (
                       <option
                         key={pageSize}
                         value={pageSize}
-                        className="bg-gray-800 text-base font-semibold tracking-widest text-white italic select-none"
+                        className="text-base font-semibold tracking-widest text-black italic"
                       >
                         {pageSize}
                       </option>
@@ -679,7 +705,7 @@ export default function Tabela() {
                   <button
                     onClick={() => table.setPageIndex(0)}
                     disabled={!table.getCanPreviousPage()}
-                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <FiChevronsLeft className="text-white" size={24} />
                   </button>
@@ -687,7 +713,7 @@ export default function Tabela() {
                   <button
                     onClick={() => table.previousPage()}
                     disabled={!table.getCanPreviousPage()}
-                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <MdChevronLeft className="text-white" size={24} />
                   </button>
@@ -701,7 +727,7 @@ export default function Tabela() {
                           const page = Number(e.target.value) - 1;
                           table.setPageIndex(page);
                         }}
-                        className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 text-center font-semibold tracking-widest text-white italic select-none"
+                        className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-white italic hover:bg-gray-500"
                       >
                         {Array.from(
                           { length: table.getPageCount() },
@@ -709,7 +735,7 @@ export default function Tabela() {
                             <option
                               key={i + 1}
                               value={i + 1}
-                              className="bg-gray-800 text-base font-semibold tracking-widest text-white italic select-none"
+                              className="text-base font-semibold tracking-widest text-black italic"
                             >
                               {i + 1}
                             </option>
@@ -726,7 +752,7 @@ export default function Tabela() {
                   <button
                     onClick={() => table.nextPage()}
                     disabled={!table.getCanNextPage()}
-                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <MdChevronRight className="text-white" size={24} />
                   </button>
@@ -734,7 +760,7 @@ export default function Tabela() {
                   <button
                     onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                     disabled={!table.getCanNextPage()}
-                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 tracking-widest text-white transition-colors select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <FiChevronsRight className="text-white" size={24} />
                   </button>
