@@ -38,7 +38,8 @@ export function corrigirTextoCorrompido(texto: string): string {
     .replace(/�em�/g, ' em ')
     .replace(/�para�/g, ' para ')
     .replace(/�com�/g, ' com ')
-    .replace(/�es�/g, 'ões');
+    .replace(/�es�/g, 'ões')
+    .replace(/�A/g, 'ÇA');
 
   // Limpa espaços duplos que podem ter sido criados
   textoCorrigido = textoCorrigido.replace(/\s+/g, ' ').trim();

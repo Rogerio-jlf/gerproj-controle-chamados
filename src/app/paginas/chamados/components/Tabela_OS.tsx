@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+// ================================================================================
 import {
   flexRender,
   getCoreRowModel,
@@ -12,10 +13,11 @@ import {
   ColumnFiltersState,
   SortingState,
 } from '@tanstack/react-table';
-import { colunasOS } from './Colunas_Tabela_OS';
+// ================================================================================
 import IsLoading from './Loading';
 import IsError from './Error';
-import ModalApontamentos from './Modal_Editar_OS';
+import { colunasOS } from './Colunas_Tabela_OS';
+import ModalEditarOS from './Modal_Editar_OS';
 import { ModalExcluirOS } from './Modal_Deletar_OS';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
@@ -31,14 +33,17 @@ import { LuArrowUpDown } from 'react-icons/lu';
 import { FaArrowUpLong } from 'react-icons/fa6';
 import { FaArrowDownLong } from 'react-icons/fa6';
 import { IoClose } from 'react-icons/io5';
+import { FaThList } from 'react-icons/fa';
 // ================================================================================
 // ================================================================================
 
-interface OSModalProps {
+export interface OSModalProps {
   isOpen: boolean;
   onClose: () => void;
   codChamado: number | null;
+  onSuccess?: () => void; // opcional
 }
+// =====
 
 export interface OSProps {
   COD_OS: string;
@@ -68,7 +73,8 @@ export interface OSProps {
 }
 // ================================================================================
 
-// Componente para input de filtro
+// ================================================================================
+// Input filtro
 const FilterInput = ({
   value,
   onChange,
@@ -88,8 +94,9 @@ const FilterInput = ({
     className="w-full rounded-md border border-white/30 bg-gray-900 px-4 py-2 text-base text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
   />
 );
+// =====
 
-// Componente para select de filtro
+// Select filtro
 const FilterSelect = ({
   value,
   onChange,
@@ -114,8 +121,9 @@ const FilterSelect = ({
     ))}
   </select>
 );
+// =====
 
-// Componente para cabeçalho ordenável
+// Cabeçalho ordenável
 const SortableHeader = ({
   column,
   children,
@@ -141,8 +149,14 @@ const SortableHeader = ({
 };
 // ================================================================================
 
-export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
-  const [modalApontamentosOpen, setModalApontamentosOpen] = useState(false);
+export default function TabelaOS({
+  isOpen,
+  onClose,
+  codChamado,
+  onSuccess,
+}: OSModalProps) {
+  // Estado para controle do modal de edição
+  const [modalEditarOSOpen, setModalEditarOSOpen] = useState(false);
   const [selectedOS, setSelectedOS] = useState<string | null>(null);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<SortingState>([
@@ -151,6 +165,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [osParaExcluir, setOsParaExcluir] = useState<string | null>(null);
   const [isExcluindo, setIsExcluindo] = useState(false);
+
   // ==============================
 
   const fetchDataOS = async (codChamado: number) => {
@@ -192,16 +207,16 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
   };
   // ==============================
 
-  // Função para abrir modal de apontamentos
-  const handleOpenApontamentos = (codOS: string) => {
-    setSelectedOS(codOS);
-    setModalApontamentosOpen(true);
-  };
   // ==============================
+  // Função para abrir o modal de edição
+  const handleOpenEditarOS = (codOS: string) => {
+    setSelectedOS(codOS);
+    setModalEditarOSOpen(true);
+  };
 
-  // Função para fechar modal de apontamentos
-  const handleCloseApontamentos = () => {
-    setModalApontamentosOpen(false);
+  // Função para fechar o modal de edição
+  const handleCloseEditarOS = () => {
+    setModalEditarOSOpen(false);
     setSelectedOS(null);
   };
   // ==============================
@@ -215,6 +230,11 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
   const handleFecharModalExclusao = () => {
     setOsParaExcluir(null);
     setIsExcluindo(false);
+  };
+
+  const handleEditarOSSuccess = () => {
+    handleCloseEditarOS(); // fecha o modal de edição
+    onSuccess?.(); // fecha a Tabela_OS
   };
 
   // Função para confirmar exclusão
@@ -246,7 +266,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
 
   // Configuração da tabela
   const colunas = colunasOS({
-    onVisualizarApontamentos: handleOpenApontamentos,
+    onEditarOS: handleOpenEditarOS,
     onExcluirOS: handleAbrirModalExclusao,
   });
   // ==============================
@@ -324,14 +344,107 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
   if (!isOpen) return null;
   // ==============================
 
+  // ===== LOADING CENTRALIZADO - NOVA IMPLEMENTAÇÃO =====
   if (isLoading) {
-    return <IsLoading title="Carregando os dados da tabela" />;
+    return (
+      <>
+        {/* Overlay do modal principal */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-xl"
+            onClick={onClose}
+          />
+          <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-gray-300">
+            {/* Header do modal mesmo durante loading */}
+            <header className="flex items-center justify-between gap-8 bg-white/70 p-6">
+              <section className="flex items-center justify-center gap-6">
+                <div className="flex items-center justify-center rounded-xl border border-black/30 bg-white/10 p-4">
+                  <FaFileAlt className="animate-pulse text-black" size={44} />
+                </div>
+                <div className="flex flex-col items-center justify-center">
+                  <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
+                    Ordens de Serviço
+                  </h1>
+                  <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+                    Chamado - {codChamado}
+                  </span>
+                </div>
+              </section>
+              <button
+                onClick={handleClose}
+                className="group cursor-pointer rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
+              >
+                <IoClose size={24} />
+              </button>
+            </header>
+            {/* Conteúdo com loading */}
+            <main className="flex min-h-[400px] items-center justify-center overflow-hidden bg-black">
+              <div className="text-center">
+                {/* Aqui você pode personalizar o loading como quiser */}
+                <div className="mx-auto mb-4 h-16 w-16 animate-spin rounded-full border-b-2 border-white"></div>
+                <h2 className="text-2xl font-bold tracking-widest text-white italic">
+                  Carregando os dados da tabela...
+                </h2>
+              </div>
+            </main>
+          </div>
+        </div>
+
+        {/* Loading overlay centralizado - Z-INDEX MAIS ALTO */}
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <IsLoading title="Carregando os dados da tabela" />
+        </div>
+      </>
+    );
   }
   // ==============================
 
   if (isError) {
-    return <IsError error={error as Error} />;
+    return (
+      <>
+        {/* Overlay do modal principal */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-xl"
+            onClick={onClose}
+          />
+          <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-gray-300">
+            {/* Header do modal mesmo durante erro */}
+            <header className="flex items-center justify-between gap-8 bg-white/70 p-6">
+              <section className="flex items-center justify-center gap-6">
+                <div className="flex items-center justify-center rounded-xl border border-black/30 bg-white/10 p-4">
+                  <FaFileAlt className="animate-pulse text-black" size={44} />
+                </div>
+                <div className="flex flex-col items-center justify-center">
+                  <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
+                    Ordens de Serviço
+                  </h1>
+                  <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+                    Chamado - {codChamado}
+                  </span>
+                </div>
+              </section>
+              <button
+                onClick={handleClose}
+                className="group cursor-pointer rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
+              >
+                <IoClose size={24} />
+              </button>
+            </header>
+            <main className="min-h-[400px] overflow-hidden bg-black">
+              {/* Conteúdo vazio durante erro */}
+            </main>
+          </div>
+        </div>
+
+        {/* Error overlay centralizado - Z-INDEX MAIS ALTO */}
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <IsError error={error as Error} />
+        </div>
+      </>
+    );
   }
+
   // ================================================================================
 
   return (
@@ -343,18 +456,18 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
           onClick={onClose}
         />
         {/* ===== MODAL ===== */}
-        <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-gray-300">
+        <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-black">
           {/* ===== HEADER ===== */}
           <header className="flex items-center justify-between gap-8 bg-white/70 p-6">
             {/* ===== ITENS DA ESQUERDA ===== */}
             <section className="flex items-center justify-center gap-6">
               {/* ícone */}
               <div className="flex items-center justify-center rounded-xl border border-black/30 bg-white/10 p-4">
-                <FaFileAlt className="animate-pulse text-black" size={44} />
+                <FaThList className="text-black" size={44} />
               </div>
               {/* ===== */}
 
-              <div className="flex flex-col items-center justify-center">
+              <div className="flex flex-col items-start justify-center">
                 {/* título */}
                 <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
                   Ordens de Serviço
@@ -764,15 +877,22 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
       </div>
       {/* ===== */}
 
-      {/* ===== MODAL DE APONTAMENTOS ===== */}
-      <ModalApontamentos
-        isOpen={modalApontamentosOpen}
-        onClose={handleCloseApontamentos}
-        codChamado={codChamado}
-        codOS={selectedOS}
-      />
+      {/* ===== MODAL DE EDIÇÃO DE OS ===== */}
+      {modalEditarOSOpen && selectedOS !== null && (
+        <ModalEditarOS
+          isOpen={modalEditarOSOpen}
+          onClose={handleCloseEditarOS}
+          codChamado={codChamado}
+          codOS={selectedOS}
+          nomeCliente={
+            dataOS?.find(os => os.COD_OS === selectedOS)?.NOME_CLIENTE
+          } // <-- ADICIONAR ESTA LINHA
+          onSuccess={handleEditarOSSuccess}
+        />
+      )}
+      {/* ===== */}
 
-      {/* ===== MODAL DE EXCLUSÃO ===== */}
+      {/* ===== MODAL DE EXCLUSÃO DE OS ===== */}
       <ModalExcluirOS
         isOpen={!!osParaExcluir}
         onClose={handleFecharModalExclusao}
@@ -780,6 +900,7 @@ export default function ModalOS({ isOpen, onClose, codChamado }: OSModalProps) {
         codOS={osParaExcluir}
         isLoading={isExcluindo}
       />
+      {/* ===== */}
     </>
   );
 }

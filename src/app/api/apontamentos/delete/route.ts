@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-
-// 🎯 Importa automaticamente baseado na variável de ambiente
-const testMode = process.env.FIREBIRD_TEST_MODE === 'true';
-const { firebirdQuery } = testMode
-  ? require('../../../../lib/firebird/firebird-test-mode')
-  : require('../../../../lib/firebird/firebird-client');
+import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -27,8 +22,7 @@ export async function DELETE(request: NextRequest) {
       WHERE COD_OS = ?
     `;
 
-    // ✅ CORREÇÃO: Passa o parâmetro testMode
-    const checkResult = await firebirdQuery(checkSql, [codOS], testMode);
+    const checkResult = await firebirdQuery(checkSql, [codOS]);
 
     if (!checkResult || checkResult.length === 0) {
       return NextResponse.json({ error: 'OS não encontrada' }, { status: 404 });
@@ -40,17 +34,11 @@ export async function DELETE(request: NextRequest) {
       WHERE COD_OS = ?
     `;
 
-    // 🔄 CORREÇÃO: Passa o parâmetro testMode para executar com rollback
-    const result = await firebirdQuery(sql, [codOS], testMode);
-
-    if (testMode) {
-      console.log('[TEST MODE] SQL executado (com rollback):', sql);
-      console.log('[TEST MODE] Parâmetros:', [codOS]);
-    }
+    const result = await firebirdQuery(sql, [codOS]);
 
     return NextResponse.json(
       {
-        message: `OS ${testMode ? '[TESTE - SEM COMMIT]' : ''} deletada com sucesso`,
+        message: 'OS deletada com sucesso',
         data: {
           codOS: codOS,
         },

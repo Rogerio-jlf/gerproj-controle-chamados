@@ -3,7 +3,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+// ================================================================================
 import { ColumnDef } from '@tanstack/react-table';
+// ================================================================================
 import { OSProps } from './Tabela_OS';
 // ================================================================================
 import { MdEditDocument } from 'react-icons/md';
@@ -12,31 +14,9 @@ import { RiDeleteBin5Fill } from 'react-icons/ri';
 // ================================================================================
 
 export interface AcoesOSProps {
-  onVisualizarApontamentos: (codOS: string) => void;
-  onExcluirOS: (codOS: string) => void; // Nova função para exclusão
+  onEditarOS: (codOS: string) => void;
+  onExcluirOS: (codOS: string) => void;
 }
-// ================================================================================
-
-export const getStylesStatusOS = (status: string | undefined | null) => {
-  if (!status || typeof status !== 'string') {
-    return 'bg-gray-700 text-white ring-1 ring-gray-300';
-  }
-
-  switch (status.toUpperCase()) {
-    case 'ABERTO':
-      return 'bg-blue-700 text-white ring-1 ring-blue-300';
-    case 'EM ANDAMENTO':
-      return 'bg-yellow-700 text-white ring-1 ring-yellow-300';
-    case 'FINALIZADO':
-      return 'bg-green-700 text-white ring-1 ring-green-300';
-    case 'CANCELADO':
-      return 'bg-red-700 text-white ring-1 ring-red-300';
-    case 'PAUSADO':
-      return 'bg-orange-700 text-white ring-1 ring-orange-300';
-    default:
-      return 'bg-gray-700 text-white ring-1 ring-gray-300';
-  }
-};
 // ================================================================================
 
 // Função para converter horas de HHMM, decimais para HH:MM
@@ -54,6 +34,7 @@ const formatDecimalToTime = (decimalHours: number): string => {
 };
 // ================================================================================
 
+// Definição das colunas da tabela de OS
 export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
   // Código da OS
   {
@@ -68,6 +49,7 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
       );
     },
   },
+  // =====
 
   // Nome do cliente
   {
@@ -78,6 +60,7 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
       return <div className="text-left">{value || '-'}</div>;
     },
   },
+  // =====
 
   // Código da tarefa
   {
@@ -88,8 +71,9 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
       return <div className="text-center">{value || '-'}</div>;
     },
   },
+  // =====
 
-  // obeservação da OS
+  // Observação da OS
   {
     accessorKey: 'OBS_OS',
     header: () => <div className="text-center">OBS. OS</div>,
@@ -112,6 +96,7 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
       );
     },
   },
+  // =====
 
   // Data da OS
   {
@@ -139,6 +124,7 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
       }
     },
   },
+  // =====
 
   // Hora de início da OS
   {
@@ -158,6 +144,7 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
       );
     },
   },
+  // =====
 
   // Hora do fim da OS
   {
@@ -177,8 +164,9 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
       );
     },
   },
+  // =====
 
-  // Quantidade de horas gastas para a OS
+  // Quantidade de horas gastas na OS
   {
     accessorKey: 'QTD_HR_OS',
     header: () => <div className="text-center">QTD. Horas</div>,
@@ -191,8 +179,9 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
       );
     },
   },
+  // =====
 
-  // Botão para excluir OS
+  // Botões de ação
   {
     id: 'actions',
     header: () => <div className="text-center">Ações</div>,
@@ -201,11 +190,11 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
 
       return (
         <div className="flex items-center justify-center gap-6">
-          {/* Botão Realizar Apontamento */}
+          {/* Botão editar OS */}
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                onClick={() => acoes.onVisualizarApontamentos(os.COD_OS)}
+                onClick={() => acoes.onEditarOS(os.COD_OS)}
                 className="cursor-pointer transition-all hover:scale-110"
               >
                 <MdEditDocument size={32} />
@@ -217,11 +206,12 @@ export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
               sideOffset={8}
               className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
             >
-              Realizar Apontamento
+              Editar OS
             </TooltipContent>
           </Tooltip>
+          {/* ===== */}
 
-          {/* Botão Excluir */}
+          {/* Botão Excluir OS */}
           <Tooltip>
             <TooltipTrigger asChild>
               <button

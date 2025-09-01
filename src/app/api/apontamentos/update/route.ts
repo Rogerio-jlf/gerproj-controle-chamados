@@ -1,17 +1,12 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-
-// 🎯 Importa automaticamente baseado na variável de ambiente
-const testMode = process.env.FIREBIRD_TEST_MODE === 'true';
-const { firebirdQuery } = testMode
-  ? require('../../../lib/firebird/firebird-test-mode')
-  : require('../../../lib/firebird/firebird-client');
+import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
 
 interface ApontamentoData {
   codOS: string;
-  dataInicioOS: string;
-  horaInicioOS: string;
-  horaFimOS: string;
+  dataInicioOS: string; // formato: YYYY-MM-DD
+  horaInicioOS: string; // formato: HH:MM
+  horaFimOS: string; // formato: HH:MM
   observacaoOS: string;
 }
 
@@ -26,41 +21,57 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
     if (!body.dataInicioOS) {
       return NextResponse.json(
         { error: 'Data do apontamento é obrigatória' },
         { status: 400 }
       );
     }
-
     if (!body.horaInicioOS || !body.horaFimOS) {
       return NextResponse.json(
-        { error: 'Hora início da OS e hora fim da OS são obrigatórias' },
+        { error: 'Hora início e hora fim são obrigatórias' },
         { status: 400 }
       );
     }
-
-    // Validação de horário (hora fim deve ser maior que hora início)
     if (body.horaInicioOS >= body.horaFimOS) {
       return NextResponse.json(
-        { error: 'Hora fim da OS deve ser maior que hora início da OS' },
+        { error: 'Hora fim deve ser maior que hora início' },
         { status: 400 }
       );
     }
-
     if (!body.observacaoOS?.trim()) {
       return NextResponse.json(
         { error: 'Observação da OS é obrigatória' },
         { status: 400 }
       );
     }
+    if (body.observacaoOS.trim().length > 200) {
+      return NextResponse.json(
+        { error: 'Observação não pode exceder 200 caracteres' },
+        { status: 400 }
+      );
+    }
 
-    // Converter data para formato do Firebird (DD.MM.YYYY)
+    // ✅ Formatar data para padrão aceito pelo Firebird: YYYY-MM-DD
     const [ano, mes, dia] = body.dataInicioOS.split('-');
-    const dataFormatada = `${dia}.${mes}.${ano}`;
+    const dataFormatada = `${ano}-${mes}-${dia}`; // Firebird aceita este formato
 
-    // SQL para atualizar campos específicos da OS existente
+    // ✅ Formatar hora para CHAR(4) -> ex.: "1500"
+    const formatarHora = (hora: string): string => {
+      const horaLimpa = hora.trim();
+      if (!/^\d{2}:\d{2}$/.test(horaLimpa)) {
+        throw new Error(`Formato de hora inválido: ${hora}`);
+      }
+      return horaLimpa.replace(':', ''); // remove os dois pontos
+    };
+
+    const horaInicioFormatada = formatarHora(body.horaInicioOS);
+    const horaFimFormatada = formatarHora(body.horaFimOS);
+
+    // ✅ Limitar observação para 200 caracteres
+    const observacaoLimitada = body.observacaoOS.trim().substring(0, 200);
+
+    // ✅ Query
     const sql = `
       UPDATE OS SET
         DTINI_OS = ?,
@@ -71,27 +82,29 @@ export async function POST(request: NextRequest) {
     `;
 
     const params = [
-      dataFormatada,
-      body.horaInicioOS,
-      body.horaFimOS,
-      body.observacaoOS.trim(),
+      dataFormatada, // DATE (YYYY-MM-DD)
+      horaInicioFormatada, // CHAR(4)
+      horaFimFormatada, // CHAR(4)
+      observacaoLimitada, // VARCHAR(200)
       body.codOS,
     ];
 
-    // 🔄 Executa o UPDATE (com rollback automático se testMode = true)
-    const result = await firebirdQuery(sql, params);
+    console.log('Parâmetros SQL:', {
+      data: dataFormatada,
+      horaInicio: horaInicioFormatada,
+      horaFim: horaFimFormatada,
+      observacao: `${observacaoLimitada.length} caracteres`,
+      codOS: body.codOS,
+    });
 
-    if (testMode) {
-      console.log('[TEST MODE] SQL executado (com rollback):', sql);
-      console.log('[TEST MODE] Parâmetros:', params);
-    }
+    await firebirdQuery(sql, params);
 
     return NextResponse.json(
       {
-        message: `Apontamento ${testMode ? '[TESTE - SEM COMMIT]' : ''} realizado com sucesso`,
+        message: 'Apontamento realizado com sucesso',
         data: {
           codOS: body.codOS,
-          observacaoOS: body.observacaoOS,
+          observacaoOS: observacaoLimitada,
           dataInicioOS: body.dataInicioOS,
           horaInicioOS: body.horaInicioOS,
           horaFimOS: body.horaFimOS,
@@ -102,7 +115,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Erro ao salvar Apontamento:', error);
 
-    // Tratamento de erros específicos do Firebird
     if (error instanceof Error) {
       if (error.message.includes('violation of FOREIGN KEY constraint')) {
         return NextResponse.json(
@@ -110,7 +122,6 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-
       if (error.message.includes('lock conflict')) {
         return NextResponse.json(
           {
@@ -118,6 +129,15 @@ export async function POST(request: NextRequest) {
               'OS está sendo utilizada por outro usuário. Tente novamente.',
           },
           { status: 409 }
+        );
+      }
+      if (
+        error.message.includes('string truncation') ||
+        error.message.includes('numeric overflow')
+      ) {
+        return NextResponse.json(
+          { error: 'Dados excedem o tamanho permitido nos campos' },
+          { status: 400 }
         );
       }
     }

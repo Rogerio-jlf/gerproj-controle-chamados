@@ -42,6 +42,10 @@ export default function AssuntoCellEditavel({
   const [novoAssunto, setNovoAssunto] = useState(assunto);
   const [isLoading, setIsLoading] = useState(false);
 
+  const removerAcentos = (texto: string): string => {
+    return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  };
+
   const handleSave = async () => {
     if (!onUpdateAssunto) {
       console.warn('Função onUpdateAssunto não foi fornecida');
@@ -57,9 +61,11 @@ export default function AssuntoCellEditavel({
       return;
     }
 
+    const novoAssuntoSemAcentos = removerAcentos(novoAssunto);
+
     setIsLoading(true);
     try {
-      await onUpdateAssunto(codChamado, novoAssunto.trim());
+      await onUpdateAssunto(codChamado, novoAssuntoSemAcentos.trim());
       setIsModalOpen(false);
     } catch (error) {
       console.error('Erro ao atualizar assunto:', error);

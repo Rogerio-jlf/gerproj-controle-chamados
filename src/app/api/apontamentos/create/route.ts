@@ -9,8 +9,8 @@ interface OSData {
 }
 
 export enum STATUS_CHAMADO_COD {
-  'EM ATENDIMENTO' = '2',
   'ATRIBUIDO' = '1',
+  'EM ATENDIMENTO' = '2',
   'STANDBY' = '3',
   'AGUARDANDO VALIDACAO' = '4',
   'FINALIZADO' = '5',

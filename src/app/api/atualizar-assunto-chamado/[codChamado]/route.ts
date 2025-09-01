@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-
-// 🎯 Importa automaticamente baseado na variável de ambiente
-const testMode = process.env.FIREBIRD_TEST_MODE === 'true';
-const { firebirdQuery } = testMode
-  ? require('../../../../lib/firebird/firebird-test-mode')
-  : require('../../../../lib/firebird/firebird-client');
+import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
 
 interface AssuntoData {
   codChamado: string;
@@ -40,17 +35,11 @@ export async function POST(request: NextRequest) {
 
     const params = [body.assuntoChamado, body.codChamado];
 
-    // 🔄 Executa o UPDATE (com rollback automático se testMode = true)
     const result = await firebirdQuery(sql, params);
-
-    if (testMode) {
-      console.log('[TEST MODE] SQL executado (com rollback):', sql);
-      console.log('[TEST MODE] Parâmetros:', params);
-    }
 
     return NextResponse.json(
       {
-        message: `Assunto ${testMode ? '[TESTE - SEM COMMIT]' : ''} atualizado com sucesso`,
+        message: 'Assunto atualizado com sucesso',
         data: {
           codChamado: body.codChamado,
           assuntoChamado: body.assuntoChamado,

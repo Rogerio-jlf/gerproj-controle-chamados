@@ -13,13 +13,19 @@ import {
   SortingState,
 } from '@tanstack/react-table';
 // ================================================================================
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '../../../../components/ui/tooltip';
+// ================================================================================
 import { useAuth } from '../../../../hooks/useAuth';
 import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
 import { ChamadosProps, colunasTabela } from './Colunas_Tabela_Chamados';
 // import ButtonExcel from '../../../../components/Button_Excel';
 // import ButtonPDF from '../../../../components/Button_PDF';
 import ModalChamado from './Modal_Atribuir_Chamado';
-import ModalOS from './Tabela_OS';
+import TabelaOS from './Tabela_OS';
 import ModalTarefas from './Tabela_Tarefas';
 import IsLoading from './Loading';
 import IsError from './Error';
@@ -37,11 +43,6 @@ import { IoArrowUp } from 'react-icons/io5';
 import { IoArrowDown } from 'react-icons/io5';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { FaFilter } from 'react-icons/fa6';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '../../../../components/ui/tooltip';
 // ================================================================================
 // ================================================================================
 
@@ -66,6 +67,7 @@ async function fetchChamados(
 }
 // ================================================================================
 
+// ================================================================================
 const FilterInput = ({
   value,
   onChange,
@@ -85,6 +87,7 @@ const FilterInput = ({
     className="w-full rounded-md bg-black px-4 py-2 text-base text-white placeholder-gray-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none"
   />
 );
+// =====
 
 const FilterSelect = ({
   value,
@@ -112,6 +115,7 @@ const FilterSelect = ({
     ))}
   </select>
 );
+// =====
 
 // Componente para ordenação do cabeçalho da tabela
 const SortableHeader = ({
@@ -155,12 +159,11 @@ const SortableHeader = ({
     </Tooltip>
   );
 };
-
 // ================================================================================
 
-export default function Tabela() {
+export default function TabelaChamados() {
   const { filters } = useFiltersTabelaChamados();
-  const { ano, mes, cliente, recurso, status, codChamado } = filters;
+  const { ano, mes } = filters;
   const { user, loading } = useAuth();
 
   // Estados para modal do chamado
@@ -183,6 +186,7 @@ export default function Tabela() {
   const [showFilters, setShowFilters] = useState(false);
 
   const [tarefasModalOpen, setTarefasModalOpen] = useState(false);
+
   // ================================================================================
 
   const handleCloseModal = () => {
@@ -194,6 +198,7 @@ export default function Tabela() {
     setOsModalOpen(false);
     setSelectedCodChamado(null);
   };
+
   // ================================================================================
 
   const token =
@@ -209,13 +214,8 @@ export default function Tabela() {
       mes: String(mes),
     });
 
-    if (cliente) params.append('cliente', cliente);
-    if (recurso) params.append('recurso', recurso);
-    if (status && status !== 'todos') params.append('status', status);
-    if (codChamado) params.append('codChamado', codChamado);
-
     return params;
-  }, [ano, mes, cliente, recurso, status, codChamado, user]);
+  }, [ano, mes, user]);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['chamadosAbertos', queryParams.toString(), token],
@@ -341,13 +341,16 @@ export default function Tabela() {
       <div className="min-h-[500px] rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
         <div className="flex h-full items-center justify-center p-12">
           <div className="space-y-6 text-center">
+            {/* Ícone */}
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
               <FaUserLock className="h-10 w-10 animate-pulse text-blue-400" />
             </div>
             <div>
+              {/* Título */}
               <h3 className="mb-2 text-xl font-bold tracking-wider text-slate-800 select-none">
                 Verificando autenticação...
               </h3>
+              {/* Subtítulo */}
               <p className="mx-auto max-w-md tracking-wider text-slate-600 select-none">
                 Aguarde enquanto verificamos suas credenciais de acesso.
               </p>
@@ -421,7 +424,7 @@ export default function Tabela() {
           <section className="flex items-center justify-center gap-6">
             {/* ícone */}
             <div className="flex items-center justify-center rounded-xl border border-white/50 p-4">
-              <FaDatabase className="text-cyan-400" size={44} />
+              <FaDatabase className="text-white" size={44} />
             </div>
             {/* ===== */}
             <div className="flex flex-col items-start justify-center">
@@ -812,10 +815,11 @@ export default function Tabela() {
         chamado={selectedChamado}
       />
       {/* ===== MODAL OS ===== */}
-      <ModalOS
+      <TabelaOS
         isOpen={osModalOpen}
         onClose={handleCloseOSModal}
         codChamado={selectedCodChamado}
+        onSuccess={() => setOsModalOpen(false)} // <- fecha o modal da tabela
       />
       {/* ===== MODAL TAREFAS ===== */}
       <ModalTarefas
