@@ -6,12 +6,45 @@ import {
 // ================================================================================
 import { ColumnDef } from '@tanstack/react-table';
 // ================================================================================
-import { OSProps } from './Tabela_OS';
-// ================================================================================
 import { MdEditDocument } from 'react-icons/md';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
 // ================================================================================
 // ================================================================================
+
+// Interfaces movidas para cá
+export interface OSProps {
+  COD_OS: string;
+  NUM_OS: string;
+  CHAMADO_OS: string;
+  STATUS_OS: string;
+  DTINI_OS: string | null;
+  HRINI_OS: string | null;
+  DTINC_OS: string | null;
+  VRHR_OS: string | null;
+  PERC_OS: string | null;
+  FATURADO_OS: string;
+  COD_FATURAMENTO: string;
+  PRODUTIVO_OS: string;
+  PRODUTIVO2_OS: string;
+  RESPCLI_OS: string;
+  CODREC_OS: string;
+  CODTRF_OS: string;
+  DESLOC_OS: string;
+  ABONO_OS: string;
+  COMP_OS: string;
+  OBS_OS: string;
+  OBS: string;
+  NOME_CLIENTE?: string;
+  HRFIM_OS?: string;
+  QTD_HR_OS?: number;
+}
+
+export interface OSTarefaProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess?: () => void;
+  codChamado: number | null;
+}
 
 export interface AcoesOSProps {
   onEditarOS: (codOS: string) => void;

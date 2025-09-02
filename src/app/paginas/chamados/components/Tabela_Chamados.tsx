@@ -142,72 +142,45 @@ const SortableHeader = ({
 };
 // ================================================================================
 
-async function fetchChamados(
-  params: URLSearchParams,
-  token: string
-): Promise<ChamadosProps[]> {
-  const res = await fetch(`/api/chamados?${params}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.error || 'Erro ao buscar chamados');
-  }
-
-  const data = await res.json();
-  return Array.isArray(data) ? data : data.chamados || [];
-}
 // ================================================================================
-
 export default function TabelaChamados() {
   const { filters } = useFiltersTabelaChamados();
   const { ano, mes } = filters;
   const { user, loading } = useAuth();
 
-  // Estados para modal do chamado
-  const [modalOpen, setModalOpen] = useState(false);
+  // Estados para o modal do chamado
+  const [modalChamadosOpen, setModalChamadosOpen] = useState(false);
   const [selectedChamado, setSelectedChamado] = useState<ChamadosProps | null>(
     null
   );
 
-  // Estados para modal da OS
-  const [osModalOpen, setOsModalOpen] = useState(false);
+  // Estados para a tabela OS
+  const [tabelaOSOpen, setTabelaOSOpen] = useState(false);
   const [selectedCodChamado, setSelectedCodChamado] = useState<number | null>(
     null
   );
 
-  // Estados para filtros e ordenação
+  // Estado para a tabela de tarefas
+  const [tabelaTarefasOpen, setTabelaTarefasOpen] = useState(false);
+
+  // Estados para os filtros e ordenação
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<SortingState>([
-    { id: 'COD_CHAMADO', desc: true }, // Ordenação padrão por código decrescente
+    { id: 'COD_CHAMADO', desc: true },
   ]);
+
+  // Estado para mostrar/ocultar os filtros
   const [showFilters, setShowFilters] = useState(false);
-
-  const [tarefasModalOpen, setTarefasModalOpen] = useState(false);
-
   // ================================================================================
 
-  const handleCloseModal = () => {
-    setModalOpen(false);
-    setSelectedChamado(null);
-  };
-
-  const handleCloseOSModal = () => {
-    setOsModalOpen(false);
-    setSelectedCodChamado(null);
-  };
-
-  // ================================================================================
-
+  // Token de autenticação
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
+  // Verifica se a requisição pode ser feita
   const enabled = !!ano && !!mes && !!token && !!user;
 
+  // Cria os parâmetros da query
   const queryParams = useMemo(() => {
     if (!user) return new URLSearchParams();
 
@@ -219,6 +192,28 @@ export default function TabelaChamados() {
     return params;
   }, [ano, mes, user]);
 
+  // Função para buscar os chamados
+  async function fetchChamados(
+    params: URLSearchParams,
+    token: string
+  ): Promise<ChamadosProps[]> {
+    const res = await fetch(`/api/chamados?${params}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || 'Erro ao buscar chamados');
+    }
+
+    const data = await res.json();
+    return Array.isArray(data) ? data : data.chamados || [];
+  }
+
+  // Hook para buscar os chamados
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['chamadosAbertos', queryParams.toString(), token],
     queryFn: () => fetchChamados(queryParams, token!),
@@ -227,12 +222,25 @@ export default function TabelaChamados() {
     retry: 2,
   });
 
+  // Função para fechar o modal de chamados
+  const handleCloseModalChamados = () => {
+    setModalChamadosOpen(false);
+    setSelectedChamado(null);
+  };
+
+  // Função para fechar a tabela de OS
+  const handleCloseTabelaOS = () => {
+    setTabelaOSOpen(false);
+    setSelectedCodChamado(null);
+  };
+
+  // Função para visualizar um chamado =========================================
   const handleVisualizarChamado = useCallback(
     (codChamado: number) => {
       const chamado = data?.find(c => c.COD_CHAMADO === codChamado);
       if (chamado) {
         setSelectedChamado(chamado);
-        setModalOpen(true);
+        setModalChamadosOpen(true);
       }
     },
     [data]
@@ -240,7 +248,7 @@ export default function TabelaChamados() {
 
   const handleVisualizarOS = useCallback((codChamado: number) => {
     setSelectedCodChamado(codChamado);
-    setOsModalOpen(true);
+    setTabelaOSOpen(true);
   }, []);
 
   const colunas = useMemo(
@@ -248,7 +256,7 @@ export default function TabelaChamados() {
       colunasTabela({
         onVisualizarChamado: handleVisualizarChamado,
         onVisualizarOS: handleVisualizarOS,
-        onVisualizarTarefas: () => setTarefasModalOpen(true),
+        onVisualizarTarefas: () => setTabelaTarefasOpen(true),
       }),
     [handleVisualizarChamado, handleVisualizarOS]
   );
@@ -866,10 +874,6 @@ export default function TabelaChamados() {
               Nenhum chamado foi encontrado para o período{' '}
               {mes.toString().padStart(2, '0')}/{ano}.
             </h3>
-            {/* Descrição */}
-            <p className="mt-2 text-lg text-gray-400">
-              Você não possui chamados atribuídos nesse período.
-            </p>
           </section>
         )}
         {/* ===== */}
@@ -897,21 +901,21 @@ export default function TabelaChamados() {
 
       {/* ===== MODAL CHAMADO ===== */}
       <ModalAtribuirChamado
-        isOpen={modalOpen}
-        onClose={handleCloseModal}
+        isOpen={modalChamadosOpen}
+        onClose={handleCloseModalChamados}
         chamado={selectedChamado}
       />
       {/* ===== MODAL OS ===== */}
       <TabelaOS
-        isOpen={osModalOpen}
-        onClose={handleCloseOSModal}
+        isOpen={tabelaOSOpen}
+        onClose={handleCloseTabelaOS}
         codChamado={selectedCodChamado}
-        onSuccess={() => setOsModalOpen(false)} // <- fecha o modal da tabela
+        onSuccess={() => setTabelaOSOpen(false)} // <- fecha o modal da tabela
       />
       {/* ===== MODAL TAREFAS ===== */}
       <TabelaTarefas
-        isOpen={tarefasModalOpen}
-        onClose={() => setTarefasModalOpen(false)}
+        isOpen={tabelaTarefasOpen}
+        onClose={() => setTabelaTarefasOpen(false)}
         codChamado={selectedCodChamado}
       />
       {/* ===== */}
