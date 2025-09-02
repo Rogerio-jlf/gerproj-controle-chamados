@@ -35,7 +35,7 @@ const formatDecimalToTime = (decimalHours: number): string => {
 // ================================================================================
 
 // Definição das colunas da tabela de OS
-export const colunasOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
+export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
   // Código da OS
   {
     accessorKey: 'COD_OS',

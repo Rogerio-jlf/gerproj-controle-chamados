@@ -35,7 +35,7 @@ interface FormularioData {
 }
 // ================================================================================
 
-export default function ModalChamado({
+export default function ModalAtribuirChamado({
   isOpen,
   onClose,
   chamado,

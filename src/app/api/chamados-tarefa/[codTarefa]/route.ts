@@ -30,7 +30,7 @@ export async function GET(
       return NextResponse.json({ error: 'Token inválido' }, { status: 401 });
     }
 
-    const isAdmin = decoded.tipo === 'ADM';
+    const isAdmin = decoded.tipo === 'ADM' || decoded.tipo === 'ADMIN';
     const codRecurso = decoded.recurso?.id;
 
     if (!isAdmin && !codRecurso) {
@@ -66,110 +66,53 @@ export async function GET(
     // CONSTRUÇÃO DA QUERY COM AUTORIZAÇÃO
     // ===========================================
     let sql = `
-      SELECT
-        OS.COD_OS,
-        OS.CODTRF_OS,
-        OS.DTINI_OS,
-        OS.HRINI_OS,
-        OS.HRFIM_OS,
-        OS.OBS_OS,
-        OS.STATUS_OS,
-        OS.PRODUTIVO_OS,
-        OS.CODREC_OS,
-        OS.PRODUTIVO2_OS,
-        OS.RESPCLI_OS,
-        OS.REMDES_OS,
-        OS.ABONO_OS,
-        OS.DESLOC_OS,
-        OS.OBS,
-        OS.DTINC_OS,
-        OS.FATURADO_OS,
-        OS.PERC_OS,
-        OS.COD_FATURAMENTO,
-        OS.COMP_OS,
-        OS.VALID_OS,
-        OS.VRHR_OS,
-        OS.NUM_OS,
-        OS.CHAMADO_OS
-      FROM OS
-      WHERE OS.CODTRF_OS = ?
+      SELECT FIRST 100
+        CHAMADO.COD_CHAMADO,
+        CHAMADO.DATA_CHAMADO,
+        CHAMADO.STATUS_CHAMADO,
+        CHAMADO.CODTRF_CHAMADO,
+        CHAMADO.COD_CLIENTE,
+        CHAMADO.ASSUNTO_CHAMADO,
+        TAREFA.NOME_TAREFA,
+        CLIENTE.NOME_CLIENTE
+      FROM CHAMADO
+      INNER JOIN TAREFA ON TAREFA.COD_TAREFA = CHAMADO.CODTRF_CHAMADO
+      INNER JOIN CLIENTE ON CLIENTE.COD_CLIENTE = CHAMADO.COD_CLIENTE
+      WHERE CHAMADO.CODTRF_CHAMADO = ?
     `;
 
     const queryParams = [Number(codTarefa)];
 
-    // Se não for admin, adiciona filtro por recurso
+    // Se não for admin, adiciona filtro por recurso (assumindo que existe um campo de recurso)
     if (!isAdmin && codRecurso) {
-      sql += ` AND OS.CODREC_OS = ?`;
+      sql += ` AND CHAMADO.COD_RECURSO = ?`;
       queryParams.push(codRecurso);
     }
 
-    sql += ` ORDER BY OS.COD_OS`;
+    sql += ` ORDER BY CHAMADO.DATA_CHAMADO DESC`;
 
     // ===========================================
     // EXECUÇÃO DA QUERY
     // ===========================================
-    const rawOsData = await firebirdQuery(sql, queryParams);
-
-    // ===========================================
-    // PROCESSAMENTO DOS DADOS
-    // ===========================================
-    // Função para calcular a diferença entre horários no formato CHAR (ex: "0800")
-    const calculateHours = (
-      hrini: string | null,
-      hrfim: string | null
-    ): number | null => {
-      if (!hrini || !hrfim) return null;
-
-      try {
-        // Parse dos horários no formato HHMM (ex: "0800", "1230")
-        const parseTime = (timeStr: string) => {
-          // Remove espaços e garante que tenha 4 dígitos
-          const cleanTime = timeStr.trim().padStart(4, '0');
-          const hours = parseInt(cleanTime.substring(0, 2), 10);
-          const minutes = parseInt(cleanTime.substring(2, 4), 10);
-          return hours + minutes / 60;
-        };
-
-        const horaInicio = parseTime(hrini);
-        const horaFim = parseTime(hrfim);
-
-        let diferenca = horaFim - horaInicio;
-
-        // Se a hora final for menor que a inicial, assumimos que passou para o próximo dia
-        if (diferenca < 0) {
-          diferenca += 24;
-        }
-
-        return Math.round(diferenca * 100) / 100; // Arredonda para 2 casas decimais
-      } catch (error) {
-        console.error('Erro ao calcular horas:', error, { hrini, hrfim });
-        return null;
-      }
-    };
-
-    // Adiciona o campo calculado a cada registro
-    const osData = rawOsData.map((record: any) => ({
-      ...record,
-      QTD_HR_OS: calculateHours(record.HRINI_OS, record.HRFIM_OS),
-    }));
+    const chamados = await firebirdQuery(sql, queryParams);
 
     // ===========================================
     // RESPOSTA
     // ===========================================
     // Verifica se foram encontrados registros
-    if (!osData || osData.length === 0) {
+    if (!chamados || chamados.length === 0) {
       return NextResponse.json([], { status: 200 });
     }
 
-    return NextResponse.json(osData, { status: 200 });
+    return NextResponse.json(chamados, { status: 200 });
   } catch (error) {
-    console.error('Erro ao buscar dados da OS por tarefa:', error);
+    console.error('Erro ao buscar chamados por tarefa:', error);
 
     // Tratamento mais específico de erros
     if (error instanceof Error) {
       return NextResponse.json(
         {
-          error: 'Erro interno ao buscar dados da OS por tarefa',
+          error: 'Erro interno ao buscar chamados por tarefa',
           details:
             process.env.NODE_ENV === 'development' ? error.message : undefined,
         },
@@ -178,7 +121,7 @@ export async function GET(
     }
 
     return NextResponse.json(
-      { error: 'Erro interno ao buscar dados da OS por tarefa' },
+      { error: 'Erro interno ao buscar chamados por tarefa' },
       { status: 500 }
     );
   }

@@ -3,8 +3,8 @@ import { FaFilter } from 'react-icons/fa6';
 // ================================================================================
 
 interface Props {
-  value: number;
-  onChange: (value: number) => void;
+  value: number | 'todos';
+  onChange: (value: number | 'todos') => void;
 }
 // ================================================================================
 
@@ -21,9 +21,22 @@ export default function SelectAno({ value, onChange }: Props) {
 
       <select
         value={value}
-        onChange={e => onChange(Number(e.target.value))}
+        onChange={e => {
+          const selectedValue = e.target.value;
+          if (selectedValue === 'todos') {
+            onChange('todos');
+          } else {
+            onChange(Number(selectedValue));
+          }
+        }}
         className="w-full cursor-pointer rounded-md border-none bg-white px-4 py-2 text-base font-semibold tracking-wider text-gray-900 italic shadow-md shadow-black transition-all hover:scale-105 hover:shadow-lg hover:shadow-black focus:outline-none active:scale-95"
       >
+        <option
+          value="todos"
+          className="p-4 text-lg font-semibold tracking-wider text-gray-900 italic select-none"
+        >
+          Todos os anos
+        </option>
         {arrayAnos.map(ano => (
           <option
             key={ano}

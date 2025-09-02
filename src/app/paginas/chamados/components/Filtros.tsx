@@ -9,8 +9,8 @@ import SelectMes from '../../../../components/Select_Mes';
 
 interface Props {
   onFiltersChange: (filters: {
-    ano: number;
-    mes: number;
+    ano: number | 'todos';
+    mes: number | 'todos';
     cliente: string;
     recurso: string;
     status: string;
@@ -18,27 +18,38 @@ interface Props {
 }
 // ================================================================================
 
-export default function Filtros({}: Props) {
+export default function Filtros({ onFiltersChange }: Props) {
   const hoje = new Date();
   const { filters, setFilters } = useFiltersTabelaChamados();
 
-  // Estados locais
-  const [ano, setAno] = useState(filters.ano || hoje.getFullYear());
-  const [mes, setMes] = useState(filters.mes || hoje.getMonth() + 1);
+  // Estados locais - agora suportam 'todos'
+  const [ano, setAno] = useState<number | 'todos'>(
+    filters.ano || hoje.getFullYear()
+  );
+  const [mes, setMes] = useState<number | 'todos'>(
+    filters.mes || hoje.getMonth() + 1
+  );
 
   // Debounces
   const [debouncedAno] = useDebounce(ano, 300);
   const [debouncedMes] = useDebounce(mes, 300);
 
-  // Atualiza contexto e callback externo
+  // Atualiza contexto quando os valores com debounce mudarem
   useEffect(() => {
-    setFilters({
+    const newFilters = {
       ano: debouncedAno,
       mes: debouncedMes,
       cliente: filters.cliente,
       recurso: filters.recurso,
       status: filters.status,
-    });
+    };
+
+    setFilters(newFilters);
+
+    // Chama o callback externo se fornecido
+    if (onFiltersChange) {
+      onFiltersChange(newFilters);
+    }
   }, [
     debouncedAno,
     debouncedMes,
@@ -46,6 +57,7 @@ export default function Filtros({}: Props) {
     filters.recurso,
     filters.status,
     setFilters,
+    onFiltersChange,
   ]);
 
   return (

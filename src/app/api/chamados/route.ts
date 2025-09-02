@@ -30,25 +30,32 @@ export async function GET(request: Request) {
 
     // Pega parâmetros da query
     const { searchParams } = new URL(request.url);
-    const mesParam = Number(searchParams.get('mes'));
-    const anoParam = Number(searchParams.get('ano'));
-    const clienteQuery = searchParams.get('cliente')?.trim();
-    const recursoQuery = searchParams.get('recurso')?.trim();
-    const statusQuery = searchParams.get('status')?.trim();
+    const mesParam = searchParams.get('mes');
+    const anoParam = searchParams.get('ano');
     const codChamadoQuery = searchParams.get('codChamado')?.trim();
 
-    if (!mesParam || mesParam < 1 || mesParam > 12) {
-      return NextResponse.json(
-        { error: "Parâmetro 'mês' inválido" },
-        { status: 400 }
-      );
+    // Validação para mês (aceita número ou "todos")
+    let mesNumber: number | null = null;
+    if (mesParam && mesParam !== 'todos') {
+      mesNumber = Number(mesParam);
+      if (isNaN(mesNumber) || mesNumber < 1 || mesNumber > 12) {
+        return NextResponse.json(
+          { error: "Parâmetro 'mês' inválido" },
+          { status: 400 }
+        );
+      }
     }
 
-    if (!anoParam || anoParam < 2000 || anoParam > 3000) {
-      return NextResponse.json(
-        { error: "Parâmetro 'ano' inválido" },
-        { status: 400 }
-      );
+    // Validação para ano (aceita número ou "todos")
+    let anoNumber: number | null = null;
+    if (anoParam && anoParam !== 'todos') {
+      anoNumber = Number(anoParam);
+      if (isNaN(anoNumber) || anoNumber < 2000 || anoNumber > 3000) {
+        return NextResponse.json(
+          { error: "Parâmetro 'ano' inválido" },
+          { status: 400 }
+        );
+      }
     }
 
     if (!isAdmin && !codRecurso) {
@@ -58,32 +65,36 @@ export async function GET(request: Request) {
       );
     }
 
-    const dataInicio = new Date(anoParam, mesParam - 1, 1);
-    const dataFim = new Date(anoParam, mesParam, 1);
+    const whereConditions: string[] = [];
+    const params: any[] = [];
 
-    const whereConditions: string[] = [
-      'Chamado.DATA_CHAMADO >= ? AND Chamado.DATA_CHAMADO < ?',
-    ];
-    const params: any[] = [dataInicio, dataFim];
+    // Filtro por data - apenas se ano e mês específicos forem fornecidos
+    if (anoNumber && mesNumber) {
+      // Ambos específicos - filtro por mês/ano
+      const dataInicio = new Date(anoNumber, mesNumber - 1, 1);
+      const dataFim = new Date(anoNumber, mesNumber, 1);
+      whereConditions.push(
+        'Chamado.DATA_CHAMADO >= ? AND Chamado.DATA_CHAMADO < ?'
+      );
+      params.push(dataInicio, dataFim);
+    } else if (anoNumber && !mesNumber) {
+      // Apenas ano específico - filtro por ano todo
+      const dataInicio = new Date(anoNumber, 0, 1);
+      const dataFim = new Date(anoNumber + 1, 0, 1);
+      whereConditions.push(
+        'Chamado.DATA_CHAMADO >= ? AND Chamado.DATA_CHAMADO < ?'
+      );
+      params.push(dataInicio, dataFim);
+    } else if (!anoNumber && mesNumber) {
+      // Apenas mês específico - filtro por mês em todos os anos (usando EXTRACT)
+      whereConditions.push('EXTRACT(MONTH FROM Chamado.DATA_CHAMADO) = ?');
+      params.push(mesNumber);
+    }
+    // Se ambos forem "todos", não adiciona filtro de data
 
     if (!isAdmin && codRecurso) {
       whereConditions.push('Chamado.COD_RECURSO = ?');
       params.push(Number(codRecurso));
-    }
-
-    if (clienteQuery) {
-      whereConditions.push('LOWER(Cliente.NOME_CLIENTE) LIKE ?');
-      params.push(`%${clienteQuery.toLowerCase()}%`);
-    }
-
-    if (recursoQuery) {
-      whereConditions.push('LOWER(Recurso.NOME_RECURSO) LIKE ?');
-      params.push(`%${recursoQuery.toLowerCase()}%`);
-    }
-
-    if (statusQuery) {
-      whereConditions.push('Chamado.STATUS_CHAMADO = ?');
-      params.push(statusQuery);
     }
 
     if (codChamadoQuery) {

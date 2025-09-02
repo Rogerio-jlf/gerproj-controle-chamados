@@ -40,8 +40,8 @@ export interface ChamadosProps {
 export interface AcoesProps {
   onVisualizarChamado: (codChamado: number) => void;
   onVisualizarOS: (codChamado: number) => void;
-  onUpdateAssunto?: (codChamado: number, novoAssunto: string) => Promise<void>;
   onVisualizarTarefas: () => void;
+  onUpdateAssunto?: (codChamado: number, novoAssunto: string) => Promise<void>;
 }
 
 // ================================================================================

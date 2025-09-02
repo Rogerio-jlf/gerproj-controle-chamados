@@ -13,15 +13,16 @@ import {
   ColumnFiltersState,
   SortingState,
 } from '@tanstack/react-table';
+// ================================================================================
 import { ChamadosProps, colunasTabela } from './Colunas_Tabela_Chamados_Tarefa';
-
 import ModalCriarOS from './Modal_Criar_OS';
+// ================================================================================
 import IsLoading from './Loading';
 import IsError from './Error';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
-import { FaExclamationTriangle } from 'react-icons/fa';
+import { FaExclamationTriangle, FaFileAlt } from 'react-icons/fa';
 import { FaFilter } from 'react-icons/fa6';
 import { FaPhoneAlt } from 'react-icons/fa';
 import { MdChevronLeft } from 'react-icons/md';
@@ -35,25 +36,20 @@ import { IoClose } from 'react-icons/io5';
 // ================================================================================
 // ================================================================================
 
-interface ModalChamadosProps {
+interface ChamadosTarefaProps {
   isOpen: boolean;
   onClose: () => void;
+  codTarefa: number | null;
+  codChamado: number | null;
 }
 // ================================================================================
 
 // Função para buscar chamados do banco de dados
 async function fetchChamados(
   token: string,
-  assunto?: string,
-  status?: string
+  codTarefa: number
 ): Promise<ChamadosProps[]> {
-  const params = new URLSearchParams();
-  if (assunto) params.append('assunto', assunto);
-  if (status) params.append('status', status);
-
-  const url = `/api/chamados-tarefa${params.toString() ? `?${params.toString()}` : ''}`;
-
-  const res = await fetch(url, {
+  const res = await fetch(`/api/chamados-tarefa/${codTarefa}`, {
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -120,7 +116,9 @@ const SortableHeader = ({
 export default function TabelaChamadosTarefa({
   isOpen,
   onClose,
-}: ModalChamadosProps) {
+  codTarefa,
+  codChamado,
+}: ChamadosTarefaProps) {
   const { user } = useAuth();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<SortingState>([
@@ -135,7 +133,7 @@ export default function TabelaChamadosTarefa({
 
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const enabled = !!token && !!user && isOpen;
+  const enabled = !!token && !!user && isOpen && !!codTarefa;
 
   const {
     data: dataChamados,
@@ -144,8 +142,8 @@ export default function TabelaChamadosTarefa({
     error,
     refetch,
   } = useQuery({
-    queryKey: ['chamados', token],
-    queryFn: () => fetchChamados(token!),
+    queryKey: ['chamados', token, codTarefa],
+    queryFn: () => fetchChamados(token!, codTarefa!),
     enabled,
     staleTime: 1000 * 60 * 5,
     retry: 2,
@@ -232,12 +230,105 @@ export default function TabelaChamadosTarefa({
 
   if (!isOpen) return null;
 
+  // ===== LOADING CENTRALIZADO - NOVA IMPLEMENTAÇÃO =====
   if (isLoading) {
-    return <IsLoading title="Carregando os dados da tabela" />;
+    return (
+      <>
+        {/* Overlay do modal principal */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-xl"
+            onClick={onClose}
+          />
+          <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-gray-300">
+            {/* Header do modal mesmo durante loading */}
+            <header className="flex items-center justify-between gap-8 bg-white/70 p-6">
+              <section className="flex items-center justify-center gap-6">
+                <div className="flex items-center justify-center rounded-xl border border-black/30 bg-white/10 p-4">
+                  <FaFileAlt className="animate-pulse text-black" size={44} />
+                </div>
+                <div className="flex flex-col items-center justify-center">
+                  <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
+                    Ordens de Serviço
+                  </h1>
+                  <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+                    Chamado - {codChamado}
+                  </span>
+                </div>
+              </section>
+              <button
+                onClick={handleClose}
+                className="group cursor-pointer rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
+              >
+                <IoClose size={24} />
+              </button>
+            </header>
+            {/* Conteúdo com loading */}
+            <main className="flex min-h-[400px] items-center justify-center overflow-hidden bg-black">
+              <div className="text-center">
+                {/* Aqui você pode personalizar o loading como quiser */}
+                <div className="mx-auto mb-4 h-16 w-16 animate-spin rounded-full border-b-2 border-white"></div>
+                <h2 className="text-2xl font-bold tracking-widest text-white italic">
+                  Carregando os dados da tabela...
+                </h2>
+              </div>
+            </main>
+          </div>
+        </div>
+
+        {/* Loading overlay centralizado - Z-INDEX MAIS ALTO */}
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <IsLoading title="Carregando os dados da tabela" />
+        </div>
+      </>
+    );
   }
+  // ==============================
 
   if (isError) {
-    return <IsError error={error as Error} />;
+    return (
+      <>
+        {/* Overlay do modal principal */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-xl"
+            onClick={onClose}
+          />
+          <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-gray-300">
+            {/* Header do modal mesmo durante erro */}
+            <header className="flex items-center justify-between gap-8 bg-white/70 p-6">
+              <section className="flex items-center justify-center gap-6">
+                <div className="flex items-center justify-center rounded-xl border border-black/30 bg-white/10 p-4">
+                  <FaFileAlt className="animate-pulse text-black" size={44} />
+                </div>
+                <div className="flex flex-col items-center justify-center">
+                  <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
+                    Ordens de Serviço
+                  </h1>
+                  <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+                    Chamado - {codChamado}
+                  </span>
+                </div>
+              </section>
+              <button
+                onClick={handleClose}
+                className="group cursor-pointer rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
+              >
+                <IoClose size={24} />
+              </button>
+            </header>
+            <main className="min-h-[400px] overflow-hidden bg-black">
+              {/* Conteúdo vazio durante erro */}
+            </main>
+          </div>
+        </div>
+
+        {/* Error overlay centralizado - Z-INDEX MAIS ALTO */}
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <IsError error={error as Error} />
+        </div>
+      </>
+    );
   }
 
   return (
@@ -630,15 +721,18 @@ export default function TabelaChamadosTarefa({
             {/* ===== MENSAGEM QUANDO NÃO HÁ CHAMADOS ===== */}
             {dataChamados && dataChamados.length === 0 && !isLoading && (
               <section className="bg-black py-40 text-center">
+                {/* Ícone */}
                 <FaExclamationTriangle
                   className="mx-auto mb-6 text-yellow-500"
                   size={80}
                 />
+                {/* Título */}
                 <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
-                  Nenhum chamado foi encontrado.
+                  Nenhum chamado foi encontrado para a tarefa #{codTarefa}.
                 </h3>
+                {/* Descrição */}
                 <p className="mt-2 text-lg text-gray-400">
-                  Você não possui chamados atribuídos no momento
+                  Você não possui chamados atribuídos no momento.
                 </p>
               </section>
             )}
@@ -648,13 +742,16 @@ export default function TabelaChamadosTarefa({
               dataChamados.length > 0 &&
               table.getFilteredRowModel().rows.length === 0 && (
                 <section className="bg-slate-900 py-20 text-center">
+                  {/* Ícone */}
                   <FaFilter className="mx-auto mb-4 text-cyan-400" size={60} />
+                  {/* Título */}
                   <h3 className="text-xl font-bold tracking-wider text-slate-200 select-none">
-                    Nenhum chamado encontrado para os filtros aplicados
+                    Nenhum registro foi encontrado para os filtros aplicados.
                   </h3>
+                  {/* Subtítulo */}
                   <p className="mt-2 text-slate-400">
-                    Tente ajustar os filtros ou limpe-os para visualizar todos
-                    os chamados
+                    Tente ajustar os filtros ou limpe-os para visualizar
+                    registros.
                   </p>
                 </section>
               )}

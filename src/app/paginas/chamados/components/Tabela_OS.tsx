@@ -14,11 +14,12 @@ import {
   SortingState,
 } from '@tanstack/react-table';
 // ================================================================================
-import IsLoading from './Loading';
-import IsError from './Error';
-import { colunasOS } from './Colunas_Tabela_OS';
+import { colunasTabelaOS } from './Colunas_Tabela_OS';
 import ModalEditarOS from './Modal_Editar_OS';
 import { ModalExcluirOS } from './Modal_Deletar_OS';
+// ================================================================================
+import IsLoading from './Loading';
+import IsError from './Error';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
@@ -37,11 +38,11 @@ import { FaThList } from 'react-icons/fa';
 // ================================================================================
 // ================================================================================
 
-export interface OSModalProps {
+export interface OSTarefaProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
   codChamado: number | null;
-  onSuccess?: () => void; // opcional
 }
 // =====
 
@@ -152,9 +153,9 @@ const SortableHeader = ({
 export default function TabelaOS({
   isOpen,
   onClose,
-  codChamado,
   onSuccess,
-}: OSModalProps) {
+  codChamado,
+}: OSTarefaProps) {
   // Estado para controle do modal de edição
   const [modalEditarOSOpen, setModalEditarOSOpen] = useState(false);
   const [selectedOS, setSelectedOS] = useState<string | null>(null);
@@ -265,7 +266,7 @@ export default function TabelaOS({
   // ==============================
 
   // Configuração da tabela
-  const colunas = colunasOS({
+  const colunas = colunasTabelaOS({
     onEditarOS: handleOpenEditarOS,
     onExcluirOS: handleAbrirModalExclusao,
   });
@@ -845,7 +846,8 @@ export default function TabelaOS({
                 />
                 {/* título */}
                 <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
-                  Nenhuma OS foi encontrada para o chamado {codChamado}.
+                  Nenhuma Ordem de Serviço foi encontrada para o chamado #
+                  {codChamado}.
                 </h3>
               </section>
             )}
@@ -860,12 +862,12 @@ export default function TabelaOS({
                   <FaFilter className="mx-auto mb-4 text-cyan-400" size={60} />
                   {/* título */}
                   <h3 className="text-xl font-bold tracking-wider text-slate-200 select-none">
-                    Nenhum registro encontrado para os filtros aplicados
+                    Nenhum registro foi encontrado para os filtros aplicados.
                   </h3>
-                  {/* sub-título */}
+                  {/* Subtítulo */}
                   <p className="mt-2 text-slate-400">
-                    Tente ajustar os filtros ou limpe-os para visualizar todos
-                    os registros
+                    Tente ajustar os filtros ou limpe-os para visualizar
+                    registros.
                   </p>
                 </section>
               )}

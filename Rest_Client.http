@@ -137,6 +137,17 @@ Content-Type: application/json
   "senha": "&"
 }
 
-### 2. Buscar todos os chamados (sem filtros) - Recurso 144
-GET http://localhost:3000/api/chamados-tarefa
+### - BUSCAR TODOS OS CHAMADOS
+GET http://localhost:3000/api/chamados
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ1LCJub21lIjoiR0lMTUFSIFBFTklETyBERSBTT1VaQSIsInRpcG8iOiJVU1UiLCJyZWN1cnNvIjp7ImlkIjoxNDQsIm5vbWUiOiJHSUxNQVIgUEVOSURPIERFIFNPVVpBIiwiZW1haWwiOiJnaWxtYXIuc291emFAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1NjgxMzY5OCwiZXhwIjoxNzU2ODE3Mjk4fQ._vdRlAGQWMaZ1hIVzYDOjySsxz4W3vHWsQ5XOpykgEM
+
+
+### - BUSCAR TODAS AS OS POR TAREFA
+GET http://localhost:3000/api/ordens-servico-tarefas/1667
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ1LCJub21lIjoiR0lMTUFSIFBFTklETyBERSBTT1VaQSIsInRpcG8iOiJVU1UiLCJyZWN1cnNvIjp7ImlkIjoxNDQsIm5vbWUiOiJHSUxNQVIgUEVOSURPIERFIFNPVVpBIiwiZW1haWwiOiJnaWxtYXIuc291emFAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1NjgyODk0MiwiZXhwIjoxNzU2ODMyNTQyfQ.Mu86Go8OnL3ksJkRbJ3RamugfwJ5Iu9A0sczn-l3oj4
+
+
+
+### - BUSCAR TODOS OS CHAMADOS POR TAREFA
+GET http://localhost:3000/api/chamados-tarefa/1587
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ1LCJub21lIjoiR0lMTUFSIFBFTklETyBERSBTT1VaQSIsInRpcG8iOiJVU1UiLCJyZWN1cnNvIjp7ImlkIjoxNDQsIm5vbWUiOiJHSUxNQVIgUEVOSURPIERFIFNPVVpBIiwiZW1haWwiOiJnaWxtYXIuc291emFAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1NjgyODk0MiwiZXhwIjoxNzU2ODMyNTQyfQ.Mu86Go8OnL3ksJkRbJ3RamugfwJ5Iu9A0sczn-l3oj4

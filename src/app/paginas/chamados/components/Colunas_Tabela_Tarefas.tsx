@@ -20,8 +20,8 @@ export interface TarefasProps {
 
 // Interface para as props das colunas
 interface ColunasProps {
-  onVisualizarOS?: (codTarefa: number) => void;
-  onAbrirChamados?: (tarefa: TarefasProps) => void; // NOVA FUNÇÃO
+  visualizarOSTarefa?: (codTarefa: number) => void;
+  visualizarChamadosTarefa?: (codTarefa: number) => void;
 }
 // ================================================================================
 
@@ -112,15 +112,15 @@ export const colunasTabela = (
       };
 
       const handleVisualizarOS = () => {
-        if (props?.onVisualizarOS) {
-          props.onVisualizarOS(tarefa.COD_TAREFA);
+        if (props?.visualizarOSTarefa) {
+          props.visualizarOSTarefa(tarefa.COD_TAREFA);
         }
       };
 
       // NOVA FUNÇÃO PARA ABRIR CHAMADOS
       const handleAbrirChamados = () => {
-        if (props?.onAbrirChamados) {
-          props.onAbrirChamados(tarefa);
+        if (props?.visualizarChamadosTarefa) {
+          props.visualizarChamadosTarefa(tarefa.COD_TAREFA);
         }
       };
 
@@ -166,7 +166,7 @@ export const colunasTabela = (
             </TooltipContent>
           </Tooltip>
 
-          {/* NOVO BOTÃO VER CHAMADOS */}
+          {/* Botão visualizar chamados */}
           <Tooltip>
             <TooltipTrigger asChild>
               <button

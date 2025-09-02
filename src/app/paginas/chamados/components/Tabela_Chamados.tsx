@@ -24,9 +24,10 @@ import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
 import { ChamadosProps, colunasTabela } from './Colunas_Tabela_Chamados';
 // import ButtonExcel from '../../../../components/Button_Excel';
 // import ButtonPDF from '../../../../components/Button_PDF';
-import ModalChamado from './Modal_Atribuir_Chamado';
+import ModalAtribuirChamado from './Modal_Atribuir_Chamado';
+import TabelaTarefas from './Tabela_Tarefas';
 import TabelaOS from './Tabela_OS';
-import ModalTarefas from './Tabela_Tarefas';
+// ================================================================================
 import IsLoading from './Loading';
 import IsError from './Error';
 // ================================================================================
@@ -43,28 +44,8 @@ import { IoArrowUp } from 'react-icons/io5';
 import { IoArrowDown } from 'react-icons/io5';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { FaFilter } from 'react-icons/fa6';
+import { Loader2 } from 'lucide-react';
 // ================================================================================
-// ================================================================================
-
-async function fetchChamados(
-  params: URLSearchParams,
-  token: string
-): Promise<ChamadosProps[]> {
-  const res = await fetch(`/api/chamados?${params}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.error || 'Erro ao buscar chamados');
-  }
-
-  const data = await res.json();
-  return Array.isArray(data) ? data : data.chamados || [];
-}
 // ================================================================================
 
 // ================================================================================
@@ -159,6 +140,27 @@ const SortableHeader = ({
     </Tooltip>
   );
 };
+// ================================================================================
+
+async function fetchChamados(
+  params: URLSearchParams,
+  token: string
+): Promise<ChamadosProps[]> {
+  const res = await fetch(`/api/chamados?${params}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || 'Erro ao buscar chamados');
+  }
+
+  const data = await res.json();
+  return Array.isArray(data) ? data : data.chamados || [];
+}
 // ================================================================================
 
 export default function TabelaChamados() {
@@ -338,45 +340,95 @@ export default function TabelaChamados() {
 
   if (loading) {
     return (
-      <div className="min-h-[500px] rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
-        <div className="flex h-full items-center justify-center p-12">
-          <div className="space-y-6 text-center">
-            {/* Ícone */}
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
-              <FaUserLock className="h-10 w-10 animate-pulse text-blue-400" />
+      <div className="flex flex-col items-center justify-center space-y-6 py-40">
+        {/* Ícones */}
+        <div className="relative">
+          <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-cyan-200 via-cyan-400 to-cyan-600 opacity-20 blur-lg"></div>
+
+          <div className="relative flex items-center justify-center">
+            {/* Ícone Loader2 */}
+            <Loader2 className="animate-spin text-blue-600" size={120} />
+
+            {/* Ícone DataBaseIcon */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <FaUserLock className="text-blue-600" size={60} />
             </div>
-            <div>
-              {/* Título */}
-              <h3 className="mb-2 text-xl font-bold tracking-wider text-slate-800 select-none">
-                Verificando autenticação...
-              </h3>
-              {/* Subtítulo */}
-              <p className="mx-auto max-w-md tracking-wider text-slate-600 select-none">
-                Aguarde enquanto verificamos suas credenciais de acesso.
-              </p>
+          </div>
+        </div>
+
+        <div className="space-y-3 text-center">
+          {/* Título */}
+          <h3 className="text-2xl font-bold tracking-wider text-blue-600 select-none">
+            Verificando autenticação do usuário
+          </h3>
+
+          <div className="flex items-center justify-center space-x-1">
+            {/* Aguarde */}
+            <span className="text-base font-semibold tracking-wider text-blue-600 italic select-none">
+              Aguarde
+            </span>
+
+            {/* Pontos animados de carregamento */}
+            <div className="flex space-x-1">
+              <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"></div>
+              <div
+                className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"
+                style={{ animationDelay: '0.1s' }}
+              ></div>
+              <div
+                className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"
+                style={{ animationDelay: '0.2s' }}
+              ></div>
             </div>
           </div>
         </div>
       </div>
     );
   }
+  // =====
 
   if (!user || !token) {
     return (
-      <div className="min-h-[500px] rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
-        <div className="flex h-full items-center justify-center p-12">
-          <div className="space-y-6 text-center">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-red-200 bg-gradient-to-br from-red-50 to-red-100">
-              <FaExclamationTriangle className="h-10 w-10 text-red-400" />
-            </div>
-            <div>
-              <h3 className="mb-2 text-xl font-bold tracking-wider text-slate-800 select-none">
-                Acesso restrito!
-              </h3>
-              <p className="mx-auto max-w-md tracking-wider text-slate-600 select-none">
-                Você precisa estar logado para visualizar os chamados do
-                sistema.
-              </p>
+      <div className="flex flex-col items-center justify-center space-y-6 py-40">
+        {/* Ícones com efeito de fundo pulsante */}
+        <div className="relative">
+          <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-red-200 via-red-400 to-red-600 opacity-20 blur-lg"></div>
+
+          <div className="relative flex items-center justify-center">
+            {/* Ícone principal animado */}
+            <FaExclamationTriangle
+              className="animate-pulse text-red-600"
+              size={120}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-3 text-center">
+          {/* Título */}
+          <h3 className="text-2xl font-bold tracking-wider text-red-600 select-none">
+            Acesso restrito!
+          </h3>
+
+          {/* Mensagem */}
+          <p className="mx-auto max-w-md text-base font-semibold tracking-wider text-red-500 italic select-none">
+            Você precisa estar logado para visualizar os chamados do sistema.
+          </p>
+
+          {/* Efeito de carregamento (pontos animados) */}
+          <div className="flex items-center justify-center space-x-1">
+            <span className="text-base font-semibold tracking-wider text-red-600 italic select-none">
+              Redirecionando
+            </span>
+            <div className="flex space-x-1">
+              <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-red-600"></div>
+              <div
+                className="h-1.5 w-1.5 animate-bounce rounded-full bg-red-600"
+                style={{ animationDelay: '0.1s' }}
+              ></div>
+              <div
+                className="h-1.5 w-1.5 animate-bounce rounded-full bg-red-600"
+                style={{ animationDelay: '0.2s' }}
+              ></div>
             </div>
           </div>
         </div>
@@ -386,19 +438,46 @@ export default function TabelaChamados() {
 
   if (!ano || !mes) {
     return (
-      <div className="min-h-[500px] rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
-        <div className="flex h-full items-center justify-center p-12">
-          <div className="space-y-6 text-center">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
-              <FaExclamationTriangle className="h-10 w-10 text-blue-400" />
-            </div>
-            <div>
-              <h3 className="mb-2 text-xl font-bold tracking-wider text-slate-800 select-none">
-                Filtros obrigatórios
-              </h3>
-              <p className="mx-auto max-w-md tracking-wider text-slate-600 select-none">
-                Por favor, selecione o ano e mês para visualizar os chamados.
-              </p>
+      <div className="flex flex-col items-center justify-center space-y-6 py-40">
+        {/* Ícones com efeito de fundo pulsante */}
+        <div className="relative">
+          <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-blue-200 via-blue-400 to-blue-600 opacity-20 blur-lg"></div>
+
+          <div className="relative flex items-center justify-center">
+            {/* Ícone principal animado */}
+            <FaExclamationTriangle
+              className="animate-pulse text-blue-600"
+              size={120}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-3 text-center">
+          {/* Título */}
+          <h3 className="text-2xl font-bold tracking-wider text-blue-600 select-none">
+            Filtros obrigatórios
+          </h3>
+
+          {/* Mensagem */}
+          <p className="mx-auto max-w-md text-base font-semibold tracking-wider text-blue-500 italic select-none">
+            Por favor, selecione o ano e mês para visualizar os chamados.
+          </p>
+
+          {/* Efeito de carregamento (pontos animados) */}
+          <div className="flex items-center justify-center space-x-1">
+            <span className="text-base font-semibold tracking-wider text-blue-600 italic select-none">
+              Aguardando filtros
+            </span>
+            <div className="flex space-x-1">
+              <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"></div>
+              <div
+                className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"
+                style={{ animationDelay: '0.1s' }}
+              ></div>
+              <div
+                className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"
+                style={{ animationDelay: '0.2s' }}
+              ></div>
             </div>
           </div>
         </div>
@@ -775,41 +854,49 @@ export default function TabelaChamados() {
         {/* ===== */}
 
         {/* ===== MENSAGEM QUANDO NÃO HÁ CHAMADOS ===== */}
-        {Array.isArray(data) && data.length === 0 && !isLoading && (
-          <div className="bg-slate-900 py-40 text-center">
+        {data && data.length === 0 && !isLoading && (
+          <section className="bg-black py-40 text-center">
+            {/* ícone */}
             <FaExclamationTriangle
               className="mx-auto mb-6 text-yellow-500"
               size={80}
             />
-            <h3 className="text-2xl font-bold tracking-wider text-slate-200 italic select-none">
-              Nenhum chamado foi encontrado, para o período de{' '}
+            {/* título */}
+            <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
+              Nenhum chamado foi encontrado para o período{' '}
               {mes.toString().padStart(2, '0')}/{ano}.
             </h3>
-          </div>
+            {/* Descrição */}
+            <p className="mt-2 text-lg text-gray-400">
+              Você não possui chamados atribuídos nesse período.
+            </p>
+          </section>
         )}
         {/* ===== */}
 
         {/* ===== MENSAGEM QUANDO FILTROS NÃO RETORNAM RESULTADOS ===== */}
-        {Array.isArray(data) &&
+        {data &&
           data.length > 0 &&
           table.getFilteredRowModel().rows.length === 0 && (
-            <div className="bg-slate-900 py-20 text-center">
+            <section className="bg-slate-900 py-20 text-center">
+              {/* ícone */}
               <FaFilter className="mx-auto mb-4 text-cyan-400" size={60} />
+              {/* título */}
               <h3 className="text-xl font-bold tracking-wider text-slate-200 select-none">
-                Nenhum registro encontrado para os filtros aplicados
+                Nenhum registro foi encontrado para os filtros aplicados.
               </h3>
+              {/* Subtítulo */}
               <p className="mt-2 text-slate-400">
-                Tente ajustar os filtros ou limpe-os para visualizar todos os
-                registros
+                Tente ajustar os filtros ou limpe-os para visualizar registros.
               </p>
-            </div>
+            </section>
           )}
         {/* ===== */}
       </div>
       {/* ===== */}
 
       {/* ===== MODAL CHAMADO ===== */}
-      <ModalChamado
+      <ModalAtribuirChamado
         isOpen={modalOpen}
         onClose={handleCloseModal}
         chamado={selectedChamado}
@@ -822,9 +909,10 @@ export default function TabelaChamados() {
         onSuccess={() => setOsModalOpen(false)} // <- fecha o modal da tabela
       />
       {/* ===== MODAL TAREFAS ===== */}
-      <ModalTarefas
+      <TabelaTarefas
         isOpen={tarefasModalOpen}
         onClose={() => setTarefasModalOpen(false)}
+        codChamado={selectedCodChamado}
       />
       {/* ===== */}
     </>

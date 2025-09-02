@@ -1,10 +1,20 @@
-===== TABELA OS =====
-Código da OS
-  tabela OS;
-  COD_OS - INTEGER/NOT NULL
+API CHAMADOS - OK - Foi testada no banco de dados. Está retornando todos os chamados, vinculados ao usuário logado, realizando a distinção entre usuário ADM ou USR e filtrando por ano e mês.
 
-Nome do cliente
-  tabela CLIENTE;
+API OS-CHAMADO - OK - Foi testada no banco de dados. Está retornando todas as ordens de serviço, de um chamado específico, vinculado ao usuário logado.
 
-  Eu criei essa api, para criar, inserir novas ordens de serviço no banco de dados. Preciso criar, o componente tabela, cpmponente colunas e um modal, baseado nos exemploq eu te mandei acima, para essa minha api de criação de ordens de serviço. Ou seja, no componente Colunas_Tabela_Tarefas.tsx, preciso que tenha um novo botão de ação, que abrirá um modal, onde  
-  
+API TAREFAS - OK - Foi testada no banco de dados. Está retornando todas as tarefas, vinculadas ao usuário logado.
+
+API OS-TAREFA - OK - Foi testada no banco de dados. Está retornando todas as ordens de serviço, vinculadas a uma tarefa específica, vinculada ao usuário logado.
+
+API CHAMADOS-TAREFA - OK - Foi testada no banco de dados. Está retornando todos os chamados, vinculados a uma tarefa específica, vinculada ao usuário logado.
+
+
+
+
+
+
+
+
+
+
+

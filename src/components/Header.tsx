@@ -24,11 +24,19 @@ export default function Header({ titulo, icon }: Props) {
   const { filters, setFilters } = useFiltersTabelaChamados();
 
   const handleFiltersChange = useCallback(
-    (newFilters: typeof filters) => {
-      const updatedFilters = { ...filters, ...newFilters };
-      setFilters(updatedFilters);
+    (newFilters: {
+      ano: number | 'todos';
+      mes: number | 'todos';
+      cliente: string;
+      recurso: string;
+      status: string;
+    }) => {
+      setFilters(prevFilters => ({
+        ...prevFilters,
+        ...newFilters,
+      }));
     },
-    [setFilters, filters]
+    [setFilters]
   );
   // ================================================================================
 

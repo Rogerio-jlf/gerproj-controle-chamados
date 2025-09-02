@@ -13,9 +13,11 @@ import {
   ColumnFiltersState,
   SortingState,
 } from '@tanstack/react-table';
+// ================================================================================
 import { TarefasProps, colunasTabela } from './Colunas_Tabela_Tarefas';
 import TabelaChamadosTarefa from './Tabela_Chamados_Tarefas';
 import ModalOSTarefa from './Tabela_OS_Tarefa';
+// ================================================================================
 import IsLoading from './Loading';
 import IsError from './Error';
 // ================================================================================
@@ -38,6 +40,7 @@ import { IoClose } from 'react-icons/io5';
 interface ModalTarefasProps {
   isOpen: boolean;
   onClose: () => void;
+  codChamado: number | null;
 }
 // ================================================================================
 
@@ -107,7 +110,11 @@ const SortableHeader = ({
 };
 // ================================================================================
 
-export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
+export default function TabelaTarefas({
+  isOpen,
+  onClose,
+  codChamado,
+}: ModalTarefasProps) {
   const { user } = useAuth();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<SortingState>([
@@ -115,8 +122,9 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
   ]);
 
   const [isTabelaChamadosOpen, setIsTabelaChamadosOpen] = useState(false);
-  const [selectedTarefaParaChamados, setSelectedTarefaParaChamados] =
-    useState<TarefasProps | null>(null);
+  const [selectedTarefaParaChamados, setSelectedTarefaParaChamados] = useState<
+    number | null
+  >(null);
 
   const [showFilters, setShowFilters] = useState(false);
 
@@ -152,8 +160,8 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
   };
 
   // Adicionar esta nova função:
-  const handleAbrirChamados = (tarefa: TarefasProps) => {
-    setSelectedTarefaParaChamados(tarefa);
+  const handleAbrirChamados = (codTarefa: number) => {
+    setSelectedTarefaParaChamados(codTarefa);
     setIsTabelaChamadosOpen(true);
   };
 
@@ -179,8 +187,8 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
   const colunas = useMemo(
     () =>
       colunasTabela({
-        onVisualizarOS: handleVisualizarOS,
-        onAbrirChamados: handleAbrirChamados, // NOVA FUNÇÃO
+        visualizarOSTarefa: handleVisualizarOS,
+        visualizarChamadosTarefa: handleAbrirChamados,
       }),
     []
   );
@@ -268,9 +276,9 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                   <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
                     Ordens de Serviço
                   </h1>
-                  {/* <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
-                      Chamado - {codChamado}
-                    </span> */}
+                  <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+                    Chamado - {codChamado}
+                  </span>
                 </div>
               </section>
               <button
@@ -322,9 +330,9 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                   <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
                     Ordens de Serviço
                   </h1>
-                  {/* <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
-                      Chamado - {codChamado}
-                    </span> */}
+                  <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+                    Chamado - {codChamado}
+                  </span>
                 </div>
               </section>
               <button
@@ -737,11 +745,11 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                 />
                 {/* título */}
                 <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
-                  Nenhuma tarefa foi encontrada.
+                  Nenhuma tarefa foi encontrada no momento.
                 </h3>
-                {/* subtítulo */}
+                {/* Descrição */}
                 <p className="mt-2 text-lg text-gray-400">
-                  Você não possui tarefas atribuídas no momento
+                  Você não possui tarefas atribuídas no momento.
                 </p>
               </section>
             )}
@@ -756,12 +764,12 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
                   <FaFilter className="mx-auto mb-4 text-cyan-400" size={60} />
                   {/* título */}
                   <h3 className="text-xl font-bold tracking-wider text-slate-200 select-none">
-                    Nenhuma tarefa encontrada para os filtros aplicados
+                    Nenhum registro foi encontrado para os filtros aplicados.
                   </h3>
-                  {/* subtítulo */}
+                  {/* Subtítulo */}
                   <p className="mt-2 text-slate-400">
-                    Tente ajustar os filtros ou limpe-os para visualizar todas
-                    as tarefas
+                    Tente ajustar os filtros ou limpe-os para visualizar
+                    registros.
                   </p>
                 </section>
               )}
@@ -777,11 +785,14 @@ export default function ModalTarefas({ isOpen, onClose }: ModalTarefasProps) {
         isOpen={isModalOSOpen}
         onClose={handleCloseModalOS}
         codTarefa={selectedTarefaCodigo}
+        codChamado={null}
       />
 
       <TabelaChamadosTarefa
         isOpen={isTabelaChamadosOpen}
         onClose={handleCloseTabelaChamados}
+        codTarefa={selectedTarefaParaChamados}
+        codChamado={null}
       />
     </>
   );

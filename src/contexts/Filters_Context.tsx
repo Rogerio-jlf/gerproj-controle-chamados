@@ -4,8 +4,8 @@ import { createContext, useContext, useState } from 'react';
 
 // Define a interface para o estado dos filtros de chamados abertos
 export interface FiltersProps {
-  ano: number;
-  mes: number;
+  ano: number | 'todos'; // Permite "todos" para ano
+  mes: number | 'todos'; // Permite "todos" para mês
   cliente: string;
   recurso: string;
   status: string;
