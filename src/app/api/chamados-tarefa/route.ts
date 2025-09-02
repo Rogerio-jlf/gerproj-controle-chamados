@@ -52,6 +52,10 @@ export async function GET(request: Request) {
       params.push(Number(codRecurso));
     }
 
+    // NOVO: Sempre exclui chamados com status FINALIZADO
+    whereConditions.push('CHAMADO.STATUS_CHAMADO <> ?');
+    params.push('FINALIZADO');
+
     // Filtro opcional por assunto do chamado
     if (assuntoChamadoQuery) {
       whereConditions.push('LOWER(CHAMADO.ASSUNTO_CHAMADO) LIKE ?');
@@ -61,14 +65,11 @@ export async function GET(request: Request) {
     // Filtro opcional por status do chamado
     if (statusChamadoQuery) {
       whereConditions.push('CHAMADO.STATUS_CHAMADO = ?');
-      params.push(Number(statusChamadoQuery));
+      params.push(statusChamadoQuery); // Removido Number() pois STATUS pode ser string
     }
 
     // Monta a cláusula WHERE
-    const whereClause =
-      whereConditions.length > 0
-        ? `WHERE ${whereConditions.join(' AND ')}`
-        : '';
+    const whereClause = `WHERE ${whereConditions.join(' AND ')}`;
 
     const sql = `
       SELECT FIRST 100
