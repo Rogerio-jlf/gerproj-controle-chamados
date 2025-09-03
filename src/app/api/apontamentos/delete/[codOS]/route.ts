@@ -1,16 +1,18 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
+import { firebirdQuery } from '../../../../../lib/firebird/firebird-client';
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ codOS: string }> }
+) {
   try {
-    const { searchParams } = new URL(request.url);
-    const codOS = searchParams.get('codOS');
+    const { codOS } = await params;
 
     // Validação
     if (!codOS) {
       return NextResponse.json(
-        { error: 'Código da OS é obrigatório' },
+        { error: 'O código da OS é obrigatório' },
         { status: 400 }
       );
     }
@@ -46,7 +48,7 @@ export async function DELETE(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Erro ao deletar OS:', error);
+    console.error('Erro ao tentar deletar a OS:', error);
 
     // Tratamento de erros específicos do Firebird
     if (error instanceof Error) {
@@ -54,7 +56,7 @@ export async function DELETE(request: NextRequest) {
         return NextResponse.json(
           {
             error:
-              'Não é possível deletar esta OS. Ela está sendo referenciada por outros registros.',
+              'Não foi possível deletar a OS. Ela está sendo referenciada por outros registros.',
           },
           { status: 400 }
         );
@@ -64,7 +66,7 @@ export async function DELETE(request: NextRequest) {
         return NextResponse.json(
           {
             error:
-              'OS está sendo utilizada por outro usuário. Tente novamente.',
+              'A OS está sendo utilizada por outro usuário. Tente novamente mais tarde.',
           },
           { status: 409 }
         );
@@ -72,7 +74,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Erro interno ao deletar OS' },
+      { error: 'Erro interno ao tentar deletar a OS' },
       { status: 500 }
     );
   }

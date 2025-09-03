@@ -14,9 +14,13 @@ import {
   SortingState,
 } from '@tanstack/react-table';
 // ================================================================================
-import { TarefasProps, colunasTabela } from './Colunas_Tabela_Tarefas';
-import TabelaChamadosTarefa from './Tabela_Chamados_Tarefas';
-import ModalOSTarefa from './Tabela_OS_Tarefa';
+import {
+  ChamadosProps,
+  TarefasProps,
+  colunasTabela,
+} from './Colunas_Tabela_Tarefas';
+import TabelaChamadosTarefa from './Tabela_Chamados_Tarefa';
+import TabelaOSTarefa from './Tabela_OS_Tarefa';
 // ================================================================================
 import IsLoading from './Loading';
 import IsError from './Error';
@@ -34,6 +38,7 @@ import { LuArrowUpDown } from 'react-icons/lu';
 import { FaArrowUpLong } from 'react-icons/fa6';
 import { FaArrowDownLong } from 'react-icons/fa6';
 import { IoClose } from 'react-icons/io5';
+import ModalCriarOS from './Modal_Criar_OS';
 // ================================================================================
 // ================================================================================
 
@@ -80,7 +85,7 @@ const FilterInput = ({
     value={value}
     onChange={e => onChange(e.target.value)}
     placeholder={placeholder}
-    className="w-full rounded-md border border-white/30 bg-gray-900 px-4 py-2 text-base text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+    className="w-full rounded-md bg-black px-4 py-2 text-base text-white placeholder-gray-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none"
   />
 );
 
@@ -126,7 +131,13 @@ export default function TabelaTarefas({
     number | null
   >(null);
 
+  const [selectedTarefaParaCriarOS, setSelectedTarefaParaCriarOS] =
+    useState<TarefasProps | null>(null);
+
   const [showFilters, setShowFilters] = useState(false);
+
+  const [isModalCriarOSOpen, setIsModalCriarOSOpen] = useState(false);
+  useState<ChamadosProps | null>(null);
 
   // ESTADOS PARA O MODAL DE OS (VISUALIZAR)
   const [isModalOSOpen, setIsModalOSOpen] = useState(false);
@@ -144,7 +155,6 @@ export default function TabelaTarefas({
     isLoading,
     isError,
     error,
-    refetch,
   } = useQuery({
     queryKey: ['tarefas', token],
     queryFn: () => fetchTarefas(token!),
@@ -183,12 +193,23 @@ export default function TabelaTarefas({
     setSelectedTarefaCodigo(null);
   };
 
+  const handleCriarOS = (tarefa: TarefasProps) => {
+    setSelectedTarefaParaCriarOS(tarefa);
+    setIsModalCriarOSOpen(true);
+  };
+
+  const handleCloseModalCriarOS = () => {
+    setIsModalCriarOSOpen(false);
+    setSelectedTarefaParaCriarOS(null);
+  };
+
   // ATUALIZADO PARA INCLUIR A NOVA FUNÇÃO onCriarOS
   const colunas = useMemo(
     () =>
       colunasTabela({
         visualizarOSTarefa: handleVisualizarOS,
         visualizarChamadosTarefa: handleAbrirChamados,
+        onCriarOS: handleCriarOS, // ← ESTA LINHA PRECISA SER ADICIONADA
       }),
     []
   );
@@ -362,9 +383,10 @@ export default function TabelaTarefas({
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         {/* ===== OVERLAY ===== */}
         <div
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/50 backdrop-blur-xl"
           onClick={onClose}
         />
+        {/* ===== */}
         {/* ===== MODAL ===== */}
         <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-black">
           {/* ===== HEADER ===== */}
@@ -372,34 +394,35 @@ export default function TabelaTarefas({
             {/* ===== ITENS DA ESQUERDA ===== */}
             <section className="flex items-center justify-center gap-6">
               {/* ícone */}
-              <div className="flex items-center justify-center rounded-xl border border-black/30 p-4">
+              <div className="flex items-center justify-center rounded-xl border border-black/30 bg-white/10 p-4">
                 <FaTasks className="text-black" size={44} />
               </div>
               {/* ===== */}
 
               <div className="flex flex-col items-start justify-center">
                 {/* título */}
-                <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
+                <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
                   Tarefas
                 </h1>
                 {/* ===== */}
 
                 <div className="flex items-center gap-4">
                   {/* usuário logado*/}
-                  {user && (
+                  {/* {user && (
                     <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
                       {user.nome}
                     </span>
-                  )}
+                  )} */}
+
                   {/* quantidade de tarefas */}
-                  {dataTarefas && dataTarefas.length > 0 && (
+                  {/* {dataTarefas && dataTarefas.length > 0 && (
                     <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
                       {dataTarefas.length}{' '}
                       {dataTarefas.length === 1
                         ? '- Tarefa encontrada'
                         : '- Tarefas encontradas'}
                     </span>
-                  )}
+                  )} */}
                 </div>
               </div>
             </section>
@@ -411,16 +434,19 @@ export default function TabelaTarefas({
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 disabled={!dataTarefas || dataTarefas.length <= 1}
-                className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-black italic transition-all select-none disabled:border-black/30 disabled:text-gray-500 ${
+                className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-black italic transition-all select-none ${
                   showFilters
-                    ? 'bg-blue-600 text-white hover:scale-110 hover:bg-blue-900 active:scale-95'
-                    : 'bg-black/50 text-white hover:scale-110 hover:bg-black active:scale-95'
+                    ? 'border border-blue-800 bg-blue-600 text-white'
+                    : 'border border-black/50 bg-white/10'
+                } ${
+                  !dataTarefas || dataTarefas.length <= 1
+                    ? 'disabled:cursor-not-allowed disabled:border-gray-200 disabled:text-gray-200'
+                    : 'hover:scale-105 hover:bg-gray-500 hover:text-white active:scale-95'
                 }`}
               >
                 {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
                 {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
               </button>
-              {/* ===== */}
 
               {/* botão limpar filtros */}
               {columnFilters.length > 0 && (
@@ -432,40 +458,38 @@ export default function TabelaTarefas({
                   Limpar Filtros
                 </button>
               )}
-              {/* ===== */}
 
-              {/* botão fechar modal */}
+              {/* botão - fechar modal */}
               <button
                 onClick={handleClose}
-                className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
+                className="group cursor-pointer rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
               >
-                <IoClose size={32} />
+                <IoClose size={24} />
               </button>
-              {/* ===== */}
             </section>
           </header>
           {/* ===== */}
 
           {/* ===== CONTEÚDO ===== */}
           <main className="overflow-hidden bg-black">
+            {/* ===== TABELA ===== */}
             {dataTarefas && dataTarefas.length > 0 && (
               <section className="h-full w-full overflow-hidden bg-black">
                 <div
                   className="h-full overflow-y-auto"
                   style={{ maxHeight: 'calc(100vh - 370px)' }}
                 >
-                  {/* ===== TABELA ===== */}
                   <table className="w-full table-fixed border-collapse">
                     {/* ===== CABEÇALHO DA TABELA ===== */}
                     <thead className="sticky top-0 z-20">
                       {table.getHeaderGroups().map(headerGroup => (
-                        // linha do cabeçalho da tabela
+                        // Linha do cabeçalho da tabela
                         <tr key={headerGroup.id}>
                           {headerGroup.headers.map(header => (
-                            // células do cabeçalho da tabela
+                            // Células do cabeçalho da tabela
                             <th
                               key={header.id}
-                              className="bg-teal-800 py-6 font-extrabold tracking-wider text-white uppercase select-none"
+                              className="border-t-2 border-white bg-teal-700 py-6 font-extrabold tracking-wider text-white uppercase select-none"
                               style={{
                                 width: getColumnWidth(header.column.id),
                               }}
@@ -473,8 +497,7 @@ export default function TabelaTarefas({
                               {header.isPlaceholder ? null : header.column
                                   .id === 'COD_TAREFA' ||
                                 header.column.id === 'NOME_TAREFA' ||
-                                header.column.id === 'DTSOL_TAREFA' ||
-                                header.column.id === 'HREST_TAREFA' ? (
+                                header.column.id === 'DTSOL_TAREFA' ? (
                                 <SortableHeader column={header.column}>
                                   {flexRender(
                                     header.column.columnDef.header,
@@ -499,7 +522,7 @@ export default function TabelaTarefas({
                           {table.getAllColumns().map(column => (
                             <th
                               key={column.id}
-                              className="bg-teal-800 px-3 pb-6"
+                              className="bg-teal-700 px-3 pb-6"
                               style={{ width: getColumnWidth(column.id) }}
                             >
                               {column.id === 'COD_TAREFA' && (
@@ -513,6 +536,7 @@ export default function TabelaTarefas({
                                   placeholder="Código..."
                                 />
                               )}
+
                               {column.id === 'NOME_TAREFA' && (
                                 <FilterInput
                                   value={
@@ -524,6 +548,7 @@ export default function TabelaTarefas({
                                   placeholder="Nome da tarefa..."
                                 />
                               )}
+
                               {column.id === 'DTSOL_TAREFA' && (
                                 <FilterInput
                                   value={
@@ -534,17 +559,6 @@ export default function TabelaTarefas({
                                   }
                                   placeholder="dd/mm/aaaa"
                                   type="text"
-                                />
-                              )}
-                              {column.id === 'HREST_TAREFA' && (
-                                <FilterInput
-                                  value={
-                                    (column.getFilterValue() as string) ?? ''
-                                  }
-                                  onChange={value =>
-                                    column.setFilterValue(value)
-                                  }
-                                  placeholder="Horas..."
                                 />
                               )}
                             </th>
@@ -559,7 +573,7 @@ export default function TabelaTarefas({
                       {table.getRowModel().rows.length > 0 &&
                         !isLoading &&
                         table.getRowModel().rows.map((row, rowIndex) => (
-                          // Linhas do corpo da tabela
+                          // Linha do corpo da tabela
                           <tr
                             key={row.id}
                             className={`group border-b border-gray-600 transition-all hover:bg-amber-200 ${
@@ -569,7 +583,7 @@ export default function TabelaTarefas({
                             }`}
                           >
                             {row.getVisibleCells().map(cell => (
-                              // células do corpo da tabela
+                              // Células da tabela
                               <td
                                 key={cell.id}
                                 className="p-3 text-sm font-semibold tracking-wider text-white select-none group-hover:text-black"
@@ -588,16 +602,15 @@ export default function TabelaTarefas({
                           </tr>
                         ))}
                     </tbody>
-                    {/* ===== */}
                   </table>
                 </div>
 
                 {/* ===== PAGINAÇÃO DA TABELA ===== */}
-                <section className="border-t border-black bg-white/70 px-12 py-4">
+                <section className="border-t-2 border-white bg-white/70 px-12 py-4">
                   <div className="flex items-center justify-between">
                     {/* Informações da página */}
-                    <div className="flex items-center gap-4 text-base font-semibold tracking-widest text-black italic select-none">
-                      <span>
+                    <section className="flex items-center gap-4">
+                      <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
                         {table.getFilteredRowModel().rows.length} tarefa
                         {table.getFilteredRowModel().rows.length !== 1
                           ? 's'
@@ -616,11 +629,11 @@ export default function TabelaTarefas({
                           {columnFilters.length > 1 ? 's' : ''}
                         </span>
                       )}
-                    </div>
+                    </section>
                     {/* ===== */}
 
                     {/* Controles de paginação */}
-                    <div className="flex items-center gap-3">
+                    <section className="flex items-center gap-3">
                       {/* Seletor de itens por página */}
                       <div className="flex items-center gap-2">
                         <span className="text-base font-semibold tracking-widest text-black italic select-none">
@@ -644,33 +657,24 @@ export default function TabelaTarefas({
                           ))}
                         </select>
                       </div>
-                      {/* ===== */}
 
                       {/* Botões de navegação */}
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() => table.setPageIndex(0)}
                           disabled={!table.getCanPreviousPage()}
-                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
+                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 tracking-widest select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
                         >
-                          <FiChevronsLeft
-                            className="text-black hover:text-white"
-                            size={20}
-                          />
+                          <FiChevronsLeft className="text-white" size={24} />
                         </button>
-                        {/* ===== */}
 
                         <button
                           onClick={() => table.previousPage()}
                           disabled={!table.getCanPreviousPage()}
-                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
+                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 tracking-widest select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
                         >
-                          <MdChevronLeft
-                            className="text-black hover:text-white"
-                            size={20}
-                          />
+                          <MdChevronLeft className="text-white" size={24} />
                         </button>
-                        {/* ===== */}
 
                         <div className="flex items-center justify-center gap-2">
                           <span className="text-base font-semibold tracking-widest text-black italic select-none">
@@ -702,17 +706,13 @@ export default function TabelaTarefas({
                             de {table.getPageCount()}
                           </span>
                         </div>
-                        {/* ===== */}
 
                         <button
                           onClick={() => table.nextPage()}
                           disabled={!table.getCanNextPage()}
-                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
+                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 tracking-widest select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
                         >
-                          <MdChevronRight
-                            className="text-black hover:text-white"
-                            size={20}
-                          />
+                          <MdChevronRight className="text-white" size={24} />
                         </button>
 
                         <button
@@ -720,15 +720,12 @@ export default function TabelaTarefas({
                             table.setPageIndex(table.getPageCount() - 1)
                           }
                           disabled={!table.getCanNextPage()}
-                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
+                          className="cursor-pointer rounded-md border border-black/30 px-4 py-1 tracking-widest select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
                         >
-                          <FiChevronsRight
-                            className="text-black hover:text-white"
-                            size={20}
-                          />
+                          <FiChevronsRight className="text-white" size={24} />
                         </button>
                       </div>
-                    </div>
+                    </section>
                   </div>
                 </section>
               </section>
@@ -745,12 +742,8 @@ export default function TabelaTarefas({
                 />
                 {/* título */}
                 <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
-                  Nenhuma tarefa foi encontrada no momento.
+                  Nenhuma Tarefa foi encontrada no momento.
                 </h3>
-                {/* Descrição */}
-                <p className="mt-2 text-lg text-gray-400">
-                  Você não possui tarefas atribuídas no momento.
-                </p>
               </section>
             )}
             {/* ===== */}
@@ -773,39 +766,48 @@ export default function TabelaTarefas({
                   </p>
                 </section>
               )}
-            {/* ===== */}
           </main>
-          {/* ===== */}
         </div>
-        {/* ===== */}
       </div>
+      {/* ===== */}
 
-      {/* MODAL DE VISUALIZAR OS DA TAREFA */}
-      <ModalOSTarefa
+      {/* VISUALIZAR OS DA TAREFA */}
+      <TabelaOSTarefa
         isOpen={isModalOSOpen}
         onClose={handleCloseModalOS}
         codTarefa={selectedTarefaCodigo}
         codChamado={null}
       />
+      {/* ===== */}
 
+      {/* VISUALIZAR CHAMADOS DA TAREFA */}
       <TabelaChamadosTarefa
         isOpen={isTabelaChamadosOpen}
         onClose={handleCloseTabelaChamados}
         codTarefa={selectedTarefaParaChamados}
         codChamado={null}
       />
+      {/* ===== */}
+
+      {/* MODAL DE CRIAR OS */}
+      <ModalCriarOS
+        isOpen={isModalCriarOSOpen}
+        onClose={handleCloseModalCriarOS}
+        tarefa={selectedTarefaParaCriarOS}
+      />
     </>
   );
 }
+// ================================================================================
 
-// Função para largura fixa das colunas - ATUALIZADA PARA INCLUIR ACTIONS
+// Função para largura fixa das colunas
 function getColumnWidth(columnId: string): string {
   const widthMap: Record<string, string> = {
     COD_TAREFA: '80px',
     NOME_TAREFA: '300px',
     DTSOL_TAREFA: '120px',
     HREST_TAREFA: '120px',
-    actions: '160px', // AUMENTADA PARA ACOMODAR O NOVO BOTÃO
+    actions: '160px',
   };
 
   return widthMap[columnId] || '100px';

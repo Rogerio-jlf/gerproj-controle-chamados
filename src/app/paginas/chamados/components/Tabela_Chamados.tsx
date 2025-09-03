@@ -234,7 +234,7 @@ export default function TabelaChamados() {
     setSelectedCodChamado(null);
   };
 
-  // Função para visualizar um chamado =========================================
+  // Função para visualizar um chamado
   const handleVisualizarChamado = useCallback(
     (codChamado: number) => {
       const chamado = data?.find(c => c.COD_CHAMADO === codChamado);
@@ -246,11 +246,13 @@ export default function TabelaChamados() {
     [data]
   );
 
+  // Função para visualizar uma OS
   const handleVisualizarOS = useCallback((codChamado: number) => {
     setSelectedCodChamado(codChamado);
     setTabelaOSOpen(true);
   }, []);
 
+  // Colunas da tabela
   const colunas = useMemo(
     () =>
       colunasTabela({
@@ -261,6 +263,7 @@ export default function TabelaChamados() {
     [handleVisualizarChamado, handleVisualizarOS]
   );
 
+  // Tabela filtrada e ordenada
   const table = useReactTable({
     data: data ?? [],
     columns: colunas,
@@ -279,6 +282,7 @@ export default function TabelaChamados() {
         pageSize: 20,
       },
     },
+
     // Função de filtro personalizada que funciona para todos os tipos
     filterFns: {
       customFilter: (row, columnId, filterValue) => {
@@ -304,6 +308,7 @@ export default function TabelaChamados() {
         return cellString.includes(filterString);
       },
     },
+
     // Aplica o filtro customizado para todas as colunas
     defaultColumn: {
       filterFn: (row, columnId, filterValue) => {
@@ -514,7 +519,7 @@ export default function TabelaChamados() {
               <FaDatabase className="text-white" size={44} />
             </div>
             {/* ===== */}
-            <div className="flex flex-col items-start justify-center">
+            <div className="flex flex-col items-center justify-center">
               {/* título */}
               <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-white select-none">
                 Tabela de Chamados
@@ -666,6 +671,7 @@ export default function TabelaChamados() {
                             type="text"
                           />
                         )}
+
                         {column.id === 'DATA_CHAMADO' && (
                           <FilterInput
                             value={(column.getFilterValue() as string) ?? ''}
@@ -674,6 +680,7 @@ export default function TabelaChamados() {
                             type="text"
                           />
                         )}
+
                         {column.id === 'ASSUNTO_CHAMADO' && (
                           <FilterInput
                             value={(column.getFilterValue() as string) ?? ''}
@@ -681,6 +688,7 @@ export default function TabelaChamados() {
                             placeholder="Filtrar por assunto..."
                           />
                         )}
+
                         {column.id === 'STATUS_CHAMADO' && (
                           <FilterSelect
                             value={(column.getFilterValue() as string) ?? ''}
@@ -689,6 +697,7 @@ export default function TabelaChamados() {
                             placeholder="Filtrar por status..."
                           />
                         )}
+
                         {column.id === 'EMAIL_CHAMADO' && (
                           <FilterInput
                             value={(column.getFilterValue() as string) ?? ''}

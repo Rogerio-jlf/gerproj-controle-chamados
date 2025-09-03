@@ -62,7 +62,7 @@ export const colunasTabela = (
   // código do chamado
   {
     accessorKey: 'COD_CHAMADO',
-    header: () => <div className="text-center">CÓD. Chamado</div>,
+    header: () => <div className="text-center">Código</div>,
     cell: ({ getValue }) => (
       <div className="rounded-md bg-purple-600 p-2 text-center text-white ring-1 ring-white">
         {getValue() as string}
@@ -73,7 +73,7 @@ export const colunasTabela = (
   // data do chamado
   {
     accessorKey: 'DATA_CHAMADO',
-    header: () => <div className="text-center">Data Chamado</div>,
+    header: () => <div className="text-center">Data</div>,
     cell: ({ getValue }) => {
       const dateString = getValue() as string;
 
@@ -129,7 +129,7 @@ export const colunasTabela = (
   // nome da tarefa
   {
     accessorKey: 'NOME_TAREFA',
-    header: () => <div className="text-center">Tarefa</div>,
+    header: () => <div className="text-center">Nome Tarefa</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string;
       const textoCorrigido = corrigirTextoCorrompido(value);

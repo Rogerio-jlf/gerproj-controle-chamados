@@ -12,7 +12,13 @@ import {
   ColumnFiltersState,
   SortingState,
 } from '@tanstack/react-table';
-import { colunasOSTarefa } from './Colunas_Tabela_OS_Tarefa';
+import { TabelaOSProps } from '../../../../types/types';
+// ================================================================================
+import {
+  colunasOSTarefa,
+  TabelaOSTarefaProps,
+} from './Colunas_Tabela_OS_Tarefa';
+// ================================================================================
 import IsLoading from './Loading';
 import IsError from './Error';
 // ================================================================================
@@ -29,48 +35,9 @@ import { LuArrowUpDown } from 'react-icons/lu';
 import { FaArrowUpLong } from 'react-icons/fa6';
 import { FaArrowDownLong } from 'react-icons/fa6';
 import { IoClose } from 'react-icons/io5';
+import ModalEditarOS from './Modal_Editar_OS';
+import { ModalExcluirOS } from './Modal_Deletar_OS';
 // ================================================================================
-// ================================================================================
-
-interface ModalOSTarefaProps {
-  isOpen: boolean;
-  onClose: () => void;
-  codTarefa: number | null;
-  codChamado: string | null;
-}
-
-export interface OSTarefaProps {
-  COD_OS: string;
-  CODTRF_OS: string;
-  DTINI_OS: string | null;
-  HRINI_OS: string | null;
-  HRFIM_OS: string | null;
-  OBS_OS: string;
-  STATUS_OS: string;
-  PRODUTIVO_OS: string;
-  CODREC_OS: string;
-  PRODUTIVO2_OS: string;
-  RESPCLI_OS: string;
-  REMDES_OS: string;
-  ABONO_OS: string;
-  DESLOC_OS: string;
-  OBS: string;
-  DTINC_OS: string | null;
-  FATURADO_OS: string;
-  PERC_OS: string | null;
-  COD_FATURAMENTO: string;
-  COMP_OS: string;
-  VALID_OS: string;
-  VRHR_OS: string | null;
-  NUM_OS: string;
-  CHAMADO_OS: string;
-  COD_CHAMADO: string;
-  COD_CLIENTE: string;
-  NOME_CLIENTE: string;
-  COD_TAREFA: string;
-  NOME_TAREFA: string;
-  QTD_HR_OS?: number;
-}
 // ================================================================================
 
 // Componente para input de filtro
@@ -90,7 +57,7 @@ const FilterInput = ({
     value={value}
     onChange={e => onChange(e.target.value)}
     placeholder={placeholder}
-    className="w-full rounded-md border border-white/30 bg-gray-900 px-4 py-2 text-base text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+    className="w-full rounded-md bg-black px-4 py-2 text-base text-white placeholder-gray-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none"
   />
 );
 
@@ -109,9 +76,11 @@ const FilterSelect = ({
   <select
     value={value}
     onChange={e => onChange(e.target.value)}
-    className="w-full cursor-pointer rounded-md border border-white/30 bg-gray-900 px-4 py-2 text-base text-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+    className="w-full cursor-pointer rounded-md bg-black px-4 py-2 text-base text-white placeholder-gray-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none"
   >
-    <option value="">{placeholder}</option>
+    <option value="" className="placeholder:text-gray-400">
+      {placeholder}
+    </option>
     {options.map(option => (
       <option key={option} value={option}>
         {option}
@@ -146,23 +115,29 @@ const SortableHeader = ({
 };
 // ================================================================================
 
-export default function ModalOSTarefa({
+export default function TabelaOSTarefa({
   isOpen,
   onClose,
   codTarefa,
   codChamado,
-}: ModalOSTarefaProps) {
+  onSuccess,
+}: TabelaOSTarefaProps) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'COD_OS', desc: false },
   ]);
   const [showFilters, setShowFilters] = useState(false);
 
+  const [selectedOS, setSelectedOS] = useState<string | null>(null);
+
+  const [modalEditarOSOpen, setModalEditarOSOpen] = useState(false);
+  const [osParaExcluir, setOsParaExcluir] = useState<string | null>(null);
+
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const fetchDataOSTarefa = async (codTarefa: number) => {
-    const response = await fetch(`/api/ordens-servico-tarefas/${codTarefa}`, {
+    const response = await fetch(`/api/OS-tarefa/${codTarefa}`, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -203,11 +178,42 @@ export default function ModalOSTarefa({
     }, 300);
   };
 
+  const handleOpenEditarOS = (codOS: string) => {
+    setSelectedOS(codOS);
+    setModalEditarOSOpen(true);
+  };
+
+  const handleAbrirModalExclusao = (codOS: string) => {
+    setOsParaExcluir(codOS);
+  };
+
+  const handleFecharModalExclusao = () => {
+    setOsParaExcluir(null);
+  };
+
+  const handleCloseEditarOS = () => {
+    setModalEditarOSOpen(false);
+    setSelectedOS(null);
+  };
+
+  const handleEditarOSSuccess = () => {
+    handleCloseEditarOS(); // fecha o modal de edição
+    onSuccess?.(); // fecha a Tabela_OS
+  };
+
+  const handleExclusaoSuccess = () => {
+    handleFecharModalExclusao();
+    refetch(); // Atualiza a tabela
+  };
+
   // Configuração da tabela
-  const colunas = colunasOSTarefa();
+  const colunas = colunasOSTarefa({
+    onEditarOS: handleOpenEditarOS,
+    onExcluirOS: handleAbrirModalExclusao,
+  });
 
   const table = useReactTable({
-    data: (dataOSTarefa ?? []) as OSTarefaProps[],
+    data: (dataOSTarefa ?? []) as TabelaOSProps[],
     columns: colunas,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -394,39 +400,41 @@ export default function ModalOSTarefa({
           className="absolute inset-0 bg-black/50 backdrop-blur-xl"
           onClick={onClose}
         />
+        {/* ===== */}
         {/* ===== MODAL ===== */}
-        <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-gray-300">
+        <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-black">
           {/* ===== HEADER ===== */}
           <header className="flex items-center justify-between gap-8 bg-white/70 p-6">
             {/* ===== ITENS DA ESQUERDA ===== */}
             <section className="flex items-center justify-center gap-6">
               {/* ícone */}
               <div className="flex items-center justify-center rounded-xl border border-black/30 bg-white/10 p-4">
-                <FaTasks className="animate-pulse text-black" size={44} />
+                <FaTasks className="text-black" size={44} />
               </div>
               {/* ===== */}
 
               <div className="flex flex-col items-center justify-center">
                 {/* título */}
-                <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
-                  Ordens de Serviço da Tarefa
+                <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
+                  OS Tarefa
                 </h1>
                 {/* ===== */}
 
                 <div className="flex items-center gap-4">
-                  {/* código da tarefa*/}
-                  <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
-                    Tarefa - {codTarefa}
+                  {/* número do chamado*/}
+                  <span className="rounded-full bg-black px-8 py-1 text-base font-extrabold tracking-widest text-white italic select-none">
+                    Tarefa - #{codTarefa}
                   </span>
+
                   {/* quantidade de OS's */}
-                  {dataOSTarefa && dataOSTarefa.length > 0 && (
+                  {/* {dataOSTarefa && dataOSTarefa.length > 0 && (
                     <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
                       {dataOSTarefa.length}{' '}
                       {dataOSTarefa.length === 1
                         ? '- OS encontrada'
                         : "- OS's encontradas"}
                     </span>
-                  )}
+                  )} */}
                 </div>
               </div>
             </section>
@@ -434,19 +442,25 @@ export default function ModalOSTarefa({
 
             {/* ===== ITENS DA DIREITA ===== */}
             <section className="flex items-center gap-20">
+              {/* botão mostrar/ocultar filtros */}
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 disabled={!dataOSTarefa || dataOSTarefa.length <= 1}
-                className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-black italic transition-all select-none disabled:border-gray-200 disabled:text-gray-200 ${
+                className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-black italic transition-all select-none ${
                   showFilters
-                    ? 'border border-blue-800 bg-blue-600 text-white hover:scale-105 hover:bg-blue-900 hover:text-white active:scale-95'
-                    : 'border border-black/50 bg-white/10 hover:scale-105 hover:bg-gray-500 hover:text-white active:scale-95'
+                    ? 'border border-blue-800 bg-blue-600 text-white'
+                    : 'border border-black/50 bg-white/10'
+                } ${
+                  !dataOSTarefa || dataOSTarefa.length <= 1
+                    ? 'disabled:cursor-not-allowed disabled:border-gray-200 disabled:text-gray-200'
+                    : 'hover:scale-105 hover:bg-gray-500 hover:text-white active:scale-95'
                 }`}
               >
                 {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
                 {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
               </button>
 
+              {/* botão limpar filtros */}
               {columnFilters.length > 0 && (
                 <button
                   onClick={clearFilters}
@@ -481,11 +495,13 @@ export default function ModalOSTarefa({
                     {/* ===== CABEÇALHO DA TABELA ===== */}
                     <thead className="sticky top-0 z-20">
                       {table.getHeaderGroups().map(headerGroup => (
+                        // Linha do cabeçalho da tabela
                         <tr key={headerGroup.id}>
                           {headerGroup.headers.map(header => (
+                            // Células do cabeçalho da tabela
                             <th
                               key={header.id}
-                              className="bg-teal-800 py-6 font-extrabold tracking-wider text-white uppercase select-none"
+                              className="border-t-2 border-white bg-teal-700 py-6 font-extrabold tracking-wider text-white uppercase select-none"
                               style={{
                                 width: getColumnWidth(header.column.id),
                               }}
@@ -495,10 +511,7 @@ export default function ModalOSTarefa({
                                 header.column.id === 'NOME_CLIENTE' ||
                                 header.column.id === 'CHAMADO_OS' ||
                                 header.column.id === 'STATUS_OS' ||
-                                header.column.id === 'DTINI_OS' ||
-                                header.column.id === 'HRINI_OS' ||
-                                header.column.id === 'HRFIM_OS' ||
-                                header.column.id === 'QTD_HR_OS' ? (
+                                header.column.id === 'DTINI_OS' ? (
                                 <SortableHeader column={header.column}>
                                   {flexRender(
                                     header.column.columnDef.header,
@@ -523,7 +536,7 @@ export default function ModalOSTarefa({
                           {table.getAllColumns().map(column => (
                             <th
                               key={column.id}
-                              className="bg-teal-800 px-3 pb-6"
+                              className="bg-teal-700 px-3 pb-6"
                               style={{ width: getColumnWidth(column.id) }}
                             >
                               {column.id === 'COD_OS' && (
@@ -595,28 +608,6 @@ export default function ModalOSTarefa({
                                   type="text"
                                 />
                               )}
-                              {column.id === 'HRINI_OS' && (
-                                <FilterInput
-                                  value={
-                                    (column.getFilterValue() as string) ?? ''
-                                  }
-                                  onChange={value =>
-                                    column.setFilterValue(value)
-                                  }
-                                  placeholder="HH:MM"
-                                />
-                              )}
-                              {column.id === 'HRFIM_OS' && (
-                                <FilterInput
-                                  value={
-                                    (column.getFilterValue() as string) ?? ''
-                                  }
-                                  onChange={value =>
-                                    column.setFilterValue(value)
-                                  }
-                                  placeholder="HH:MM"
-                                />
-                              )}
                             </th>
                           ))}
                         </tr>
@@ -662,11 +653,11 @@ export default function ModalOSTarefa({
                 </div>
 
                 {/* ===== PAGINAÇÃO DA TABELA ===== */}
-                <section className="border-t border-black bg-white/70 px-12 py-4">
+                <section className="border-t-2 border-white bg-white/70 px-12 py-4">
                   <div className="flex items-center justify-between">
                     {/* Informações da página */}
-                    <div className="flex items-center gap-4 text-base font-semibold tracking-widest text-black italic select-none">
-                      <span>
+                    <section className="flex items-center gap-4">
+                      <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
                         {table.getFilteredRowModel().rows.length} registro
                         {table.getFilteredRowModel().rows.length !== 1
                           ? 's'
@@ -685,10 +676,10 @@ export default function ModalOSTarefa({
                           {columnFilters.length > 1 ? 's' : ''}
                         </span>
                       )}
-                    </div>
+                    </section>
 
                     {/* Controles de paginação */}
-                    <div className="flex items-center gap-3">
+                    <section className="flex items-center gap-3">
                       {/* Seletor de itens por página */}
                       <div className="flex items-center gap-2">
                         <span className="text-base font-semibold tracking-widest text-black italic select-none">
@@ -780,7 +771,7 @@ export default function ModalOSTarefa({
                           <FiChevronsRight className="text-white" size={24} />
                         </button>
                       </div>
-                    </div>
+                    </section>
                   </div>
                 </section>
               </section>
@@ -812,21 +803,41 @@ export default function ModalOSTarefa({
                   <FaFilter className="mx-auto mb-4 text-cyan-400" size={60} />
                   {/* título */}
                   <h3 className="text-xl font-bold tracking-wider text-slate-200 select-none">
-                    Nenhum registro encontrado para os filtros aplicados
+                    Nenhum registro foi encontrado para os filtros aplicados.
                   </h3>
-                  {/* sub-título */}
+                  {/* Subtítulo */}
                   <p className="mt-2 text-slate-400">
-                    Tente ajustar os filtros ou limpe-os para visualizar todos
-                    os registros
+                    Tente ajustar os filtros ou limpe-os para visualizar
+                    registros.
                   </p>
                 </section>
               )}
-            {/* ===== */}
           </main>
-          {/* ===== */}
         </div>
-        {/* ===== */}
       </div>
+
+      {/* ===== MODAL EDIÇÃO DE OS ===== */}
+      {modalEditarOSOpen && selectedOS !== null && (
+        <ModalEditarOS
+          isOpen={modalEditarOSOpen}
+          onClose={handleCloseEditarOS}
+          codChamado={codChamado !== null ? Number(codChamado) : null}
+          codOS={selectedOS}
+          nomeCliente={
+            dataOSTarefa?.find(os => os.COD_OS === selectedOS)?.NOME_CLIENTE
+          }
+          onSuccess={handleEditarOSSuccess}
+        />
+      )}
+      {/* ===== */}
+
+      {/* ===== MODAL EXCLUSÃO DE OS ===== */}
+      <ModalExcluirOS
+        isOpen={!!osParaExcluir}
+        onClose={handleFecharModalExclusao}
+        codOS={osParaExcluir}
+        onSuccess={handleExclusaoSuccess}
+      />
       {/* ===== */}
     </>
   );
@@ -836,15 +847,15 @@ export default function ModalOSTarefa({
 // Função para largura fixa das colunas
 function getColumnWidth(columnId: string): string {
   const widthMap: Record<string, string> = {
-    COD_OS: '70px',
+    COD_OS: '90px',
     NOME_CLIENTE: '150px',
     CHAMADO_OS: '100px',
     OBS_OS: '250px',
-    DTINI_OS: '100px',
-    HRINI_OS: '100px',
-    HRFIM_OS: '100px',
-    QTD_HR_OS: '100px',
-    actions: '80px',
+    DTINI_OS: '90px',
+    HRINI_OS: '90px',
+    HRFIM_OS: '90px',
+    QTD_HR_OS: '90px',
+    actions: '50px',
   };
 
   return widthMap[columnId] || '100px';

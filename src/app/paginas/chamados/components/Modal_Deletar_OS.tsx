@@ -1,40 +1,64 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, Trash2, X } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
+import { IoClose } from 'react-icons/io5';
+import { FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
+import { MdDeleteSweep, MdDelete } from 'react-icons/md';
+import { IoIosInformationCircle } from 'react-icons/io';
 
 interface ModalExcluirOSProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (codOS: string) => Promise<void>;
   codOS: string | null;
-  isLoading?: boolean;
+  onSuccess?: () => void;
 }
 
 export function ModalExcluirOS({
   isOpen,
   onClose,
-  onConfirm,
   codOS,
-  isLoading = false,
+  onSuccess,
 }: ModalExcluirOSProps) {
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleConfirm = async () => {
     if (!codOS) return;
 
+    setIsLoading(true);
     setError(null);
+
     try {
-      await onConfirm(codOS);
-      onClose();
+      const response = await fetch(`/api/apontamentos/delete/${codOS}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao excluir OS');
+      }
+
+      setSuccess(true);
+
+      // Aguarda um pouco para mostrar a mensagem de sucesso
+      setTimeout(() => {
+        setSuccess(false);
+        onClose();
+        onSuccess?.(); // Chama refetch na tabela pai
+      }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao excluir OS');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleClose = () => {
     if (!isLoading) {
       setError(null);
+      setSuccess(false);
       onClose();
     }
   };
@@ -43,91 +67,113 @@ export function ModalExcluirOS({
 
   return (
     <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
-      {/* Overlay com blur melhorado */}
+      {/* ===== OVERLAY ===== */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-xl"
         onClick={handleClose}
       />
 
-      {/* Modal Container */}
-      <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[90vh] w-full max-w-md overflow-hidden rounded-3xl border border-gray-200/50 bg-white shadow-2xl transition-all duration-500 ease-out">
-        {/* Header com gradiente */}
-        <header className="relative bg-gradient-to-r from-red-900 via-red-800 to-red-900 p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {/* Ícone com animação */}
-              <div className="rounded-2xl border border-red-400/30 bg-gradient-to-br from-red-400/20 to-orange-500/20 p-4 backdrop-blur-sm">
-                <AlertTriangle
-                  className="drop-shadow-glow text-red-400"
-                  size={32}
-                />
+      {/* ===== MODAL CONTAINER ===== */}
+      <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-3xl overflow-hidden rounded-2xl border border-black bg-white transition-all duration-500 ease-out">
+        {/* ===== HEADER ===== */}
+        <header className="relative bg-yellow-600 p-6">
+          <section className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-6">
+              {/* Ícone */}
+              <div className="rounded-2xl border border-black/50 bg-white/10 p-4">
+                <AlertTriangle className="text-black" size={40} />
               </div>
 
-              <div>
-                <h1 className="text-2xl font-bold tracking-wide text-white drop-shadow-sm">
-                  Confirmar Exclusão
+              <div className="flex flex-col items-center justify-center">
+                {/* Título */}
+                <h1 className="text-2xl font-bold tracking-wider text-black select-none">
+                  Excluir OS
                 </h1>
-                <p className="mt-1 text-sm font-medium text-red-300">
-                  Esta ação não pode ser desfeita
-                </p>
+
+                <div className="inline-block rounded-full bg-black px-8 py-1">
+                  {/* Valor */}
+                  <p className="text-base font-extrabold tracking-widest text-white italic select-none">
+                    OS - #{codOS}
+                  </p>
+                </div>
               </div>
             </div>
 
+            {/* Botão fechar modal */}
             <button
               onClick={handleClose}
               disabled={isLoading}
-              className="group rounded-full border border-transparent p-3 text-white transition-all duration-200 hover:border-red-400/50 hover:bg-red-500/20 disabled:opacity-50"
+              className="group cursor-pointer rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <X className="h-5 w-5 transition-transform group-hover:scale-110" />
+              <IoClose size={24} />
             </button>
-          </div>
+          </section>
         </header>
 
-        {/* Conteúdo Principal */}
-        <div className="bg-gradient-to-br from-gray-50 to-white p-6">
-          {/* Alert de erro */}
-          {error && (
-            <div className="mb-6 rounded-2xl border border-red-200 bg-gradient-to-r from-red-50 to-pink-50 p-4 shadow-sm">
+        {/* ===== CONTEÚDO ===== */}
+        <main className="max-h-[calc(95vh-140px)] space-y-6 overflow-y-auto bg-gray-100 p-6">
+          {/* Alerta de sucesso */}
+          {success && (
+            <div className="mb-6 rounded-full border border-green-200 bg-green-600 px-6 py-2">
               <div className="flex items-center gap-3">
-                <AlertTriangle className="text-red-600" size={20} />
-                <p className="font-semibold text-red-800">{error}</p>
+                <FaCheckCircle className="text-green-500" size={20} />
+                <p className="text-base font-semibold tracking-wider text-white select-none">
+                  OS excluída com sucesso!
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Alerta de erro */}
+          {error && (
+            <div className="mb-6 rounded-full border border-red-200 bg-red-600 px-6 py-2">
+              <div className="flex items-center gap-3">
+                <FaExclamationTriangle className="text-red-500" size={20} />
+                <p className="text-base font-semibold tracking-wider text-white select-none">
+                  {error}
+                </p>
               </div>
             </div>
           )}
 
           {/* Seção de Confirmação */}
-          <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-            <div className="border-b border-gray-100 bg-gradient-to-r from-gray-50 to-slate-50 p-4">
-              <h3 className="flex items-center gap-2 font-bold text-slate-800">
-                <Trash2 className="text-red-500" size={18} />
-                Exclusão de Ordem de Serviço
-              </h3>
+          <section className="overflow-hidden rounded-md bg-white shadow-sm shadow-black">
+            <div className="bg-black p-4">
+              <div className="flex items-center gap-4 font-bold text-slate-800">
+                <MdDeleteSweep className="text-white" size={32} />
+                <h3 className="text-lg font-semibold tracking-wider text-white select-none">
+                  Exclusão de Ordem de Serviço
+                </h3>
+              </div>
             </div>
-            <div className="p-6">
-              <div className="text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-                  <AlertTriangle className="text-red-600" size={32} />
-                </div>
-                <p className="mb-2 text-lg font-semibold text-slate-800">
+
+            <div className="flex flex-col items-center justify-center gap-10 p-6">
+              <div className="flex items-center justify-center gap-4">
+                <FaExclamationTriangle className="text-black" size={32} />
+                <p className="text-lg font-semibold text-slate-800">
                   Tem certeza que deseja excluir a OS
                 </p>
-                <div className="inline-flex items-center rounded-full bg-red-100 px-4 py-2">
-                  <span className="font-bold text-red-700">{codOS}</span>
-                </div>
-                <p className="mt-4 text-sm text-gray-600">
-                  Todos os dados relacionados a esta ordem de serviço serão
-                  permanentemente removidos do sistema.
+                <span className="text-2xl font-extrabold tracking-widest text-slate-800 italic select-none">
+                  #{codOS}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-center gap-2">
+                <IoIosInformationCircle className="text-black" size={32} />
+                <p className="text-xs font-semibold tracking-wider text-gray-800 italic select-none">
+                  Todos os dados relacionados a essa OS serão permanentemente
+                  removidos do sistema.
                 </p>
               </div>
             </div>
-          </div>
+          </section>
 
-          {/* Botões de Ação */}
-          <div className="mt-6 flex gap-4">
+          {/* Botões de ação */}
+          <section className="flex items-center justify-end gap-6">
             <button
               onClick={handleClose}
               disabled={isLoading}
-              className="flex-1 rounded-xl bg-gray-100 px-6 py-4 font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 disabled:opacity-50"
+              className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-lg font-extrabold text-white transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-lg hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -135,22 +181,22 @@ export function ModalExcluirOS({
             <button
               onClick={handleConfirm}
               disabled={isLoading || !codOS}
-              className="flex flex-1 items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-6 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:from-red-700 hover:to-red-800 hover:shadow-red-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex cursor-pointer items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-lg font-extrabold text-white transition-all select-none hover:scale-105 hover:bg-blue-900 hover:shadow-lg hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isLoading ? (
                 <>
                   <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  Excluindo...
+                  <span>Excluindo...</span>
                 </>
               ) : (
                 <>
-                  <Trash2 size={18} />
+                  <MdDelete size={20} />
                   Confirmar Exclusão
                 </>
               )}
             </button>
-          </div>
-        </div>
+          </section>
+        </main>
       </div>
     </div>
   );

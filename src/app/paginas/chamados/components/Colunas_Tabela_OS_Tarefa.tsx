@@ -1,10 +1,35 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { OSTarefaProps } from './Tabela_OS_Tarefa';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
-// ================================================================================
-// ================================================================================
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '../../../../components/ui/tooltip';
+import { TabelaOSProps } from '../../../../types/types';
+import { MdEditDocument } from 'react-icons/md';
+import { RiDeleteBin5Fill } from 'react-icons/ri';
+import {
+  formatarDataParaBR,
+  formatarDecimalParaTempo,
+  formatarHora,
+} from '../../../../utils/formatters';
 
-export const colunasOSTarefa = (): ColumnDef<OSTarefaProps>[] => [
+export interface TabelaOSTarefaProps {
+  isOpen: boolean;
+  onClose: () => void;
+  codTarefa: number | null;
+  codChamado: string | null;
+  onSuccess?: () => void;
+}
+
+export interface AcoesOSProps {
+  onEditarOS: (codOS: string) => void;
+  onExcluirOS: (codOS: string) => void;
+}
+
+export const colunasOSTarefa = (
+  acoes: AcoesOSProps
+): ColumnDef<TabelaOSProps>[] => [
   // Código da OS
   {
     accessorKey: 'COD_OS',
@@ -27,17 +52,6 @@ export const colunasOSTarefa = (): ColumnDef<OSTarefaProps>[] => [
     },
   },
 
-  // Número do Chamado
-  {
-    accessorKey: 'CHAMADO_OS',
-    header: () => <div className="text-center">Tarefa</div>,
-    cell: ({ getValue }) => (
-      <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
-        {getValue() as string}
-      </div>
-    ),
-  },
-
   // Observações da OS
   {
     accessorKey: 'OBS_OS',
@@ -53,115 +67,116 @@ export const colunasOSTarefa = (): ColumnDef<OSTarefaProps>[] => [
     },
   },
 
-  // Data de Início
+  // Data de Início - VERSÃO REFATORADA
   {
     accessorKey: 'DTINI_OS',
     header: () => <div className="text-center">DT. Início</div>,
     cell: ({ getValue }) => {
       const dateString = getValue() as string;
+      const dataFormatada = formatarDataParaBR(dateString);
 
-      if (!dateString) {
-        return <div className="text-center">-</div>;
-      }
-
-      try {
-        // Se já está no formato dd/mm/yyyy
-        if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
-          return <div className="text-center">{dateString}</div>;
-        }
-
-        // Converte do formato ISO para dd/mm/yyyy
-        const [year, month, day] = dateString.split('T')[0].split('-');
-        const formattedDate = `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
-        return <div className="text-center">{formattedDate}</div>;
-      } catch {
-        return <div className="text-center">{dateString}</div>;
-      }
+      return (
+        <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
+          {dataFormatada}
+        </div>
+      );
     },
   },
 
-  // Hora de Início
+  // Hora de Início - VERSÃO REFATORADA
   {
     accessorKey: 'HRINI_OS',
     header: () => <div className="text-center">HR. Início</div>,
     cell: ({ getValue }) => {
       const timeString = getValue() as string;
+      const horaFormatada = formatarHora(timeString);
 
-      if (!timeString) {
-        return <div className="text-center">-</div>;
-      }
-
-      try {
-        // Se já está no formato HH:MM
-        if (/^\d{2}:\d{2}$/.test(timeString)) {
-          return <div className="text-center">{timeString}</div>;
-        }
-
-        // Converte do formato HHMM para HH:MM
-        if (/^\d{4}$/.test(timeString.trim())) {
-          const cleanTime = timeString.trim().padStart(4, '0');
-          const hours = cleanTime.substring(0, 2);
-          const minutes = cleanTime.substring(2, 4);
-          return (
-            <div className="text-center">
-              {hours}:{minutes}
-            </div>
-          );
-        }
-
-        return <div className="text-center">{timeString}</div>;
-      } catch {
-        return <div className="text-center">{timeString}</div>;
-      }
+      return (
+        <div className="rounded-md bg-slate-800 p-2 text-center text-white ring-1 ring-white">
+          {horaFormatada}
+        </div>
+      );
     },
   },
 
-  // Hora de Fim
+  // Hora de Fim - VERSÃO REFATORADA
   {
     accessorKey: 'HRFIM_OS',
     header: () => <div className="text-center">HR. Fim</div>,
     cell: ({ getValue }) => {
       const timeString = getValue() as string;
+      const horaFormatada = formatarHora(timeString);
 
-      if (!timeString) {
-        return <div className="text-center">-</div>;
-      }
-
-      try {
-        // Se já está no formato HH:MM
-        if (/^\d{2}:\d{2}$/.test(timeString)) {
-          return <div className="text-center">{timeString}</div>;
-        }
-
-        // Converte do formato HHMM para HH:MM
-        if (/^\d{4}$/.test(timeString.trim())) {
-          const cleanTime = timeString.trim().padStart(4, '0');
-          const hours = cleanTime.substring(0, 2);
-          const minutes = cleanTime.substring(2, 4);
-          return (
-            <div className="text-center">
-              {hours}:{minutes}
-            </div>
-          );
-        }
-
-        return <div className="text-center">{timeString}</div>;
-      } catch {
-        return <div className="text-center">{timeString}</div>;
-      }
+      return (
+        <div className="rounded-md bg-slate-800 p-2 text-center text-white ring-1 ring-white">
+          {horaFormatada}
+        </div>
+      );
     },
   },
 
-  // Quantidade de Horas
+  // Quantidade de Horas - VERSÃO REFATORADA
   {
     accessorKey: 'QTD_HR_OS',
     header: () => <div className="text-center">QTD. Horas</div>,
     cell: ({ getValue }) => {
       const value = getValue() as number;
+      const tempoFormatado = formatarDecimalParaTempo(value);
 
       return (
-        <div className="rounded-md bg-purple-600 p-2 text-center text-white ring-1 ring-white">
-          {value !== null && value !== undefined ? value.toFixed(2) : '-'}
+        <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
+          {tempoFormatado}
+        </div>
+      );
+    },
+  },
+
+  // Botões de ação (sem alteração)
+  {
+    id: 'actions',
+    header: () => <div className="text-center">Ações</div>,
+    cell: ({ row }) => {
+      const os = row.original;
+
+      return (
+        <div className="flex items-center justify-center gap-4">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => acoes.onEditarOS(os.COD_OS)}
+                className="cursor-pointer transition-all hover:scale-110"
+              >
+                <MdEditDocument size={32} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="left"
+              align="end"
+              sideOffset={8}
+              className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+            >
+              Editar OS
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => acoes.onExcluirOS(os.COD_OS)}
+                className="cursor-pointer transition-all hover:scale-110"
+              >
+                <RiDeleteBin5Fill size={32} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="top"
+              align="end"
+              sideOffset={8}
+              className="border-t-4 border-red-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+            >
+              Excluir OS
+            </TooltipContent>
+          </Tooltip>
         </div>
       );
     },

@@ -271,7 +271,7 @@ export default function ModalAtribuirChamado({
               {/* Informações Gerais */}
               <FormSection
                 title="Informações Gerais"
-                icon={<IoDocumentText className="text-black" size={20} />}
+                icon={<IoDocumentText className="text-white" size={20} />}
               >
                 <div className="grid grid-cols-2 gap-6">
                   {/* ===== COLUNA ESQUERDA ===== */}
@@ -604,8 +604,8 @@ const FormSection = ({
   children: React.ReactNode;
 }) => (
   <div className="mb-6 overflow-hidden rounded-md bg-white shadow-sm shadow-black">
-    <div className="border-b border-gray-300 bg-gray-200 px-4 py-2">
-      <h3 className="flex items-center gap-2 text-lg font-bold tracking-wider text-black select-none">
+    <div className="border-b border-gray-300 bg-slate-900 px-4 py-2">
+      <h3 className="flex items-center gap-2 text-lg font-bold tracking-wider text-white select-none">
         {icon}
         {title}
       </h3>
@@ -628,7 +628,7 @@ const InfoItem = ({
   statusStyle?: string;
 }) => (
   <div className="overflow-hidden rounded-md bg-white shadow-sm shadow-black">
-    <div className="border-b border-gray-400 bg-gray-600 p-2">
+    <div className="bg-gray-500 p-2">
       <div className="flex items-center gap-3">
         {icon}
         <p className="text-sm font-semibold tracking-wider text-white select-none">

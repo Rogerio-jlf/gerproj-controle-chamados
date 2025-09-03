@@ -14,7 +14,8 @@ import {
   SortingState,
 } from '@tanstack/react-table';
 // ================================================================================
-import { colunasTabelaOS, OSProps, OSTarefaProps } from './Colunas_Tabela_OS';
+import { colunasTabelaOS, OSTarefaProps } from './Colunas_Tabela_OS';
+import { TabelaOSProps } from '../../../../types/types';
 import ModalEditarOS from './Modal_Editar_OS';
 import { ModalExcluirOS } from './Modal_Deletar_OS';
 // ================================================================================
@@ -56,36 +57,37 @@ const FilterInput = ({
     value={value}
     onChange={e => onChange(e.target.value)}
     placeholder={placeholder}
-    className="w-full rounded-md border border-white/30 bg-gray-900 px-4 py-2 text-base text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+    className="w-full rounded-md bg-black px-4 py-2 text-base text-white placeholder-gray-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none"
   />
 );
 // =====
 
-// Select filtro
-const FilterSelect = ({
-  value,
-  onChange,
-  options,
-  placeholder,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  options: string[];
-  placeholder: string;
-}) => (
-  <select
-    value={value}
-    onChange={e => onChange(e.target.value)}
-    className="w-full cursor-pointer rounded-md border border-white/30 bg-gray-900 px-4 py-2 text-base text-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-  >
-    <option value="">{placeholder}</option>
-    {options.map(option => (
-      <option key={option} value={option}>
-        {option}
-      </option>
-    ))}
-  </select>
-);
+// const FilterSelect = ({
+//   value,
+//   onChange,
+//   options,
+//   placeholder,
+// }: {
+//   value: string;
+//   onChange: (value: string) => void;
+//   options: string[];
+//   placeholder: string;
+// }) => (
+//   <select
+//     value={value}
+//     onChange={e => onChange(e.target.value)}
+//     className="w-full cursor-pointer rounded-md bg-black px-4 py-2 text-base text-white placeholder-gray-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+//   >
+//     <option value="" className="placeholder:text-gray-400">
+//       {placeholder}
+//     </option>
+//     {options.map(option => (
+//       <option key={option} value={option}>
+//         {option}
+//       </option>
+//     ))}
+//   </select>
+// );
 // =====
 
 // Cabeçalho ordenável
@@ -129,12 +131,11 @@ export default function TabelaOS({
   ]);
   const [showFilters, setShowFilters] = useState(false);
   const [osParaExcluir, setOsParaExcluir] = useState<string | null>(null);
-  const [isExcluindo, setIsExcluindo] = useState(false);
 
   // ==============================
 
   const fetchDataOS = async (codChamado: number) => {
-    const response = await fetch(`/api/ordens-servico/${codChamado}`);
+    const response = await fetch(`/api/OS-chamado/${codChamado}`);
 
     if (!response.ok) throw new Error(`Erro: ${response.status}`);
 
@@ -194,7 +195,6 @@ export default function TabelaOS({
   // Função para fechar modal de exclusão
   const handleFecharModalExclusao = () => {
     setOsParaExcluir(null);
-    setIsExcluindo(false);
   };
 
   const handleEditarOSSuccess = () => {
@@ -202,32 +202,10 @@ export default function TabelaOS({
     onSuccess?.(); // fecha a Tabela_OS
   };
 
-  // Função para confirmar exclusão
-  const handleConfirmarExclusao = async (codOS: string) => {
-    setIsExcluindo(true);
-    try {
-      const response = await fetch(`/api/os?codOS=${codOS}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erro ao excluir OS');
-      }
-
-      // Recarregar os dados após exclusão bem-sucedida
-      await refetch();
-
-      // Fechar o modal
-      handleFecharModalExclusao();
-    } catch (error) {
-      console.error('Erro ao excluir OS:', error);
-      throw error;
-    } finally {
-      setIsExcluindo(false);
-    }
+  const handleExclusaoSuccess = () => {
+    handleFecharModalExclusao();
+    refetch(); // Atualiza a tabela
   };
-  // ==============================
 
   // Configuração da tabela
   const colunas = colunasTabelaOS({
@@ -237,7 +215,7 @@ export default function TabelaOS({
   // ==============================
 
   const table = useReactTable({
-    data: (dataOS ?? []) as OSProps[],
+    data: (dataOS ?? []) as TabelaOSProps[],
     columns: colunas,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -309,16 +287,17 @@ export default function TabelaOS({
   if (!isOpen) return null;
   // ==============================
 
-  // ===== LOADING CENTRALIZADO - NOVA IMPLEMENTAÇÃO =====
+  // ===== LOADING =====
   if (isLoading) {
     return (
       <>
-        {/* Overlay do modal principal */}
+        {/* ===== OVERLAY LOADING ===== */}
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-xl"
             onClick={onClose}
           />
+          {/* ===== */}
           <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-gray-300">
             {/* Header do modal mesmo durante loading */}
             <header className="flex items-center justify-between gap-8 bg-white/70 p-6">
@@ -364,15 +343,17 @@ export default function TabelaOS({
   }
   // ==============================
 
+  // ===== ERROR =====
   if (isError) {
     return (
       <>
-        {/* Overlay do modal principal */}
+        {/* ===== OVERLAY ERROR ===== */}
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-xl"
             onClick={onClose}
           />
+          {/* ===== */}
           <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-gray-300">
             {/* Header do modal mesmo durante erro */}
             <header className="flex items-center justify-between gap-8 bg-white/70 p-6">
@@ -420,6 +401,7 @@ export default function TabelaOS({
           className="absolute inset-0 bg-black/50 backdrop-blur-xl"
           onClick={onClose}
         />
+        {/* ===== */}
         {/* ===== MODAL ===== */}
         <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-black">
           {/* ===== HEADER ===== */}
@@ -432,27 +414,28 @@ export default function TabelaOS({
               </div>
               {/* ===== */}
 
-              <div className="flex flex-col items-start justify-center">
+              <div className="flex flex-col items-center justify-center">
                 {/* título */}
-                <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
+                <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
                   Ordens de Serviço
                 </h1>
                 {/* ===== */}
 
                 <div className="flex items-center gap-4">
                   {/* número do chamado*/}
-                  <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
-                    Chamado - {codChamado}
+                  <span className="rounded-full bg-black px-8 py-1 text-base font-extrabold tracking-widest text-white italic select-none">
+                    Chamado - #{codChamado}
                   </span>
+
                   {/* quantidade de OS's */}
-                  {dataOS && dataOS.length > 0 && (
+                  {/* {dataOS && dataOS.length > 0 && (
                     <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
                       {dataOS.length}{' '}
                       {dataOS.length === 1
                         ? '- OS encontrada'
                         : "- OS's encontradas"}
                     </span>
-                  )}
+                  )} */}
                 </div>
               </div>
             </section>
@@ -460,19 +443,25 @@ export default function TabelaOS({
 
             {/* ===== ITENS DA DIREITA ===== */}
             <section className="flex items-center gap-20">
+              {/* botão mostrar/ocultar filtros */}
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 disabled={!dataOS || dataOS.length <= 1}
-                className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-black italic transition-all select-none disabled:border-gray-200 disabled:text-gray-200 ${
+                className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-black italic transition-all select-none ${
                   showFilters
-                    ? 'border border-blue-800 bg-blue-600 text-white hover:scale-105 hover:bg-blue-900 hover:text-white active:scale-95'
-                    : 'border border-black/50 bg-white/10 hover:scale-105 hover:bg-gray-500 hover:text-white active:scale-95'
+                    ? 'border border-blue-800 bg-blue-600 text-white'
+                    : 'border border-black/50 bg-white/10'
+                } ${
+                  !dataOS || dataOS.length <= 1
+                    ? 'disabled:cursor-not-allowed disabled:border-gray-200 disabled:text-gray-200'
+                    : 'hover:scale-105 hover:bg-gray-500 hover:text-white active:scale-95'
                 }`}
               >
                 {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
                 {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
               </button>
 
+              {/* botão limpar filtros */}
               {columnFilters.length > 0 && (
                 <button
                   onClick={clearFilters}
@@ -507,11 +496,13 @@ export default function TabelaOS({
                     {/* ===== CABEÇALHO DA TABELA ===== */}
                     <thead className="sticky top-0 z-20">
                       {table.getHeaderGroups().map(headerGroup => (
+                        // Linha do cabeçalho da tabela
                         <tr key={headerGroup.id}>
                           {headerGroup.headers.map(header => (
+                            // Células do cabeçalho da tabela
                             <th
                               key={header.id}
-                              className="bg-teal-800 py-6 font-extrabold tracking-wider text-white uppercase select-none"
+                              className="border-t-2 border-white bg-teal-700 py-6 font-extrabold tracking-wider text-white uppercase select-none"
                               style={{
                                 width: getColumnWidth(header.column.id),
                               }}
@@ -521,9 +512,7 @@ export default function TabelaOS({
                                 header.column.id === 'NOME_CLIENTE' ||
                                 header.column.id === 'CODTRF_OS' ||
                                 header.column.id === 'DTINI_OS' ||
-                                header.column.id === 'HRINI_OS' ||
-                                header.column.id === 'HRFIM_OS' ||
-                                header.column.id === 'QTD_HR_OS' ? (
+                                header.column.id === 'OBS_OS' ? (
                                 <SortableHeader column={header.column}>
                                   {flexRender(
                                     header.column.columnDef.header,
@@ -548,7 +537,7 @@ export default function TabelaOS({
                           {table.getAllColumns().map(column => (
                             <th
                               key={column.id}
-                              className="bg-teal-800 px-3 pb-6"
+                              className="bg-teal-700 px-3 pb-6"
                               style={{ width: getColumnWidth(column.id) }}
                             >
                               {column.id === 'COD_OS' && (
@@ -560,9 +549,11 @@ export default function TabelaOS({
                                     column.setFilterValue(value)
                                   }
                                   placeholder="Código..."
+                                  type="text"
                                 />
                               )}
-                              {column.id === 'NOME_CLIENTE' && (
+
+                              {/* {column.id === 'NOME_CLIENTE' && (
                                 <FilterSelect
                                   value={
                                     (column.getFilterValue() as string) ?? ''
@@ -573,7 +564,8 @@ export default function TabelaOS({
                                   options={clienteOptions}
                                   placeholder="Cliente..."
                                 />
-                              )}
+                              )} */}
+
                               {column.id === 'CODTRF_OS' && (
                                 <FilterInput
                                   value={
@@ -585,6 +577,7 @@ export default function TabelaOS({
                                   placeholder="Código..."
                                 />
                               )}
+
                               {column.id === 'OBS_OS' && (
                                 <FilterInput
                                   value={
@@ -596,6 +589,7 @@ export default function TabelaOS({
                                   placeholder="Observação..."
                                 />
                               )}
+
                               {column.id === 'DTINI_OS' && (
                                 <FilterInput
                                   value={
@@ -606,28 +600,6 @@ export default function TabelaOS({
                                   }
                                   placeholder="dd/mm/aaaa"
                                   type="text"
-                                />
-                              )}
-                              {column.id === 'HRINI_OS' && (
-                                <FilterInput
-                                  value={
-                                    (column.getFilterValue() as string) ?? ''
-                                  }
-                                  onChange={value =>
-                                    column.setFilterValue(value)
-                                  }
-                                  placeholder="HH:MM"
-                                />
-                              )}
-                              {column.id === 'HRFIM_OS' && (
-                                <FilterInput
-                                  value={
-                                    (column.getFilterValue() as string) ?? ''
-                                  }
-                                  onChange={value =>
-                                    column.setFilterValue(value)
-                                  }
-                                  placeholder="HH:MM"
                                 />
                               )}
                             </th>
@@ -675,11 +647,11 @@ export default function TabelaOS({
                 </div>
 
                 {/* ===== PAGINAÇÃO DA TABELA ===== */}
-                <section className="border-t border-black bg-white/70 px-12 py-4">
+                <section className="border-t-2 border-white bg-white/70 px-12 py-4">
                   <div className="flex items-center justify-between">
                     {/* Informações da página */}
-                    <div className="flex items-center gap-4 text-base font-semibold tracking-widest text-black italic select-none">
-                      <span>
+                    <section className="flex items-center gap-4">
+                      <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
                         {table.getFilteredRowModel().rows.length} registro
                         {table.getFilteredRowModel().rows.length !== 1
                           ? 's'
@@ -698,10 +670,10 @@ export default function TabelaOS({
                           {columnFilters.length > 1 ? 's' : ''}
                         </span>
                       )}
-                    </div>
+                    </section>
 
                     {/* Controles de paginação */}
-                    <div className="flex items-center gap-3">
+                    <section className="flex items-center gap-3">
                       {/* Seletor de itens por página */}
                       <div className="flex items-center gap-2">
                         <span className="text-base font-semibold tracking-widest text-black italic select-none">
@@ -793,7 +765,7 @@ export default function TabelaOS({
                           <FiChevronsRight className="text-white" size={24} />
                         </button>
                       </div>
-                    </div>
+                    </section>
                   </div>
                 </section>
               </section>
@@ -835,15 +807,12 @@ export default function TabelaOS({
                   </p>
                 </section>
               )}
-            {/* ===== */}
           </main>
-          {/* ===== */}
         </div>
-        {/* ===== */}
       </div>
       {/* ===== */}
 
-      {/* ===== MODAL DE EDIÇÃO DE OS ===== */}
+      {/* ===== MODAL EDIÇÃO DE OS ===== */}
       {modalEditarOSOpen && selectedOS !== null && (
         <ModalEditarOS
           isOpen={modalEditarOSOpen}
@@ -852,19 +821,18 @@ export default function TabelaOS({
           codOS={selectedOS}
           nomeCliente={
             dataOS?.find(os => os.COD_OS === selectedOS)?.NOME_CLIENTE
-          } // <-- ADICIONAR ESTA LINHA
+          }
           onSuccess={handleEditarOSSuccess}
         />
       )}
       {/* ===== */}
 
-      {/* ===== MODAL DE EXCLUSÃO DE OS ===== */}
+      {/* ===== MODAL EXCLUSÃO DE OS ===== */}
       <ModalExcluirOS
         isOpen={!!osParaExcluir}
         onClose={handleFecharModalExclusao}
-        onConfirm={handleConfirmarExclusao}
         codOS={osParaExcluir}
-        isLoading={isExcluindo}
+        onSuccess={handleExclusaoSuccess}
       />
       {/* ===== */}
     </>

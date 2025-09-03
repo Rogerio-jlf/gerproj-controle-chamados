@@ -16,5 +16,15 @@ API CHAMADOS-TAREFA - OK - Foi testada no banco de dados. Está retornando todos
 
 
 
+API DELETE - OK - Foi testada no banco de dados.
+
+
+
+
+
+
+
+
+
 
 

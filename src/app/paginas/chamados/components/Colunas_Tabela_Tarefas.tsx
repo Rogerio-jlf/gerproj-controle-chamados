@@ -5,7 +5,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 // ================================================================================
-import { FaDownload, FaEye, FaPhoneAlt } from 'react-icons/fa';
+import { FaDownload, FaPhoneAlt, FaPlus, FaThList } from 'react-icons/fa';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 // ================================================================================
 // ================================================================================
@@ -18,11 +18,38 @@ export interface TarefasProps {
   HREST_TAREFA: number;
 }
 
+export interface ChamadosProps {
+  COD_CHAMADO: number;
+  DATA_CHAMADO: string;
+  STATUS_CHAMADO: string; // ← Mudou de number para string
+  CODTRF_CHAMADO: number;
+  COD_CLIENTE: number;
+  ASSUNTO_CHAMADO: string;
+  NOME_TAREFA: string;
+  NOME_CLIENTE: string;
+}
+
 // Interface para as props das colunas
 interface ColunasProps {
   visualizarOSTarefa?: (codTarefa: number) => void;
   visualizarChamadosTarefa?: (codTarefa: number) => void;
+  onCriarOS?: (tarefa: TarefasProps) => void; // ✅ Alterado
 }
+// ================================================================================
+
+// Função para converter horas de HHMM, decimais para HH:MM
+const formatDecimalToTime = (decimalHours: number): string => {
+  if (!decimalHours && decimalHours !== 0) return '-';
+
+  const hours = Math.floor(decimalHours);
+  const minutes = Math.round((decimalHours - hours) * 60);
+
+  // Formatação com zero à esquerda
+  const formattedHours = hours.toString().padStart(2, '0');
+  const formattedMinutes = minutes.toString().padStart(2, '0');
+
+  return `${formattedHours}:${formattedMinutes}`;
+};
 // ================================================================================
 
 export const colunasTabela = (
@@ -86,7 +113,9 @@ export const colunasTabela = (
 
       return (
         <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
-          {value !== null && value !== undefined ? value.toFixed(2) : '-'}
+          {value !== null && value !== undefined
+            ? formatDecimalToTime(value)
+            : '-'}
         </div>
       );
     },
@@ -98,6 +127,7 @@ export const colunasTabela = (
     header: () => <div className="text-center">Ações</div>,
     cell: ({ row }) => {
       const tarefa = row.original;
+      const chamado = row.original;
 
       const handleDownload = () => {
         const blob = new Blob([JSON.stringify(tarefa, null, 2)], {
@@ -117,10 +147,15 @@ export const colunasTabela = (
         }
       };
 
-      // NOVA FUNÇÃO PARA ABRIR CHAMADOS
       const handleAbrirChamados = () => {
         if (props?.visualizarChamadosTarefa) {
           props.visualizarChamadosTarefa(tarefa.COD_TAREFA);
+        }
+      };
+
+      const handleCriarOS = () => {
+        if (props?.onCriarOS) {
+          props.onCriarOS(tarefa);
         }
       };
 
@@ -142,7 +177,7 @@ export const colunasTabela = (
               sideOffset={8}
               className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
             >
-              Download
+              Baixar Arquivos
             </TooltipContent>
           </Tooltip>
 
@@ -153,7 +188,7 @@ export const colunasTabela = (
                 onClick={handleVisualizarOS}
                 className="cursor-pointer transition-all hover:scale-110"
               >
-                <FaEye size={24} />
+                <FaThList size={24} />
               </button>
             </TooltipTrigger>
             <TooltipContent
@@ -171,7 +206,7 @@ export const colunasTabela = (
             <TooltipTrigger asChild>
               <button
                 onClick={handleAbrirChamados}
-                className="cursor-pointer text-orange-600 transition-all hover:scale-110 hover:text-orange-700"
+                className="cursor-pointer transition-all hover:scale-110"
               >
                 <FaPhoneAlt size={24} />
               </button>
@@ -180,9 +215,29 @@ export const colunasTabela = (
               side="right"
               align="end"
               sideOffset={8}
-              className="border-t-4 border-orange-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+              className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
             >
-              Ver Chamados
+              Visualizar Chamados
+            </TooltipContent>
+          </Tooltip>
+
+          {/* BOTÃO CRIAR OS */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleCriarOS}
+                className="cursor-pointer text-emerald-600 transition-all hover:scale-110 hover:text-emerald-700"
+              >
+                <FaPlus size={24} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="right"
+              align="end"
+              sideOffset={8}
+              className="border-t-4 border-emerald-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+            >
+              Criar OS
             </TooltipContent>
           </Tooltip>
         </div>
