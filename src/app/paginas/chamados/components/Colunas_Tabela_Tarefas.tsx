@@ -1,12 +1,19 @@
 import { ColumnDef } from '@tanstack/react-table';
+// ================================================================================
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 // ================================================================================
-import { FaDownload, FaPhoneAlt, FaPlus, FaThList } from 'react-icons/fa';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
+import {
+  formatarDataParaBR,
+  formatarDecimalParaTempo,
+} from '../../../../utils/formatters';
+// ================================================================================
+import { FaHandPointUp } from 'react-icons/fa';
+import { FaDownload, FaPhoneAlt, FaThList } from 'react-icons/fa';
 // ================================================================================
 // ================================================================================
 
@@ -58,7 +65,7 @@ export const colunasTabela = (
   // código da tarefa
   {
     accessorKey: 'COD_TAREFA',
-    header: () => <div className="text-center">CÓD. Tarefa</div>,
+    header: () => <div className="text-center">Código</div>,
     cell: ({ getValue }) => (
       <div className="rounded-md bg-pink-600 p-2 text-center text-white ring-1 ring-white">
         {getValue() as string}
@@ -74,48 +81,41 @@ export const colunasTabela = (
       const value = getValue() as string;
       const textoCorrigido = corrigirTextoCorrompido(value);
 
-      return <div className="truncate px-2 py-1">{textoCorrigido || '-'}</div>;
+      return (
+        <div className="truncate px-2 py-1">
+          {corrigirTextoCorrompido(textoCorrigido || '-')}
+        </div>
+      );
     },
   },
 
   // data de solicitação
   {
     accessorKey: 'DTSOL_TAREFA',
-    header: () => <div className="text-center">DT. Solicitação</div>,
+    header: () => <div className="text-center">Data</div>,
     cell: ({ getValue }) => {
       const dateString = getValue() as string;
+      const dataFormatada = formatarDataParaBR(dateString);
 
-      if (!dateString) {
-        return <div className="text-center">-</div>;
-      }
-
-      // Se já está no formato dd/mm/yyyy
-      if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
-        return <div className="text-center">{dateString}</div>;
-      }
-
-      try {
-        const [year, month, day] = dateString.split('T')[0].split('-');
-        const formattedDate = `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
-        return <div className="text-center">{formattedDate}</div>;
-      } catch {
-        return <div className="text-center">{dateString}</div>;
-      }
+      return (
+        <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
+          {dataFormatada}
+        </div>
+      );
     },
   },
 
   // horas restantes
   {
     accessorKey: 'HREST_TAREFA',
-    header: () => <div className="text-center">QTD. HR's Estipuladas</div>,
+    header: () => <div className="text-center">HR's Estipuladas</div>,
     cell: ({ getValue }) => {
       const value = getValue() as number;
+      const tempoFormatado = formatarDecimalParaTempo(value);
 
       return (
-        <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
-          {value !== null && value !== undefined
-            ? formatDecimalToTime(value)
-            : '-'}
+        <div className="rounded-md bg-green-600 p-2 text-center text-white ring-1 ring-white">
+          {tempoFormatado}
         </div>
       );
     },
@@ -192,12 +192,12 @@ export const colunasTabela = (
               </button>
             </TooltipTrigger>
             <TooltipContent
-              side="top"
+              side="bottom"
               align="center"
               sideOffset={8}
               className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
             >
-              Visualizar OS
+              Visualizar OS's
             </TooltipContent>
           </Tooltip>
 
@@ -212,7 +212,7 @@ export const colunasTabela = (
               </button>
             </TooltipTrigger>
             <TooltipContent
-              side="right"
+              side="top"
               align="end"
               sideOffset={8}
               className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
@@ -226,18 +226,18 @@ export const colunasTabela = (
             <TooltipTrigger asChild>
               <button
                 onClick={handleCriarOS}
-                className="cursor-pointer text-emerald-600 transition-all hover:scale-110 hover:text-emerald-700"
+                className="cursor-pointer transition-all hover:scale-110"
               >
-                <FaPlus size={24} />
+                <FaHandPointUp size={28} />
               </button>
             </TooltipTrigger>
             <TooltipContent
               side="right"
               align="end"
               sideOffset={8}
-              className="border-t-4 border-emerald-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+              className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
             >
-              Criar OS
+              Efetuar Apontamento
             </TooltipContent>
           </Tooltip>
         </div>

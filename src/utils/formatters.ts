@@ -53,3 +53,9 @@ export const formatarDecimalParaTempo = (
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 };
 // ====================================================================================================
+
+// Função para remover acentos de uma string
+export const removerAcentos = (texto: string): string => {
+  return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+};
+// ====================================================================================================

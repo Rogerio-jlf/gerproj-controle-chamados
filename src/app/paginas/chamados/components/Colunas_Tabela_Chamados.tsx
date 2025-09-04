@@ -16,6 +16,7 @@ import { FaDownload, FaTasks } from 'react-icons/fa';
 import { IoCall } from 'react-icons/io5';
 import { GrServicePlay } from 'react-icons/gr';
 import { HiMiniSquaresPlus } from 'react-icons/hi2';
+import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 // ================================================================================
 // ================================================================================
 
@@ -294,7 +295,7 @@ export const colunasTabela = (
     header: () => <div className="text-center">Assunto</div>,
     cell: ({ row }) => (
       <AssuntoCellEditavel
-        assunto={row.original.ASSUNTO_CHAMADO}
+        assunto={corrigirTextoCorrompido(row.original.ASSUNTO_CHAMADO)}
         codChamado={row.original.COD_CHAMADO}
         onUpdateAssunto={async (codChamado, novoAssunto) => {
           try {
@@ -315,16 +316,13 @@ export const colunasTabela = (
               throw new Error(errorData.error || 'Erro ao atualizar Assunto');
             }
 
-            // Atualizar o estado local apenas se a API retornou sucesso
             row.original.ASSUNTO_CHAMADO = novoAssunto;
           } catch (err) {
             console.error('Erro ao atualizar Assunto:', err);
-            throw err; // Re-throw para que o componente AssuntoCellEditavel possa tratar
+            throw err;
           }
         }}
-        onClose={function (): void {
-          throw new Error('Function not implemented.');
-        }}
+        onClose={() => {}}
       />
     ),
   },

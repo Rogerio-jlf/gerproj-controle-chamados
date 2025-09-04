@@ -84,7 +84,7 @@ export function ModalExcluirOS({
                 <AlertTriangle className="text-black" size={40} />
               </div>
 
-              <div className="flex flex-col items-center justify-center">
+              <div className="flex flex-col items-start justify-center">
                 {/* Título */}
                 <h1 className="text-2xl font-bold tracking-wider text-black select-none">
                   Excluir OS

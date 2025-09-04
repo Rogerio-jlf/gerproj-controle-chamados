@@ -1,28 +1,33 @@
 import React, { useState } from 'react';
 import { z } from 'zod';
+import { useAuth } from '@/hooks/useAuth';
 // ================================================================================
-import { IoClose } from 'react-icons/io5';
-import { FaCalendarAlt } from 'react-icons/fa';
+import { DBTarefaProps } from '../../../../types/types';
+// ================================================================================
+import {
+    FaCalendarAlt,
+    FaCheckCircle,
+    FaExclamationTriangle,
+} from 'react-icons/fa';
 import { IoMdClock } from 'react-icons/io';
-import { IoDocumentText } from 'react-icons/io5';
-import { FaExclamationTriangle } from 'react-icons/fa';
-import { FaCheckCircle } from 'react-icons/fa';
+import { FaUserClock } from 'react-icons/fa';
+import { IoClose, IoDocumentText } from 'react-icons/io5';
 // ================================================================================
 
 // Schema de validação com Zod
 const formSchema = z
     .object({
-        observacaoOS: z
+        description: z
             .string()
-            .min(1, 'Observação é obrigatória')
-            .min(10, 'Observação deve ter pelo menos 10 caracteres')
-            .max(200, 'Observação deve ter no máximo 200 caracteres')
+            .min(1, 'Descrição é obrigatória')
+            .min(10, 'Descrição deve ter pelo menos 10 caracteres')
+            .max(200, 'Descrição deve ter no máximo 200 caracteres')
             .refine(
                 val => val.trim().length > 0,
-                'Observação não pode ser apenas espaços'
+                'Descrição não pode ser apenas espaços'
             ),
 
-        dataInicioOS: z
+        date: z
             .string()
             .min(1, 'Data é obrigatória')
             .refine(dateString => {
@@ -32,7 +37,7 @@ const formSchema = z
                 return date >= today;
             }, 'Data não pode ser anterior a hoje'),
 
-        horaInicioOS: z
+        startTime: z
             .string()
             .min(1, 'Hora de início é obrigatória')
             .regex(
@@ -40,7 +45,7 @@ const formSchema = z
                 'Formato de hora inválido'
             ),
 
-        horaFimOS: z
+        endTime: z
             .string()
             .min(1, 'Hora de fim é obrigatória')
             .regex(
@@ -50,14 +55,12 @@ const formSchema = z
     })
     .refine(
         data => {
-            if (!data.horaInicioOS || !data.horaFimOS) return true; // Deixa os campos individuais validarem primeiro
+            if (!data.startTime || !data.endTime) return true; // Deixa os campos individuais validarem primeiro
 
-            const [startHours, startMinutes] = data.horaInicioOS
+            const [startHours, startMinutes] = data.startTime
                 .split(':')
                 .map(Number);
-            const [endHours, endMinutes] = data.horaFimOS
-                .split(':')
-                .map(Number);
+            const [endHours, endMinutes] = data.endTime.split(':').map(Number);
 
             const startTimeInMinutes = startHours * 60 + startMinutes;
             const endTimeInMinutes = endHours * 60 + endMinutes;
@@ -66,19 +69,17 @@ const formSchema = z
         },
         {
             message: 'Hora de fim deve ser maior que hora de início',
-            path: ['horaFimOS'], // Aplica o erro ao campo horaFimOS
+            path: ['endTime'], // Aplica o erro ao campo endTime
         }
     )
     .refine(
         data => {
-            if (!data.horaInicioOS || !data.horaFimOS) return true;
+            if (!data.startTime || !data.endTime) return true;
 
-            const [startHours, startMinutes] = data.horaInicioOS
+            const [startHours, startMinutes] = data.startTime
                 .split(':')
                 .map(Number);
-            const [endHours, endMinutes] = data.horaFimOS
-                .split(':')
-                .map(Number);
+            const [endHours, endMinutes] = data.endTime.split(':').map(Number);
 
             const startTimeInMinutes = startHours * 60 + startMinutes;
             const endTimeInMinutes = endHours * 60 + endMinutes;
@@ -88,37 +89,31 @@ const formSchema = z
         },
         {
             message: 'Diferença mínima entre horários deve ser de 15 minutos',
-            path: ['horaFimOS'],
+            path: ['endTime'],
         }
     );
 
 type FormData = z.infer<typeof formSchema>;
 type FormErrors = Partial<Record<keyof FormData | 'root', string>>;
 
-// ================================================================================
-interface Props {
+export interface ModalApontamentoProps {
     isOpen: boolean;
     onClose: () => void;
-    codChamado: number | null;
-    codOS: string | null;
-    nomeCliente?: string;
-    onSuccess?: () => void;
+    tarefa: DBTarefaProps | null;
 }
-// ================================================================================
 
-export default function ModalEditarOS({
+export default function ModalApontamento({
     isOpen,
     onClose,
-    codChamado,
-    codOS,
-    onSuccess,
-    nomeCliente,
-}: Props) {
+    tarefa,
+}: ModalApontamentoProps) {
+    const { user } = useAuth();
+
     const [formData, setFormData] = useState<FormData>({
-        observacaoOS: '',
-        dataInicioOS: new Date().toISOString().split('T')[0],
-        horaInicioOS: '',
-        horaFimOS: '',
+        description: '',
+        date: new Date().toISOString().split('T')[0],
+        startTime: '',
+        endTime: '',
     });
 
     const [errors, setErrors] = useState<FormErrors>({});
@@ -143,27 +138,13 @@ export default function ModalEditarOS({
         }
     };
 
-    // Função para lidar com mudanças nos inputs
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
         const { name, value } = e.target;
-
-        let newValue = value;
-
-        if (name === 'observacaoOS') {
-            // Remove espaços no início
-            newValue = newValue.trimStart();
-
-            // Se existir texto, coloca a primeira letra em maiúscula
-            if (newValue.length > 0) {
-                newValue = newValue.charAt(0).toUpperCase() + newValue.slice(1);
-            }
-        }
-
         setFormData(prev => ({
             ...prev,
-            [name]: newValue,
+            [name]: value,
         }));
 
         // Limpa erro do campo específico quando usuário começa a digitar
@@ -172,23 +153,9 @@ export default function ModalEditarOS({
         }
 
         // Validação em tempo real (opcional - remova se achar muito intrusivo)
-        if (newValue.length > 0) {
-            setTimeout(
-                () => validateField(name as keyof FormData, newValue),
-                500
-            );
+        if (value.length > 0) {
+            setTimeout(() => validateField(name as keyof FormData, value), 500);
         }
-    };
-    // ================================================================================
-
-    // Função para extrair primeiro nome
-    const getPrimeiroNome = (nomeCompleto: string): string => {
-        return nomeCompleto.trim().split(' ')[0];
-    };
-
-    // Função utilitária para remover acentos, mantendo espaços
-    const removerAcentos = (texto: string): string => {
-        return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     };
 
     const validateForm = (): boolean => {
@@ -209,7 +176,6 @@ export default function ModalEditarOS({
         }
     };
 
-    // ================================================================================
     const handleSubmit = async () => {
         setIsLoading(true);
         setErrors({});
@@ -221,30 +187,41 @@ export default function ModalEditarOS({
                 return;
             }
 
-            // FORMATAR A OBSERVAÇÃO COM O NOME DO CLIENTE
-            const primeiroNome = nomeCliente
-                ? getPrimeiroNome(nomeCliente)
-                : '';
-            const observacaoSemAcentos = removerAcentos(
-                formData.observacaoOS.trim()
-            );
-            const observacaoFormatada = primeiroNome
-                ? `[${primeiroNome}] - ${observacaoSemAcentos}`
-                : observacaoSemAcentos;
+            // Validações de negócio
+            if (!tarefa) {
+                throw new Error('Tarefa não selecionada');
+            }
+            if (!user?.recurso?.id) {
+                throw new Error('Usuário sem recurso definido');
+            }
 
             const payload = {
-                codOS: codOS,
-                dataInicioOS: formData.dataInicioOS,
-                horaInicioOS: formData.horaInicioOS,
-                horaFimOS: formData.horaFimOS,
-                observacaoOS: observacaoFormatada,
+                os: {
+                    COD_TAREFA: tarefa.COD_TAREFA,
+                    NOME_TAREFA: tarefa.NOME_TAREFA,
+                    RESPCLI_PROJETO: user.nome || '',
+                    FATURA_TAREFA: 'SIM',
+                },
+                description: formData.description,
+                date: formData.date,
+                startTime: formData.startTime,
+                endTime: formData.endTime,
+                recurso: user.recurso.id.toString(),
+                codTarefa: tarefa.COD_TAREFA,
+                tarefa: tarefa,
             };
 
-            console.log('TESTE - Dados enviados para API:', payload);
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Token não encontrado');
+            }
 
-            const response = await fetch('/api/apontamentos/update', {
+            const response = await fetch('/api/apontamentos/create', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
                 body: JSON.stringify(payload),
             });
 
@@ -262,7 +239,6 @@ export default function ModalEditarOS({
             setTimeout(() => {
                 resetForm();
                 onClose();
-                onSuccess?.();
             }, 2000);
         } catch (err) {
             const errorMessage =
@@ -272,14 +248,13 @@ export default function ModalEditarOS({
             setIsLoading(false);
         }
     };
-    // ================================================================================
 
     const resetForm = () => {
         setFormData({
-            observacaoOS: '',
-            dataInicioOS: new Date().toISOString().split('T')[0],
-            horaInicioOS: '',
-            horaFimOS: '',
+            description: '',
+            date: new Date().toISOString().split('T')[0],
+            startTime: '',
+            endTime: '',
         });
         setErrors({});
         setSuccess(false);
@@ -294,14 +269,12 @@ export default function ModalEditarOS({
 
     // Calcula duração do trabalho
     const calculateDuration = (): string => {
-        if (!formData.horaInicioOS || !formData.horaFimOS) return '';
+        if (!formData.startTime || !formData.endTime) return '';
 
-        const [startHours, startMinutes] = formData.horaInicioOS
+        const [startHours, startMinutes] = formData.startTime
             .split(':')
             .map(Number);
-        const [endHours, endMinutes] = formData.horaFimOS
-            .split(':')
-            .map(Number);
+        const [endHours, endMinutes] = formData.endTime.split(':').map(Number);
 
         const startTimeInMinutes = startHours * 60 + startMinutes;
         const endTimeInMinutes = endHours * 60 + endMinutes;
@@ -318,17 +291,15 @@ export default function ModalEditarOS({
     const isFormValid = () => {
         return (
             Object.keys(errors).length === 0 &&
-            formData.observacaoOS.trim() &&
-            formData.horaInicioOS &&
-            formData.horaFimOS &&
-            formData.dataInicioOS
+            formData.description.trim() &&
+            formData.startTime &&
+            formData.endTime &&
+            formData.date
         );
     };
 
-    if (!isOpen) return null;
-    // ================================================================================
+    if (!isOpen || !tarefa) return null;
 
-    // ================================================================================
     return (
         <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
             {/* ===== OVERLAY ===== */}
@@ -338,34 +309,30 @@ export default function ModalEditarOS({
             />
             {/* ===== */}
 
-            {/* ===== MODAL CONTAINER ===== */}
             <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-3xl overflow-hidden rounded-2xl border border-black bg-white transition-all duration-500 ease-out">
                 {/* ===== HEADER ===== */}
                 <header className="relative bg-yellow-600 p-6">
                     <section className="flex items-center justify-between">
                         <div className="flex items-center justify-between gap-6">
-                            {/* Ícone */}
                             <div className="rounded-2xl border border-black/50 bg-white/10 p-4">
-                                <IoMdClock className="text-black" size={40} />
+                                {/* Ícone */}
+                                <FaUserClock className="text-black" size={40} />
                             </div>
 
                             <div className="flex flex-col items-start justify-center">
                                 {/* Título */}
                                 <h1 className="text-2xl font-bold tracking-wider text-black select-none">
-                                    Editar OS
+                                    Realizar Apontamento
                                 </h1>
-
                                 <div className="inline-block rounded-full bg-black px-8 py-1">
-                                    {/* Valor */}
+                                    {/* Código da tarefa */}
                                     <p className="text-base font-extrabold tracking-widest text-white italic select-none">
-                                        OS - #{codOS}
+                                        Tarefa #{tarefa.COD_TAREFA}
                                     </p>
                                 </div>
                             </div>
                         </div>
-                        {/* ===== */}
 
-                        {/* Botão fechar modal */}
                         <button
                             onClick={handleClose}
                             disabled={isLoading}
@@ -377,25 +344,22 @@ export default function ModalEditarOS({
                 </header>
                 {/* ===== */}
 
-                {/* ===== CONTEÚDO ===== */}
+                {/* ===== CONTEÚDO PRINCIPAL ===== */}
                 <main className="max-h-[calc(95vh-140px)] overflow-y-auto bg-gray-50 p-6">
                     {/* Alerta de sucesso */}
                     {success && (
                         <div className="mb-6 rounded-full border border-green-200 bg-green-600 px-6 py-2">
                             <div className="flex items-center gap-3">
-                                {/* Ícone */}
                                 <FaCheckCircle
                                     className="text-green-500"
                                     size={20}
                                 />
-                                {/* Texto */}
                                 <p className="text-base font-semibold tracking-wider text-white select-none">
-                                    OS atualizada com sucesso!
+                                    OS criada com sucesso!
                                 </p>
                             </div>
                         </div>
                     )}
-                    {/* ===== */}
 
                     {/* Alerta de erro geral */}
                     {errors.root && (
@@ -411,7 +375,6 @@ export default function ModalEditarOS({
                             </div>
                         </div>
                     )}
-                    {/* ===== */}
 
                     {/* Resumo da duração */}
                     {calculateDuration() && (
@@ -422,7 +385,7 @@ export default function ModalEditarOS({
                         </div>
                     )}
 
-                    {/* ===== FORMULÁRIO ===== */}
+                    {/* Formulário */}
                     <section className="space-y-6">
                         {/* Data */}
                         <FormSection
@@ -433,22 +396,21 @@ export default function ModalEditarOS({
                                     size={20}
                                 />
                             }
-                            error={errors.dataInicioOS}
+                            error={errors.date}
                         >
                             <input
                                 type="date"
-                                name="dataInicioOS"
-                                value={formData.dataInicioOS}
+                                name="date"
+                                value={formData.date}
                                 onChange={handleInputChange}
                                 disabled={isLoading}
                                 className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-gray-800 shadow-sm shadow-black transition-all focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
-                                    errors.dataInicioOS
+                                    errors.date
                                         ? 'border-red-500 ring-2 ring-red-200'
                                         : ''
                                 }`}
                             />
                         </FormSection>
-                        {/* ===== */}
 
                         {/* Horários */}
                         <FormSection
@@ -456,7 +418,7 @@ export default function ModalEditarOS({
                             icon={
                                 <IoMdClock className="text-white" size={20} />
                             }
-                            error={errors.horaInicioOS || errors.horaFimOS}
+                            error={errors.startTime || errors.endTime}
                         >
                             <div className="grid grid-cols-2 gap-6">
                                 <div>
@@ -465,19 +427,19 @@ export default function ModalEditarOS({
                                     </label>
                                     <input
                                         type="time"
-                                        name="horaInicioOS"
-                                        value={formData.horaInicioOS}
+                                        name="startTime"
+                                        value={formData.startTime}
                                         onChange={handleInputChange}
                                         disabled={isLoading}
                                         className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-gray-800 shadow-sm shadow-black transition-all focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
-                                            errors.horaInicioOS
+                                            errors.startTime
                                                 ? 'border-red-500 ring-2 ring-red-200'
                                                 : ''
                                         }`}
                                     />
-                                    {errors.horaInicioOS && (
+                                    {errors.startTime && (
                                         <p className="mt-1 text-sm font-semibold text-red-600">
-                                            {errors.horaInicioOS}
+                                            {errors.startTime}
                                         </p>
                                     )}
                                 </div>
@@ -488,25 +450,24 @@ export default function ModalEditarOS({
                                     </label>
                                     <input
                                         type="time"
-                                        name="horaFimOS"
-                                        value={formData.horaFimOS}
+                                        name="endTime"
+                                        value={formData.endTime}
                                         onChange={handleInputChange}
                                         disabled={isLoading}
                                         className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-gray-800 shadow-sm shadow-black transition-all focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
-                                            errors.horaFimOS
+                                            errors.endTime
                                                 ? 'border-red-500 ring-2 ring-red-200'
                                                 : ''
                                         }`}
                                     />
-                                    {errors.horaFimOS && (
+                                    {errors.endTime && (
                                         <p className="mt-1 text-sm font-semibold text-red-600">
-                                            {errors.horaFimOS}
+                                            {errors.endTime}
                                         </p>
                                     )}
                                 </div>
                             </div>
                         </FormSection>
-                        {/* ===== */}
 
                         {/* Observação */}
                         <FormSection
@@ -517,21 +478,21 @@ export default function ModalEditarOS({
                                     size={20}
                                 />
                             }
-                            error={errors.observacaoOS}
+                            error={errors.description}
                         >
                             <textarea
-                                name="observacaoOS"
-                                value={formData.observacaoOS}
+                                name="description"
+                                value={formData.description}
                                 onChange={handleInputChange}
                                 disabled={isLoading}
                                 rows={4}
                                 maxLength={200}
                                 className={`w-full resize-none rounded-md bg-white px-4 py-2 font-semibold text-gray-800 shadow-sm shadow-black transition-all placeholder:text-gray-500 placeholder:italic focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
-                                    errors.observacaoOS
+                                    errors.description
                                         ? 'border-red-500 ring-2 ring-red-200'
                                         : ''
                                 }`}
-                                placeholder="Descreva detalhadamente o serviço realizado, procedimentos executados, materiais utilizados e resultados obtidos..."
+                                placeholder="Descreva detalhadamente o serviço a ser realizado, procedimentos necessários, materiais a serem utilizados e resultados esperados..."
                             />
                             <div className="mt-1 flex items-center justify-between">
                                 <p className="text-xs font-extrabold tracking-widest text-black italic select-none">
@@ -539,20 +500,18 @@ export default function ModalEditarOS({
                                 </p>
                                 <p
                                     className={`text-xs font-extrabold tracking-widest italic select-none ${
-                                        formData.observacaoOS.length > 200
+                                        formData.description.length > 200
                                             ? 'text-red-600'
                                             : 'text-black'
                                     }`}
                                 >
-                                    {formData.observacaoOS.length}/200
+                                    {formData.description.length}/200
                                 </p>
                             </div>
                         </FormSection>
-                        {/* ===== */}
 
-                        {/* Botões de ação */}
+                        {/* Botões de Ação */}
                         <section className="flex items-center justify-end gap-6">
-                            {/* Botão cancelar */}
                             <button
                                 onClick={handleClose}
                                 disabled={isLoading}
@@ -560,9 +519,7 @@ export default function ModalEditarOS({
                             >
                                 Cancelar
                             </button>
-                            {/* ===== */}
 
-                            {/* Botão de atualizar */}
                             <button
                                 onClick={handleSubmit}
                                 disabled={isLoading || !isFormValid()}
@@ -578,7 +535,7 @@ export default function ModalEditarOS({
                                         <span>Salvando...</span>
                                     </>
                                 ) : (
-                                    <>Atualizar OS</>
+                                    <>Criar OS</>
                                 )}
                             </button>
                         </section>
@@ -589,7 +546,7 @@ export default function ModalEditarOS({
     );
 }
 
-// Componente auxiliar para seções do formulário
+// ====== COMPONENTE FormSection ======
 const FormSection = ({
     title,
     icon,
@@ -623,3 +580,4 @@ const FormSection = ({
         </div>
     </div>
 );
+// ================================================================================

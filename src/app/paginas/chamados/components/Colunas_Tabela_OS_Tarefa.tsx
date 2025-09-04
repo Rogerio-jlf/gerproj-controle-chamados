@@ -33,7 +33,7 @@ export const colunasOSTarefa = (
   // Código da OS
   {
     accessorKey: 'COD_OS',
-    header: () => <div className="text-center">CÓD. OS</div>,
+    header: () => <div className="text-center">Código</div>,
     cell: ({ getValue }) => (
       <div className="rounded-md bg-pink-600 p-2 text-center text-white ring-1 ring-white">
         {getValue() as string}
@@ -88,12 +88,12 @@ export const colunasOSTarefa = (
     accessorKey: 'HRINI_OS',
     header: () => <div className="text-center">HR. Início</div>,
     cell: ({ getValue }) => {
-      const timeString = getValue() as string;
-      const horaFormatada = formatarHora(timeString);
+      const value = getValue() as number;
+      const tempoFormatado = formatarDecimalParaTempo(value);
 
       return (
         <div className="rounded-md bg-slate-800 p-2 text-center text-white ring-1 ring-white">
-          {horaFormatada}
+          {tempoFormatado}
         </div>
       );
     },
@@ -104,12 +104,12 @@ export const colunasOSTarefa = (
     accessorKey: 'HRFIM_OS',
     header: () => <div className="text-center">HR. Fim</div>,
     cell: ({ getValue }) => {
-      const timeString = getValue() as string;
-      const horaFormatada = formatarHora(timeString);
+      const value = getValue() as number;
+      const tempoFormatado = formatarDecimalParaTempo(value);
 
       return (
         <div className="rounded-md bg-slate-800 p-2 text-center text-white ring-1 ring-white">
-          {horaFormatada}
+          {tempoFormatado}
         </div>
       );
     },
@@ -124,7 +124,7 @@ export const colunasOSTarefa = (
       const tempoFormatado = formatarDecimalParaTempo(value);
 
       return (
-        <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
+        <div className="rounded-md bg-green-600 p-2 text-center text-white ring-1 ring-white">
           {tempoFormatado}
         </div>
       );

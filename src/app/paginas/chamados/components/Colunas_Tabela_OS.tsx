@@ -6,6 +6,13 @@ import {
 // ================================================================================
 import { ColumnDef } from '@tanstack/react-table';
 // ================================================================================
+import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
+import {
+  formatarDataParaBR,
+  formatarDecimalParaTempo,
+  formatarHora,
+} from '../../../../utils/formatters';
+// ================================================================================
 import { MdEditDocument } from 'react-icons/md';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
 // ================================================================================
@@ -78,7 +85,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
   // Código da OS
   {
     accessorKey: 'COD_OS',
-    header: () => <div className="text-center">CÓD. OS</div>,
+    header: () => <div className="text-center">Código</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string;
       return (
@@ -104,7 +111,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
   // Código da tarefa
   {
     accessorKey: 'CODTRF_OS',
-    header: () => <div className="text-center">CÓD. Tarefa</div>,
+    header: () => <div className="text-center">Tarefa</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string;
       return <div className="text-center">{value || '-'}</div>;
@@ -115,13 +122,15 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
   // Observação da OS
   {
     accessorKey: 'OBS_OS',
-    header: () => <div className="text-center">OBS. OS</div>,
+    header: () => <div className="text-center">Observação</div>,
     cell: ({ getValue }) => {
       const value = getValue() as string;
       return (
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="text-left">{value || '-'}</div>
+            <div className="text-left">
+              {corrigirTextoCorrompido(value) || '-'}
+            </div>
           </TooltipTrigger>
           <TooltipContent
             side="left"
@@ -129,7 +138,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
             sideOffset={8}
             className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
           >
-            {value || '-'}
+            {corrigirTextoCorrompido(value) || '-'}
           </TooltipContent>
         </Tooltip>
       );
@@ -140,27 +149,16 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
   // Data da OS
   {
     accessorKey: 'DTINI_OS',
-    header: () => <div className="text-center">Data OS</div>,
+    header: () => <div className="text-center">Data</div>,
     cell: ({ getValue }) => {
       const dateString = getValue() as string;
+      const dataFormatada = formatarDataParaBR(dateString);
 
-      if (!dateString) return <div className="text-center">-</div>;
-
-      try {
-        const date = new Date(dateString);
-        const formattedDate = date.toLocaleDateString('pt-BR');
-        return (
-          <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
-            {formattedDate}
-          </div>
-        );
-      } catch {
-        return (
-          <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
-            {dateString}
-          </div>
-        );
-      }
+      return (
+        <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
+          {dataFormatada}
+        </div>
+      );
     },
   },
   // =====
@@ -170,16 +168,13 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
     accessorKey: 'HRINI_OS',
     header: () => <div className="text-center">HR. Início</div>,
     cell: ({ getValue }) => {
-      const timeStr = getValue() as string;
-
-      if (!timeStr) return <div className="text-center">-</div>;
-
-      const hora = timeStr.toString().padStart(4, '0');
-      const hh = hora.slice(0, 2);
-      const mm = hora.slice(2, 4);
+      const timeString = getValue() as string;
+      const horaFormatada = formatarHora(timeString);
 
       return (
-        <div className="rounded-md bg-orange-600 p-2 text-center text-white ring-1 ring-white">{`${hh}:${mm}`}</div>
+        <div className="rounded-md bg-slate-800 p-2 text-center text-white ring-1 ring-white">
+          {horaFormatada}
+        </div>
       );
     },
   },
@@ -190,16 +185,13 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
     accessorKey: 'HRFIM_OS',
     header: () => <div className="text-center">HR. Fim</div>,
     cell: ({ getValue }) => {
-      const timeStr = getValue() as string;
-
-      if (!timeStr) return <div className="text-center">-</div>;
-
-      const hora = timeStr.toString().padStart(4, '0');
-      const hh = hora.slice(0, 2);
-      const mm = hora.slice(2, 4);
+      const timeString = getValue() as string;
+      const horaFormatada = formatarHora(timeString);
 
       return (
-        <div className="rounded-md bg-orange-600 p-2 text-center text-white ring-1 ring-white">{`${hh}:${mm}`}</div>
+        <div className="rounded-md bg-slate-800 p-2 text-center text-white ring-1 ring-white">
+          {horaFormatada}
+        </div>
       );
     },
   },
@@ -211,9 +203,11 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
     header: () => <div className="text-center">QTD. Horas</div>,
     cell: ({ getValue }) => {
       const value = getValue() as number;
+      const tempoFormatado = formatarDecimalParaTempo(value);
+
       return (
         <div className="rounded-md bg-green-600 p-2 text-center text-white ring-1 ring-white">
-          {formatDecimalToTime(value)}
+          {tempoFormatado}
         </div>
       );
     },

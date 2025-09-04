@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import {
   flexRender,
   getCoreRowModel,
@@ -46,23 +46,41 @@ import { IoArrowDown } from 'react-icons/io5';
 import { FaFilter } from 'react-icons/fa6';
 import { Loader2 } from 'lucide-react';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
+import { FaSearch } from 'react-icons/fa';
 // ================================================================================
 // ================================================================================
 
-type FilterInputWithDebounceProps = {
+interface FilterInputWithDebounceProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   type?: string;
-};
+  onClear?: () => void; // Nova prop para limpeza
+}
+
+// Componente de Filtro Global
+interface GlobalFilterInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  onClear: () => void;
+}
+
+// ================================================================================
 
 const FilterInputWithDebounce = ({
   value,
   onChange,
   placeholder,
   type = 'text',
+  onClear,
 }: FilterInputWithDebounceProps) => {
   const [localValue, setLocalValue] = useState(value);
+
+  // Atualiza o valor local quando o valor externo muda (ex: limpeza)
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
 
   const debouncedOnChange = useMemo(
     () => debounce((newValue: string) => onChange(newValue), 300),
@@ -80,38 +98,80 @@ const FilterInputWithDebounce = ({
       value={localValue}
       onChange={handleChange}
       placeholder={placeholder}
-      className="w-full rounded-md bg-black px-4 py-2 text-base text-white placeholder-gray-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+      className="w-full rounded-md border border-white/50 bg-teal-950 px-4 py-2 text-base text-white placeholder-gray-500 hover:scale-105 focus:bg-black focus:outline-none focus:placeholder:text-gray-700"
     />
+  );
+};
+
+// =====
+
+const GlobalFilterInput = ({
+  value,
+  onChange,
+  placeholder = 'Buscar em todas as colunas...',
+  onClear,
+}: GlobalFilterInputProps) => {
+  const [localValue, setLocalValue] = useState(value);
+
+  // Atualiza o valor local quando o valor externo muda
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  const debouncedOnChange = useMemo(
+    () => debounce((newValue: string) => onChange(newValue), 500),
+    [onChange]
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalValue(e.target.value);
+    debouncedOnChange(e.target.value);
+  };
+
+  return (
+    <div className="group relative transition-all focus-within:text-black hover:scale-105">
+      <FaSearch
+        className="absolute top-1/2 left-4 -translate-y-1/2 text-white transition-colors duration-300 group-focus-within:text-black"
+        size={18}
+      />
+      <input
+        type="text"
+        value={localValue}
+        onChange={handleChange}
+        placeholder={placeholder}
+        className="w-full rounded-md border border-white/50 bg-white/40 py-2 pr-4 pl-12 text-base text-black placeholder-white focus:bg-white/70 focus:outline-none focus:placeholder:text-gray-200"
+      />
+    </div>
   );
 };
 // =====
 
-const FilterSelect = ({
-  value,
-  onChange,
-  options,
-  placeholder,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  options: string[];
-  placeholder: string;
-}) => (
-  <select
-    value={value}
-    onChange={e => onChange(e.target.value)}
-    className="w-full cursor-pointer rounded-md bg-black px-4 py-2 text-base text-white placeholder-gray-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none"
-  >
-    <option value="" className="placeholder:text-gray-400">
-      {placeholder}
-    </option>
-    {options.map(option => (
-      <option key={option} value={option}>
-        {option}
-      </option>
-    ))}
-  </select>
-);
+// const FilterSelect = ({
+//   value,
+//   onChange,
+//   options,
+//   placeholder,
+// }: {
+//   value: string;
+//   onChange: (value: string) => void;
+//   options: string[];
+//   placeholder: string;
+// }) => (
+//   <select
+//     value={value}
+//     onChange={e => onChange(e.target.value)}
+//     className="w-full cursor-pointer rounded-md bg-black px-4 py-2 text-base text-white placeholder-gray-400 transition-all focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+//   >
+//     <option value="" className="placeholder:text-gray-400">
+//       {placeholder}
+//     </option>
+//     {options.map(option => (
+//       <option key={option} value={option}>
+//         {option}
+//       </option>
+//     ))}
+//   </select>
+// );
 // =====
 
 // Componente para ordenação do cabeçalho da tabela
@@ -156,6 +216,56 @@ const SortableHeader = ({
     </Tooltip>
   );
 };
+
+// Componente de Indicador de Filtros Ativos
+const FilterIndicator = ({
+  columnFilters,
+  globalFilter,
+  totalFilters,
+}: {
+  columnFilters: ColumnFiltersState;
+  globalFilter: string;
+  totalFilters: number;
+}) => {
+  if (totalFilters === 0) return null;
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="rounded-full bg-blue-600 px-3 py-1 text-sm font-semibold tracking-wider text-white italic select-none">
+        {totalFilters} filtro{totalFilters > 1 ? 's' : ''} ativo
+        {totalFilters > 1 ? 's' : ''}
+      </div>
+
+      {globalFilter && (
+        <div className="rounded-full bg-green-600 px-3 py-1 text-sm font-semibold tracking-wider text-white italic select-none">
+          Busca global: "{globalFilter}"
+        </div>
+      )}
+
+      {columnFilters.map(filter => (
+        <div
+          key={filter.id}
+          className="rounded-full bg-purple-600 px-3 py-1 text-sm font-semibold tracking-wider text-white italic select-none"
+        >
+          {getColumnDisplayName(filter.id)}: "{String(filter.value)}"
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Função auxiliar para nomes das colunas
+const getColumnDisplayName = (columnId: string): string => {
+  const displayNames: Record<string, string> = {
+    COD_CHAMADO: 'Código',
+    ASSUNTO_CHAMADO: 'Assunto',
+    EMAIL_CHAMADO: 'Email',
+    DATA_CHAMADO: 'Data',
+    STATUS_CHAMADO: 'Status',
+  };
+  return displayNames[columnId] || columnId;
+};
+
 // ================================================================================
 
 // ===== COMPONENTE PRINCIPAL =====
@@ -181,9 +291,20 @@ export default function TabelaChamados() {
 
   // Estados para os filtros e ordenação
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [globalFilter, setGlobalFilter] = useState('');
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'COD_CHAMADO', desc: true },
   ]);
+
+  // Estados para os valores dos inputs de filtro
+  const [filterValues, setFilterValues] = useState({
+    COD_CHAMADO: '',
+    DATA_CHAMADO: '',
+    ASSUNTO_CHAMADO: '',
+    STATUS_CHAMADO: '',
+    EMAIL_CHAMADO: '',
+    global: '',
+  });
 
   // Estado para mostrar/ocultar os filtros
   const [showFilters, setShowFilters] = useState(false);
@@ -279,6 +400,64 @@ export default function TabelaChamados() {
     [handleVisualizarChamado, handleVisualizarOS]
   );
 
+  // Função de filtro global otimizada
+  const globalFilterFn = useCallback(
+    (row: any, columnId: string, filterValue: string) => {
+      if (!filterValue) return true;
+
+      const searchValue = filterValue.toLowerCase();
+
+      // Busca em todas as colunas principais
+      const searchableColumns = [
+        'COD_CHAMADO',
+        'ASSUNTO_CHAMADO',
+        'EMAIL_CHAMADO',
+        'DATA_CHAMADO',
+        'STATUS_CHAMADO',
+      ];
+
+      return searchableColumns.some(colId => {
+        const cellValue = row.getValue(colId);
+        const cellString = String(cellValue || '').toLowerCase();
+        return cellString.includes(searchValue);
+      });
+    },
+    []
+  );
+
+  // Função de filtro por coluna otimizada
+  const columnFilterFn = useCallback(
+    (row: any, columnId: string, filterValue: string) => {
+      if (!filterValue || filterValue === '') return true;
+
+      const cellValue = row.getValue(columnId);
+      const cellString = String(cellValue || '').toLowerCase();
+      const filterString = String(filterValue).toLowerCase();
+
+      // Filtro específico por tipo de coluna
+      switch (columnId) {
+        case 'COD_CHAMADO':
+          // Para códigos, permite busca parcial em números
+          return cellString.includes(filterString);
+
+        case 'DATA_CHAMADO':
+          // Para datas, permite busca por parte da data (dd, mm, yyyy, dd/mm, etc)
+          return cellString.includes(filterString);
+
+        case 'STATUS_CHAMADO':
+          // Para status, busca parcial para flexibilidade
+          return cellString.includes(filterString);
+
+        case 'EMAIL_CHAMADO':
+        case 'ASSUNTO_CHAMADO':
+        default:
+          // Para texto, busca parcial case-insensitive
+          return cellString.includes(filterString);
+      }
+    },
+    []
+  );
+
   // Tabela filtrada e ordenada
   const table = useReactTable({
     data: data ?? [],
@@ -288,9 +467,12 @@ export default function TabelaChamados() {
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
     onSortingChange: setSorting,
+    globalFilterFn,
     state: {
       columnFilters,
+      globalFilter,
       sorting,
     },
     initialState: {
@@ -299,77 +481,79 @@ export default function TabelaChamados() {
       },
     },
 
-    // Função de filtro personalizada que funciona para todos os tipos
+    // Função de filtro personalizada para colunas
     filterFns: {
-      customFilter: (row, columnId, filterValue) => {
-        if (!filterValue || filterValue === '') return true;
-
-        const cellValue = row.getValue(columnId);
-
-        // Converte ambos os valores para string e faz comparação case-insensitive
-        const cellString = String(cellValue || '').toLowerCase();
-        const filterString = String(filterValue).toLowerCase();
-
-        // Para COD_CHAMADO, permite busca parcial em números
-        if (columnId === 'COD_CHAMADO') {
-          return cellString.includes(filterString);
-        }
-
-        // Para STATUS_CHAMADO, busca exata se for um valor do select
-        if (columnId === 'STATUS_CHAMADO' && filterValue !== '') {
-          return cellString === filterString;
-        }
-
-        // Para outros campos, busca parcial
-        return cellString.includes(filterString);
-      },
+      customColumnFilter: columnFilterFn,
     },
 
     // Aplica o filtro customizado para todas as colunas
     defaultColumn: {
-      filterFn: (row, columnId, filterValue) => {
-        if (!filterValue || filterValue === '') return true;
-
-        const cellValue = row.getValue(columnId);
-
-        // Converte ambos os valores para string e faz comparação case-insensitive
-        const cellString = String(cellValue || '').toLowerCase();
-        const filterString = String(filterValue).toLowerCase();
-
-        // Para COD_CHAMADO, permite busca parcial em números
-        if (columnId === 'COD_CHAMADO') {
-          return cellString.includes(filterString);
-        }
-
-        // Para STATUS_CHAMADO, busca exata se for um valor do select
-        // if (columnId === 'STATUS_CHAMADO' && filterValue !== '') {
-        //   return cellString === filterString;
-        // }
-
-        // Para STATUS_CHAMADO, agora usa busca parcial também
-        if (columnId === 'STATUS_CHAMADO') {
-          return cellString.includes(filterString); // Busca parcial
-        }
-
-        // Para outros campos, busca parcial
-        return cellString.includes(filterString);
-      },
+      filterFn: columnFilterFn,
     },
   });
 
-  // Obter valores únicos para filtros de select
-  // const statusOptions = useMemo(() => {
-  //   const statusSet = new Set<string>();
-  //   data?.forEach(item => {
-  //     if (item.STATUS_CHAMADO) statusSet.add(item.STATUS_CHAMADO);
-  //   });
-  //   return Array.from(statusSet).sort();
-  // }, [data]);
+  // Calcula o total de filtros ativos
+  const totalActiveFilters = useMemo(() => {
+    let count = columnFilters.length;
+    if (globalFilter && globalFilter.trim()) count += 1;
+    return count;
+  }, [columnFilters.length, globalFilter]);
 
-  // Função para limpar todos os filtros
+  // Função para limpar todos os filtros e inputs
   const clearFilters = () => {
     setColumnFilters([]);
+    setGlobalFilter('');
+
+    // Limpa os valores dos inputs
+    setFilterValues({
+      COD_CHAMADO: '',
+      DATA_CHAMADO: '',
+      ASSUNTO_CHAMADO: '',
+      STATUS_CHAMADO: '',
+      EMAIL_CHAMADO: '',
+      global: '',
+    });
+
+    // Limpa os filtros da tabela
+    table.getAllColumns().forEach(column => {
+      column.setFilterValue('');
+    });
   };
+
+  // Atualiza os valores locais quando os filtros mudam
+  // Atualiza os valores locais quando os filtros da tabela mudam
+  useEffect(() => {
+    // Cria um novo objeto de valores baseado nos filtros atuais
+    const newFilterValues = {
+      COD_CHAMADO: '',
+      DATA_CHAMADO: '',
+      ASSUNTO_CHAMADO: '',
+      STATUS_CHAMADO: '',
+      EMAIL_CHAMADO: '',
+      global: globalFilter || '',
+    };
+
+    // Preenche os valores dos filtros de coluna
+    columnFilters.forEach(filter => {
+      if (filter.id in newFilterValues) {
+        newFilterValues[filter.id as keyof typeof newFilterValues] = String(
+          filter.value || ''
+        );
+      }
+    });
+
+    // Atualiza apenas se houver mudanças reais para evitar loops
+    setFilterValues(prev => {
+      // Verifica se os valores realmente mudaram
+      const hasChanged = Object.keys(newFilterValues).some(
+        key =>
+          prev[key as keyof typeof prev] !==
+          newFilterValues[key as keyof typeof newFilterValues]
+      );
+
+      return hasChanged ? newFilterValues : prev;
+    });
+  }, [columnFilters, globalFilter]); // Remova filterValues das dependências
   // ================================================================================
 
   if (loading) {
@@ -528,105 +712,83 @@ export default function TabelaChamados() {
   }
   // ================================================================================
 
+  // ===== RENDERIZAÇÃO DO COMPONENTE =====
   return (
     <>
       <div className="overflow-hidden rounded-xl border border-gray-500 bg-black">
         {/* ===== HEADER ===== */}
-        <header className="flex items-center justify-between gap-8 bg-black p-6">
-          {/* ===== ITENS DA ESQUERDA ===== */}
-          <section className="flex items-center justify-center gap-6">
-            {/* ícone */}
-            <div className="flex items-center justify-center rounded-xl border border-white/50 p-4">
-              <FaDatabase className="text-white" size={44} />
-            </div>
-            {/* ===== */}
-            <div className="flex flex-col items-start justify-center">
+        <header className="flex flex-col gap-6 bg-black p-6">
+          {/* ===== LINHA SUPERIOR ===== */}
+          <section className="flex items-center justify-between gap-8">
+            {/* ===== ITENS DA ESQUERDA ===== */}
+            <div className="flex items-center justify-center gap-6">
+              {/* ícone */}
+              <div className="flex items-center justify-center rounded-xl border border-white/50 p-4">
+                <FaDatabase className="text-white" size={28} />
+              </div>
               {/* título */}
-              <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-white select-none">
+              <h1 className="text-4xl font-extrabold tracking-widest text-white select-none">
                 Tabela de Chamados
               </h1>
-              {/* ===== */}
-              {/* <div className="flex items-center gap-4">
-                <span className="rounded-full bg-white px-6 py-1 text-sm font-bold tracking-widest text-black italic select-none">
-                  {user.nome}
-                </span>
-                {data && data.length > 0 && (
-                  <span className="rounded-full bg-white px-6 py-1 text-sm font-bold tracking-widest text-black italic select-none">
-                    {mes.toString().padStart(2, '0')}/{ano}
-                  </span>
-                )}
-              </div> */}
-              {/* ===== */}
             </div>
             {/* ===== */}
-          </section>
-          {/* ===== */}
 
-          {/* ===== ITENS DA DIREITA ===== */}
-          <section className="flex items-center gap-6">
-            {/* botão mostrar/ocultar filtros */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              disabled={!data || data.length <= 1}
-              className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider italic transition-all select-none ${
-                showFilters
-                  ? 'border border-blue-800 bg-blue-600 text-white'
-                  : 'border border-white/50 bg-white/30 text-white'
-              } ${
-                !data || data.length <= 1
-                  ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
-                  : 'hover:scale-105 hover:bg-gray-500 active:scale-95'
-              }`}
-            >
-              {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
-              {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
-            </button>
-
-            {/* botão limpar filtros */}
-            {columnFilters.length > 0 && (
+            {/* ===== ITENS DA DIREITA ===== */}
+            <div className="flex items-center gap-6">
+              {/* botão mostrar/ocultar filtros */}
               <button
-                onClick={clearFilters}
-                className="flex cursor-pointer gap-4 rounded-md border border-white/30 bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:bg-red-900 active:scale-95"
+                onClick={() => setShowFilters(!showFilters)}
+                disabled={!data || data.length <= 1}
+                className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider italic transition-all select-none ${
+                  showFilters
+                    ? 'bg-blue-600 text-white hover:bg-blue-900'
+                    : 'border border-white/50 bg-white/40 text-white hover:border-none hover:bg-white/70 hover:text-black'
+                } ${
+                  !data || data.length <= 1
+                    ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
+                    : 'hover:scale-105 active:scale-95'
+                }`}
               >
-                <BsEraserFill className="text-white" size={24} />
-                Limpar Filtros
+                {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
+                {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
               </button>
-            )}
-            {/* ===== */}
 
-            {/* botão exportar para excel */}
-            {/* <ButtonExcel
-              data={data ?? []}
-              fileName={`relatorio_de_chamados_${mes}_${ano}`}
-              title={`Relatório de Chamados - ${mes}/${ano}`}
-              columns={[
-                { key: 'COD_CHAMADO', label: 'Chamado' },
-                { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
-                { key: 'EMAIL_CHAMADO', label: 'Email' },
-                { key: 'DATA_CHAMADO', label: 'Data' },
-                { key: 'STATUS_CHAMADO', label: 'Status' },
-              ]}
-              autoFilter={true}
-              freezeHeader={true}
-            /> */}
-            {/* ===== */}
-
-            {/* botão exportar para PDF */}
-            {/* <ButtonPDF
-              data={data ?? []}
-              fileName={`relatorio_chamados_${mes}_${ano}`}
-              title={`Relatório de Chamados - ${mes}/${ano}`}
-              columns={[
-                { key: 'COD_CHAMADO', label: 'Chamado' },
-                { key: 'ASSUNTO_CHAMADO', label: 'Assunto' },
-                { key: 'EMAIL_CHAMADO', label: 'Email' },
-                { key: 'DATA_CHAMADO', label: 'Data' },
-                { key: 'STATUS_CHAMADO', label: 'Status' },
-              ]}
-              footerText="Gerado pelo sistema em"
-            /> */}
-            {/* ===== */}
+              {/* botão limpar filtros */}
+              {totalActiveFilters > 0 && (
+                <button
+                  onClick={clearFilters}
+                  className="flex cursor-pointer gap-4 rounded-md border border-white/30 bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:bg-red-900 active:scale-95"
+                >
+                  <BsEraserFill className="text-white" size={24} />
+                  Limpar Filtros
+                </button>
+              )}
+            </div>
           </section>
+
+          {/* ===== FILTRO GLOBAL ===== */}
+          {data && data.length > 0 && (
+            <section className="flex items-center justify-between gap-6">
+              {/* Campo de busca global */}
+              <div className="max-w-md flex-1 font-semibold tracking-wider select-none placeholder:tracking-wider placeholder:text-gray-400 placeholder:italic placeholder:select-none">
+                <GlobalFilterInput
+                  value={globalFilter ?? ''}
+                  onChange={value => setGlobalFilter(String(value))}
+                  placeholder="Buscar em todas as colunas..."
+                  onClear={function (): void {
+                    setGlobalFilter('');
+                  }}
+                />
+              </div>
+
+              {/* Indicadores de filtros ativos */}
+              <FilterIndicator
+                columnFilters={columnFilters}
+                globalFilter={globalFilter}
+                totalFilters={totalActiveFilters}
+              />
+            </section>
+          )}
         </header>
         {/* ===== */}
 
@@ -634,7 +796,7 @@ export default function TabelaChamados() {
         <main className="h-full w-full overflow-hidden bg-black">
           <div
             className="h-full overflow-y-auto"
-            style={{ maxHeight: 'calc(100vh - 370px)' }}
+            style={{ maxHeight: 'calc(100vh - 450px)' }}
           >
             {/* ===== TABELA ===== */}
             <table className="w-full table-fixed border-collapse">
@@ -686,6 +848,7 @@ export default function TabelaChamados() {
                           <FilterInputWithDebounce
                             value={(column.getFilterValue() as string) ?? ''}
                             onChange={value => column.setFilterValue(value)}
+                            onClear={() => column.setFilterValue('')}
                             placeholder="Código..."
                             type="text"
                           />
@@ -695,6 +858,7 @@ export default function TabelaChamados() {
                           <FilterInputWithDebounce
                             value={(column.getFilterValue() as string) ?? ''}
                             onChange={value => column.setFilterValue(value)}
+                            onClear={() => column.setFilterValue('')}
                             placeholder="dd/mm/aaaa"
                             type="text"
                           />
@@ -704,6 +868,7 @@ export default function TabelaChamados() {
                           <FilterInputWithDebounce
                             value={(column.getFilterValue() as string) ?? ''}
                             onChange={value => column.setFilterValue(value)}
+                            onClear={() => column.setFilterValue('')}
                             placeholder="Filtrar por assunto..."
                           />
                         )}
@@ -712,7 +877,7 @@ export default function TabelaChamados() {
                           <FilterInputWithDebounce
                             value={(column.getFilterValue() as string) ?? ''}
                             onChange={value => column.setFilterValue(value)}
-                            // options={statusOptions}
+                            onClear={() => column.setFilterValue('')}
                             placeholder="Filtrar por status..."
                           />
                         )}
@@ -721,6 +886,7 @@ export default function TabelaChamados() {
                           <FilterInputWithDebounce
                             value={(column.getFilterValue() as string) ?? ''}
                             onChange={value => column.setFilterValue(value)}
+                            onClear={() => column.setFilterValue('')}
                             placeholder="Filtrar por email..."
                           />
                         )}
@@ -771,11 +937,11 @@ export default function TabelaChamados() {
 
         {/* ===== PAGINAÇÃO DA TABELA ===== */}
         {Array.isArray(data) && data.length > 0 && (
-          <section className="border-t border-white bg-black px-12 py-4">
+          <section className="bg-black px-12 py-4">
             <div className="flex items-center justify-between">
               {/* Informações da página */}
-              <div className="flex items-center gap-4 text-base font-semibold tracking-widest text-white italic select-none">
-                <span>
+              <div className="flex items-center gap-2">
+                <span className="text-base font-semibold tracking-widest text-white italic select-none">
                   {table.getFilteredRowModel().rows.length} registro
                   {table.getFilteredRowModel().rows.length !== 1
                     ? 's'
@@ -784,12 +950,10 @@ export default function TabelaChamados() {
                   {table.getFilteredRowModel().rows.length !== 1 ? 's' : ''}
                 </span>
 
-                {/* Filtros ativos */}
-                {columnFilters.length > 0 && (
-                  <span className="rounded-full bg-blue-600 px-4 py-1 text-base font-semibold tracking-widest text-white italic select-none">
-                    {columnFilters.length} filtro
-                    {columnFilters.length > 1 ? 's' : ''} ativo
-                    {columnFilters.length > 1 ? 's' : ''}
+                {/* Total de registros (sem filtros) */}
+                {totalActiveFilters > 0 && (
+                  <span className="text-base font-semibold tracking-widest text-white italic select-none">
+                    de um total de {data.length}
                   </span>
                 )}
               </div>
@@ -804,7 +968,7 @@ export default function TabelaChamados() {
                   <select
                     value={table.getState().pagination.pageSize}
                     onChange={e => table.setPageSize(Number(e.target.value))}
-                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-white italic hover:bg-gray-500"
+                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-white italic transition-all hover:bg-gray-500"
                   >
                     {[10, 25, 50, 75, 100].map(pageSize => (
                       <option
@@ -823,7 +987,7 @@ export default function TabelaChamados() {
                   <button
                     onClick={() => table.setPageIndex(0)}
                     disabled={!table.getCanPreviousPage()}
-                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 transition-all hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <FiChevronsLeft className="text-white" size={24} />
                   </button>
@@ -831,7 +995,7 @@ export default function TabelaChamados() {
                   <button
                     onClick={() => table.previousPage()}
                     disabled={!table.getCanPreviousPage()}
-                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 transition-all hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <MdChevronLeft className="text-white" size={24} />
                   </button>
@@ -845,7 +1009,7 @@ export default function TabelaChamados() {
                           const page = Number(e.target.value) - 1;
                           table.setPageIndex(page);
                         }}
-                        className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-white italic hover:bg-gray-500"
+                        className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-white italic transition-all hover:bg-gray-500"
                       >
                         {Array.from(
                           { length: table.getPageCount() },
@@ -870,7 +1034,7 @@ export default function TabelaChamados() {
                   <button
                     onClick={() => table.nextPage()}
                     disabled={!table.getCanNextPage()}
-                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 transition-all hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <MdChevronRight className="text-white" size={24} />
                   </button>
@@ -878,7 +1042,7 @@ export default function TabelaChamados() {
                   <button
                     onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                     disabled={!table.getCanNextPage()}
-                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 transition-all hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <FiChevronsRight className="text-white" size={24} />
                   </button>
@@ -921,6 +1085,17 @@ export default function TabelaChamados() {
               <p className="mt-2 text-slate-400">
                 Tente ajustar os filtros ou limpe-os para visualizar registros.
               </p>
+
+              {/* Botão para limpar filtros */}
+              {totalActiveFilters > 0 && (
+                <button
+                  onClick={clearFilters}
+                  className="mx-auto mt-4 flex cursor-pointer items-center gap-2 rounded-md border border-cyan-400 bg-cyan-600 px-6 py-2 text-base font-semibold tracking-wider text-white transition-all select-none hover:scale-105 hover:bg-cyan-700 active:scale-95"
+                >
+                  <BsEraserFill size={18} />
+                  Limpar Filtros
+                </button>
+              )}
             </section>
           )}
         {/* ===== */}

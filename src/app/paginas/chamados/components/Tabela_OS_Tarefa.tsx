@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   flexRender,
@@ -31,38 +31,114 @@ import { MdChevronLeft } from 'react-icons/md';
 import { FiChevronsLeft } from 'react-icons/fi';
 import { MdChevronRight } from 'react-icons/md';
 import { FiChevronsRight } from 'react-icons/fi';
-import { LuArrowUpDown } from 'react-icons/lu';
-import { FaArrowUpLong } from 'react-icons/fa6';
-import { FaArrowDownLong } from 'react-icons/fa6';
-import { IoClose } from 'react-icons/io5';
+import { IoArrowDown, IoArrowUp, IoClose } from 'react-icons/io5';
+import { FaSearch } from 'react-icons/fa';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '../../../../components/ui/tooltip';
+import { RiArrowUpDownLine } from 'react-icons/ri';
+import { debounce } from 'lodash';
 import ModalEditarOS from './Modal_Editar_OS';
 import { ModalExcluirOS } from './Modal_Deletar_OS';
 // ================================================================================
 // ================================================================================
 
-// Componente para input de filtro
-const FilterInput = ({
+interface FilterInputWithDebounceProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  type?: string;
+  onClear?: () => void;
+}
+
+// Componente de Filtro Global
+interface GlobalFilterInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  onClear?: () => void;
+}
+// ================================================================================
+
+const FilterInputWithDebounce = ({
   value,
   onChange,
   placeholder,
   type = 'text',
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-  type?: string;
-}) => (
-  <input
-    type={type}
-    value={value}
-    onChange={e => onChange(e.target.value)}
-    placeholder={placeholder}
-    className="w-full rounded-md bg-black px-4 py-2 text-base text-white placeholder-gray-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none"
-  />
-);
+  onClear,
+}: FilterInputWithDebounceProps) => {
+  const [localValue, setLocalValue] = useState(value);
 
-// Componente para select de filtro
-const FilterSelect = ({
+  // Atualiza o valor local quando o valor externo muda (ex: limpeza)
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  const debouncedOnChange = useMemo(
+    () => debounce((newValue: string) => onChange(newValue), 300),
+    [onChange]
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalValue(e.target.value);
+    debouncedOnChange(e.target.value);
+  };
+
+  return (
+    <input
+      type={type}
+      value={localValue}
+      onChange={handleChange}
+      placeholder={placeholder}
+      className="w-full rounded-md border border-white/50 bg-teal-950 px-4 py-2 text-base text-white placeholder-gray-500 hover:scale-105 focus:bg-black focus:outline-none focus:placeholder:text-gray-700"
+    />
+  );
+};
+
+const GlobalFilterInput = ({
+  value,
+  onChange,
+  placeholder = 'Buscar em todas as colunas...',
+  onClear,
+}: GlobalFilterInputProps) => {
+  const [localValue, setLocalValue] = useState(value);
+
+  // Atualiza o valor local quando o valor externo muda
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  const debouncedOnChange = useMemo(
+    () => debounce((newValue: string) => onChange(newValue), 500),
+    [onChange]
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalValue(e.target.value);
+    debouncedOnChange(e.target.value);
+  };
+
+  return (
+    <div className="group relative transition-all focus-within:text-black hover:scale-105">
+      <FaSearch
+        className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-600 transition-colors duration-300 group-focus-within:text-black"
+        size={18}
+      />
+      <input
+        type="text"
+        value={localValue}
+        onChange={handleChange}
+        placeholder={placeholder}
+        className="w-full rounded-md border border-black/50 bg-white/20 py-2 pr-4 pl-12 text-base text-black placeholder-gray-600 focus:bg-white/40 focus:outline-none focus:placeholder:text-gray-400"
+      />
+    </div>
+  );
+};
+
+// Componente para select de filtro com debounce
+const FilterSelectWithDebounce = ({
   value,
   onChange,
   options,
@@ -72,24 +148,38 @@ const FilterSelect = ({
   onChange: (value: string) => void;
   options: string[];
   placeholder: string;
-}) => (
-  <select
-    value={value}
-    onChange={e => onChange(e.target.value)}
-    className="w-full cursor-pointer rounded-md bg-black px-4 py-2 text-base text-white placeholder-gray-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none"
-  >
-    <option value="" className="placeholder:text-gray-400">
-      {placeholder}
-    </option>
-    {options.map(option => (
-      <option key={option} value={option}>
-        {option}
-      </option>
-    ))}
-  </select>
-);
+}) => {
+  const [localValue, setLocalValue] = useState(value);
 
-// Componente para cabeçalho ordenável
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newValue = e.target.value;
+    setLocalValue(newValue);
+    onChange(newValue);
+  };
+
+  return (
+    <select
+      value={localValue}
+      onChange={handleChange}
+      className="w-full cursor-pointer rounded-md border border-white/50 bg-teal-950 px-4 py-2 text-base text-white placeholder-gray-500 hover:scale-105 focus:bg-black focus:outline-none"
+    >
+      <option value="" className="bg-black text-white">
+        {placeholder}
+      </option>
+      {options.map(option => (
+        <option key={option} value={option} className="bg-black text-white">
+          {option}
+        </option>
+      ))}
+    </select>
+  );
+};
+
+// Componente para ordenação do cabeçalho da tabela
 const SortableHeader = ({
   column,
   children,
@@ -100,19 +190,88 @@ const SortableHeader = ({
   const sorted = column.getIsSorted();
 
   return (
-    <div
-      className="flex cursor-pointer items-center justify-center gap-2 rounded-full py-2 hover:bg-teal-900"
-      onClick={column.getToggleSortingHandler()}
-    >
-      {children}
-      <div className="flex flex-col">
-        {sorted === 'asc' && <FaArrowUpLong size={20} />}
-        {sorted === 'desc' && <FaArrowDownLong size={20} />}
-        {!sorted && <LuArrowUpDown size={20} className="text-white" />}
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className="flex cursor-pointer items-center justify-center gap-2 rounded-md py-2 transition-all hover:bg-teal-900 active:scale-95"
+          onClick={column.getToggleSortingHandler()}
+        >
+          {children}
+          <div className="flex flex-col">
+            {sorted === 'asc' && <IoArrowUp size={20} />}
+            {sorted === 'desc' && <IoArrowDown size={20} />}
+            {!sorted && <RiArrowUpDownLine size={20} className="text-white" />}
+          </div>
+        </div>
+      </TooltipTrigger>
+
+      <TooltipContent
+        side="top"
+        align="center"
+        sideOffset={8}
+        className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+      >
+        Clique para ordenar{' '}
+        {sorted === 'asc'
+          ? '(ascendente)'
+          : sorted === 'desc'
+            ? '(descendente)'
+            : ''}
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
+// Componente de Indicador de Filtros Ativos
+const FilterIndicator = ({
+  columnFilters,
+  globalFilter,
+  totalFilters,
+}: {
+  columnFilters: ColumnFiltersState;
+  globalFilter: string;
+  totalFilters: number;
+}) => {
+  if (totalFilters === 0) return null;
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="rounded-full bg-blue-600 px-3 py-1 text-sm font-semibold tracking-wider text-white italic select-none">
+        {totalFilters} filtro{totalFilters > 1 ? 's' : ''} ativo
+        {totalFilters > 1 ? 's' : ''}
       </div>
+
+      {globalFilter && (
+        <div className="rounded-full bg-green-600 px-3 py-1 text-sm font-semibold tracking-wider text-white italic select-none">
+          Busca global: "{globalFilter}"
+        </div>
+      )}
+
+      {columnFilters.map(filter => (
+        <div
+          key={filter.id}
+          className="rounded-full bg-purple-600 px-3 py-1 text-sm font-semibold tracking-wider text-white italic select-none"
+        >
+          {getColumnDisplayName(filter.id)}: "{String(filter.value)}"
+        </div>
+      ))}
     </div>
   );
 };
+
+// Função auxiliar para nomes das colunas
+const getColumnDisplayName = (columnId: string): string => {
+  const displayNames: Record<string, string> = {
+    COD_OS: 'Código OS',
+    NOME_CLIENTE: 'Cliente',
+    CHAMADO_OS: 'Chamado',
+    STATUS_OS: 'Status',
+    OBS_OS: 'Observação',
+    DTINI_OS: 'Data Início',
+  };
+  return displayNames[columnId] || columnId;
+};
+
 // ================================================================================
 
 export default function TabelaOSTarefa({
@@ -123,15 +282,25 @@ export default function TabelaOSTarefa({
   onSuccess,
 }: TabelaOSTarefaProps) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [globalFilter, setGlobalFilter] = useState('');
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'COD_OS', desc: false },
   ]);
   const [showFilters, setShowFilters] = useState(false);
-
   const [selectedOS, setSelectedOS] = useState<string | null>(null);
-
   const [modalEditarOSOpen, setModalEditarOSOpen] = useState(false);
   const [osParaExcluir, setOsParaExcluir] = useState<string | null>(null);
+
+  // Estados para os valores dos inputs de filtro
+  const [filterValues, setFilterValues] = useState({
+    COD_OS: '',
+    NOME_CLIENTE: '',
+    CHAMADO_OS: '',
+    STATUS_OS: '',
+    OBS_OS: '',
+    DTINI_OS: '',
+    global: '',
+  });
 
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -197,13 +366,13 @@ export default function TabelaOSTarefa({
   };
 
   const handleEditarOSSuccess = () => {
-    handleCloseEditarOS(); // fecha o modal de edição
-    onSuccess?.(); // fecha a Tabela_OS
+    handleCloseEditarOS();
+    onSuccess?.();
   };
 
   const handleExclusaoSuccess = () => {
     handleFecharModalExclusao();
-    refetch(); // Atualiza a tabela
+    refetch();
   };
 
   // Configuração da tabela
@@ -211,6 +380,84 @@ export default function TabelaOSTarefa({
     onEditarOS: handleOpenEditarOS,
     onExcluirOS: handleAbrirModalExclusao,
   });
+
+  // Função de filtro global otimizada
+  const globalFilterFn = useCallback(
+    (row: any, columnId: string, filterValue: string) => {
+      if (!filterValue) return true;
+
+      const searchValue = filterValue.toLowerCase();
+
+      // Busca em todas as colunas principais da OS Tarefa
+      const searchableColumns = [
+        'COD_OS',
+        'NOME_CLIENTE',
+        'CHAMADO_OS',
+        'STATUS_OS',
+        'OBS_OS',
+        'DTINI_OS',
+      ];
+
+      return searchableColumns.some(colId => {
+        const cellValue = row.getValue(colId);
+
+        // Para data, formata antes de comparar
+        if (colId === 'DTINI_OS' && cellValue) {
+          try {
+            const date = new Date(cellValue as string);
+            const formattedDate = date.toLocaleDateString('pt-BR');
+            return formattedDate.includes(searchValue);
+          } catch {
+            return String(cellValue || '')
+              .toLowerCase()
+              .includes(searchValue);
+          }
+        }
+
+        const cellString = String(cellValue || '').toLowerCase();
+        return cellString.includes(searchValue);
+      });
+    },
+    []
+  );
+
+  // Função de filtro por coluna otimizada
+  const columnFilterFn = useCallback(
+    (row: any, columnId: string, filterValue: string) => {
+      if (!filterValue || filterValue === '') return true;
+
+      const cellValue = row.getValue(columnId);
+      const cellString = String(cellValue || '').toLowerCase();
+      const filterString = String(filterValue).toLowerCase();
+
+      // Filtro específico por tipo de coluna
+      switch (columnId) {
+        case 'COD_OS':
+        case 'CHAMADO_OS':
+          // Para códigos, permite busca parcial em números
+          return cellString.includes(filterString);
+
+        case 'DTINI_OS':
+          // Para data, formata antes de comparar
+          if (!cellValue) return false;
+          try {
+            const date = new Date(cellValue as string);
+            const formattedDate = date.toLocaleDateString('pt-BR');
+            return formattedDate.includes(filterString);
+          } catch {
+            return cellString.includes(filterString);
+          }
+
+        case 'NOME_CLIENTE':
+        case 'STATUS_OS':
+        case 'OBS_OS':
+        default:
+          // Para texto, busca parcial case-insensitive
+          return cellString.includes(filterString);
+      }
+    },
+    []
+  );
 
   const table = useReactTable({
     data: (dataOSTarefa ?? []) as TabelaOSProps[],
@@ -220,9 +467,12 @@ export default function TabelaOSTarefa({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
     onSortingChange: setSorting,
+    globalFilterFn,
     state: {
       columnFilters,
+      globalFilter,
       sorting,
     },
     initialState: {
@@ -230,41 +480,26 @@ export default function TabelaOSTarefa({
         pageSize: 10,
       },
     },
-    // Função de filtro personalizada
+
+    // Função de filtro personalizada para colunas
+    filterFns: {
+      customColumnFilter: columnFilterFn,
+    },
+
+    // Aplica o filtro customizado para todas as colunas
     defaultColumn: {
-      filterFn: (row, columnId, filterValue) => {
-        if (!filterValue || filterValue === '') return true;
-
-        const cellValue = row.getValue(columnId);
-
-        // Converte ambos os valores para string e faz comparação case-insensitive
-        const cellString = String(cellValue || '').toLowerCase();
-        const filterString = String(filterValue).toLowerCase();
-
-        // Para campos específicos, permite busca parcial
-        if (columnId === 'COD_OS' || columnId === 'CHAMADO_OS') {
-          return cellString.includes(filterString);
-        }
-
-        // Para data, formata antes de comparar
-        if (columnId === 'DTINI_OS') {
-          if (!cellValue) return false;
-          try {
-            const date = new Date(cellValue as string);
-            const formattedDate = date.toLocaleDateString('pt-BR');
-            return formattedDate.includes(filterString);
-          } catch {
-            return cellString.includes(filterString);
-          }
-        }
-
-        // Para outros campos, busca parcial
-        return cellString.includes(filterString);
-      },
+      filterFn: columnFilterFn,
     },
   });
 
-  // Obter valores únicos para filtros de select
+  // Calcula o total de filtros ativos
+  const totalActiveFilters = useMemo(() => {
+    let count = columnFilters.length;
+    if (globalFilter && globalFilter.trim()) count += 1;
+    return count;
+  }, [columnFilters.length, globalFilter]);
+
+  // Obter valores únicos para filtros de select - usando useMemo para otimização
   const clienteOptions = Array.from(
     new Set(
       dataOSTarefa
@@ -283,14 +518,66 @@ export default function TabelaOSTarefa({
     )
   ).sort();
 
-  // Função para limpar todos os filtros
+  // Função para limpar todos os filtros e inputs
   const clearFilters = () => {
     setColumnFilters([]);
+    setGlobalFilter('');
+
+    // Limpa os valores dos inputs
+    setFilterValues({
+      COD_OS: '',
+      NOME_CLIENTE: '',
+      CHAMADO_OS: '',
+      STATUS_OS: '',
+      OBS_OS: '',
+      DTINI_OS: '',
+      global: '',
+    });
+
+    // Limpa os filtros da tabela
+    table.getAllColumns().forEach(column => {
+      column.setFilterValue('');
+    });
   };
+
+  // Atualiza os valores locais quando os filtros da tabela mudam
+  useEffect(() => {
+    // Cria um novo objeto de valores baseado nos filtros atuais
+    const newFilterValues = {
+      COD_OS: '',
+      NOME_CLIENTE: '',
+      CHAMADO_OS: '',
+      STATUS_OS: '',
+      OBS_OS: '',
+      DTINI_OS: '',
+      global: globalFilter || '',
+    };
+
+    // Preenche os valores dos filtros de coluna
+    columnFilters.forEach(filter => {
+      if (filter.id in newFilterValues) {
+        newFilterValues[filter.id as keyof typeof newFilterValues] = String(
+          filter.value || ''
+        );
+      }
+    });
+
+    // Atualiza apenas se houver mudanças reais para evitar loops
+    setFilterValues(prev => {
+      // Verifica se os valores realmente mudaram
+      const hasChanged = Object.keys(newFilterValues).some(
+        key =>
+          prev[key as keyof typeof prev] !==
+          newFilterValues[key as keyof typeof newFilterValues]
+      );
+
+      return hasChanged ? newFilterValues : prev;
+    });
+  }, [columnFilters, globalFilter]);
 
   if (!isOpen) return null;
 
-  // ===== LOADING CENTRALIZADO - NOVA IMPLEMENTAÇÃO =====
+  // ===== LOADING CENTRALIZADO =====
   if (isLoading) {
     return (
       <>
@@ -309,10 +596,10 @@ export default function TabelaOSTarefa({
                 </div>
                 <div className="flex flex-col items-center justify-center">
                   <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
-                    Ordens de Serviço
+                    OS Tarefa
                   </h1>
                   <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
-                    Chamado - {codChamado}
+                    Tarefa - #{codTarefa}
                   </span>
                 </div>
               </section>
@@ -326,7 +613,6 @@ export default function TabelaOSTarefa({
             {/* Conteúdo com loading */}
             <main className="flex min-h-[400px] items-center justify-center overflow-hidden bg-black">
               <div className="text-center">
-                {/* Aqui você pode personalizar o loading como quiser */}
                 <div className="mx-auto mb-4 h-16 w-16 animate-spin rounded-full border-b-2 border-white"></div>
                 <h2 className="text-2xl font-bold tracking-widest text-white italic">
                   Carregando os dados da tabela...
@@ -343,7 +629,6 @@ export default function TabelaOSTarefa({
       </>
     );
   }
-  // ==============================
 
   if (isError) {
     return (
@@ -363,10 +648,10 @@ export default function TabelaOSTarefa({
                 </div>
                 <div className="flex flex-col items-center justify-center">
                   <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
-                    Ordens de Serviço
+                    OS Tarefa
                   </h1>
                   <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
-                    Chamado - {codChamado}
+                    Tarefa - #{codTarefa}
                   </span>
                 </div>
               </section>
@@ -390,6 +675,7 @@ export default function TabelaOSTarefa({
       </>
     );
   }
+
   // ================================================================================
 
   return (
@@ -400,87 +686,100 @@ export default function TabelaOSTarefa({
           className="absolute inset-0 bg-black/50 backdrop-blur-xl"
           onClick={onClose}
         />
-        {/* ===== */}
         {/* ===== MODAL ===== */}
         <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-black">
           {/* ===== HEADER ===== */}
-          <header className="flex items-center justify-between gap-8 bg-white/70 p-6">
-            {/* ===== ITENS DA ESQUERDA ===== */}
-            <section className="flex items-center justify-center gap-6">
-              {/* ícone */}
-              <div className="flex items-center justify-center rounded-xl border border-black/30 bg-white/10 p-4">
-                <FaTasks className="text-black" size={44} />
-              </div>
-              {/* ===== */}
+          <header className="flex flex-col gap-4 bg-white/70 p-6">
+            {/* ===== LINHA SUPERIOR ===== */}
+            <section className="flex items-center justify-between gap-8">
+              {/* ===== ITENS DA ESQUERDA ===== */}
+              <div className="flex items-center justify-center gap-6">
+                {/* ícone */}
+                <div className="flex items-center justify-center rounded-xl border border-black/50 bg-white/10 p-4">
+                  <FaTasks className="text-black" size={28} />
+                </div>
 
-              <div className="flex flex-col items-center justify-center">
-                {/* título */}
-                <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
-                  OS Tarefa
-                </h1>
-                {/* ===== */}
+                <div className="flex items-center justify-center gap-10">
+                  {/* título */}
+                  <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
+                    OS Tarefa
+                  </h1>
 
-                <div className="flex items-center gap-4">
-                  {/* número do chamado*/}
-                  <span className="rounded-full bg-black px-8 py-1 text-base font-extrabold tracking-widest text-white italic select-none">
-                    Tarefa - #{codTarefa}
-                  </span>
-
-                  {/* quantidade de OS's */}
-                  {/* {dataOSTarefa && dataOSTarefa.length > 0 && (
-                    <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
-                      {dataOSTarefa.length}{' '}
-                      {dataOSTarefa.length === 1
-                        ? '- OS encontrada'
-                        : "- OS's encontradas"}
+                  <div className="flex items-center gap-4">
+                    {/* número da tarefa*/}
+                    <span className="rounded-full bg-black px-8 py-1 text-base font-extrabold tracking-widest text-white italic select-none">
+                      Tarefa - #{codTarefa}
                     </span>
-                  )} */}
+                  </div>
                 </div>
               </div>
-            </section>
-            {/* ===== */}
 
-            {/* ===== ITENS DA DIREITA ===== */}
-            <section className="flex items-center gap-20">
-              {/* botão mostrar/ocultar filtros */}
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                disabled={!dataOSTarefa || dataOSTarefa.length <= 1}
-                className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-black italic transition-all select-none ${
-                  showFilters
-                    ? 'border border-blue-800 bg-blue-600 text-white'
-                    : 'border border-black/50 bg-white/10'
-                } ${
-                  !dataOSTarefa || dataOSTarefa.length <= 1
-                    ? 'disabled:cursor-not-allowed disabled:border-gray-200 disabled:text-gray-200'
-                    : 'hover:scale-105 hover:bg-gray-500 hover:text-white active:scale-95'
-                }`}
-              >
-                {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
-                {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
-              </button>
-
-              {/* botão limpar filtros */}
-              {columnFilters.length > 0 && (
+              {/* ===== ITENS DA DIREITA ===== */}
+              <div className="flex items-center gap-6">
+                {/* botão mostrar/ocultar filtros */}
                 <button
-                  onClick={clearFilters}
-                  className="flex cursor-pointer gap-4 rounded-md border border-white/30 bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:bg-red-900 active:scale-95"
+                  onClick={() => setShowFilters(!showFilters)}
+                  disabled={!dataOSTarefa || dataOSTarefa.length <= 1}
+                  className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider italic transition-all select-none ${
+                    showFilters
+                      ? 'bg-blue-600 text-white hover:bg-blue-900'
+                      : 'border border-black/50 bg-white/50 text-black hover:bg-white/70'
+                  } ${
+                    !dataOSTarefa || dataOSTarefa.length <= 1
+                      ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
+                      : 'hover:scale-105 active:scale-95'
+                  }`}
                 >
-                  <BsEraserFill className="text-white" size={24} />
-                  Limpar Filtros
+                  {showFilters ? (
+                    <LuFilterX size={24} />
+                  ) : (
+                    <LuFilter size={24} />
+                  )}
+                  {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
                 </button>
-              )}
 
-              {/* botão - fechar modal */}
-              <button
-                onClick={handleClose}
-                className="group cursor-pointer rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
-              >
-                <IoClose size={24} />
-              </button>
+                {/* botão limpar filtros */}
+                {totalActiveFilters > 0 && (
+                  <button
+                    onClick={clearFilters}
+                    className="flex cursor-pointer gap-4 rounded-md border border-white/30 bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:bg-red-900 active:scale-95"
+                  >
+                    <BsEraserFill className="text-white" size={24} />
+                    Limpar Filtros
+                  </button>
+                )}
+
+                {/* botão - fechar modal */}
+                <button
+                  onClick={handleClose}
+                  className="group cursor-pointer rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
+                >
+                  <IoClose size={24} />
+                </button>
+              </div>
             </section>
+
+            {/* ===== FILTRO GLOBAL ===== */}
+            {dataOSTarefa && dataOSTarefa.length > 0 && (
+              <section className="flex items-center justify-between gap-6">
+                {/* Campo de busca global */}
+                <div className="max-w-md flex-1 font-semibold tracking-wider select-none placeholder:tracking-wider placeholder:text-gray-600 placeholder:italic placeholder:select-none">
+                  <GlobalFilterInput
+                    value={globalFilter ?? ''}
+                    onChange={value => setGlobalFilter(String(value))}
+                    placeholder="Buscar em todas as colunas..."
+                  />
+                </div>
+
+                {/* Indicadores de filtros ativos */}
+                <FilterIndicator
+                  columnFilters={columnFilters}
+                  globalFilter={globalFilter}
+                  totalFilters={totalActiveFilters}
+                />
+              </section>
+            )}
           </header>
-          {/* ===== */}
 
           {/* ===== CONTEÚDO PRINCIPAL ===== */}
           <main className="overflow-hidden bg-black">
@@ -489,7 +788,7 @@ export default function TabelaOSTarefa({
               <section className="h-full w-full overflow-hidden bg-black">
                 <div
                   className="h-full overflow-y-auto"
-                  style={{ maxHeight: 'calc(100vh - 370px)' }}
+                  style={{ maxHeight: 'calc(100vh - 420px)' }}
                 >
                   <table className="w-full table-fixed border-collapse">
                     {/* ===== CABEÇALHO DA TABELA ===== */}
@@ -501,7 +800,7 @@ export default function TabelaOSTarefa({
                             // Células do cabeçalho da tabela
                             <th
                               key={header.id}
-                              className="border-t-2 border-white bg-teal-700 py-6 font-extrabold tracking-wider text-white uppercase select-none"
+                              className="bg-teal-700 py-6 font-extrabold tracking-wider text-white uppercase select-none"
                               style={{
                                 width: getColumnWidth(header.column.id),
                               }}
@@ -511,7 +810,8 @@ export default function TabelaOSTarefa({
                                 header.column.id === 'NOME_CLIENTE' ||
                                 header.column.id === 'CHAMADO_OS' ||
                                 header.column.id === 'STATUS_OS' ||
-                                header.column.id === 'DTINI_OS' ? (
+                                header.column.id === 'DTINI_OS' ||
+                                header.column.id === 'OBS_OS' ? (
                                 <SortableHeader column={header.column}>
                                   {flexRender(
                                     header.column.columnDef.header,
@@ -528,7 +828,6 @@ export default function TabelaOSTarefa({
                           ))}
                         </tr>
                       ))}
-                      {/* ===== */}
 
                       {/* ===== FILTROS DA TABELA ===== */}
                       {showFilters && (
@@ -540,7 +839,7 @@ export default function TabelaOSTarefa({
                               style={{ width: getColumnWidth(column.id) }}
                             >
                               {column.id === 'COD_OS' && (
-                                <FilterInput
+                                <FilterInputWithDebounce
                                   value={
                                     (column.getFilterValue() as string) ?? ''
                                   }
@@ -548,10 +847,12 @@ export default function TabelaOSTarefa({
                                     column.setFilterValue(value)
                                   }
                                   placeholder="Código..."
+                                  type="text"
                                 />
                               )}
+
                               {column.id === 'NOME_CLIENTE' && (
-                                <FilterSelect
+                                <FilterSelectWithDebounce
                                   value={
                                     (column.getFilterValue() as string) ?? ''
                                   }
@@ -562,8 +863,9 @@ export default function TabelaOSTarefa({
                                   placeholder="Cliente..."
                                 />
                               )}
+
                               {column.id === 'CHAMADO_OS' && (
-                                <FilterInput
+                                <FilterInputWithDebounce
                                   value={
                                     (column.getFilterValue() as string) ?? ''
                                   }
@@ -573,8 +875,9 @@ export default function TabelaOSTarefa({
                                   placeholder="Chamado..."
                                 />
                               )}
+
                               {column.id === 'STATUS_OS' && (
-                                <FilterSelect
+                                <FilterSelectWithDebounce
                                   value={
                                     (column.getFilterValue() as string) ?? ''
                                   }
@@ -585,8 +888,9 @@ export default function TabelaOSTarefa({
                                   placeholder="Status..."
                                 />
                               )}
+
                               {column.id === 'OBS_OS' && (
-                                <FilterInput
+                                <FilterInputWithDebounce
                                   value={
                                     (column.getFilterValue() as string) ?? ''
                                   }
@@ -596,8 +900,9 @@ export default function TabelaOSTarefa({
                                   placeholder="Observação..."
                                 />
                               )}
+
                               {column.id === 'DTINI_OS' && (
-                                <FilterInput
+                                <FilterInputWithDebounce
                                   value={
                                     (column.getFilterValue() as string) ?? ''
                                   }
@@ -613,7 +918,6 @@ export default function TabelaOSTarefa({
                         </tr>
                       )}
                     </thead>
-                    {/* ===== */}
 
                     {/* ===== CORPO DA TABELA ===== */}
                     <tbody>
@@ -653,7 +957,7 @@ export default function TabelaOSTarefa({
                 </div>
 
                 {/* ===== PAGINAÇÃO DA TABELA ===== */}
-                <section className="border-t-2 border-white bg-white/70 px-12 py-4">
+                <section className="bg-white/70 px-12 py-4">
                   <div className="flex items-center justify-between">
                     {/* Informações da página */}
                     <section className="flex items-center gap-4">
@@ -668,12 +972,10 @@ export default function TabelaOSTarefa({
                           : ''}
                       </span>
 
-                      {/* Filtros ativos */}
-                      {columnFilters.length > 0 && (
-                        <span className="rounded-full bg-blue-600 px-4 py-1 text-base font-semibold tracking-widest text-white italic select-none">
-                          {columnFilters.length} filtro
-                          {columnFilters.length > 1 ? 's' : ''} ativo
-                          {columnFilters.length > 1 ? 's' : ''}
+                      {/* Total de registros (sem filtros) */}
+                      {totalActiveFilters > 0 && (
+                        <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
+                          de um total de {dataOSTarefa.length}
                         </span>
                       )}
                     </section>
@@ -692,7 +994,7 @@ export default function TabelaOSTarefa({
                           }
                           className="cursor-pointer rounded-md border border-black/30 px-4 py-1 text-base font-semibold tracking-widest text-black italic hover:bg-gray-500 hover:text-white"
                         >
-                          {[5, 10, 15, 25].map(pageSize => (
+                          {[5, 10, 15, 25, 50, 75, 100].map(pageSize => (
                             <option
                               key={pageSize}
                               value={pageSize}
@@ -776,7 +1078,6 @@ export default function TabelaOSTarefa({
                 </section>
               </section>
             )}
-            {/* ===== */}
 
             {/* ===== MENSAGEM QUANDO NÃO HÁ OS ===== */}
             {dataOSTarefa && dataOSTarefa.length === 0 && !isLoading && (
@@ -788,11 +1089,10 @@ export default function TabelaOSTarefa({
                 />
                 {/* título */}
                 <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
-                  Nenhuma OS foi encontrada para a tarefa {codTarefa}.
+                  Nenhuma OS foi encontrada para a tarefa #{codTarefa}.
                 </h3>
               </section>
             )}
-            {/* ===== */}
 
             {/* ===== MENSAGEM QUANDO FILTROS NÃO RETORNAM RESULTADOS ===== */}
             {dataOSTarefa &&
@@ -810,6 +1110,17 @@ export default function TabelaOSTarefa({
                     Tente ajustar os filtros ou limpe-os para visualizar
                     registros.
                   </p>
+
+                  {/* Botão para limpar filtros */}
+                  {totalActiveFilters > 0 && (
+                    <button
+                      onClick={clearFilters}
+                      className="mx-auto mt-4 flex cursor-pointer items-center gap-2 rounded-md border border-cyan-400 bg-cyan-600 px-6 py-2 text-base font-semibold tracking-wider text-white transition-all select-none hover:scale-105 hover:bg-cyan-700 active:scale-95"
+                    >
+                      <BsEraserFill size={18} />
+                      Limpar Filtros
+                    </button>
+                  )}
                 </section>
               )}
           </main>
@@ -829,7 +1140,6 @@ export default function TabelaOSTarefa({
           onSuccess={handleEditarOSSuccess}
         />
       )}
-      {/* ===== */}
 
       {/* ===== MODAL EXCLUSÃO DE OS ===== */}
       <ModalExcluirOS
@@ -838,25 +1148,26 @@ export default function TabelaOSTarefa({
         codOS={osParaExcluir}
         onSuccess={handleExclusaoSuccess}
       />
-      {/* ===== */}
     </>
   );
 }
+
 // ================================================================================
 
 // Função para largura fixa das colunas
 function getColumnWidth(columnId: string): string {
   const widthMap: Record<string, string> = {
-    COD_OS: '90px',
-    NOME_CLIENTE: '150px',
-    CHAMADO_OS: '100px',
-    OBS_OS: '250px',
-    DTINI_OS: '90px',
-    HRINI_OS: '90px',
-    HRFIM_OS: '90px',
-    QTD_HR_OS: '90px',
-    actions: '50px',
+    COD_OS: '8.5%',
+    NOME_CLIENTE: '15%',
+    CHAMADO_OS: '8%',
+    STATUS_OS: '10%',
+    OBS_OS: '18%',
+    DTINI_OS: '10%',
+    HRINI_OS: '8%',
+    HRFIM_OS: '8%',
+    QTD_HR_OS: '8%',
+    actions: '6.5%',
   };
 
-  return widthMap[columnId] || '100px';
+  return widthMap[columnId] || 'auto';
 }
