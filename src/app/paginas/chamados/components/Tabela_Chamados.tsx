@@ -12,6 +12,7 @@ import {
   ColumnFiltersState,
   SortingState,
 } from '@tanstack/react-table';
+import { debounce } from 'lodash';
 // ================================================================================
 import {
   Tooltip,
@@ -42,32 +43,47 @@ import { FiChevronsRight } from 'react-icons/fi';
 import { RiArrowUpDownLine } from 'react-icons/ri';
 import { IoArrowUp } from 'react-icons/io5';
 import { IoArrowDown } from 'react-icons/io5';
-import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { FaFilter } from 'react-icons/fa6';
 import { Loader2 } from 'lucide-react';
+import { LuFilter, LuFilterX } from 'react-icons/lu';
 // ================================================================================
 // ================================================================================
 
-// ================================================================================
-const FilterInput = ({
+type FilterInputWithDebounceProps = {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  type?: string;
+};
+
+const FilterInputWithDebounce = ({
   value,
   onChange,
   placeholder,
   type = 'text',
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-  type?: string;
-}) => (
-  <input
-    type={type}
-    value={value}
-    onChange={e => onChange(e.target.value)}
-    placeholder={placeholder}
-    className="w-full rounded-md bg-black px-4 py-2 text-base text-white placeholder-gray-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none"
-  />
-);
+}: FilterInputWithDebounceProps) => {
+  const [localValue, setLocalValue] = useState(value);
+
+  const debouncedOnChange = useMemo(
+    () => debounce((newValue: string) => onChange(newValue), 300),
+    [onChange]
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalValue(e.target.value);
+    debouncedOnChange(e.target.value);
+  };
+
+  return (
+    <input
+      type={type}
+      value={localValue}
+      onChange={handleChange}
+      placeholder={placeholder}
+      className="w-full rounded-md bg-black px-4 py-2 text-base text-white placeholder-gray-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+    />
+  );
+};
 // =====
 
 const FilterSelect = ({
@@ -142,7 +158,7 @@ const SortableHeader = ({
 };
 // ================================================================================
 
-// ================================================================================
+// ===== COMPONENTE PRINCIPAL =====
 export default function TabelaChamados() {
   const { filters } = useFiltersTabelaChamados();
   const { ano, mes } = filters;
@@ -326,8 +342,13 @@ export default function TabelaChamados() {
         }
 
         // Para STATUS_CHAMADO, busca exata se for um valor do select
-        if (columnId === 'STATUS_CHAMADO' && filterValue !== '') {
-          return cellString === filterString;
+        // if (columnId === 'STATUS_CHAMADO' && filterValue !== '') {
+        //   return cellString === filterString;
+        // }
+
+        // Para STATUS_CHAMADO, agora usa busca parcial também
+        if (columnId === 'STATUS_CHAMADO') {
+          return cellString.includes(filterString); // Busca parcial
         }
 
         // Para outros campos, busca parcial
@@ -337,13 +358,13 @@ export default function TabelaChamados() {
   });
 
   // Obter valores únicos para filtros de select
-  const statusOptions = useMemo(() => {
-    const statusSet = new Set<string>();
-    data?.forEach(item => {
-      if (item.STATUS_CHAMADO) statusSet.add(item.STATUS_CHAMADO);
-    });
-    return Array.from(statusSet).sort();
-  }, [data]);
+  // const statusOptions = useMemo(() => {
+  //   const statusSet = new Set<string>();
+  //   data?.forEach(item => {
+  //     if (item.STATUS_CHAMADO) statusSet.add(item.STATUS_CHAMADO);
+  //   });
+  //   return Array.from(statusSet).sort();
+  // }, [data]);
 
   // Função para limpar todos os filtros
   const clearFilters = () => {
@@ -519,24 +540,22 @@ export default function TabelaChamados() {
               <FaDatabase className="text-white" size={44} />
             </div>
             {/* ===== */}
-            <div className="flex flex-col items-center justify-center">
+            <div className="flex flex-col items-start justify-center">
               {/* título */}
               <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-white select-none">
                 Tabela de Chamados
               </h1>
               {/* ===== */}
-              <div className="flex items-center gap-4">
-                {/* nome usuário */}
+              {/* <div className="flex items-center gap-4">
                 <span className="rounded-full bg-white px-6 py-1 text-sm font-bold tracking-widest text-black italic select-none">
                   {user.nome}
                 </span>
-                {/* período */}
-                {Array.isArray(data) && data.length > 0 && (
+                {data && data.length > 0 && (
                   <span className="rounded-full bg-white px-6 py-1 text-sm font-bold tracking-widest text-black italic select-none">
                     {mes.toString().padStart(2, '0')}/{ano}
                   </span>
                 )}
-              </div>
+              </div> */}
               {/* ===== */}
             </div>
             {/* ===== */}
@@ -548,20 +567,20 @@ export default function TabelaChamados() {
             {/* botão mostrar/ocultar filtros */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none ${
+              disabled={!data || data.length <= 1}
+              className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider italic transition-all select-none ${
                 showFilters
-                  ? 'bg-blue-600 hover:scale-105 hover:bg-blue-900 active:scale-95'
-                  : 'border border-white/50 bg-white/10 hover:scale-105 hover:bg-white/30 active:scale-95'
+                  ? 'border border-blue-800 bg-blue-600 text-white'
+                  : 'border border-white/50 bg-white/30 text-white'
+              } ${
+                !data || data.length <= 1
+                  ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
+                  : 'hover:scale-105 hover:bg-gray-500 active:scale-95'
               }`}
             >
-              {showFilters ? (
-                <FaFilterCircleXmark size={24} />
-              ) : (
-                <FaFilter size={24} />
-              )}
+              {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
               {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
             </button>
-            {/* ===== */}
 
             {/* botão limpar filtros */}
             {columnFilters.length > 0 && (
@@ -664,42 +683,42 @@ export default function TabelaChamados() {
                         style={{ width: getColumnWidth(column.id) }}
                       >
                         {column.id === 'COD_CHAMADO' && (
-                          <FilterInput
+                          <FilterInputWithDebounce
                             value={(column.getFilterValue() as string) ?? ''}
                             onChange={value => column.setFilterValue(value)}
                             placeholder="Código..."
                             type="text"
                           />
                         )}
-
+                        {/* ===== */}
                         {column.id === 'DATA_CHAMADO' && (
-                          <FilterInput
+                          <FilterInputWithDebounce
                             value={(column.getFilterValue() as string) ?? ''}
                             onChange={value => column.setFilterValue(value)}
                             placeholder="dd/mm/aaaa"
                             type="text"
                           />
                         )}
-
+                        {/* ===== */}
                         {column.id === 'ASSUNTO_CHAMADO' && (
-                          <FilterInput
+                          <FilterInputWithDebounce
                             value={(column.getFilterValue() as string) ?? ''}
                             onChange={value => column.setFilterValue(value)}
                             placeholder="Filtrar por assunto..."
                           />
                         )}
-
+                        {/* ===== */}
                         {column.id === 'STATUS_CHAMADO' && (
-                          <FilterSelect
+                          <FilterInputWithDebounce
                             value={(column.getFilterValue() as string) ?? ''}
                             onChange={value => column.setFilterValue(value)}
-                            options={statusOptions}
+                            // options={statusOptions}
                             placeholder="Filtrar por status..."
                           />
                         )}
-
+                        {/* ===== */}
                         {column.id === 'EMAIL_CHAMADO' && (
-                          <FilterInput
+                          <FilterInputWithDebounce
                             value={(column.getFilterValue() as string) ?? ''}
                             onChange={value => column.setFilterValue(value)}
                             placeholder="Filtrar por email..."
@@ -787,7 +806,7 @@ export default function TabelaChamados() {
                     onChange={e => table.setPageSize(Number(e.target.value))}
                     className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-white italic hover:bg-gray-500"
                   >
-                    {[10, 25, 50, 100].map(pageSize => (
+                    {[10, 25, 50, 75, 100].map(pageSize => (
                       <option
                         key={pageSize}
                         value={pageSize}
@@ -935,13 +954,13 @@ export default function TabelaChamados() {
 // Função para largura fixa por coluna
 function getColumnWidth(columnId: string): string {
   const widthMap: Record<string, string> = {
-    COD_CHAMADO: '70px',
-    ASSUNTO_CHAMADO: '300px',
-    EMAIL_CHAMADO: '150px',
-    DATA_CHAMADO: '80px',
-    STATUS_CHAMADO: '150px',
-    actions: '80px',
+    COD_CHAMADO: '10%',
+    ASSUNTO_CHAMADO: '35%',
+    EMAIL_CHAMADO: '15%',
+    DATA_CHAMADO: '10%',
+    STATUS_CHAMADO: '20%',
+    actions: '7%',
   };
 
-  return widthMap[columnId] || '100px';
+  return widthMap[columnId] || 'auto';
 }

@@ -11,7 +11,8 @@ export default function LayoutPage() {
       <div className="h-screen w-screen overflow-hidden">
         <div className="flex flex-col space-y-6 p-6">
           <Header
-            titulo="Chamados"
+            titulo="GERPROJ"
+            subtitulo="Controle de Chamados"
             icon={<HiDocumentPlus className="text-white" size={40} />}
           />
           {/* ===== */}

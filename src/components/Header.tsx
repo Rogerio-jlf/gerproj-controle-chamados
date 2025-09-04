@@ -16,21 +16,16 @@ import { LuRefreshCw } from 'react-icons/lu';
 
 interface Props {
   titulo: string;
+  subtitulo?: string;
   icon?: React.ReactNode;
 }
 // ================================================================================
 
-export default function Header({ titulo, icon }: Props) {
-  const { filters, setFilters } = useFiltersTabelaChamados();
+export default function Header({ titulo, subtitulo, icon }: Props) {
+  const { setFilters } = useFiltersTabelaChamados();
 
   const handleFiltersChange = useCallback(
-    (newFilters: {
-      ano: number | 'todos';
-      mes: number | 'todos';
-      cliente: string;
-      recurso: string;
-      status: string;
-    }) => {
+    (newFilters: { ano: number | 'todos'; mes: number | 'todos' }) => {
       setFilters(prevFilters => ({
         ...prevFilters,
         ...newFilters,
@@ -57,10 +52,17 @@ export default function Header({ titulo, icon }: Props) {
           </div>
           {/* ===== */}
 
-          {/* Título */}
-          <h1 className="text-4xl font-extrabold tracking-widest text-gray-900 uppercase select-none">
-            {titulo}
-          </h1>
+          <div className="flex flex-col">
+            {/* Título */}
+            <h1 className="text-4xl font-extrabold tracking-widest text-gray-900 uppercase select-none">
+              {titulo}
+            </h1>
+            {subtitulo && (
+              <h2 className="text-base font-bold tracking-wider text-gray-900 italic select-none">
+                {subtitulo}
+              </h2>
+            )}
+          </div>
         </section>
         {/* ===== */}
 
