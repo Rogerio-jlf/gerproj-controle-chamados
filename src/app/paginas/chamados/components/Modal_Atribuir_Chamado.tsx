@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { z } from 'zod';
 // ================================================================================
 import { useClientes } from '../../../../hooks/useClientes';
 import { useEmailAtribuirCahamados } from '../../../../hooks/useEmailAtribuirChamados';
@@ -12,7 +13,6 @@ import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido
 import {
    FaCalendarAlt,
    FaUser,
-   FaClock,
    FaExclamationTriangle,
    FaCheckCircle,
    FaFileAlt,
@@ -27,19 +27,45 @@ import {
    IoPersonCircle,
 } from 'react-icons/io5';
 // ================================================================================
+
+// Schema de validação com Zod
+const formSchema = z
+   .object({
+      cliente: z
+         .string()
+         .min(1, 'Cliente é obrigatório')
+         .refine(
+            val => !isNaN(Number(val)) && Number(val) > 0,
+            'Selecione um cliente válido'
+         ),
+
+      recurso: z
+         .string()
+         .min(1, 'Recurso é obrigatório')
+         .refine(
+            val => !isNaN(Number(val)) && Number(val) > 0,
+            'Selecione um recurso válido'
+         ),
+
+      enviarEmailCliente: z.boolean().optional().default(false),
+      enviarEmailRecurso: z.boolean().optional().default(false),
+   })
+   .refine(
+      data => data.enviarEmailCliente || data.enviarEmailRecurso, // Permite não selecionar emails, mas pelo menos um campo deve estar correto
+      {
+         message: 'Pelo menos um método de notificação deve ser selecionado',
+         path: ['root'], // Erro geral
+      }
+   );
+
+type FormData = z.infer<typeof formSchema>;
+type FormErrors = Partial<Record<keyof FormData | 'root', string>>;
 // ================================================================================
 
 interface ModalChamadoProps {
    isOpen: boolean;
    onClose: () => void;
    chamado: ChamadosProps | null;
-}
-
-interface FormularioData {
-   cliente: string;
-   recurso: string;
-   enviarEmailCliente: boolean;
-   enviarEmailRecurso: boolean;
 }
 // ================================================================================
 
@@ -50,9 +76,9 @@ export default function ModalAtribuirChamado({
 }: ModalChamadoProps) {
    const [isLoading, setIsLoading] = useState(false);
    const [showForm, setShowForm] = useState(false);
-   const [error, setError] = useState<string | null>(null);
+   const [errors, setErrors] = useState<FormErrors>({});
    const [success, setSuccess] = useState(false);
-   const [formData, setFormData] = useState<FormularioData>({
+   const [formData, setFormData] = useState<FormData>({
       cliente: '',
       recurso: '',
       enviarEmailCliente: false,
@@ -66,12 +92,77 @@ export default function ModalAtribuirChamado({
    const { mutate, isPending } = useEmailAtribuirCahamados();
    // ================================================================================
 
+   // Validação em tempo real
+   const validateField = (name: keyof FormData, value: string | boolean) => {
+      try {
+         const fieldSchema = formSchema.shape[name];
+         if (fieldSchema) {
+            fieldSchema.parse(value);
+            setErrors(prev => ({ ...prev, [name]: undefined }));
+         }
+      } catch (error) {
+         if (error instanceof z.ZodError) {
+            setErrors(prev => ({
+               ...prev,
+               [name]: error.issues[0]?.message,
+            }));
+         }
+      }
+   };
+
+   // Validação completa do formulário
+   const validateForm = (): boolean => {
+      try {
+         formSchema.parse(formData);
+         setErrors({});
+         return true;
+      } catch (error) {
+         if (error instanceof z.ZodError) {
+            const newErrors: FormErrors = {};
+            error.issues.forEach(err => {
+               const path = err.path[0] as keyof FormData | 'root';
+               newErrors[path] = err.message;
+            });
+            setErrors(newErrors);
+         }
+         return false;
+      }
+   };
+
+   // Função para lidar com mudanças nos inputs
+   const handleInputChange = (
+      name: keyof FormData,
+      value: string | boolean
+   ) => {
+      setFormData(prev => ({
+         ...prev,
+         [name]: value,
+      }));
+
+      // Limpa erro do campo específico quando usuário muda o valor
+      if (errors[name]) {
+         setErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[name]; // Remove a chave em vez de definir como undefined
+            return newErrors;
+         });
+      }
+
+      // Validação em tempo real com delay
+      if (typeof value === 'string' && value.length > 0) {
+         setTimeout(() => validateField(name, value), 300);
+      } else if (typeof value === 'boolean') {
+         validateField(name, value);
+      }
+   };
+   // ================================================================================
+
    // ================================================================================
    const handleClose = () => {
       if (!isLoading) {
          setShowForm(false);
          resetForm();
-         setError(null);
+         setErrors({});
          setSuccess(false);
          onClose();
       }
@@ -83,15 +174,13 @@ export default function ModalAtribuirChamado({
       if (!chamado) return;
 
       setIsLoading(true);
-      setError(null);
+      setErrors({});
 
       try {
-         // Validações básicas
-         if (!formData.cliente) {
-            throw new Error('Cliente é obrigatório');
-         }
-         if (!formData.recurso) {
-            throw new Error('Recurso é obrigatório');
+         // Validação com Zod
+         if (!validateForm()) {
+            setIsLoading(false);
+            return;
          }
 
          mutate(
@@ -104,7 +193,6 @@ export default function ModalAtribuirChamado({
             },
             {
                onSuccess: () => {
-                  console.log('Notificação configurada com sucesso');
                   setSuccess(true);
                   setTimeout(() => {
                      setShowForm(false);
@@ -115,12 +203,14 @@ export default function ModalAtribuirChamado({
                },
                onError: err => {
                   console.error('Erro ao configurar notificação:', err);
-                  setError('Erro ao enviar notificação');
+                  setErrors({ root: 'Erro ao enviar notificação' });
                },
             }
          );
       } catch (err) {
-         setError(err instanceof Error ? err.message : 'Erro desconhecido');
+         const errorMessage =
+            err instanceof Error ? err.message : 'Erro desconhecido';
+         setErrors({ root: errorMessage });
       } finally {
          setIsLoading(false);
       }
@@ -135,7 +225,7 @@ export default function ModalAtribuirChamado({
          enviarEmailCliente: false,
          enviarEmailRecurso: false,
       });
-      setError(null);
+      setErrors({});
       setSuccess(false);
       setShowForm(false);
    };
@@ -207,6 +297,25 @@ export default function ModalAtribuirChamado({
          default:
             return 'bg-gray-100 text-gray-800 border border-gray-200';
       }
+   };
+
+   // Verifica se o formulário é válido
+   const isFormValid = () => {
+      // Filtra apenas erros que não são undefined
+      const realErrors = Object.fromEntries(
+         Object.entries(errors).filter(([key, value]) => value !== undefined)
+      );
+
+      const hasNoErrors = Object.keys(realErrors).length === 0;
+      const hasCliente = formData.cliente !== '';
+      const hasRecurso = formData.recurso !== '';
+      const hasEmailSelected =
+         formData.enviarEmailCliente || formData.enviarEmailRecurso;
+
+      const isValid =
+         hasNoErrors && hasCliente && hasRecurso && hasEmailSelected;
+
+      return isValid;
    };
 
    if (!isOpen || !chamado) return null;
@@ -288,8 +397,8 @@ export default function ModalAtribuirChamado({
                      )}
                      {/* ===== */}
 
-                     {/* Alerta de erro */}
-                     {error && (
+                     {/* Alerta de erro geral */}
+                     {errors.root && (
                         <div className="mb-6 rounded-full border border-red-200 bg-red-600 px-6 py-2">
                            <div className="flex items-center gap-3">
                               <FaExclamationTriangle
@@ -297,22 +406,27 @@ export default function ModalAtribuirChamado({
                                  size={20}
                               />
                               <p className="text-base font-semibold tracking-wider text-white select-none">
-                                 {error}
+                                 {errors.root}
                               </p>
                            </div>
                         </div>
                      )}
                      {/* ===== */}
 
-                     {/* Cards de informação em grid moderno */}
-                     <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {/* Card Data e Horário */}
-                        <div className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                           <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4">
-                              <div className="flex items-center gap-3 text-white">
-                                 <FaCalendarAlt size={20} />
-                                 <h3 className="text-lg font-bold">
-                                    Data & Horário
+                     {/* ===== CARDS DADOS INFORMATIVOS ===== */}
+                     <div className="mb-8 grid grid-cols-3 gap-6">
+                        {/* Card Data e hora */}
+                        <div className="group overflow-hidden rounded-2xl bg-white shadow-md shadow-black transition-all">
+                           <div className="border-b-2 border-black/20 bg-gradient-to-r from-blue-500 to-cyan-500 p-4">
+                              <div className="flex items-center gap-3">
+                                 {/* Ícone */}
+                                 <FaCalendarAlt
+                                    className="text-white"
+                                    size={20}
+                                 />
+                                 {/* Título */}
+                                 <h3 className="text-lg font-extrabold tracking-widest text-white select-none">
+                                    Data & Hora
                                  </h3>
                               </div>
                            </div>
@@ -320,185 +434,215 @@ export default function ModalAtribuirChamado({
                            <div className="p-6">
                               <div className="space-y-3">
                                  <div className="flex flex-col">
-                                    <span className="text-sm text-gray-600">
+                                    {/* Subtítulo */}
+                                    <p className="text-sm font-bold tracking-widest text-black select-none">
                                        Data:
-                                    </span>
-                                    <span className="font-semibold text-gray-900">
+                                    </p>
+                                    {/* Data */}
+                                    <p className="text-lg font-extrabold tracking-widest text-black italic select-none">
                                        {formateDateISO(chamado.DATA_CHAMADO)}
-                                    </span>
+                                    </p>
                                  </div>
 
                                  <div className="flex flex-col">
-                                    <span className="text-sm text-gray-600">
+                                    {/* Subtítulo */}
+                                    <p className="text-sm font-bold tracking-widest text-black select-none">
                                        Horário:
-                                    </span>
-                                    <span className="font-semibold text-gray-900">
+                                    </p>
+                                    {/* Hora */}
+                                    <p className="text-lg font-extrabold tracking-widest text-black italic select-none">
                                        {chamado.HORA_CHAMADO !== undefined &&
                                        chamado.HORA_CHAMADO !== null
                                           ? formateTime(chamado.HORA_CHAMADO)
                                           : '-'}
-                                    </span>
+                                    </p>
                                  </div>
                               </div>
                            </div>
                         </div>
+                        {/* ===== */}
 
                         {/* Card Status */}
-                        <div className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                           <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-4">
-                              <div className="flex items-center gap-3 text-white">
-                                 <IoTime size={20} />
-                                 <h3 className="text-lg font-bold">Status</h3>
+                        <div className="group overflow-hidden rounded-2xl bg-white shadow-md shadow-black transition-all">
+                           <div className="border-b-2 border-black/20 bg-gradient-to-r from-blue-500 to-cyan-500 p-4">
+                              <div className="flex items-center gap-3">
+                                 {/* Ícone */}
+                                 <IoTime className="text-white" size={20} />
+                                 {/* Título */}
+                                 <h3 className="text-lg font-extrabold tracking-widest text-white select-none">
+                                    Status
+                                 </h3>
                               </div>
                            </div>
+
                            <div className="p-6">
-                              <div
-                                 className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-bold ${getStyleStatus(chamado.STATUS_CHAMADO)}`}
-                              >
-                                 <div className="mr-2 h-2 w-2 animate-pulse rounded-full bg-white"></div>
-                                 {chamado.STATUS_CHAMADO !== undefined &&
-                                 chamado.STATUS_CHAMADO !== null
-                                    ? String(chamado.STATUS_CHAMADO)
-                                    : 'Status não definido'}
-                              </div>
-                              <div className="mt-4">
-                                 <span className="text-sm text-gray-600">
-                                    Prioridade:
-                                 </span>
-                                 <div className="mt-1">
-                                    <span
-                                       className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${getPriorityStyle(chamado.PRIOR_CHAMADO)}`}
+                              <div className="space-y-3">
+                                 <div className="flex flex-col">
+                                    {/* Subtítulo */}
+                                    <p className="text-sm font-bold tracking-widest text-black select-none">
+                                       Status:
+                                    </p>
+                                    {/* Status */}
+                                    <p
+                                       className={`rounded-full px-3 py-1 text-lg font-extrabold tracking-widest italic select-none ${getStyleStatus(chamado.STATUS_CHAMADO)}`}
                                     >
-                                       {chamado.PRIOR_CHAMADO !== undefined &&
-                                       chamado.PRIOR_CHAMADO !== null
-                                          ? String(chamado.PRIOR_CHAMADO)
-                                          : 'Não definida'}
-                                    </span>
+                                       {chamado.STATUS_CHAMADO ?? '-'}
+                                    </p>
+                                 </div>
+
+                                 <div className="flex flex-col">
+                                    {/* Subtítulo */}
+                                    <p className="text-sm font-bold tracking-widest text-black select-none">
+                                       Prioridade:
+                                    </p>
+                                    {/* Prioridade */}
+                                    <p className="rounded-full px-4 py-2 text-lg font-extrabold tracking-widest italic select-none">
+                                       {chamado.PRIOR_CHAMADO ?? '-'}
+                                    </p>
                                  </div>
                               </div>
                            </div>
                         </div>
+                        {/* ===== */}
 
                         {/* Card Identificação */}
-                        <div className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                           <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-4">
-                              <div className="flex items-center gap-3 text-white">
-                                 <FaTags size={20} />
-                                 <h3 className="text-lg font-bold">
+                        <div className="group overflow-hidden rounded-2xl bg-white shadow-md shadow-black transition-all">
+                           <div className="border-b-2 border-black/20 bg-gradient-to-r from-blue-500 to-cyan-500 p-4">
+                              <div className="flex items-center gap-3">
+                                 {/* Ícone */}
+                                 <FaTags className="text-white" size={20} />
+                                 {/* Título */}
+                                 <h3 className="text-lg font-extrabold tracking-widest text-white select-none">
                                     Identificação
                                  </h3>
                               </div>
                            </div>
-                           <div className="space-y-3 p-6">
-                              <div>
-                                 <span className="text-sm text-gray-600">
-                                    Cód. Tarefa:
-                                 </span>
-                                 <p className="font-mono font-bold text-emerald-600">
-                                    {chamado.CODTRF_CHAMADO !== undefined &&
-                                    chamado.CODTRF_CHAMADO !== null
-                                       ? String(chamado.CODTRF_CHAMADO)
-                                       : '-'}
-                                 </p>
-                              </div>
-                              <div>
-                                 <span className="text-sm text-gray-600">
-                                    Classificação:
-                                 </span>
-                                 <p className="font-mono font-bold text-emerald-600">
-                                    {chamado.COD_CLASSIFICACAO !== undefined &&
-                                    chamado.COD_CLASSIFICACAO !== null
-                                       ? String(chamado.COD_CLASSIFICACAO)
-                                       : '-'}
-                                 </p>
+
+                           <div className="p-6">
+                              <div className="space-y-3">
+                                 <div className="flex flex-col">
+                                    {/* Subtítulo */}
+                                    <p className="text-sm font-bold tracking-widest text-black select-none">
+                                       Cód. Tarefa:
+                                    </p>
+                                    {/* Data */}
+                                    <p className="text-lg font-extrabold tracking-widest text-black italic select-none">
+                                       {chamado.CODTRF_CHAMADO ?? '-'}
+                                    </p>
+                                 </div>
+
+                                 <div className="flex flex-col">
+                                    {/* Subtítulo */}
+                                    <p className="text-sm font-bold tracking-widest text-black select-none">
+                                       Classificação:
+                                    </p>
+                                    {/* Hora */}
+                                    <p className="text-lg font-extrabold tracking-widest text-black italic select-none">
+                                       {chamado.COD_CLASSIFICACAO ?? '-'}
+                                    </p>
+                                 </div>
                               </div>
                            </div>
                         </div>
 
                         {/* Card Cliente */}
-                        <div className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                           <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4">
-                              <div className="flex items-center gap-3 text-white">
-                                 <IoPersonCircle size={20} />
-                                 <h3 className="text-lg font-bold">Cliente</h3>
+                        <div className="group overflow-hidden rounded-2xl bg-white shadow-md shadow-black transition-all">
+                           <div className="border-b-2 border-black/20 bg-gradient-to-r from-blue-500 to-cyan-500 p-4">
+                              <div className="flex items-center gap-3">
+                                 {/* Ícone */}
+                                 <IoPersonCircle
+                                    className="text-white"
+                                    size={20}
+                                 />
+                                 <h3 className="text-lg font-extrabold tracking-widest text-white select-none">
+                                    Cliente
+                                 </h3>
                               </div>
                            </div>
-                           <div className="space-y-3 p-6">
-                              <div>
-                                 <span className="text-sm text-gray-600">
-                                    Nome:
-                                 </span>
-                                 <p className="font-semibold text-gray-900">
-                                    {chamado.NOME_CLIENTE !== undefined &&
-                                    chamado.NOME_CLIENTE !== null
-                                       ? String(chamado.NOME_CLIENTE)
-                                       : '-'}
-                                 </p>
-                              </div>
-                              <div>
-                                 <span className="text-sm text-gray-600">
-                                    Email:
-                                 </span>
-                                 <p className="font-mono text-sm text-blue-600">
-                                    {chamado.EMAIL_CHAMADO !== undefined &&
-                                    chamado.EMAIL_CHAMADO !== null
-                                       ? String(chamado.EMAIL_CHAMADO)
-                                       : '-'}
-                                 </p>
+
+                           <div className="p-6">
+                              <div className="space-y-3">
+                                 <div className="flex flex-col">
+                                    {/* Subtítulo */}
+                                    <p className="text-sm font-bold tracking-widest text-black select-none">
+                                       Nome:
+                                    </p>
+                                    {/* Data */}
+                                    <p className="text-lg font-extrabold tracking-widest text-black italic select-none">
+                                       {chamado.NOME_CLIENTE ?? '-'}
+                                    </p>
+                                 </div>
+
+                                 <div className="flex flex-col">
+                                    {/* Subtítulo */}
+                                    <p className="text-sm font-bold tracking-widest text-black select-none">
+                                       Email:
+                                    </p>
+                                    {/* Hora */}
+                                    <p className="text-lg font-extrabold tracking-widest text-black italic select-none">
+                                       {chamado.EMAIL_CHAMADO ?? '-'}
+                                    </p>
+                                 </div>
                               </div>
                            </div>
                         </div>
+                        {/* ===== */}
 
                         {/* Card Recurso */}
-                        <div className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                           <div className="bg-gradient-to-r from-violet-500 to-purple-500 p-4">
-                              <div className="flex items-center gap-3 text-white">
-                                 <FaUser size={20} />
-                                 <h3 className="text-lg font-bold">Recurso</h3>
+                        <div className="group overflow-hidden rounded-2xl bg-white shadow-md shadow-black transition-all">
+                           <div className="border-b-2 border-black/20 bg-gradient-to-r from-blue-500 to-cyan-500 p-4">
+                              <div className="flex items-center gap-3">
+                                 {/* Ícone */}
+                                 <FaUser className="text-white" size={20} />
+                                 {/* Título */}
+                                 <h3 className="text-lg font-extrabold tracking-widest text-white select-none">
+                                    Recurso
+                                 </h3>
                               </div>
                            </div>
+
                            <div className="p-6">
-                              <div>
-                                 <span className="text-sm text-gray-600">
-                                    Responsável:
-                                 </span>
-                                 <p className="font-semibold text-gray-900">
-                                    {chamado.NOME_RECURSO !== undefined &&
-                                    chamado.NOME_RECURSO !== null &&
-                                    chamado.NOME_RECURSO !== ''
-                                       ? String(chamado.NOME_RECURSO)
-                                       : 'Não atribuído'}
-                                 </p>
-                              </div>
-                              {(!chamado.NOME_RECURSO ||
-                                 chamado.NOME_RECURSO === '') && (
-                                 <div className="mt-3">
-                                    <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
-                                       <div className="mr-2 h-2 w-2 rounded-full bg-amber-500"></div>
-                                       Pendente atribuição
-                                    </span>
+                              <div className="space-y-3">
+                                 <div className="flex flex-col">
+                                    {/* Subtítulo */}
+                                    <p className="text-sm font-bold tracking-widest text-black select-none">
+                                       Responsável:
+                                    </p>
+                                    {/* Data */}
+                                    <p className="text-lg font-extrabold tracking-widest text-black italic select-none">
+                                       {chamado.NOME_RECURSO ?? '-'}
+                                    </p>
                                  </div>
-                              )}
+                              </div>
                            </div>
                         </div>
 
                         {/* Card Assunto - Full width */}
-                        <div className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl md:col-span-2 lg:col-span-1">
-                           <div className="bg-gradient-to-r from-slate-500 to-gray-600 p-4">
-                              <div className="flex items-center gap-3 text-white">
+                        <div className="group overflow-hidden rounded-2xl bg-white shadow-md shadow-black transition-all">
+                           <div className="border-b-2 border-black/20 bg-gradient-to-r from-blue-500 to-cyan-500 p-4">
+                              <div className="flex items-center gap-3">
+                                 {/* Ícone */}
                                  <IoDocumentText size={20} />
-                                 <h3 className="text-lg font-bold">
+                                 {/* Título */}
+                                 <h3 className="text-lg font-extrabold tracking-widest text-white select-none">
                                     Descrição
                                  </h3>
                               </div>
                            </div>
+
                            <div className="p-6">
-                              <p className="leading-relaxed text-gray-900">
-                                 {chamado.ASSUNTO_CHAMADO !== undefined &&
-                                 chamado.ASSUNTO_CHAMADO !== null
-                                    ? String(chamado.ASSUNTO_CHAMADO)
-                                    : 'Assunto não especificado'}
-                              </p>
+                              <div className="space-y-3">
+                                 <div className="flex flex-col">
+                                    {/* Subtítulo */}
+                                    <p className="text-sm font-bold tracking-widest text-black select-none">
+                                       Assunto:
+                                    </p>
+                                    {/* Data */}
+                                    <p className="text-lg font-extrabold tracking-widest text-black italic select-none">
+                                       {chamado.ASSUNTO_CHAMADO ?? '-'}
+                                    </p>
+                                 </div>
+                              </div>
                            </div>
                         </div>
                      </div>
@@ -528,6 +672,7 @@ export default function ModalAtribuirChamado({
                         <FormSection
                            title="Atribuir Chamado"
                            icon={<IoSend className="text-white" size={20} />}
+                           error={errors.cliente || errors.recurso}
                         >
                            <div className="space-y-6">
                               {/* Select Cliente */}
@@ -539,14 +684,18 @@ export default function ModalAtribuirChamado({
                                  <select
                                     value={formData.cliente}
                                     onChange={e =>
-                                       setFormData({
-                                          ...formData,
-                                          cliente: e.target.value,
-                                       })
+                                       handleInputChange(
+                                          'cliente',
+                                          e.target.value
+                                       )
                                     }
                                     disabled={loadingClientes || isLoading}
                                     required
-                                    className="w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-gray-800 shadow-sm shadow-black transition-all focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                    className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-gray-800 shadow-sm shadow-black transition-all focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
+                                       errors.cliente
+                                          ? 'border-red-500 ring-2 ring-red-200'
+                                          : ''
+                                    }`}
                                  >
                                     <option value="">
                                        {loadingClientes
@@ -569,6 +718,11 @@ export default function ModalAtribuirChamado({
                                        )
                                     )}
                                  </select>
+                                 {errors.cliente && (
+                                    <p className="mt-1 text-sm font-semibold text-red-600">
+                                       {errors.cliente}
+                                    </p>
+                                 )}
                               </div>
                               {/* ===== */}
 
@@ -581,14 +735,18 @@ export default function ModalAtribuirChamado({
                                  <select
                                     value={formData.recurso}
                                     onChange={e =>
-                                       setFormData({
-                                          ...formData,
-                                          recurso: e.target.value,
-                                       })
+                                       handleInputChange(
+                                          'recurso',
+                                          e.target.value
+                                       )
                                     }
                                     disabled={loadingRecursos || isLoading}
                                     required
-                                    className="w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-gray-800 shadow-sm shadow-black transition-all focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                    className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-gray-800 shadow-sm shadow-black transition-all focus:border-pink-500 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
+                                       errors.recurso
+                                          ? 'border-red-500 ring-2 ring-red-200'
+                                          : ''
+                                    }`}
                                  >
                                     <option value="">
                                        {loadingRecursos
@@ -611,6 +769,11 @@ export default function ModalAtribuirChamado({
                                        )
                                     )}
                                  </select>
+                                 {errors.recurso && (
+                                    <p className="mt-1 text-sm font-semibold text-red-600">
+                                       {errors.recurso}
+                                    </p>
+                                 )}
                               </div>
                            </div>
                         </FormSection>
@@ -625,10 +788,10 @@ export default function ModalAtribuirChamado({
                               <CheckboxItem
                                  checked={formData.enviarEmailCliente}
                                  onChange={checked =>
-                                    setFormData({
-                                       ...formData,
-                                       enviarEmailCliente: checked,
-                                    })
+                                    handleInputChange(
+                                       'enviarEmailCliente',
+                                       checked
+                                    )
                                  }
                                  label="Enviar email para o cliente"
                                  description="O cliente receberá uma notificação sobre a atribuição"
@@ -637,10 +800,10 @@ export default function ModalAtribuirChamado({
                               <CheckboxItem
                                  checked={formData.enviarEmailRecurso}
                                  onChange={checked =>
-                                    setFormData({
-                                       ...formData,
-                                       enviarEmailRecurso: checked,
-                                    })
+                                    handleInputChange(
+                                       'enviarEmailRecurso',
+                                       checked
+                                    )
                                  }
                                  label="Enviar email para o recurso"
                                  description="O recurso receberá uma notificação sobre o chamado"
@@ -665,12 +828,13 @@ export default function ModalAtribuirChamado({
                            <button
                               onClick={handleSubmitForm}
                               disabled={
-                                 isLoading ||
-                                 isPending ||
-                                 !formData.cliente ||
-                                 !formData.recurso
+                                 isLoading || isPending || !isFormValid()
                               }
-                              className="flex cursor-pointer items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-lg font-extrabold text-white transition-all select-none hover:scale-105 hover:bg-blue-900 hover:shadow-lg hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                              className={`flex cursor-pointer items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-lg font-extrabold text-white transition-all select-none active:scale-95 ${
+                                 isLoading || isPending || !isFormValid()
+                                    ? 'disabled:cursor-not-allowed disabled:opacity-50'
+                                    : 'hover:scale-105 hover:bg-blue-900 hover:shadow-lg hover:shadow-black'
+                              }`}
                            >
                               {isLoading || isPending ? (
                                  <>
@@ -700,19 +864,35 @@ const FormSection = ({
    title,
    icon,
    children,
+   error,
 }: {
    title: string;
    icon: React.ReactNode;
    children: React.ReactNode;
+   error?: string;
 }) => (
-   <div className="mb-6 overflow-hidden rounded-md bg-white shadow-sm shadow-black">
-      <div className="border-b border-gray-300 bg-slate-900 px-4 py-2">
+   <div
+      className={`mb-6 overflow-hidden rounded-md bg-white shadow-sm shadow-black ${
+         error ? 'ring-2 ring-red-200' : ''
+      }`}
+   >
+      <div
+         className={`border-b border-gray-300 px-4 py-2 ${
+            error ? 'bg-red-600' : 'bg-slate-900'
+         }`}
+      >
          <h3 className="flex items-center gap-3 text-lg font-bold tracking-wider text-white select-none">
             {icon}
             {title}
+            {error && <span className="ml-auto text-sm">⚠️</span>}
          </h3>
       </div>
-      <div className="p-6">{children}</div>
+      <div className="p-6">
+         {children}
+         {error && (
+            <p className="mt-2 text-sm font-semibold text-red-600">{error}</p>
+         )}
+      </div>
    </div>
 );
 // ================================================================================

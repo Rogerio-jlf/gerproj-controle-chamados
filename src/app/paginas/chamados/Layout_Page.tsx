@@ -6,23 +6,23 @@ import { HiDocumentPlus } from 'react-icons/hi2';
 // ================================================================================
 
 export default function LayoutPage() {
-  return (
-    <main className="bg-gray-100">
-      <div className="h-screen w-screen overflow-hidden">
-        <div className="flex flex-col space-y-6 p-6">
-          <Header
-            titulo="GERPROJ"
-            subtitulo="Controle de Chamados"
-            icon={<HiDocumentPlus className="text-white" size={40} />}
-          />
-          {/* ===== */}
+   return (
+      <main className="bg-gray-100">
+         <div className="h-screen w-screen overflow-hidden">
+            <div className="flex flex-col space-y-6 p-6">
+               <Header
+                  titulo="GERPROJ"
+                  subtitulo="Controle de Chamados"
+                  icon={<HiDocumentPlus className="text-white" size={40} />}
+               />
+               {/* ===== */}
 
-          <div>
-            <TabelaChamados />
-          </div>
-          {/* ===== */}
-        </div>
-      </div>
-    </main>
-  );
+               <div>
+                  <TabelaChamados />
+               </div>
+               {/* ===== */}
+            </div>
+         </div>
+      </main>
+   );
 }

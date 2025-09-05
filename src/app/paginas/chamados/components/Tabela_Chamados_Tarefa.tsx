@@ -630,19 +630,19 @@ export default function TabelaChamadosTarefa({
                         </div>
                         {/* ===== */}
 
-                        <div className="flex items-center justify-center gap-10">
-                           {/* título */}
-                           <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
-                              Chamados tarefa
-                           </h1>
-                           {/* ===== */}
-
-                           <div className="flex items-center gap-4">
-                              {/* número do chamado*/}
-                              <span className="rounded-full bg-black px-8 py-1 text-base font-extrabold tracking-widest text-white italic select-none">
+                        <div className="flex flex-col justify-center">
+                           <div className="flex items-center justify-center gap-10">
+                              <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
+                                 Chamados Tarefa
+                              </h1>
+                              <span className="rounded-full bg-black px-6 py-1 text-base font-extrabold tracking-widest text-white italic select-none">
                                  Tarefa - #{codTarefa}
                               </span>
                            </div>
+
+                           <p className="text-base font-semibold tracking-widest text-black italic select-none">
+                              Todos os Chamados vinculados a uma Tarefa
+                           </p>
                         </div>
                      </div>
                      {/* ===== */}
