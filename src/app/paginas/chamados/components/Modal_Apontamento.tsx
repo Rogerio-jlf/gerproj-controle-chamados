@@ -277,20 +277,19 @@ export default function ModalApontamento({
             throw new Error('Usuário sem recurso definido');
          }
 
+         // NOVO PAYLOAD SIMPLIFICADO - Alinhado com a nova API
          const payload = {
             os: {
                COD_TAREFA: tarefa.COD_TAREFA,
                NOME_TAREFA: tarefa.NOME_TAREFA,
-               RESPCLI_PROJETO: user.nome || '',
                FATURA_TAREFA: 'SIM',
             },
-            tarefa: tarefa,
-            codTarefa: tarefa.COD_TAREFA,
             dataInicioOS: formData.dataInicioOS,
             horaInicioOS: formData.horaInicioOS,
             horaFimOS: formData.horaFimOS,
             recurso: user.recurso.id.toString(),
             observacaoOS: observacaoFormatada,
+            // codChamado não é mais necessário - a API busca automaticamente
          };
 
          const token = localStorage.getItem('token');
@@ -312,6 +311,15 @@ export default function ModalApontamento({
          if (!response.ok) {
             throw new Error(responseData.error || `Erro ${response.status}`);
          }
+
+         // Log das informações retornadas pela API para debug
+         console.log('OS criada com sucesso:', {
+            COD_OS: responseData.data?.COD_OS,
+            NUM_OS: responseData.data?.NUM_OS,
+            codChamado: responseData.data?.codChamado,
+            exibeChamado: responseData.data?.exibeChamado,
+            respCliente: responseData.data?.respCliente,
+         });
 
          setSuccess(true);
 
