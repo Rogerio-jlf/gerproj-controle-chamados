@@ -5,9 +5,12 @@ import jwt from 'jsonwebtoken';
 // GET /api/dashboard/recurso/[codRecurso]
 export async function GET(
    request: Request,
-   { params }: { params: { codRecurso: string } }
+   { params }: { params: Promise<{ codRecurso: string }> }
 ) {
    try {
+      // Await dos params (Next.js 13+ requirement)
+      const { codRecurso } = await params;
+
       const authHeader = request.headers.get('Authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
          return NextResponse.json(
@@ -24,13 +27,20 @@ export async function GET(
             token,
             process.env.JWT_SECRET || 'minha_chave_secreta'
          );
-      } catch (err) {
+      } catch {
          return NextResponse.json({ error: 'Token inválido' }, { status: 401 });
       }
 
       const isAdmin = decoded.tipo === 'ADM';
       const codRecursoToken = decoded.recurso?.id;
-      const codRecursoParam = parseInt(params.codRecurso);
+      const codRecursoParam = parseInt(codRecurso);
+
+      if (isNaN(codRecursoParam)) {
+         return NextResponse.json(
+            { error: 'Código do recurso inválido' },
+            { status: 400 }
+         );
+      }
 
       // Verificar permissões
       if (!isAdmin && codRecursoToken !== codRecursoParam) {
@@ -40,21 +50,25 @@ export async function GET(
          );
       }
 
-      if (isNaN(codRecursoParam)) {
-         return NextResponse.json(
-            { error: 'Código do recurso inválido' },
-            { status: 400 }
+      // Função auxiliar para calcular dias (compatível com Firebird)
+      const calcularDiasDesde = (dataFirebird: string) => {
+         if (!dataFirebird) return 0;
+         const data = new Date(dataFirebird);
+         const hoje = new Date();
+         return Math.ceil(
+            Math.abs(hoje.getTime() - data.getTime()) / (1000 * 60 * 60 * 24)
          );
-      }
+      };
 
       // 1. Dados básicos do recurso
       const sqlRecurso = `
-      SELECT COD_RECURSO, NOME_RECURSO, EMAIL_RECURSO, ATIVO
-      FROM RECURSO 
+      SELECT COD_RECURSO, NOME_RECURSO, EMAIL_RECURSO, ATIVO_RECURSO
+      FROM RECURSO
       WHERE COD_RECURSO = ?
+        AND ATIVO_RECURSO = 1
     `;
 
-      // 2. Chamados ativos detalhados
+      // 2. Chamados ativos detalhados (sem funções de data no SQL)
       const sqlChamadosAtivos = `
       SELECT 
         c.COD_CHAMADO,
@@ -65,81 +79,54 @@ export async function GET(
         c.PRIOR_CHAMADO,
         c.COD_CLIENTE,
         c.COD_CLASSIFICACAO,
-        cl.NOME_CLIENTE,
-        CAST(CURRENT_DATE - c.DATA_CHAMADO AS INTEGER) as DIAS_EM_ABERTO,
-        CASE 
-          WHEN c.PRIOR_CHAMADO <= 50 THEN 'ALTA'
-          WHEN c.PRIOR_CHAMADO <= 100 THEN 'MÉDIA'
-          ELSE 'BAIXA'
-        END as NIVEL_PRIORIDADE,
-        CASE 
-          WHEN c.PRIOR_CHAMADO <= 50 AND CAST(CURRENT_DATE - c.DATA_CHAMADO AS INTEGER) > 3 THEN 'CRÍTICO'
-          WHEN CAST(CURRENT_DATE - c.DATA_CHAMADO AS INTEGER) > 7 THEN 'ATRASADO'
-          WHEN CAST(CURRENT_DATE - c.DATA_CHAMADO AS INTEGER) > 2 THEN 'ATENÇÃO'
-          ELSE 'NORMAL'
-        END as SITUACAO
+        cl.NOME_CLIENTE
       FROM CHAMADO c
       LEFT JOIN CLIENTE cl ON c.COD_CLIENTE = cl.COD_CLIENTE
       WHERE c.COD_RECURSO = ? 
-        AND c.STATUS_CHAMADO NOT IN ('CONCLUIDO', 'CANCELADO', 'FECHADO')
-      ORDER BY 
-        CASE WHEN c.PRIOR_CHAMADO <= 50 THEN 1 ELSE 2 END,
-        c.DATA_CHAMADO ASC
+        AND c.STATUS_CHAMADO NOT IN ('FINALIZADO')
+      ORDER BY c.PRIOR_CHAMADO ASC, c.DATA_CHAMADO ASC
     `;
 
-      // 3. Estatísticas dos últimos 30 dias
+      // 3. Estatísticas últimos 30 dias (usando CAST para compatibilidade)
       const sqlEstatisticas30Dias = `
       SELECT 
-        COUNT(*) as TOTAL_CHAMADOS,
-        COUNT(CASE WHEN STATUS_CHAMADO IN ('CONCLUIDO', 'FECHADO') THEN 1 END) as CONCLUIDOS,
-        AVG(CASE 
-          WHEN CONCLUSAO_CHAMADO IS NOT NULL 
-          THEN CAST(CONCLUSAO_CHAMADO - DATA_CHAMADO AS INTEGER)
-          ELSE NULL 
-        END) as TEMPO_MEDIO_RESOLUCAO,
-        COUNT(CASE WHEN PRIOR_CHAMADO <= 50 THEN 1 END) as CHAMADOS_ALTA_PRIORIDADE,
-        MIN(DATA_CHAMADO) as PRIMEIRO_CHAMADO,
-        MAX(DATA_CHAMADO) as ULTIMO_CHAMADO
-      FROM CHAMADO 
-      WHERE COD_RECURSO = ? 
-        AND DATA_CHAMADO >= CURRENT_DATE - 30
+        COUNT(*) AS TOTAL_CHAMADOS,
+        COUNT(CASE WHEN STATUS_CHAMADO IN ('FINALIZADO') THEN 1 END) AS CONCLUIDOS,
+        COUNT(CASE WHEN PRIOR_CHAMADO <= 50 THEN 1 END) AS CHAMADOS_ALTA_PRIORIDADE
+      FROM CHAMADO
+      WHERE COD_RECURSO = ?
+        AND CAST(DATA_CHAMADO AS TIMESTAMP) >= CAST('NOW' AS TIMESTAMP) - 30
     `;
 
-      // 4. Histórico por status (últimos 90 dias)
+      // 4. Histórico status últimos 90 dias
       const sqlHistoricoStatus = `
       SELECT 
         STATUS_CHAMADO,
-        COUNT(*) as QUANTIDADE,
-        AVG(CASE 
-          WHEN CONCLUSAO_CHAMADO IS NOT NULL 
-          THEN CAST(CONCLUSAO_CHAMADO - DATA_CHAMADO AS INTEGER)
-          ELSE NULL 
-        END) as TEMPO_MEDIO_DIAS
-      FROM CHAMADO 
-      WHERE COD_RECURSO = ? 
-        AND DATA_CHAMADO >= CURRENT_DATE - 90
+        COUNT(*) AS QUANTIDADE
+      FROM CHAMADO
+      WHERE COD_RECURSO = ?
+        AND CAST(DATA_CHAMADO AS TIMESTAMP) >= CAST('NOW' AS TIMESTAMP) - 90
       GROUP BY STATUS_CHAMADO
       ORDER BY QUANTIDADE DESC
     `;
 
-      // 5. Top clientes por quantidade de chamados
+      // 5. Top clientes últimos 90 dias
       const sqlTopClientes = `
       SELECT 
         cl.COD_CLIENTE,
         cl.NOME_CLIENTE,
-        COUNT(c.COD_CHAMADO) as TOTAL_CHAMADOS,
-        COUNT(CASE WHEN c.STATUS_CHAMADO NOT IN ('CONCLUIDO', 'CANCELADO', 'FECHADO') THEN 1 END) as CHAMADOS_ATIVOS
+        COUNT(c.COD_CHAMADO) AS TOTAL_CHAMADOS,
+        COUNT(CASE WHEN c.STATUS_CHAMADO NOT IN ('FINALIZADO') THEN 1 END) AS CHAMADOS_ATIVOS
       FROM CHAMADO c
       LEFT JOIN CLIENTE cl ON c.COD_CLIENTE = cl.COD_CLIENTE
       WHERE c.COD_RECURSO = ?
-        AND c.DATA_CHAMADO >= CURRENT_DATE - 90
+        AND CAST(c.DATA_CHAMADO AS TIMESTAMP) >= CAST('NOW' AS TIMESTAMP) - 90
       GROUP BY cl.COD_CLIENTE, cl.NOME_CLIENTE
       HAVING COUNT(c.COD_CHAMADO) > 0
       ORDER BY TOTAL_CHAMADOS DESC
-      ROWS 10
     `;
 
-      // Executar todas as queries
+      // Executar queries
       const [
          dadosRecurso,
          chamadosAtivos,
@@ -156,7 +143,7 @@ export async function GET(
 
       if (!dadosRecurso || dadosRecurso.length === 0) {
          return NextResponse.json(
-            { error: 'Recurso não encontrado' },
+            { error: 'Recurso não encontrado ou inativo' },
             { status: 404 }
          );
       }
@@ -164,31 +151,61 @@ export async function GET(
       const recurso = dadosRecurso[0];
       const stats = estatisticas30Dias[0] || {};
 
-      // Análise dos chamados ativos
-      const chamadosCriticos = chamadosAtivos.filter(
+      // Processar chamados ativos (calcular dias em aberto no código)
+      const chamadosProcessados = chamadosAtivos.map((c: any) => {
+         const diasEmAberto = calcularDiasDesde(c.DATA_CHAMADO);
+         const nivelPrioridade =
+            c.PRIOR_CHAMADO <= 50
+               ? 'ALTA'
+               : c.PRIOR_CHAMADO <= 100
+                 ? 'MÉDIA'
+                 : 'BAIXA';
+
+         let situacao = 'NORMAL';
+         if (c.PRIOR_CHAMADO <= 50 && diasEmAberto > 3) {
+            situacao = 'CRÍTICO';
+         } else if (diasEmAberto > 7) {
+            situacao = 'ATRASADO';
+         } else if (diasEmAberto > 2) {
+            situacao = 'ATENÇÃO';
+         }
+
+         return {
+            ...c,
+            DIAS_EM_ABERTO: diasEmAberto,
+            NIVEL_PRIORIDADE: nivelPrioridade,
+            SITUACAO: situacao,
+         };
+      });
+
+      // Chamados críticos e atrasados
+      const chamadosCriticos = chamadosProcessados.filter(
          (c: any) => c.SITUACAO === 'CRÍTICO'
       );
-      const chamadosAtrasados = chamadosAtivos.filter(
+      const chamadosAtrasados = chamadosProcessados.filter(
          (c: any) => c.SITUACAO === 'ATRASADO'
       );
-      const chamadosAltaPrioridade = chamadosAtivos.filter(
+      const chamadosAltaPrioridade = chamadosProcessados.filter(
          (c: any) => c.NIVEL_PRIORIDADE === 'ALTA'
       );
 
-      // Cálculo de produtividade
+      // Taxa de conclusão
       const taxaConclusao =
          stats.TOTAL_CHAMADOS > 0
             ? Math.round((stats.CONCLUIDOS / stats.TOTAL_CHAMADOS) * 100)
             : 0;
 
-      // Recomendação de carga
+      // Status de carga
       let statusCarga = 'LEVE';
       let recomendacao = 'Recurso pode receber novos chamados';
 
-      if (chamadosAtivos.length > 15) {
+      if (chamadosProcessados.length > 15) {
          statusCarga = 'PESADA';
          recomendacao = 'Evitar atribuir novos chamados';
-      } else if (chamadosAtivos.length > 8 || chamadosCriticos.length > 0) {
+      } else if (
+         chamadosProcessados.length > 8 ||
+         chamadosCriticos.length > 0
+      ) {
          statusCarga = 'MODERADA';
          recomendacao = 'Cuidado ao atribuir novos chamados';
       }
@@ -201,45 +218,42 @@ export async function GET(
       const response = {
          recurso,
          resumo: {
-            totalChamadosAtivos: chamadosAtivos.length,
+            totalChamadosAtivos: chamadosProcessados.length,
             chamadosCriticos: chamadosCriticos.length,
             chamadosAtrasados: chamadosAtrasados.length,
             chamadosAltaPrioridade: chamadosAltaPrioridade.length,
             idadeMediaChamados:
-               chamadosAtivos.length > 0
+               chamadosProcessados.length > 0
                   ? Math.round(
-                       chamadosAtivos.reduce(
+                       chamadosProcessados.reduce(
                           (acc: number, c: any) => acc + c.DIAS_EM_ABERTO,
                           0
-                       ) / chamadosAtivos.length
+                       ) / chamadosProcessados.length
                     )
                   : 0,
             statusCarga,
             recomendacao,
          },
-         chamadosAtivos: chamadosAtivos.map((chamado: any) => ({
-            ...chamado,
+         chamadosAtivos: chamadosProcessados.map((c: any) => ({
+            ...c,
             PRIORIDADE_VISUAL:
-               chamado.NIVEL_PRIORIDADE === 'ALTA'
+               c.NIVEL_PRIORIDADE === 'ALTA'
                   ? '🔴'
-                  : chamado.NIVEL_PRIORIDADE === 'MÉDIA'
+                  : c.NIVEL_PRIORIDADE === 'MÉDIA'
                     ? '🟡'
                     : '🟢',
             SITUACAO_VISUAL:
-               chamado.SITUACAO === 'CRÍTICO'
+               c.SITUACAO === 'CRÍTICO'
                   ? '🚨'
-                  : chamado.SITUACAO === 'ATRASADO'
+                  : c.SITUACAO === 'ATRASADO'
                     ? '⏰'
-                    : chamado.SITUACAO === 'ATENÇÃO'
+                    : c.SITUACAO === 'ATENÇÃO'
                       ? '⚠️'
                       : '✅',
          })),
          estatisticas30Dias: {
             ...stats,
             TAXA_CONCLUSAO: taxaConclusao,
-            TEMPO_MEDIO_RESOLUCAO: stats.TEMPO_MEDIO_RESOLUCAO
-               ? Math.round(stats.TEMPO_MEDIO_RESOLUCAO * 10) / 10
-               : null,
          },
          historicoStatus,
          topClientes,
@@ -250,7 +264,7 @@ export async function GET(
             ...(chamadosAtrasados.length > 0
                ? [`${chamadosAtrasados.length} chamados atrasados`]
                : []),
-            ...(recurso.ATIVO === 'N' ? ['Recurso está inativo'] : []),
+            ...(recurso.ATIVO_RECURSO !== 1 ? ['Recurso está inativo'] : []),
             ...(taxaConclusao < 70 && stats.TOTAL_CHAMADOS > 5
                ? ['Taxa de conclusão baixa nos últimos 30 dias']
                : []),

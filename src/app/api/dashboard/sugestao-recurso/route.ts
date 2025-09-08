@@ -2,6 +2,16 @@ import { NextResponse } from 'next/server';
 import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
 import jwt from 'jsonwebtoken';
 
+// Função auxiliar para calcular dias (compatível com Firebird)
+const calcularDiasDesde = (dataFirebird: string) => {
+   if (!dataFirebird) return 0;
+   const data = new Date(dataFirebird);
+   const hoje = new Date();
+   return Math.ceil(
+      Math.abs(hoje.getTime() - data.getTime()) / (1000 * 60 * 60 * 24)
+   );
+};
+
 export async function POST(request: Request) {
    try {
       const authHeader = request.headers.get('Authorization');
@@ -44,40 +54,32 @@ export async function POST(request: Request) {
          );
       }
 
-      // Buscar recursos ativos com suas estatísticas
+      // Buscar recursos ativos com seus chamados ativos
       const sqlRecursos = `
       SELECT 
         r.COD_RECURSO,
         r.NOME_RECURSO,
         r.EMAIL_RECURSO,
-        
-        -- Chamados ativos atuais
-        COUNT(c.COD_CHAMADO) as CHAMADOS_ATIVOS,
-        
-        -- Chamados por prioridade
-        SUM(CASE WHEN c.PRIOR_CHAMADO <= 50 THEN 1 ELSE 0 END) as ALTA_PRIORIDADE,
-        SUM(CASE WHEN c.PRIOR_CHAMADO > 50 AND c.PRIOR_CHAMADO <= 100 THEN 1 ELSE 0 END) as MEDIA_PRIORIDADE,
-        SUM(CASE WHEN c.PRIOR_CHAMADO > 100 THEN 1 ELSE 0 END) as BAIXA_PRIORIDADE,
-        
-        -- Idade média dos chamados
-        AVG(CAST(CURRENT_DATE - c.DATA_CHAMADO AS INTEGER)) as IDADE_MEDIA,
-        
-        -- Chamados críticos (alta prioridade há mais de 3 dias)
-        SUM(CASE 
-          WHEN c.PRIOR_CHAMADO <= 50 
-            AND CAST(CURRENT_DATE - c.DATA_CHAMADO AS INTEGER) > 3 
-          THEN 1 ELSE 0 
-        END) as CHAMADOS_CRITICOS
-        
+        r.ATIVO_RECURSO
       FROM RECURSO r
-      LEFT JOIN CHAMADO c ON r.COD_RECURSO = c.COD_RECURSO 
-        AND c.STATUS_CHAMADO NOT IN ('CONCLUIDO', 'CANCELADO', 'FECHADO')
-      WHERE (r.ATIVO = 'S' OR r.ATIVO IS NULL)
-      GROUP BY r.COD_RECURSO, r.NOME_RECURSO, r.EMAIL_RECURSO
+      WHERE (r.ATIVO_RECURSO = 1 OR r.ATIVO_RECURSO IS NULL)
       ORDER BY r.NOME_RECURSO
     `;
 
-      // Se cliente especificado, buscar histórico do cliente com recursos
+      // Buscar todos os chamados ativos
+      const sqlChamadosAtivos = `
+      SELECT 
+        c.COD_CHAMADO,
+        c.COD_RECURSO,
+        c.DATA_CHAMADO,
+        c.PRIOR_CHAMADO,
+        c.STATUS_CHAMADO,
+        c.CONCLUSAO_CHAMADO
+      FROM CHAMADO c
+      WHERE c.STATUS_CHAMADO NOT IN ('FINALIZADO')
+    `;
+
+      // Se cliente especificado, buscar histórico do cliente
       let sqlHistoricoCliente = '';
       let historicoParams: any[] = [];
 
@@ -85,32 +87,125 @@ export async function POST(request: Request) {
          sqlHistoricoCliente = `
         SELECT 
           c.COD_RECURSO,
-          COUNT(*) as CHAMADOS_CLIENTE,
-          AVG(CASE 
-            WHEN c.CONCLUSAO_CHAMADO IS NOT NULL 
-            THEN CAST(c.CONCLUSAO_CHAMADO - c.DATA_CHAMADO AS INTEGER)
-            ELSE NULL 
-          END) as TEMPO_MEDIO_RESOLUCAO,
-          COUNT(CASE WHEN c.STATUS_CHAMADO IN ('CONCLUIDO', 'FECHADO') THEN 1 END) as CONCLUIDOS,
-          MAX(c.DATA_CHAMADO) as ULTIMO_ATENDIMENTO
+          c.DATA_CHAMADO,
+          c.CONCLUSAO_CHAMADO
         FROM CHAMADO c
         WHERE c.COD_CLIENTE = ?
           AND c.COD_RECURSO IS NOT NULL
-          AND c.DATA_CHAMADO >= CURRENT_DATE - 180
-        GROUP BY c.COD_RECURSO
-        ORDER BY ULTIMO_ATENDIMENTO DESC
+        ORDER BY c.DATA_CHAMADO DESC
       `;
          historicoParams = [codCliente];
       }
 
       // Executar queries
-      const recursos = await firebirdQuery(sqlRecursos);
-      const historicoCliente = codCliente
-         ? await firebirdQuery(sqlHistoricoCliente, historicoParams)
-         : [];
+      const [recursos, chamadosAtivos, historicoClienteRaw] = await Promise.all(
+         [
+            firebirdQuery(sqlRecursos),
+            firebirdQuery(sqlChamadosAtivos),
+            codCliente
+               ? firebirdQuery(sqlHistoricoCliente, historicoParams)
+               : Promise.resolve([]),
+         ]
+      );
 
-      // Processar recursos e calcular score de adequação
-      const recursosComScore = recursos.map((recurso: any) => {
+      // Processar histórico do cliente (se aplicável)
+      const historicoClienteProcessado: any[] = [];
+      if (codCliente && historicoClienteRaw.length > 0) {
+         const historicoPorRecurso: { [key: string]: any } = {};
+
+         historicoClienteRaw.forEach((h: any) => {
+            if (!historicoPorRecurso[h.COD_RECURSO]) {
+               historicoPorRecurso[h.COD_RECURSO] = {
+                  COD_RECURSO: h.COD_RECURSO,
+                  CHAMADOS_CLIENTE: 0,
+                  TEMPOS_RESOLUCAO: [],
+                  ULTIMO_ATENDIMENTO: null,
+               };
+            }
+
+            historicoPorRecurso[h.COD_RECURSO].CHAMADOS_CLIENTE++;
+
+            if (h.CONCLUSAO_CHAMADO) {
+               const diasResolucao = calcularDiasDesde(h.DATA_CHAMADO);
+               historicoPorRecurso[h.COD_RECURSO].TEMPOS_RESOLUCAO.push(
+                  diasResolucao
+               );
+            }
+
+            if (
+               !historicoPorRecurso[h.COD_RECURSO].ULTIMO_ATENDIMENTO ||
+               new Date(h.DATA_CHAMADO) >
+                  new Date(
+                     historicoPorRecurso[h.COD_RECURSO].ULTIMO_ATENDIMENTO
+                  )
+            ) {
+               historicoPorRecurso[h.COD_RECURSO].ULTIMO_ATENDIMENTO =
+                  h.DATA_CHAMADO;
+            }
+         });
+
+         // Calcular tempo médio de resolução para cada recurso
+         Object.values(historicoPorRecurso).forEach((recurso: any) => {
+            if (recurso.TEMPOS_RESOLUCAO.length > 0) {
+               recurso.TEMPO_MEDIO_RESOLUCAO =
+                  recurso.TEMPOS_RESOLUCAO.reduce(
+                     (sum: number, time: number) => sum + time,
+                     0
+                  ) / recurso.TEMPOS_RESOLUCAO.length;
+            }
+            historicoClienteProcessado.push(recurso);
+         });
+      }
+
+      // Processar recursos e calcular estatísticas
+      const recursosComEstatisticas = recursos.map((recurso: any) => {
+         const chamadosDoRecurso = chamadosAtivos.filter(
+            (c: any) => c.COD_RECURSO === recurso.COD_RECURSO
+         );
+
+         const chamadosAtivosCount = chamadosDoRecurso.length;
+         const altaPrioridade = chamadosDoRecurso.filter(
+            (c: any) => c.PRIOR_CHAMADO <= 50
+         ).length;
+         const mediaPrioridade = chamadosDoRecurso.filter(
+            (c: any) => c.PRIOR_CHAMADO > 50 && c.PRIOR_CHAMADO <= 100
+         ).length;
+         const baixaPrioridade = chamadosDoRecurso.filter(
+            (c: any) => c.PRIOR_CHAMADO > 100
+         ).length;
+
+         // Calcular idade média dos chamados
+         let idadeMedia = 0;
+         if (chamadosAtivosCount > 0) {
+            const totalDias = chamadosDoRecurso.reduce(
+               (sum: number, c: any) => {
+                  return sum + calcularDiasDesde(c.DATA_CHAMADO);
+               },
+               0
+            );
+            idadeMedia = totalDias / chamadosAtivosCount;
+         }
+
+         // Calcular chamados críticos
+         const chamadosCriticos = chamadosDoRecurso.filter((c: any) => {
+            return (
+               c.PRIOR_CHAMADO <= 50 && calcularDiasDesde(c.DATA_CHAMADO) > 3
+            );
+         }).length;
+
+         return {
+            ...recurso,
+            CHAMADOS_ATIVOS: chamadosAtivosCount,
+            ALTA_PRIORIDADE: altaPrioridade,
+            MEDIA_PRIORIDADE: mediaPrioridade,
+            BAIXA_PRIORIDADE: baixaPrioridade,
+            IDADE_MEDIA: idadeMedia,
+            CHAMADOS_CRITICOS: chamadosCriticos,
+         };
+      });
+
+      // Calcular score de adequação
+      const recursosComScore = recursosComEstatisticas.map((recurso: any) => {
          let score = 100; // Score inicial perfeito
          let motivos: string[] = [];
          let vantagens: string[] = [];
@@ -184,7 +279,7 @@ export async function POST(request: Request) {
 
          // Bonus por histórico com o cliente (se aplicável)
          if (codCliente) {
-            const historico = historicoCliente.find(
+            const historico = historicoClienteProcessado.find(
                (h: any) => h.COD_RECURSO === recurso.COD_RECURSO
             );
             if (historico) {
@@ -197,7 +292,10 @@ export async function POST(request: Request) {
                   `Histórico com cliente: ${historico.CHAMADOS_CLIENTE} chamados (+${bonusHistorico} pontos)`
                );
 
-               if (historico.TEMPO_MEDIO_RESOLUCAO < 5) {
+               if (
+                  historico.TEMPO_MEDIO_RESOLUCAO &&
+                  historico.TEMPO_MEDIO_RESOLUCAO < 5
+               ) {
                   score += 10;
                   vantagens.push(
                      `Resolução rápida para este cliente (${Math.round(historico.TEMPO_MEDIO_RESOLUCAO)} dias) (+10 pontos)`
@@ -236,7 +334,7 @@ export async function POST(request: Request) {
             DESVANTAGENS: desvantagens,
             MOTIVOS_ANALISE: motivos,
             HISTORICO_CLIENTE: codCliente
-               ? historicoCliente.find(
+               ? historicoClienteProcessado.find(
                     (h: any) => h.COD_RECURSO === recurso.COD_RECURSO
                  ) || null
                : null,
@@ -287,7 +385,7 @@ export async function POST(request: Request) {
             tipoUrgencia,
             codCliente,
             codClassificacao,
-            possuiHistoricoCliente: historicoCliente.length > 0,
+            possuiHistoricoCliente: historicoClienteProcessado.length > 0,
          },
          sugestao: {
             recursoRecomendado: melhorOpcao,

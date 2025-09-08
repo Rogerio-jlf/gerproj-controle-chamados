@@ -1,5 +1,10 @@
 'use client';
 
+// 1. Importações adicionais no topo do arquivo
+import BotaoAtribuicaoInteligente from '../../../../components/Button_Atribuicao_Inteligente';
+import DashboardRecursos from './Dashboard_Recursos';
+import { X } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import {
@@ -48,6 +53,7 @@ import { Loader2 } from 'lucide-react';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
 import { FaSearch } from 'react-icons/fa';
 import TarefasButton from '../../../../components/Button_Tarefa';
+import ModalAtribuicaoInteligente from './Modal_Atribuicao_Inteligente';
 // ================================================================================
 // ================================================================================
 
@@ -281,6 +287,12 @@ export default function TabelaChamados() {
 
    // Estado para mostrar/ocultar os filtros
    const [showFilters, setShowFilters] = useState(false);
+
+   // 2. Estados adicionais para o dashboard
+   const [dashboardOpen, setDashboardOpen] = useState(false);
+   const [modalAtribuicaoOpen, setModalAtribuicaoOpen] = useState(false);
+   const [chamadoParaAtribuir, setChamadoParaAtribuir] =
+      useState<ChamadosProps | null>(null);
    // ================================================================================
 
    // Token de autenticação
@@ -529,6 +541,29 @@ export default function TabelaChamados() {
    }, [columnFilters, globalFilter]); // Remova filterValues das dependências
    // ================================================================================
 
+   // 3. Funções adicionais
+   const queryClient = useQueryClient();
+
+   const handleAbrirDashboard = () => {
+      setDashboardOpen(true);
+   };
+
+   const handleFecharDashboard = () => {
+      setDashboardOpen(false);
+   };
+
+   const handleAtribuicaoSuccess = () => {
+      // Atualiza a query dos chamados após atribuição
+      queryClient.invalidateQueries({ queryKey: ['chamadosAbertos'] });
+      setModalAtribuicaoOpen(false);
+      setChamadoParaAtribuir(null);
+   };
+
+   const handleAbrirAtribuicao = (chamado: ChamadosProps) => {
+      setChamadoParaAtribuir(chamado);
+      setModalAtribuicaoOpen(true);
+   };
+
    if (loading) {
       return (
          <div className="flex flex-col items-center justify-center space-y-6 py-40">
@@ -709,6 +744,14 @@ export default function TabelaChamados() {
 
                   {/* ===== ITENS DA DIREITA ===== */}
                   <div className="flex items-center gap-6">
+                     {/* botão dashboard recursos */}
+                     <button
+                        onClick={handleAbrirDashboard}
+                        className="flex cursor-pointer items-center gap-4 rounded-md border border-white/50 bg-white/40 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:border-none hover:bg-white/70 hover:text-black active:scale-95"
+                     >
+                        <FaDatabase size={24} />
+                        Dashboard IA
+                     </button>
                      <TarefasButton
                         onVisualizarTarefas={() => setTabelaTarefasOpen(true)}
                      />
@@ -1166,19 +1209,43 @@ export default function TabelaChamados() {
             onClose={() => setTabelaTarefasOpen(false)}
             codChamado={selectedCodChamado}
          />
+
+         {/* ===== DASHBOARD RECURSOS ===== */}
+         {dashboardOpen && (
+            <div className="fixed inset-0 z-50 bg-black">
+               <div className="relative h-full">
+                  <button
+                     onClick={handleFecharDashboard}
+                     className="absolute top-4 right-4 z-10 rounded-lg bg-red-600 p-2 text-white hover:bg-red-700"
+                  >
+                     <X size={24} />
+                  </button>
+                  <DashboardRecursos />
+               </div>
+            </div>
+         )}
+
+         {/* ===== MODAL ATRIBUIÇÃO INTELIGENTE ===== */}
+         <ModalAtribuicaoInteligente
+            isOpen={modalAtribuicaoOpen}
+            onClose={() => setModalAtribuicaoOpen(false)}
+            chamado={chamadoParaAtribuir}
+            onAtribuicaoSuccess={handleAtribuicaoSuccess}
+         />
          {/* ===== */}
       </>
    );
 }
 
-// Função para largura fixa por coluna
+// 5. Atualizar a função getColumnWidth para incluir a nova coluna
 function getColumnWidth(columnId: string): string {
    const widthMap: Record<string, string> = {
-      COD_CHAMADO: '10%',
-      ASSUNTO_CHAMADO: '35%',
+      COD_CHAMADO: '8%',
+      ASSUNTO_CHAMADO: '30%',
       EMAIL_CHAMADO: '15%',
       DATA_CHAMADO: '10%',
-      STATUS_CHAMADO: '20%',
+      STATUS_CHAMADO: '15%',
+      NOME_RECURSO: '15%', // Nova coluna
       actions: '7%',
    };
 

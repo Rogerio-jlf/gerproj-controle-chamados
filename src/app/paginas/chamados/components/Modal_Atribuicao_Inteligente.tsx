@@ -95,7 +95,7 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
       queryFn: async () => {
          if (!chamado) return null;
 
-         const response = await fetch('/api/dashboard/recursos/sugestao', {
+         const response = await fetch('/api/dashboard/sugestao-recurso', {
             method: 'POST',
             headers: {
                Authorization: `Bearer ${token}`,

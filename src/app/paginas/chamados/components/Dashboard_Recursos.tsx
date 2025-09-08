@@ -122,7 +122,7 @@ const DashboardRecursos = () => {
    const { data: sugestaoData, isLoading: loadingSugestao } = useQuery({
       queryKey: ['sugestao-recurso', novoChamado],
       queryFn: async () => {
-         const response = await fetch('/api/dashboard/recursos/sugestao', {
+         const response = await fetch('/api/dashboard/sugestao-recurso', {
             method: 'POST',
             headers: {
                Authorization: `Bearer ${token}`,

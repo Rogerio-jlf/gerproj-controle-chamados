@@ -4,7 +4,9 @@ import jwt from 'jsonwebtoken';
 
 export async function GET(request: Request) {
    try {
+      // =======================
       // Autenticação
+      // =======================
       const authHeader = request.headers.get('Authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
          return NextResponse.json(
@@ -25,96 +27,74 @@ export async function GET(request: Request) {
          return NextResponse.json({ error: 'Token inválido' }, { status: 401 });
       }
 
-      const isAdmin = decoded.tipo === 'ADM';
-
-      if (!isAdmin) {
+      if (decoded.tipo !== 'ADM') {
          return NextResponse.json(
             { error: 'Acesso restrito a administradores' },
             { status: 403 }
          );
       }
 
-      // Parâmetros de filtro
-      const { searchParams } = new URL(request.url);
-      const incluirInativos = searchParams.get('incluirInativos') === 'true';
+      // =======================
+      // Queries
+      // =======================
 
-      // 1. Buscar estatísticas gerais dos recursos com chamados ativos
+      // 1. Estatísticas gerais dos recursos
       const sqlRecursosStats = `
-      SELECT 
-        r.COD_RECURSO,
-        r.NOME_RECURSO,
-        COUNT(c.COD_CHAMADO) as TOTAL_CHAMADOS_ATIVOS,
-        
-        -- Contagem por status
-        SUM(CASE WHEN c.STATUS_CHAMADO = 'ABERTO' THEN 1 ELSE 0 END) as CHAMADOS_ABERTOS,
-        SUM(CASE WHEN c.STATUS_CHAMADO = 'EM_ANDAMENTO' THEN 1 ELSE 0 END) as CHAMADOS_EM_ANDAMENTO,
-        SUM(CASE WHEN c.STATUS_CHAMADO = 'PENDENTE' THEN 1 ELSE 0 END) as CHAMADOS_PENDENTES,
-        SUM(CASE WHEN c.STATUS_CHAMADO = 'AGUARDANDO' THEN 1 ELSE 0 END) as CHAMADOS_AGUARDANDO,
-        
-        -- Contagem por prioridade
-        SUM(CASE WHEN c.PRIOR_CHAMADO <= 50 THEN 1 ELSE 0 END) as CHAMADOS_ALTA_PRIORIDADE,
-        SUM(CASE WHEN c.PRIOR_CHAMADO > 50 AND c.PRIOR_CHAMADO <= 100 THEN 1 ELSE 0 END) as CHAMADOS_MEDIA_PRIORIDADE,
-        SUM(CASE WHEN c.PRIOR_CHAMADO > 100 THEN 1 ELSE 0 END) as CHAMADOS_BAIXA_PRIORIDADE,
-        
-        -- Análise temporal
-        AVG(CAST(CURRENT_DATE - c.DATA_CHAMADO AS INTEGER)) as IDADE_MEDIA_CHAMADOS,
-        MAX(CAST(CURRENT_DATE - c.DATA_CHAMADO AS INTEGER)) as CHAMADO_MAIS_ANTIGO_DIAS,
-        MIN(CAST(CURRENT_DATE - c.DATA_CHAMADO AS INTEGER)) as CHAMADO_MAIS_RECENTE_DIAS,
-        
-        -- Chamados críticos (mais de 3 dias em aberto com alta prioridade)
-        SUM(CASE 
-          WHEN c.PRIOR_CHAMADO <= 50 
-            AND CAST(CURRENT_DATE - c.DATA_CHAMADO AS INTEGER) > 3 
-          THEN 1 ELSE 0 
-        END) as CHAMADOS_CRITICOS
-        
-      FROM RECURSO r
-      LEFT JOIN CHAMADO c ON r.COD_RECURSO = c.COD_RECURSO 
-        AND c.STATUS_CHAMADO NOT IN ('CONCLUIDO', 'CANCELADO', 'FECHADO')
-      ${incluirInativos ? '' : "WHERE r.ATIVO = 'S' OR r.ATIVO IS NULL"}
-      GROUP BY r.COD_RECURSO, r.NOME_RECURSO
-      ORDER BY TOTAL_CHAMADOS_ATIVOS DESC, CHAMADOS_ALTA_PRIORIDADE DESC
-    `;
+         SELECT 
+            r.COD_RECURSO,
+            r.NOME_RECURSO,
+            COUNT(c.COD_CHAMADO) as TOTAL_CHAMADOS_ATIVOS,
+            SUM(CASE WHEN c.STATUS_CHAMADO = 'NAO INICIADO' THEN 1 ELSE 0 END) as CHAMADOS_NAO_INICIADOS,
+            SUM(CASE WHEN c.STATUS_CHAMADO = 'EM ATENDIMENTO' THEN 1 ELSE 0 END) as CHAMADOS_EM_ATENDIMENTO,
+            SUM(CASE WHEN c.STATUS_CHAMADO = 'ATRIBUIDO' THEN 1 ELSE 0 END) as CHAMADOS_ATRIBUIDOS,
+            SUM(CASE WHEN c.STATUS_CHAMADO = 'AGUARDANDO VALIDACAO' THEN 1 ELSE 0 END) as CHAMADOS_AGUARDANDO_VALIDACAO,
+            SUM(CASE WHEN c.STATUS_CHAMADO = 'STANDBY' THEN 1 ELSE 0 END) as CHAMADOS_STANDBY,
+            SUM(CASE WHEN c.STATUS_CHAMADO = 'NAO FINALIZADO' THEN 1 ELSE 0 END) as CHAMADOS_NAO_FINALIZADOS,
+            SUM(CASE WHEN c.PRIOR_CHAMADO <= 50 THEN 1 ELSE 0 END) as CHAMADOS_ALTA_PRIORIDADE,
+            SUM(CASE WHEN c.PRIOR_CHAMADO > 50 AND c.PRIOR_CHAMADO <= 100 THEN 1 ELSE 0 END) as CHAMADOS_MEDIA_PRIORIDADE,
+            SUM(CASE WHEN c.PRIOR_CHAMADO > 100 THEN 1 ELSE 0 END) as CHAMADOS_BAIXA_PRIORIDADE
+         FROM RECURSO r
+         LEFT JOIN CHAMADO c ON r.COD_RECURSO = c.COD_RECURSO 
+            AND c.STATUS_CHAMADO NOT IN ('FINALIZADO', 'CANCELADO')
+         WHERE r.ATIVO_RECURSO = 1
+         GROUP BY r.COD_RECURSO, r.NOME_RECURSO
+         ORDER BY TOTAL_CHAMADOS_ATIVOS DESC, CHAMADOS_ALTA_PRIORIDADE DESC
+      `;
 
-      // 2. Buscar chamados mais antigos por recurso
+      // 2. Chamados mais antigos por recurso
       const sqlChamadosAntigos = `
-      SELECT 
-        c.COD_RECURSO,
-        c.COD_CHAMADO,
-        c.DATA_CHAMADO,
-        c.ASSUNTO_CHAMADO,
-        c.PRIOR_CHAMADO,
-        c.STATUS_CHAMADO,
-        cl.NOME_CLIENTE,
-        CAST(CURRENT_DATE - c.DATA_CHAMADO AS INTEGER) as DIAS_EM_ABERTO
-      FROM CHAMADO c
-      LEFT JOIN CLIENTE cl ON c.COD_CLIENTE = cl.COD_CLIENTE
-      WHERE c.STATUS_CHAMADO NOT IN ('CONCLUIDO', 'CANCELADO', 'FECHADO')
-        AND c.COD_RECURSO IS NOT NULL
-        AND CAST(CURRENT_DATE - c.DATA_CHAMADO AS INTEGER) > 2
-      ORDER BY c.COD_RECURSO, c.DATA_CHAMADO ASC
-    `;
+         SELECT 
+            c.COD_RECURSO,
+            c.COD_CHAMADO,
+            c.DATA_CHAMADO,
+            c.ASSUNTO_CHAMADO,
+            c.PRIOR_CHAMADO,
+            c.STATUS_CHAMADO,
+            cl.NOME_CLIENTE
+         FROM CHAMADO c
+         LEFT JOIN CLIENTE cl ON c.COD_CLIENTE = cl.COD_CLIENTE
+         WHERE c.STATUS_CHAMADO NOT IN ('FINALIZADO', 'CANCELADO')
+            AND c.COD_RECURSO IS NOT NULL
+         ORDER BY c.COD_RECURSO, c.DATA_CHAMADO ASC
+      `;
 
-      // 3. Análise de distribuição de trabalho (últimos 30 dias)
+      // 3. Distribuição de trabalho últimos 30 dias
       const sqlDistribuicaoTrabalho = `
-      SELECT 
-        r.COD_RECURSO,
-        r.NOME_RECURSO,
-        COUNT(c.COD_CHAMADO) as CHAMADOS_ULTIMOS_30_DIAS,
-        AVG(CASE 
-          WHEN c.CONCLUSAO_CHAMADO IS NOT NULL 
-          THEN CAST(c.CONCLUSAO_CHAMADO - c.DATA_CHAMADO AS INTEGER)
-          ELSE NULL 
-        END) as TEMPO_MEDIO_RESOLUCAO_DIAS
-      FROM RECURSO r
-      LEFT JOIN CHAMADO c ON r.COD_RECURSO = c.COD_RECURSO
-        AND c.DATA_CHAMADO >= CURRENT_DATE - 30
-      ${incluirInativos ? '' : "WHERE r.ATIVO = 'S' OR r.ATIVO IS NULL"}
-      GROUP BY r.COD_RECURSO, r.NOME_RECURSO
-      ORDER BY CHAMADOS_ULTIMOS_30_DIAS DESC
-    `;
+         SELECT 
+            r.COD_RECURSO,
+            r.NOME_RECURSO,
+            COUNT(c.COD_CHAMADO) as CHAMADOS_ULTIMOS_30_DIAS
+         FROM RECURSO r
+         LEFT JOIN CHAMADO c ON r.COD_RECURSO = c.COD_RECURSO
+            AND EXTRACT(YEAR FROM c.DATA_CHAMADO) = EXTRACT(YEAR FROM CURRENT_TIMESTAMP)
+            AND EXTRACT(MONTH FROM c.DATA_CHAMADO) = EXTRACT(MONTH FROM CURRENT_TIMESTAMP)
+            AND c.STATUS_CHAMADO NOT IN ('FINALIZADO', 'CANCELADO')
+         WHERE r.ATIVO_RECURSO = 1
+         GROUP BY r.COD_RECURSO, r.NOME_RECURSO
+         ORDER BY CHAMADOS_ULTIMOS_30_DIAS DESC
+      `;
 
-      // Executar queries
+      // Executar queries em paralelo
       const [recursosStats, chamadosAntigos, distribuicaoTrabalho] =
          await Promise.all([
             firebirdQuery(sqlRecursosStats),
@@ -122,26 +102,58 @@ export async function GET(request: Request) {
             firebirdQuery(sqlDistribuicaoTrabalho),
          ]);
 
-      // Processar dados para criar insights
+      // =======================
+      // Funções auxiliares
+      // =======================
+      const calcularDiasDesde = (dataFirebird: string) => {
+         if (!dataFirebird) return 0;
+         const data = new Date(dataFirebird);
+         const hoje = new Date();
+         return Math.ceil(
+            Math.abs(hoje.getTime() - data.getTime()) / (1000 * 60 * 60 * 24)
+         );
+      };
+
+      // =======================
+      // Processar dados e gerar insights
+      // =======================
       const recursosComInsights = recursosStats.map((recurso: any) => {
-         // Buscar chamados antigos deste recurso
-         const chamadosAntigosRecurso = chamadosAntigos.filter(
-            (ch: any) => ch.COD_RECURSO === recurso.COD_RECURSO
+         const chamadosDoRecurso = chamadosAntigos
+            .filter(ch => ch.COD_RECURSO === recurso.COD_RECURSO)
+            .map(ch => ({
+               ...ch,
+               DIAS_EM_ABERTO: calcularDiasDesde(ch.DATA_CHAMADO),
+            }));
+
+         const chamadosAntigosRecurso = chamadosDoRecurso.filter(
+            ch => ch.DIAS_EM_ABERTO > 2
          );
 
-         // Buscar dados de distribuição
          const dadosDistribuicao = distribuicaoTrabalho.find(
-            (dt: any) => dt.COD_RECURSO === recurso.COD_RECURSO
+            dt => dt.COD_RECURSO === recurso.COD_RECURSO
          );
 
-         // Calcular score de carga de trabalho (quanto maior, mais sobrecarregado)
-         let scoreCarga = 0;
-         scoreCarga += (recurso.TOTAL_CHAMADOS_ATIVOS || 0) * 2;
-         scoreCarga += (recurso.CHAMADOS_ALTA_PRIORIDADE || 0) * 5;
-         scoreCarga += (recurso.CHAMADOS_CRITICOS || 0) * 10;
-         scoreCarga += (recurso.IDADE_MEDIA_CHAMADOS || 0) * 0.5;
+         const idadesChamados = chamadosDoRecurso.map(ch => ch.DIAS_EM_ABERTO);
+         const idadeMedia =
+            idadesChamados.length > 0
+               ? idadesChamados.reduce((sum, d) => sum + d, 0) /
+                 idadesChamados.length
+               : 0;
+         const chamadoMaisAntigo =
+            idadesChamados.length > 0 ? Math.max(...idadesChamados) : 0;
+         const chamadoMaisRecente =
+            idadesChamados.length > 0 ? Math.min(...idadesChamados) : 0;
 
-         // Calcular recomendação
+         const chamadosCriticos = chamadosDoRecurso.filter(
+            ch => ch.PRIOR_CHAMADO <= 50 && ch.DIAS_EM_ABERTO > 3
+         ).length;
+
+         let scoreCarga =
+            (recurso.TOTAL_CHAMADOS_ATIVOS || 0) * 2 +
+            (recurso.CHAMADOS_ALTA_PRIORIDADE || 0) * 5 +
+            (chamadosCriticos || 0) * 10 +
+            (idadeMedia || 0) * 0.5;
+
          let recomendacao = 'DISPONÍVEL';
          let motivoRecomendacao = 'Recurso com baixa carga de trabalho';
 
@@ -153,39 +165,56 @@ export async function GET(request: Request) {
             motivoRecomendacao = 'Recurso com carga moderada de trabalho';
          }
 
-         if (recurso.CHAMADOS_CRITICOS > 0) {
+         if (chamadosCriticos > 0) {
             recomendacao = 'CRÍTICO';
-            motivoRecomendacao = `${recurso.CHAMADOS_CRITICOS} chamados críticos precisam de atenção`;
+            motivoRecomendacao = `${chamadosCriticos} chamados críticos precisam de atenção`;
          }
 
          return {
-            ...recurso,
-            CHAMADOS_ANTIGOS: chamadosAntigosRecurso.slice(0, 3), // Top 3 mais antigos
-            TEMPO_MEDIO_RESOLUCAO:
-               dadosDistribuicao?.TEMPO_MEDIO_RESOLUCAO_DIAS || null,
+            COD_RECURSO: recurso.COD_RECURSO,
+            NOME_RECURSO: recurso.NOME_RECURSO,
+            TOTAL_CHAMADOS_ATIVOS: recurso.TOTAL_CHAMADOS_ATIVOS || 0,
+            CHAMADOS_NAO_INICIADOS: recurso.CHAMADOS_NAO_INICIADOS || 0,
+            CHAMADOS_EM_ATENDIMENTO: recurso.CHAMADOS_EM_ATENDIMENTO || 0,
+            CHAMADOS_ATRIBUIDOS: recurso.CHAMADOS_ATRIBUIDOS || 0,
+            CHAMADOS_AGUARDANDO_VALIDACAO:
+               recurso.CHAMADOS_AGUARDANDO_VALIDACAO || 0,
+            CHAMADOS_STANDBY: recurso.CHAMADOS_STANDBY || 0,
+            CHAMADOS_NAO_FINALIZADOS: recurso.CHAMADOS_NAO_FINALIZADOS || 0,
+            CHAMADOS_ALTA_PRIORIDADE: recurso.CHAMADOS_ALTA_PRIORIDADE || 0,
+            CHAMADOS_MEDIA_PRIORIDADE: recurso.CHAMADOS_MEDIA_PRIORIDADE || 0,
+            CHAMADOS_BAIXA_PRIORIDADE: recurso.CHAMADOS_BAIXA_PRIORIDADE || 0,
+            CHAMADOS_ANTIGOS: chamadosAntigosRecurso
+               .slice(0, 3)
+               .sort((a, b) => b.DIAS_EM_ABERTO - a.DIAS_EM_ABERTO),
+            IDADE_MEDIA_CHAMADOS: Math.round(idadeMedia),
+            CHAMADO_MAIS_ANTIGO_DIAS: chamadoMaisAntigo,
+            CHAMADO_MAIS_RECENTE_DIAS: chamadoMaisRecente,
+            CHAMADOS_CRITICOS: chamadosCriticos,
             CHAMADOS_ULTIMOS_30_DIAS:
                dadosDistribuicao?.CHAMADOS_ULTIMOS_30_DIAS || 0,
             SCORE_CARGA_TRABALHO: Math.round(scoreCarga),
             RECOMENDACAO: recomendacao,
             MOTIVO_RECOMENDACAO: motivoRecomendacao,
-            PERCENTUAL_ALTA_PRIORIDADE:
-               recurso.TOTAL_CHAMADOS_ATIVOS > 0
-                  ? Math.round(
-                       (recurso.CHAMADOS_ALTA_PRIORIDADE /
-                          recurso.TOTAL_CHAMADOS_ATIVOS) *
-                          100
-                    )
-                  : 0,
+            PERCENTUAL_ALTA_PRIORIDADE: recurso.TOTAL_CHAMADOS_ATIVOS
+               ? Math.round(
+                    (recurso.CHAMADOS_ALTA_PRIORIDADE /
+                       recurso.TOTAL_CHAMADOS_ATIVOS) *
+                       100
+                 )
+               : 0,
          };
       });
 
-      // Estatísticas gerais do sistema
+      // =======================
+      // Estatísticas gerais
+      // =======================
       const totalChamadosAtivos = recursosStats.reduce(
-         (sum: number, r: any) => sum + (r.TOTAL_CHAMADOS_ATIVOS || 0),
+         (sum, r) => sum + (r.TOTAL_CHAMADOS_ATIVOS || 0),
          0
       );
-      const totalChamadosCriticos = recursosStats.reduce(
-         (sum: number, r: any) => sum + (r.CHAMADOS_CRITICOS || 0),
+      const totalChamadosCriticos = recursosComInsights.reduce(
+         (sum, r) => sum + (r.CHAMADOS_CRITICOS || 0),
          0
       );
       const recursosDisponiveis = recursosComInsights.filter(

@@ -1,0 +1,34 @@
+Esta API é um Dashboard de Monitoramento de Técnicos/Recursos que ajuda os administradores a gerenciar a equipe de atendimento.
+
+Objetivo Principal:
+Visualizar como cada técnico está desempenhando e distribuir melhor o trabalho
+
+Funciona assim:
+🔐 Segurança
+Só administradores podem acessar (com token válido)
+
+📊 O que ela mostra:
+Status de cada técnico: Quantos chamados cada um tem
+
+Prioridades: Quantos são urgentes, médios ou baixos
+
+Tempo dos chamados: Quais estão parados há muito tempo
+
+Carga de trabalho: Quem está sobrecarregado ou disponível
+
+💡 Recomendações inteligentes:
+Sugere qual técnico está mais livre para receber novo chamado
+
+Alerta sobre técnicos com muitos problemas críticos
+
+Identifica chamados que estão parados há tempo demais
+
+⚠️ Alertas importantes:
+Avisa se há muitos chamados críticos
+
+Alerta se não há técnicos disponíveis
+
+Resumindo:
+É como um painel de controle que ajuda o chefe a ver quem está ocupado, quem está livre, e onde precisa mandar ajuda urgente!
+
+Exemplo prático: Se o João tem 10 chamados urgentes e 5 parados há semanas, o sistema avisa: "João está SOBRECARREGADO - precisa de ajuda!"

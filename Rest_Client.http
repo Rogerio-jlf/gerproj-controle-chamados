@@ -133,7 +133,7 @@ POST http://localhost:3000/api/login
 Content-Type: application/json
 
 {
-  "login": "GILMAR.P",
+  "login": "ANA.A",
   "senha": "&"
 }
 
@@ -151,3 +151,22 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ1LCJub21lI
 ### - BUSCAR TODOS OS CHAMADOS POR TAREFA
 GET http://localhost:3000/api/chamados-tarefa/1587
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ1LCJub21lIjoiR0lMTUFSIFBFTklETyBERSBTT1VaQSIsInRpcG8iOiJVU1UiLCJyZWN1cnNvIjp7ImlkIjoxNDQsIm5vbWUiOiJHSUxNQVIgUEVOSURPIERFIFNPVVpBIiwiZW1haWwiOiJnaWxtYXIuc291emFAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1NjgyODk0MiwiZXhwIjoxNzU2ODMyNTQyfQ.Mu86Go8OnL3ksJkRbJ3RamugfwJ5Iu9A0sczn-l3oj4
+
+
+
+
+### - Testar dashboard geral
+GET http://localhost:3000/api/dashboard/recursos
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1NzMzOTQyMywiZXhwIjoxNzU3MzQzMDIzfQ.WnDXpq6ArKq5vd9LUl3bsNZJk1f44vNPLwDR_jKe7J8
+Content-Type: application/json
+
+
+
+
+
+
+### - Testar dashboard recurso específico
+GET http://localhost:3000/api/dashboard/recurso/144
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1NzMzOTQyMywiZXhwIjoxNzU3MzQzMDIzfQ.WnDXpq6ArKq5vd9LUl3bsNZJk1f44vNPLwDR_jKe7J8
+Content-Type: application/json
+

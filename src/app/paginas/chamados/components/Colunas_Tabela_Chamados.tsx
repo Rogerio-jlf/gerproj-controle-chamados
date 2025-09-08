@@ -18,6 +18,10 @@ import { FaDownload, FaTasks } from 'react-icons/fa';
 import { IoCall } from 'react-icons/io5';
 import { GrServicePlay } from 'react-icons/gr';
 import { HiMiniSquaresPlus } from 'react-icons/hi2';
+
+// 1. Importações adicionais
+import { BotaoAtribuicaoCircular } from '../../../../components/Button_Atribuicao_Inteligente';
+import { AlertTriangle, Brain, User } from 'lucide-react';
 // ================================================================================
 
 export interface ChamadosProps {
@@ -39,11 +43,13 @@ export interface ChamadosProps {
 }
 // ====================
 
+// 2. Atualizar a interface AcoesProps para incluir atribuição
 export interface AcoesProps {
    onVisualizarChamado: (codChamado: number) => void;
    onVisualizarOS: (codChamado: number) => void;
    onVisualizarTarefas: () => void;
    onUpdateAssunto?: (codChamado: number, novoAssunto: string) => Promise<void>;
+   onAtribuicaoInteligente?: (chamado: ChamadosProps) => void; // Nova função
 }
 // ====================
 
@@ -114,15 +120,17 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
    };
    // ====================
 
-   // Posições dos botões em um semicírculo (lado esquerdo) - agora com distâncias maiores
+   // Atualizar as posições dos botões para acomodar o novo botão
    const buttonPositions = [
       { x: -80, y: -70, delay: 0.0 }, // Visualizar Chamado
       { x: -90, y: -10, delay: 0.1 }, // Visualizar OS
       { x: -80, y: 50, delay: 0.15 }, // Visualizar Tarefas
       { x: -40, y: 95, delay: 0.2 }, // Download
+      { x: 20, y: 95, delay: 0.25 }, // Atribuição IA (novo)
    ];
    // ====================
 
+   // Atualizar o array de botões de ação
    const actionButtons = [
       {
          icon: IoCall,
@@ -131,6 +139,9 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
             setIsOpen(false);
          },
          tooltip: 'Visualizar Chamado',
+         bgColor: 'bg-white',
+         textColor: 'text-black',
+         hoverRing: 'hover:ring-cyan-500',
       },
       {
          icon: GrServicePlay,
@@ -139,6 +150,9 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
             setIsOpen(false);
          },
          tooltip: 'Visualizar OS',
+         bgColor: 'bg-white',
+         textColor: 'text-black',
+         hoverRing: 'hover:ring-cyan-500',
       },
       {
          icon: FaTasks,
@@ -147,11 +161,28 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
             setIsOpen(false);
          },
          tooltip: 'Visualizar Tarefa',
+         bgColor: 'bg-white',
+         textColor: 'text-black',
+         hoverRing: 'hover:ring-cyan-500',
       },
       {
          icon: FaDownload,
          onClick: handleDownload,
          tooltip: 'Download Arquivos',
+         bgColor: 'bg-white',
+         textColor: 'text-black',
+         hoverRing: 'hover:ring-cyan-500',
+      },
+      {
+         icon: Brain,
+         onClick: () => {
+            acoes.onAtribuicaoInteligente?.(chamado);
+            setIsOpen(false);
+         },
+         tooltip: 'Atribuição Inteligente',
+         bgColor: 'bg-gradient-to-r from-purple-600 to-blue-600',
+         textColor: 'text-white',
+         hoverRing: 'hover:ring-purple-500',
       },
    ];
    // ====================
@@ -179,7 +210,6 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
          <AnimatePresence>
             {isOpen && (
                <>
-                  {/* Overlay para fechar quando clicar fora */}
                   <motion.div
                      initial={{ opacity: 0 }}
                      animate={{ opacity: 1 }}
@@ -188,7 +218,6 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
                      onClick={() => setIsOpen(false)}
                   />
 
-                  {/* Container dos botões fixo na tela */}
                   <div
                      className="pointer-events-none fixed z-50"
                      style={{
@@ -227,7 +256,7 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
                                     damping: 20,
                                  }}
                                  onClick={button.onClick}
-                                 className="pointer-events-auto absolute inline-flex cursor-pointer items-center justify-center rounded-full bg-white p-4 text-black ring-1 ring-cyan-500 transition-all hover:scale-110 hover:ring-4 hover:ring-cyan-500 active:scale-95"
+                                 className={`pointer-events-auto absolute inline-flex cursor-pointer items-center justify-center rounded-full p-4 ring-1 transition-all hover:scale-110 hover:ring-4 active:scale-95 ${button.bgColor} ${button.textColor} ${button.hoverRing}`}
                               >
                                  <button.icon size={18} />
                               </motion.button>
@@ -362,6 +391,40 @@ export const colunasTabela = (
             }}
          />
       ),
+   },
+
+   // Adicionar após a coluna de status:
+   {
+      accessorKey: 'NOME_RECURSO',
+      header: () => <div className="text-center">Recurso</div>,
+      cell: ({ row }) => {
+         const recurso = row.original.NOME_RECURSO;
+         const codRecurso = row.original.COD_RECURSO;
+
+         if (codRecurso && recurso) {
+            return (
+               <div className="flex items-center justify-center">
+                  <div className="rounded-md bg-green-600 px-2 py-1 text-center text-white ring-1 ring-white">
+                     <div className="flex items-center gap-2">
+                        <User size={14} />
+                        <span className="text-xs">{recurso}</span>
+                     </div>
+                  </div>
+               </div>
+            );
+         }
+
+         return (
+            <div className="flex items-center justify-center">
+               <div className="rounded-md bg-gray-600 px-2 py-1 text-center text-white ring-1 ring-white">
+                  <div className="flex items-center gap-2">
+                     <AlertTriangle size={14} />
+                     <span className="text-xs">Não Atribuído</span>
+                  </div>
+               </div>
+            </div>
+         );
+      },
    },
 
    // Email chamado
