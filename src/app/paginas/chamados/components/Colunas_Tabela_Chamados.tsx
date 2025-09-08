@@ -354,7 +354,7 @@ export const colunasTabela = (
    },
    // =====
 
-   // Status chamado (clicável)
+   // Status chamado (clicável) - ATUALIZADO PARA INCLUIR TAREFA
    {
       accessorKey: 'STATUS_CHAMADO',
       header: () => <div className="text-center">Status</div>,
@@ -362,17 +362,34 @@ export const colunasTabela = (
          <StatusCellClicavel
             status={row.original.STATUS_CHAMADO}
             codChamado={row.original.COD_CHAMADO}
-            onUpdateStatus={async (codChamado, newStatus) => {
+            onUpdateStatus={async (
+               codChamado,
+               newStatus,
+               codClassificacao,
+               codTarefa
+            ) => {
                try {
+                  const body: any = {
+                     statusChamado: newStatus,
+                     codChamado: codChamado.toString(),
+                  };
+
+                  // Adicionar classificação ou tarefa baseado no status
+                  if (newStatus === 'EM ATENDIMENTO' && codTarefa) {
+                     body.codTarefa = codTarefa;
+                  } else if (
+                     newStatus !== 'EM ATENDIMENTO' &&
+                     codClassificacao
+                  ) {
+                     body.codClassificacao = codClassificacao;
+                  }
+
                   const response = await fetch(
                      `/api/atualizar-status-chamado/${codChamado}`,
                      {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                           statusChamado: newStatus,
-                           codChamado: codChamado.toString(),
-                        }),
+                        body: JSON.stringify(body),
                      }
                   );
 
@@ -383,7 +400,14 @@ export const colunasTabela = (
                      );
                   }
 
+                  // Atualizar os dados locais
                   row.original.STATUS_CHAMADO = newStatus;
+                  if (codClassificacao) {
+                     row.original.COD_CLASSIFICACAO = codClassificacao;
+                  }
+                  if (codTarefa) {
+                     row.original.CODTRF_CHAMADO = codTarefa.toString();
+                  }
                } catch (err) {
                   console.error('Erro ao atualizar Status:', err);
                   throw err;

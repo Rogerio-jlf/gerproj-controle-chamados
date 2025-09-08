@@ -20,16 +20,31 @@ import {
 // ================================================================================
 import { getStylesStatus } from './Colunas_Tabela_Chamados';
 // ================================================================================
-import { FaExclamationTriangle, FaEdit, FaSync } from 'react-icons/fa';
+import { FaExclamationTriangle, FaEdit, FaSync, FaTasks } from 'react-icons/fa';
 import { FaArrowRightLong } from 'react-icons/fa6';
 import { IoClose } from 'react-icons/io5';
+import { MdCategory } from 'react-icons/md';
 // ================================================================================
-// ================================================================================
+
+interface Classificacao {
+   COD_CLASSIFICACAO: number;
+   NOME_CLASSIFICACAO: string;
+}
+
+interface Tarefa {
+   COD_TAREFA: number;
+   NOME_TAREFA: string;
+}
 
 interface Props {
    status: string;
    codChamado: number;
-   onUpdateStatus: (codChamado: number, newStatus: string) => Promise<void>;
+   onUpdateStatus: (
+      codChamado: number,
+      newStatus: string,
+      codClassificacao?: number,
+      codTarefa?: number
+   ) => Promise<void>;
 }
 // ================================================================================
 
@@ -54,8 +69,52 @@ export default function StatusCellClicavel({
    const [pendingStatus, setPendingStatus] = useState<string | null>(null);
    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
    const [isUpdating, setIsUpdating] = useState(false);
+   const [classificacoes, setClassificacoes] = useState<Classificacao[]>([]);
+   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
+   const [selectedClassificacao, setSelectedClassificacao] = useState<
+      number | null
+   >(null);
+   const [selectedTarefa, setSelectedTarefa] = useState<number | null>(null);
+   const [loadingClassificacoes, setLoadingClassificacoes] = useState(false);
+   const [loadingTarefas, setLoadingTarefas] = useState(false);
    const selectRef = useRef<HTMLSelectElement>(null);
    // ================================================================================
+
+   // Função para buscar classificações
+   const fetchClassificacoes = async () => {
+      setLoadingClassificacoes(true);
+      try {
+         const response = await fetch('/api/classificacao');
+         if (response.ok) {
+            const data = await response.json();
+            setClassificacoes(data);
+         } else {
+            console.error('Erro ao buscar classificações');
+         }
+      } catch (error) {
+         console.error('Erro ao buscar classificações:', error);
+      } finally {
+         setLoadingClassificacoes(false);
+      }
+   };
+
+   // Função para buscar tarefas
+   const fetchTarefas = async () => {
+      setLoadingTarefas(true);
+      try {
+         const response = await fetch(`/api/atribuir-tarefa/${codChamado}`);
+         if (response.ok) {
+            const data = await response.json();
+            setTarefas(data);
+         } else {
+            console.error('Erro ao buscar tarefas');
+         }
+      } catch (error) {
+         console.error('Erro ao buscar tarefas:', error);
+      } finally {
+         setLoadingTarefas(false);
+      }
+   };
 
    // Abre automaticamente o select quando entra em modo de edição
    useEffect(() => {
@@ -74,7 +133,9 @@ export default function StatusCellClicavel({
       }
    }, [editing]);
 
-   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+   const handleSelectChange = async (
+      e: React.ChangeEvent<HTMLSelectElement>
+   ) => {
       const newStatus = e.target.value;
 
       // Se selecionou o mesmo status, apenas fecha a edição
@@ -83,9 +144,17 @@ export default function StatusCellClicavel({
          return;
       }
 
-      // Armazena o novo status pendente e mostra confirmação
+      // Armazena o novo status pendente
       setPendingStatus(newStatus);
       setEditing(false);
+
+      // Buscar dados necessários baseado no status
+      if (newStatus === 'EM ATENDIMENTO') {
+         await fetchTarefas();
+      } else {
+         await fetchClassificacoes();
+      }
+
       setShowConfirmDialog(true);
    };
 
@@ -99,21 +168,43 @@ export default function StatusCellClicavel({
    const handleConfirmChange = async () => {
       if (!pendingStatus) return;
 
+      // Validações específicas por status
+      if (pendingStatus === 'EM ATENDIMENTO' && !selectedTarefa) {
+         alert('Por favor, selecione uma tarefa.');
+         return;
+      }
+
+      if (pendingStatus !== 'EM ATENDIMENTO' && !selectedClassificacao) {
+         alert('Por favor, selecione uma classificação.');
+         return;
+      }
+
       setIsUpdating(true);
       try {
-         await onUpdateStatus(codChamado, pendingStatus);
+         await onUpdateStatus(
+            codChamado,
+            pendingStatus,
+            pendingStatus !== 'EM ATENDIMENTO'
+               ? selectedClassificacao!
+               : undefined,
+            pendingStatus === 'EM ATENDIMENTO' ? selectedTarefa! : undefined
+         );
          setStatus(pendingStatus);
       } catch (error) {
          console.error('Erro ao atualizar status:', error);
       } finally {
          setIsUpdating(false);
          setPendingStatus(null);
+         setSelectedClassificacao(null);
+         setSelectedTarefa(null);
          setShowConfirmDialog(false);
       }
    };
 
    const handleCancelChange = () => {
       setPendingStatus(null);
+      setSelectedClassificacao(null);
+      setSelectedTarefa(null);
       setShowConfirmDialog(false);
    };
 
@@ -135,12 +226,19 @@ export default function StatusCellClicavel({
       setTimeout(() => {
          setShowConfirmDialog(false);
          setPendingStatus(null);
+         setSelectedClassificacao(null);
+         setSelectedTarefa(null);
       }, 300);
    };
 
    const getStatusDisplayName = (statusValue: string) => {
       return statusValue;
    };
+
+   // Verificar se precisa mostrar select de classificação ou tarefa
+   const shouldShowClassificacao =
+      pendingStatus && pendingStatus !== 'EM ATENDIMENTO';
+   const shouldShowTarefa = pendingStatus === 'EM ATENDIMENTO';
    // ================================================================================
 
    return (
@@ -299,6 +397,117 @@ export default function StatusCellClicavel({
                               </div>
                            </div>
                         </div>
+
+                        {/* Select de Classificação */}
+                        {shouldShowClassificacao && (
+                           <div className="mt-6 w-full">
+                              <div className="rounded-lg border-2 border-blue-200 bg-blue-50 p-6">
+                                 <div className="mb-4 flex items-center gap-2">
+                                    <MdCategory
+                                       className="text-blue-600"
+                                       size={20}
+                                    />
+                                    <h5 className="text-lg font-bold tracking-wider text-blue-900 select-none">
+                                       Selecione uma Classificação
+                                    </h5>
+                                 </div>
+
+                                 {loadingClassificacoes ? (
+                                    <div className="flex items-center justify-center gap-2 py-4">
+                                       <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+                                       <span className="font-medium text-blue-700">
+                                          Carregando classificações...
+                                       </span>
+                                    </div>
+                                 ) : (
+                                    <select
+                                       value={selectedClassificacao || ''}
+                                       onChange={e =>
+                                          setSelectedClassificacao(
+                                             Number(e.target.value) || null
+                                          )
+                                       }
+                                       className="w-full rounded-md border border-blue-300 bg-white px-4 py-3 font-medium text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                       required
+                                    >
+                                       <option value="">
+                                          Selecione uma classificação...
+                                       </option>
+                                       {classificacoes.map(classificacao => (
+                                          <option
+                                             key={
+                                                classificacao.COD_CLASSIFICACAO
+                                             }
+                                             value={
+                                                classificacao.COD_CLASSIFICACAO
+                                             }
+                                          >
+                                             {classificacao.NOME_CLASSIFICACAO}
+                                          </option>
+                                       ))}
+                                    </select>
+                                 )}
+
+                                 <p className="mt-2 text-sm text-blue-700 italic">
+                                    * Obrigatório para status diferentes de "EM
+                                    ATENDIMENTO"
+                                 </p>
+                              </div>
+                           </div>
+                        )}
+
+                        {/* Select de Tarefa */}
+                        {shouldShowTarefa && (
+                           <div className="mt-6 w-full">
+                              <div className="rounded-lg border-2 border-green-200 bg-green-50 p-6">
+                                 <div className="mb-4 flex items-center gap-2">
+                                    <FaTasks
+                                       className="text-green-600"
+                                       size={20}
+                                    />
+                                    <h5 className="text-lg font-bold tracking-wider text-green-900 select-none">
+                                       Selecione uma Tarefa
+                                    </h5>
+                                 </div>
+
+                                 {loadingTarefas ? (
+                                    <div className="flex items-center justify-center gap-2 py-4">
+                                       <div className="h-5 w-5 animate-spin rounded-full border-2 border-green-600 border-t-transparent"></div>
+                                       <span className="font-medium text-green-700">
+                                          Carregando tarefas...
+                                       </span>
+                                    </div>
+                                 ) : (
+                                    <select
+                                       value={selectedTarefa || ''}
+                                       onChange={e =>
+                                          setSelectedTarefa(
+                                             Number(e.target.value) || null
+                                          )
+                                       }
+                                       className="w-full rounded-md border border-green-300 bg-white px-4 py-3 font-medium text-gray-900 focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:outline-none"
+                                       required
+                                    >
+                                       <option value="">
+                                          Selecione uma tarefa...
+                                       </option>
+                                       {tarefas.map(tarefa => (
+                                          <option
+                                             key={tarefa.COD_TAREFA}
+                                             value={tarefa.COD_TAREFA}
+                                          >
+                                             {tarefa.NOME_TAREFA}
+                                          </option>
+                                       ))}
+                                    </select>
+                                 )}
+
+                                 <p className="mt-2 text-sm text-green-700 italic">
+                                    * Obrigatório para status "EM ATENDIMENTO"
+                                 </p>
+                              </div>
+                           </div>
+                        )}
                      </div>
                   </div>
 
@@ -326,7 +535,11 @@ export default function StatusCellClicavel({
 
                   <AlertDialogAction
                      onClick={handleConfirmChange}
-                     disabled={isUpdating}
+                     disabled={
+                        isUpdating ||
+                        (shouldShowClassificacao && !selectedClassificacao) ||
+                        (shouldShowTarefa && !selectedTarefa)
+                     }
                      className="cursor-pointer rounded-md border-none bg-green-600 px-8 py-3 text-lg font-extrabold tracking-widest text-white transition-all select-none hover:scale-105 hover:bg-green-800 hover:shadow-lg hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                   >
                      {isUpdating ? (
