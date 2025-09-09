@@ -1,9 +1,5 @@
 'use client';
 
-// 1. Importações adicionais no topo do arquivo
-import BotaoAtribuicaoInteligente from '../../../../components/Button_Atribuicao_Inteligente';
-import DashboardRecursos from './Dashboard_Recursos';
-import { X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect } from 'react';
@@ -28,44 +24,42 @@ import {
 import { useAuth } from '../../../../hooks/useAuth';
 import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
 import { ChamadosProps, colunasTabela } from './Colunas_Tabela_Chamados';
-// import ButtonExcel from '../../../../components/Button_Excel';
-// import ButtonPDF from '../../../../components/Button_PDF';
+import DashboardRecursos from './Dashboard_Recursos';
 import ModalAtribuirChamado from './Modal_Atribuir_Chamado';
 import TabelaTarefas from './Tabela_Tarefas';
 import TabelaOS from './Tabela_OS';
-// ================================================================================
+import TarefasButton from '../../../../components/Button_Tarefa';
+import ModalAtribuicaoInteligente from './Modal_Atribuicao_Inteligente';
 import IsLoading from './Loading';
 import IsError from './Error';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
-import { FaExclamationTriangle } from 'react-icons/fa';
-import { FaDatabase } from 'react-icons/fa';
-import { FaUserLock } from 'react-icons/fa';
-import { MdChevronLeft } from 'react-icons/md';
-import { FiChevronsLeft } from 'react-icons/fi';
-import { MdChevronRight } from 'react-icons/md';
-import { FiChevronsRight } from 'react-icons/fi';
+import {
+   FaExclamationTriangle,
+   FaDatabase,
+   FaUserLock,
+   FaSearch,
+} from 'react-icons/fa';
+import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
+import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { RiArrowUpDownLine } from 'react-icons/ri';
-import { IoArrowUp } from 'react-icons/io5';
-import { IoArrowDown } from 'react-icons/io5';
-import { FaFilter } from 'react-icons/fa6';
-import { Loader2 } from 'lucide-react';
+import { IoArrowUp, IoArrowDown } from 'react-icons/io5';
+import { FaFilter, FaUsers } from 'react-icons/fa6';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
-import { FaSearch } from 'react-icons/fa';
-import TarefasButton from '../../../../components/Button_Tarefa';
-import ModalAtribuicaoInteligente from './Modal_Atribuicao_Inteligente';
+import { Loader2, X } from 'lucide-react';
+
 // ================================================================================
+// INTERFACES E TIPOS
 // ================================================================================
 
-interface FilterInputWithDebounceProps {
+interface FilterInputTableHeaderProps {
    value: string;
    onChange: (value: string) => void;
    placeholder?: string;
    type?: string;
-   onClear?: () => void; // Nova prop para limpeza
+   onClear?: () => void;
 }
 
-// Componente de Filtro Global
 interface GlobalFilterInputProps {
    value: string;
    onChange: (value: string) => void;
@@ -74,16 +68,17 @@ interface GlobalFilterInputProps {
 }
 
 // ================================================================================
+// COMPONENTES DE FILTRO
+// ================================================================================
 
-const FilterInputWithDebounce = ({
+const FilterInputTableHeaderDebounce = ({
    value,
    onChange,
    placeholder,
    type = 'text',
-}: FilterInputWithDebounceProps) => {
+}: FilterInputTableHeaderProps) => {
    const [localValue, setLocalValue] = useState(value);
 
-   // Atualiza o valor local quando o valor externo muda (ex: limpeza)
    useEffect(() => {
       setLocalValue(value);
    }, [value]);
@@ -108,8 +103,7 @@ const FilterInputWithDebounce = ({
       />
    );
 };
-
-// =====
+// ====================
 
 const GlobalFilterInput = ({
    value,
@@ -118,7 +112,6 @@ const GlobalFilterInput = ({
 }: GlobalFilterInputProps) => {
    const [localValue, setLocalValue] = useState(value);
 
-   // Atualiza o valor local quando o valor externo muda
    useEffect(() => {
       setLocalValue(value);
    }, [value]);
@@ -149,10 +142,12 @@ const GlobalFilterInput = ({
       </div>
    );
 };
-// =====
 
-// Componente para ordenação do cabeçalho da tabela
-const SortableHeader = ({
+// ================================================================================
+// COMPONENTES DE UI DA TABELA
+// ================================================================================
+
+const OrderTableHeader = ({
    column,
    children,
 }: {
@@ -178,7 +173,6 @@ const SortableHeader = ({
                </div>
             </div>
          </TooltipTrigger>
-
          <TooltipContent
             side="top"
             align="center"
@@ -195,8 +189,8 @@ const SortableHeader = ({
       </Tooltip>
    );
 };
+// ====================
 
-// Componente de Indicador de Filtros Ativos
 const FilterIndicator = ({
    columnFilters,
    globalFilter,
@@ -233,88 +227,215 @@ const FilterIndicator = ({
    );
 };
 
-// Função auxiliar para nomes das colunas
+// ================================================================================
+// UTILITÁRIOS
+// ================================================================================
+
 const getColumnDisplayName = (columnId: string): string => {
    const displayNames: Record<string, string> = {
       COD_CHAMADO: 'Código',
-      ASSUNTO_CHAMADO: 'Assunto',
-      EMAIL_CHAMADO: 'Email',
       DATA_CHAMADO: 'Data',
+      ASSUNTO_CHAMADO: 'Assunto',
       STATUS_CHAMADO: 'Status',
+      EMAIL_CHAMADO: 'Email',
+      NOME_RECURSO: 'Recurso',
    };
    return displayNames[columnId] || columnId;
 };
+// ====================
+
+function getColumnWidth(columnId: string, userType?: string): string {
+   if (userType === 'ADM') {
+      const widthMapAdmin: Record<string, string> = {
+         COD_CHAMADO: '10%',
+         DATA_CHAMADO: '10%',
+         ASSUNTO_CHAMADO: '30%',
+         STATUS_CHAMADO: '18%',
+         NOME_RECURSO: '13%',
+         EMAIL_CHAMADO: '12%',
+         actions: '7%',
+      };
+      return widthMapAdmin[columnId] || 'auto';
+   }
+
+   const widthMap: Record<string, string> = {
+      COD_CHAMADO: '10%',
+      DATA_CHAMADO: '10%',
+      ASSUNTO_CHAMADO: '33%',
+      STATUS_CHAMADO: '20%',
+      EMAIL_CHAMADO: '20%',
+      actions: '7%',
+   };
+
+   return widthMap[columnId] || 'auto';
+}
 
 // ================================================================================
+// COMPONENTE PRINCIPAL
+// ================================================================================
 
-// ===== COMPONENTE PRINCIPAL =====
 export default function TabelaChamados() {
+   // ================================================================================
+   // HOOKS E CONTEXTOS
+   // ================================================================================
    const { filters } = useFiltersTabelaChamados();
-   const { ano, mes } = filters;
    const { user, loading } = useAuth();
+   const queryClient = useQueryClient();
+   const { ano, mes } = filters;
+   const token =
+      typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-   // Estados para o modal do chamado
+   // ================================================================================
+   // ESTADOS - MODAIS E COMPONENTES
+   // ================================================================================
    const [modalChamadosOpen, setModalChamadosOpen] = useState(false);
    const [selectedChamado, setSelectedChamado] = useState<ChamadosProps | null>(
       null
    );
-
-   // Estados para a tabela OS
    const [tabelaOSOpen, setTabelaOSOpen] = useState(false);
    const [selectedCodChamado, setSelectedCodChamado] = useState<number | null>(
       null
    );
-
-   // Estado para a tabela de tarefas
    const [tabelaTarefasOpen, setTabelaTarefasOpen] = useState(false);
+   const [dashboardOpen, setDashboardOpen] = useState(false);
+   const [modalAtribuicaoOpen, setModalAtribuicaoOpen] = useState(false);
+   const [chamadoParaAtribuir, setChamadoParaAtribuir] =
+      useState<ChamadosProps | null>(null);
 
-   // Estados para os filtros e ordenação
+   // ================================================================================
+   // ESTADOS - FILTROS E ORDENAÇÃO
+   // ================================================================================
    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
    const [globalFilter, setGlobalFilter] = useState('');
    const [sorting, setSorting] = useState<SortingState>([
       { id: 'COD_CHAMADO', desc: true },
    ]);
-
-   // Estados para os valores dos inputs de filtro
    const [filterValues, setFilterValues] = useState({
       COD_CHAMADO: '',
       DATA_CHAMADO: '',
       ASSUNTO_CHAMADO: '',
       STATUS_CHAMADO: '',
       EMAIL_CHAMADO: '',
+      NOME_RECURSO: '',
       global: '',
    });
-
-   // Estado para mostrar/ocultar os filtros
    const [showFilters, setShowFilters] = useState(false);
 
-   // 2. Estados adicionais para o dashboard
-   const [dashboardOpen, setDashboardOpen] = useState(false);
-   const [modalAtribuicaoOpen, setModalAtribuicaoOpen] = useState(false);
-   const [chamadoParaAtribuir, setChamadoParaAtribuir] =
-      useState<ChamadosProps | null>(null);
    // ================================================================================
+   // FUNÇÕES DE FILTRO
+   // ================================================================================
+   const globalFilterFn = useCallback(
+      (row: any, columnId: string, filterValue: string) => {
+         if (!filterValue) return true;
 
-   // Token de autenticação
-   const token =
-      typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+         const searchValue = filterValue.toLowerCase();
+         const searchableColumns = [
+            'COD_CHAMADO',
+            'DATA_CHAMADO',
+            'ASSUNTO_CHAMADO',
+            'STATUS_CHAMADO',
+            'EMAIL_CHAMADO',
+            'NOME_RECURSO',
+         ];
 
-   // Verifica se a requisição pode ser feita
+         return searchableColumns.some(colId => {
+            const cellValue = row.getValue(colId);
+            const cellString = String(cellValue || '').toLowerCase();
+            return cellString.includes(searchValue);
+         });
+      },
+      []
+   );
+
+   const columnFilterFn = useCallback(
+      (row: any, columnId: string, filterValue: string) => {
+         if (!filterValue || filterValue === '') return true;
+
+         const cellValue = row.getValue(columnId);
+         const cellString = String(cellValue || '').toLowerCase();
+         const filterString = String(filterValue).toLowerCase();
+
+         switch (columnId) {
+            case 'COD_CHAMADO':
+            case 'DATA_CHAMADO':
+            case 'ASSUNTO_CHAMADO':
+            case 'STATUS_CHAMADO':
+            case 'EMAIL_CHAMADO':
+            case 'NOME_RECURSO':
+            default:
+               return cellString.includes(filterString);
+         }
+      },
+      []
+   );
+
+   const totalActiveFilters = useMemo(() => {
+      let count = columnFilters.length;
+      if (globalFilter && globalFilter.trim()) count += 1;
+      return count;
+   }, [columnFilters.length, globalFilter]);
+
+   const clearFilters = () => {
+      setColumnFilters([]);
+      setGlobalFilter('');
+      setFilterValues({
+         COD_CHAMADO: '',
+         DATA_CHAMADO: '',
+         ASSUNTO_CHAMADO: '',
+         STATUS_CHAMADO: '',
+         EMAIL_CHAMADO: '',
+         NOME_RECURSO: '',
+         global: '',
+      });
+      table.getAllColumns().forEach(column => {
+         column.setFilterValue('');
+      });
+   };
+
+   // Atualiza os valores locais quando os filtros mudam
+   useEffect(() => {
+      const newFilterValues = {
+         COD_CHAMADO: '',
+         DATA_CHAMADO: '',
+         ASSUNTO_CHAMADO: '',
+         STATUS_CHAMADO: '',
+         EMAIL_CHAMADO: '',
+         NOME_RECURSO: '',
+         global: globalFilter || '',
+      };
+
+      columnFilters.forEach(filter => {
+         if (filter.id in newFilterValues) {
+            newFilterValues[filter.id as keyof typeof newFilterValues] = String(
+               filter.value || ''
+            );
+         }
+      });
+
+      setFilterValues(prev => {
+         const hasChanged = Object.keys(newFilterValues).some(
+            key =>
+               prev[key as keyof typeof prev] !==
+               newFilterValues[key as keyof typeof newFilterValues]
+         );
+         return hasChanged ? newFilterValues : prev;
+      });
+   }, [columnFilters, globalFilter]);
+
+   // ================================================================================
+   // API E DADOS
+   // ================================================================================
    const enabled = !!ano && !!mes && !!token && !!user;
 
-   // Cria os parâmetros da query
    const queryParams = useMemo(() => {
       if (!user) return new URLSearchParams();
-
       const params = new URLSearchParams({
          ano: String(ano),
          mes: String(mes),
       });
-
       return params;
    }, [ano, mes, user]);
 
-   // Função para buscar os chamados
    async function fetchChamados(
       params: URLSearchParams,
       token: string
@@ -335,7 +456,6 @@ export default function TabelaChamados() {
       return Array.isArray(data) ? data : data.chamados || [];
    }
 
-   // Hook para buscar os chamados
    const { data, isLoading, isError, error } = useQuery({
       queryKey: ['chamadosAbertos', queryParams.toString(), token],
       queryFn: () => fetchChamados(queryParams, token!),
@@ -344,19 +464,19 @@ export default function TabelaChamados() {
       retry: 2,
    });
 
-   // Função para fechar o modal de chamados
+   // ================================================================================
+   // HANDLERS E CALLBACKS
+   // ================================================================================
    const handleCloseModalChamados = () => {
       setModalChamadosOpen(false);
       setSelectedChamado(null);
    };
 
-   // Função para fechar a tabela de OS
    const handleCloseTabelaOS = () => {
       setTabelaOSOpen(false);
       setSelectedCodChamado(null);
    };
 
-   // Função para visualizar um chamado
    const handleVisualizarChamado = useCallback(
       (codChamado: number) => {
          const chamado = data?.find(c => c.COD_CHAMADO === codChamado);
@@ -368,82 +488,50 @@ export default function TabelaChamados() {
       [data]
    );
 
-   // Função para visualizar uma OS
    const handleVisualizarOS = useCallback((codChamado: number) => {
       setSelectedCodChamado(codChamado);
       setTabelaOSOpen(true);
    }, []);
 
-   // Colunas da tabela
+   const handleAbrirAtribuicaoInteligente = useCallback(
+      (chamado: ChamadosProps) => {
+         setChamadoParaAtribuir(chamado);
+         setModalAtribuicaoOpen(true);
+      },
+      []
+   );
+
+   const handleAbrirDashboard = () => setDashboardOpen(true);
+   const handleFecharDashboard = () => setDashboardOpen(false);
+
+   const handleAtribuicaoSuccess = () => {
+      queryClient.invalidateQueries({ queryKey: ['chamadosAbertos'] });
+      setModalAtribuicaoOpen(false);
+      setChamadoParaAtribuir(null);
+   };
+
+   // ================================================================================
+   // CONFIGURAÇÃO DA TABELA
+   // ================================================================================
    const colunas = useMemo(
       () =>
-         colunasTabela({
-            onVisualizarChamado: handleVisualizarChamado,
-            onVisualizarOS: handleVisualizarOS,
-            onVisualizarTarefas: () => setTabelaTarefasOpen(true),
-         }),
-      [handleVisualizarChamado, handleVisualizarOS]
+         colunasTabela(
+            {
+               onVisualizarChamado: handleVisualizarChamado,
+               onVisualizarOS: handleVisualizarOS,
+               onVisualizarTarefas: () => setTabelaTarefasOpen(true),
+               onAtribuicaoInteligente: handleAbrirAtribuicaoInteligente,
+            },
+            user?.tipo
+         ),
+      [
+         handleVisualizarChamado,
+         handleVisualizarOS,
+         handleAbrirAtribuicaoInteligente,
+         user?.tipo,
+      ]
    );
 
-   // Função de filtro global otimizada
-   const globalFilterFn = useCallback(
-      (row: any, columnId: string, filterValue: string) => {
-         if (!filterValue) return true;
-
-         const searchValue = filterValue.toLowerCase();
-
-         // Busca em todas as colunas principais
-         const searchableColumns = [
-            'COD_CHAMADO',
-            'ASSUNTO_CHAMADO',
-            'EMAIL_CHAMADO',
-            'DATA_CHAMADO',
-            'STATUS_CHAMADO',
-         ];
-
-         return searchableColumns.some(colId => {
-            const cellValue = row.getValue(colId);
-            const cellString = String(cellValue || '').toLowerCase();
-            return cellString.includes(searchValue);
-         });
-      },
-      []
-   );
-
-   // Função de filtro por coluna otimizada
-   const columnFilterFn = useCallback(
-      (row: any, columnId: string, filterValue: string) => {
-         if (!filterValue || filterValue === '') return true;
-
-         const cellValue = row.getValue(columnId);
-         const cellString = String(cellValue || '').toLowerCase();
-         const filterString = String(filterValue).toLowerCase();
-
-         // Filtro específico por tipo de coluna
-         switch (columnId) {
-            case 'COD_CHAMADO':
-               // Para códigos, permite busca parcial em números
-               return cellString.includes(filterString);
-
-            case 'DATA_CHAMADO':
-               // Para datas, permite busca por parte da data (dd, mm, yyyy, dd/mm, etc)
-               return cellString.includes(filterString);
-
-            case 'STATUS_CHAMADO':
-               // Para status, busca parcial para flexibilidade
-               return cellString.includes(filterString);
-
-            case 'EMAIL_CHAMADO':
-            case 'ASSUNTO_CHAMADO':
-            default:
-               // Para texto, busca parcial case-insensitive
-               return cellString.includes(filterString);
-         }
-      },
-      []
-   );
-
-   // Tabela filtrada e ordenada
    const table = useReactTable({
       data: data ?? [],
       columns: colunas,
@@ -465,136 +553,37 @@ export default function TabelaChamados() {
             pageSize: 20,
          },
       },
-
-      // Função de filtro personalizada para colunas
       filterFns: {
          customColumnFilter: columnFilterFn,
       },
-
-      // Aplica o filtro customizado para todas as colunas
       defaultColumn: {
          filterFn: columnFilterFn,
       },
    });
 
-   // Calcula o total de filtros ativos
-   const totalActiveFilters = useMemo(() => {
-      let count = columnFilters.length;
-      if (globalFilter && globalFilter.trim()) count += 1;
-      return count;
-   }, [columnFilters.length, globalFilter]);
-
-   // Função para limpar todos os filtros e inputs
-   const clearFilters = () => {
-      setColumnFilters([]);
-      setGlobalFilter('');
-
-      // Limpa os valores dos inputs
-      setFilterValues({
-         COD_CHAMADO: '',
-         DATA_CHAMADO: '',
-         ASSUNTO_CHAMADO: '',
-         STATUS_CHAMADO: '',
-         EMAIL_CHAMADO: '',
-         global: '',
-      });
-
-      // Limpa os filtros da tabela
-      table.getAllColumns().forEach(column => {
-         column.setFilterValue('');
-      });
-   };
-
-   // Atualiza os valores locais quando os filtros mudam
-   // Atualiza os valores locais quando os filtros da tabela mudam
-   useEffect(() => {
-      // Cria um novo objeto de valores baseado nos filtros atuais
-      const newFilterValues = {
-         COD_CHAMADO: '',
-         DATA_CHAMADO: '',
-         ASSUNTO_CHAMADO: '',
-         STATUS_CHAMADO: '',
-         EMAIL_CHAMADO: '',
-         global: globalFilter || '',
-      };
-
-      // Preenche os valores dos filtros de coluna
-      columnFilters.forEach(filter => {
-         if (filter.id in newFilterValues) {
-            newFilterValues[filter.id as keyof typeof newFilterValues] = String(
-               filter.value || ''
-            );
-         }
-      });
-
-      // Atualiza apenas se houver mudanças reais para evitar loops
-      setFilterValues(prev => {
-         // Verifica se os valores realmente mudaram
-         const hasChanged = Object.keys(newFilterValues).some(
-            key =>
-               prev[key as keyof typeof prev] !==
-               newFilterValues[key as keyof typeof newFilterValues]
-         );
-
-         return hasChanged ? newFilterValues : prev;
-      });
-   }, [columnFilters, globalFilter]); // Remova filterValues das dependências
    // ================================================================================
-
-   // 3. Funções adicionais
-   const queryClient = useQueryClient();
-
-   const handleAbrirDashboard = () => {
-      setDashboardOpen(true);
-   };
-
-   const handleFecharDashboard = () => {
-      setDashboardOpen(false);
-   };
-
-   const handleAtribuicaoSuccess = () => {
-      // Atualiza a query dos chamados após atribuição
-      queryClient.invalidateQueries({ queryKey: ['chamadosAbertos'] });
-      setModalAtribuicaoOpen(false);
-      setChamadoParaAtribuir(null);
-   };
-
-   const handleAbrirAtribuicao = (chamado: ChamadosProps) => {
-      setChamadoParaAtribuir(chamado);
-      setModalAtribuicaoOpen(true);
-   };
-
+   // ESTADOS DE CARREGAMENTO E VALIDAÇÃO
+   // ================================================================================
    if (loading) {
       return (
          <div className="flex flex-col items-center justify-center space-y-6 py-40">
-            {/* Ícones */}
             <div className="relative">
                <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-cyan-200 via-cyan-400 to-cyan-600 opacity-20 blur-lg"></div>
-
                <div className="relative flex items-center justify-center">
-                  {/* Ícone Loader2 */}
                   <Loader2 className="animate-spin text-blue-600" size={120} />
-
-                  {/* Ícone DataBaseIcon */}
                   <div className="absolute inset-0 flex items-center justify-center">
                      <FaUserLock className="text-blue-600" size={60} />
                   </div>
                </div>
             </div>
-
             <div className="space-y-3 text-center">
-               {/* Título */}
                <h3 className="text-2xl font-bold tracking-wider text-blue-600 select-none">
                   Verificando autenticação do usuário
                </h3>
-
                <div className="flex items-center justify-center space-x-1">
-                  {/* Aguarde */}
                   <span className="text-base font-semibold tracking-wider text-blue-600 italic select-none">
                      Aguarde
                   </span>
-
-                  {/* Pontos animados de carregamento */}
                   <div className="flex space-x-1">
                      <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"></div>
                      <div
@@ -611,53 +600,27 @@ export default function TabelaChamados() {
          </div>
       );
    }
-   // =====
 
    if (!user || !token) {
       return (
          <div className="flex flex-col items-center justify-center space-y-6 py-40">
-            {/* Ícones com efeito de fundo pulsante */}
             <div className="relative">
                <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-red-200 via-red-400 to-red-600 opacity-20 blur-lg"></div>
-
                <div className="relative flex items-center justify-center">
-                  {/* Ícone principal animado */}
                   <FaExclamationTriangle
                      className="animate-pulse text-red-600"
                      size={120}
                   />
                </div>
             </div>
-
             <div className="space-y-3 text-center">
-               {/* Título */}
                <h3 className="text-2xl font-bold tracking-wider text-red-600 select-none">
                   Acesso restrito!
                </h3>
-
-               {/* Mensagem */}
                <p className="mx-auto max-w-md text-base font-semibold tracking-wider text-red-500 italic select-none">
                   Você precisa estar logado para visualizar os chamados do
                   sistema.
                </p>
-
-               {/* Efeito de carregamento (pontos animados) */}
-               <div className="flex items-center justify-center space-x-1">
-                  <span className="text-base font-semibold tracking-wider text-red-600 italic select-none">
-                     Redirecionando
-                  </span>
-                  <div className="flex space-x-1">
-                     <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-red-600"></div>
-                     <div
-                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-red-600"
-                        style={{ animationDelay: '0.1s' }}
-                     ></div>
-                     <div
-                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-red-600"
-                        style={{ animationDelay: '0.2s' }}
-                     ></div>
-                  </div>
-               </div>
             </div>
          </div>
       );
@@ -666,62 +629,33 @@ export default function TabelaChamados() {
    if (!ano || !mes) {
       return (
          <div className="flex flex-col items-center justify-center space-y-6 py-40">
-            {/* Ícones com efeito de fundo pulsante */}
             <div className="relative">
                <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-blue-200 via-blue-400 to-blue-600 opacity-20 blur-lg"></div>
-
                <div className="relative flex items-center justify-center">
-                  {/* Ícone principal animado */}
                   <FaExclamationTriangle
                      className="animate-pulse text-blue-600"
                      size={120}
                   />
                </div>
             </div>
-
             <div className="space-y-3 text-center">
-               {/* Título */}
                <h3 className="text-2xl font-bold tracking-wider text-blue-600 select-none">
                   Filtros obrigatórios
                </h3>
-
-               {/* Mensagem */}
                <p className="mx-auto max-w-md text-base font-semibold tracking-wider text-blue-500 italic select-none">
                   Por favor, selecione o ano e mês para visualizar os chamados.
                </p>
-
-               {/* Efeito de carregamento (pontos animados) */}
-               <div className="flex items-center justify-center space-x-1">
-                  <span className="text-base font-semibold tracking-wider text-blue-600 italic select-none">
-                     Aguardando filtros
-                  </span>
-                  <div className="flex space-x-1">
-                     <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"></div>
-                     <div
-                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"
-                        style={{ animationDelay: '0.1s' }}
-                     ></div>
-                     <div
-                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"
-                        style={{ animationDelay: '0.2s' }}
-                     ></div>
-                  </div>
-               </div>
             </div>
          </div>
       );
    }
 
-   if (isLoading) {
-      return <IsLoading title="Carregando os dados da tabela" />;
-   }
+   if (isLoading) return <IsLoading title="Carregando os dados da tabela" />;
+   if (isError) return <IsError error={error as Error} />;
 
-   if (isError) {
-      return <IsError error={error as Error} />;
-   }
    // ================================================================================
-
-   // ===== RENDERIZAÇÃO DO COMPONENTE =====
+   // RENDERIZAÇÃO PRINCIPAL
+   // ================================================================================
    return (
       <>
          <div className="overflow-hidden rounded-xl border border-gray-500 bg-black">
@@ -745,16 +679,20 @@ export default function TabelaChamados() {
                   {/* ===== ITENS DA DIREITA ===== */}
                   <div className="flex items-center gap-6">
                      {/* botão dashboard recursos */}
-                     <button
-                        onClick={handleAbrirDashboard}
-                        className="flex cursor-pointer items-center gap-4 rounded-md border border-white/50 bg-white/40 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:border-none hover:bg-white/70 hover:text-black active:scale-95"
-                     >
-                        <FaDatabase size={24} />
-                        Dashboard IA
-                     </button>
-                     <TarefasButton
+                     {user?.tipo === 'ADM' && (
+                        <button
+                           onClick={handleAbrirDashboard}
+                           className="flex cursor-pointer items-center gap-4 rounded-md border border-white/50 bg-white/40 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:border-none hover:bg-white/70 hover:text-black active:scale-95"
+                        >
+                           <FaUsers size={24} />
+                           Recursos
+                        </button>
+                     )}
+
+                     {/* botão tabela OS */}
+                     {/* <TarefasButton
                         onVisualizarTarefas={() => setTabelaTarefasOpen(true)}
-                     />
+                     /> */}
 
                      {/* botão mostrar/ocultar filtros */}
                      <button
@@ -817,7 +755,7 @@ export default function TabelaChamados() {
             </header>
             {/* ===== */}
 
-            {/* ===== CONTEÚDO ===== */}
+            {/* ===== CONTEÚDO DA TABELA ===== */}
             <main className="h-full w-full overflow-hidden bg-black">
                <div
                   className="h-full overflow-y-auto"
@@ -836,20 +774,24 @@ export default function TabelaChamados() {
                                     key={header.id}
                                     className="bg-teal-700 py-6 font-extrabold tracking-wider text-white uppercase select-none"
                                     style={{
-                                       width: getColumnWidth(header.column.id),
+                                       width: getColumnWidth(
+                                          header.column.id,
+                                          user?.tipo
+                                       ),
                                     }}
                                  >
                                     {header.isPlaceholder ? null : header.column
                                          .id === 'COD_CHAMADO' ||
                                       header.column.id === 'DATA_CHAMADO' ||
                                       header.column.id === 'ASSUNTO_CHAMADO' ||
-                                      header.column.id === 'STATUS_CHAMADO' ? (
-                                       <SortableHeader column={header.column}>
+                                      header.column.id === 'STATUS_CHAMADO' ||
+                                      header.column.id === 'NOME_RECURSO' ? (
+                                       <OrderTableHeader column={header.column}>
                                           {flexRender(
                                              header.column.columnDef.header,
                                              header.getContext()
                                           )}
-                                       </SortableHeader>
+                                       </OrderTableHeader>
                                     ) : (
                                        flexRender(
                                           header.column.columnDef.header,
@@ -869,10 +811,15 @@ export default function TabelaChamados() {
                                  <th
                                     key={column.id}
                                     className="bg-teal-700 px-3 pb-6"
-                                    style={{ width: getColumnWidth(column.id) }}
+                                    style={{
+                                       width: getColumnWidth(
+                                          column.id,
+                                          user?.tipo
+                                       ),
+                                    }}
                                  >
                                     {column.id === 'COD_CHAMADO' && (
-                                       <FilterInputWithDebounce
+                                       <FilterInputTableHeaderDebounce
                                           value={
                                              (column.getFilterValue() as string) ??
                                              ''
@@ -889,7 +836,7 @@ export default function TabelaChamados() {
                                     )}
                                     {/* ===== */}
                                     {column.id === 'DATA_CHAMADO' && (
-                                       <FilterInputWithDebounce
+                                       <FilterInputTableHeaderDebounce
                                           value={
                                              (column.getFilterValue() as string) ??
                                              ''
@@ -906,7 +853,7 @@ export default function TabelaChamados() {
                                     )}
                                     {/* ===== */}
                                     {column.id === 'ASSUNTO_CHAMADO' && (
-                                       <FilterInputWithDebounce
+                                       <FilterInputTableHeaderDebounce
                                           value={
                                              (column.getFilterValue() as string) ??
                                              ''
@@ -922,7 +869,7 @@ export default function TabelaChamados() {
                                     )}
                                     {/* ===== */}
                                     {column.id === 'STATUS_CHAMADO' && (
-                                       <FilterInputWithDebounce
+                                       <FilterInputTableHeaderDebounce
                                           value={
                                              (column.getFilterValue() as string) ??
                                              ''
@@ -937,8 +884,24 @@ export default function TabelaChamados() {
                                        />
                                     )}
                                     {/* ===== */}
+                                    {column.id === 'NOME_RECURSO' && (
+                                       <FilterInputTableHeaderDebounce
+                                          value={
+                                             (column.getFilterValue() as string) ??
+                                             ''
+                                          }
+                                          onChange={value =>
+                                             column.setFilterValue(value)
+                                          }
+                                          onClear={() =>
+                                             column.setFilterValue('')
+                                          }
+                                          placeholder="Filtrar por recurso..."
+                                       />
+                                    )}
+                                    {/* ===== */}
                                     {column.id === 'EMAIL_CHAMADO' && (
-                                       <FilterInputWithDebounce
+                                       <FilterInputTableHeaderDebounce
                                           value={
                                              (column.getFilterValue() as string) ??
                                              ''
@@ -979,7 +942,10 @@ export default function TabelaChamados() {
                                        key={cell.id}
                                        className="p-3 text-sm font-semibold tracking-wider text-white select-none group-hover:text-black"
                                        style={{
-                                          width: getColumnWidth(cell.column.id),
+                                          width: getColumnWidth(
+                                             cell.column.id,
+                                             user?.tipo
+                                          ),
                                        }}
                                     >
                                        <div className="overflow-hidden">
@@ -1211,15 +1177,28 @@ export default function TabelaChamados() {
          />
 
          {/* ===== DASHBOARD RECURSOS ===== */}
-         {dashboardOpen && (
+         {dashboardOpen && user?.tipo === 'ADM' && (
             <div className="fixed inset-0 z-50 bg-black">
                <div className="relative h-full">
-                  <button
-                     onClick={handleFecharDashboard}
-                     className="absolute top-4 right-4 z-10 rounded-lg bg-red-600 p-2 text-white hover:bg-red-700"
-                  >
-                     <X size={24} />
-                  </button>
+                  <div className="absolute inset-0 bg-black opacity-50" />
+                  <Tooltip>
+                     <TooltipTrigger asChild>
+                        <button
+                           onClick={handleFecharDashboard}
+                           className="absolute top-6 right-65 z-10 cursor-pointer rounded-full bg-red-600/50 p-3 shadow-md shadow-white transition-all hover:scale-110 hover:bg-red-500 hover:shadow-lg hover:shadow-white active:scale-95"
+                        >
+                           <X size={28} className="text-white" />
+                        </button>
+                     </TooltipTrigger>
+                     <TooltipContent
+                        side="bottom"
+                        align="center"
+                        sideOffset={8}
+                        className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+                     >
+                        Sair
+                     </TooltipContent>
+                  </Tooltip>
                   <DashboardRecursos />
                </div>
             </div>
@@ -1235,19 +1214,4 @@ export default function TabelaChamados() {
          {/* ===== */}
       </>
    );
-}
-
-// 5. Atualizar a função getColumnWidth para incluir a nova coluna
-function getColumnWidth(columnId: string): string {
-   const widthMap: Record<string, string> = {
-      COD_CHAMADO: '8%',
-      ASSUNTO_CHAMADO: '30%',
-      EMAIL_CHAMADO: '15%',
-      DATA_CHAMADO: '10%',
-      STATUS_CHAMADO: '15%',
-      NOME_RECURSO: '15%', // Nova coluna
-      actions: '7%',
-   };
-
-   return widthMap[columnId] || 'auto';
 }

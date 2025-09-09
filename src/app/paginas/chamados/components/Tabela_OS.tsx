@@ -1165,7 +1165,7 @@ export default function TabelaOS({
             <ModalEditarOS
                isOpen={modalEditarOSOpen}
                onClose={handleCloseEditarOS}
-               codChamado={codChamado}
+               codChamado={codChamado ?? null}
                codOS={selectedOS}
                nomeCliente={
                   dataOS?.find(os => os.COD_OS === selectedOS)?.NOME_CLIENTE

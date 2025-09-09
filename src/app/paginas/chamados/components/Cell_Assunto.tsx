@@ -13,16 +13,42 @@ import {
 import {
    Tooltip,
    TooltipContent,
+   TooltipProvider,
    TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Textarea } from '@/components/ui/textarea';
 // ================================================================================
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 // ================================================================================
-import { FaEdit, FaExclamationTriangle } from 'react-icons/fa';
+import { FaEdit, FaExclamationTriangle, FaSave } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 // ================================================================================
-// ================================================================================
+
+// Simple LoadingSpinner component
+function LoadingSpinner({ size = 16 }: { size?: number }) {
+   return (
+      <div
+         style={{
+            width: size,
+            height: size,
+            border: `${size! / 8}px solid #3b82f6`,
+            borderTop: `${size! / 8}px solid transparent`,
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+         }}
+      />
+   );
+}
+
+// Add keyframes for spin animation
+const style = document.createElement('style');
+style.innerHTML = `
+@keyframes spin {
+   0% { transform: rotate(0deg); }
+   100% { transform: rotate(360deg); }
+}
+`;
+document.head.appendChild(style);
 
 interface Props {
    assunto: string;
@@ -96,16 +122,6 @@ export default function AssuntoCellEditavel({
       }, 300);
    };
 
-   // Loader Component
-   const LoadingSpinner = ({ size = 20 }: { size?: number }) => (
-      <div
-         className="animate-spin rounded-full border-2 border-gray-400 border-t-transparent"
-         style={{ width: size, height: size }}
-      />
-   );
-
-   // ==============================
-
    return (
       <>
          <Tooltip>
@@ -152,134 +168,134 @@ export default function AssuntoCellEditavel({
                </div>
             </TooltipContent>
          </Tooltip>
-
          <AlertDialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <AlertDialogContent className="!max-w-4xl border border-blue-500 bg-white p-6">
-               {/* Overlay de loading para todo o modal */}
-               {isLoading && (
-                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
-                     <div className="flex flex-col items-center gap-4 rounded-lg bg-white p-8 shadow-2xl">
-                        <LoadingSpinner size={32} />
-                        <div className="text-lg font-bold text-gray-900">
-                           Salvando alterações...
+            <AlertDialogContent className="max-w-3xl overflow-hidden rounded-2xl border-0 bg-white/95 p-0 shadow-2xl backdrop-blur-md">
+               <div className="bg-gradient-to-r from-green-600 to-blue-600 p-6 text-white">
+                  <AlertDialogHeader className="space-y-0">
+                     <AlertDialogTitle className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                           <div className="rounded-xl bg-white/20 p-2 backdrop-blur-sm">
+                              <FaEdit className="text-white" size={20} />
+                           </div>
+                           <div>
+                              <h3 className="text-xl font-bold">
+                                 Editar Assunto
+                              </h3>
+                              <p className="text-sm font-medium text-green-100">
+                                 Chamado #{codChamado}
+                              </p>
+                           </div>
                         </div>
-                        <div className="text-sm text-gray-600">
-                           Por favor, aguarde...
+                        <button
+                           onClick={handleClose}
+                           disabled={isLoading}
+                           className="group rounded-xl bg-white/10 p-2 transition-all duration-200 hover:rotate-90 hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                           <IoClose size={20} />
+                        </button>
+                     </AlertDialogTitle>
+                  </AlertDialogHeader>
+               </div>
+
+               <div className="space-y-6 p-6">
+                  {/* Informações do Chamado */}
+                  <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+                     <div className="space-y-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                           <div className="rounded-lg bg-blue-100 p-2">
+                              <FaEdit className="text-blue-600" size={18} />
+                           </div>
+                           <h4 className="text-lg font-bold text-slate-700">
+                              Edição de Assunto
+                           </h4>
+                        </div>
+
+                        <div className="inline-block rounded-xl border border-slate-200 bg-white px-6 py-3 shadow-lg">
+                           <p className="text-xs font-semibold tracking-wide text-slate-600 uppercase">
+                              Chamado
+                           </p>
+                           <div className="text-2xl font-bold text-slate-900">
+                              #{codChamado}
+                           </div>
                         </div>
                      </div>
                   </div>
-               )}
 
-               <AlertDialogHeader className="space-y-4 pb-6">
-                  <AlertDialogTitle className="flex items-center justify-between">
-                     <div className="flex items-center gap-3">
-                        <FaEdit className="text-gray-900" size={32} />
-                        <h3 className="text-2xl font-bold tracking-wider text-gray-900 select-none">
-                           Editar Assunto - Chamado #{codChamado}
-                        </h3>
+                  {/* Editor de Assunto */}
+                  <div className="space-y-4">
+                     <div className="flex items-center gap-3 text-slate-700">
+                        <div className="rounded-lg bg-green-100 p-2">
+                           <FaSave className="text-green-600" size={18} />
+                        </div>
+                        <label htmlFor="assunto" className="text-lg font-bold">
+                           Assunto do Chamado
+                        </label>
                      </div>
-                     <button
-                        onClick={handleClose}
+
+                     <Textarea
+                        id="assunto"
+                        value={novoAssunto}
+                        onChange={e => setNovoAssunto(e.target.value)}
+                        placeholder="Digite o assunto do chamado..."
+                        className="min-h-[140px] resize-none rounded-xl border-2 border-slate-200 bg-white px-4 py-3 font-medium text-slate-900 transition-all duration-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                         disabled={isLoading}
-                        className={`group rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-90 ${
-                           isLoading ? 'cursor-not-allowed opacity-50' : ''
-                        }`}
-                     >
-                        <IoClose size={24} />
-                     </button>
-                  </AlertDialogTitle>
+                        maxLength={1000}
+                     />
 
-                  <div className="grid gap-6 py-4">
-                     <div className="rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 p-6 shadow-md shadow-black">
-                        <div className="mb-6 flex flex-col items-center justify-center gap-4">
-                           <div className="flex items-center justify-center gap-2">
-                              <FaEdit className="text-blue-600" size={20} />
-                              <h4 className="text-lg font-bold tracking-wider text-gray-900 select-none">
-                                 Você está editando o assunto do chamado
-                              </h4>
-                           </div>
-
-                           <div className="rounded-lg bg-white p-4 shadow-inner">
-                              <div className="text-center">
-                                 <p className="text-sm font-semibold tracking-wider text-gray-700 select-none">
-                                    Chamado
-                                 </p>
-                                 <div className="text-3xl font-bold tracking-widest text-gray-900 select-none">
-                                    #{codChamado}
-                                 </div>
-                              </div>
-                           </div>
+                     {/* Contador de Caracteres */}
+                     <div className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3">
+                        <div className="flex items-center gap-2">
+                           <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                           <span className="text-sm font-medium text-slate-600">
+                              Máximo de 1000 caracteres
+                           </span>
                         </div>
-
-                        <div className="space-y-4">
-                           <div className="flex flex-col space-y-2">
-                              <label
-                                 htmlFor="assunto"
-                                 className="text-base font-bold tracking-wider text-gray-900 select-none"
-                              >
-                                 Assunto do Chamado
-                              </label>
-                              <Textarea
-                                 id="assunto"
-                                 value={novoAssunto}
-                                 onChange={e => setNovoAssunto(e.target.value)}
-                                 placeholder="Digite o assunto do chamado..."
-                                 className="min-h-[120px] resize-none border-2 border-gray-300 bg-white shadow-md shadow-black transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                                 disabled={isLoading}
-                                 maxLength={1000}
-                              />
-                              <div className="mt-3 flex items-center justify-between">
-                                 <div className="flex items-center gap-2">
-                                    <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                                    <span className="text-sm font-semibold tracking-wider text-gray-700 select-none">
-                                       Máximo de 1000 caracteres
-                                    </span>
-                                 </div>
-                                 <div className="flex items-center gap-2">
-                                    <div
-                                       className={`h-2 w-2 rounded-full ${novoAssunto.length > 800 ? 'bg-red-500' : novoAssunto.length > 450 ? 'bg-orange-500' : 'bg-green-500'}`}
-                                    ></div>
-                                    <span
-                                       className={`text-sm font-semibold tracking-wider select-none ${
-                                          novoAssunto.length > 800
-                                             ? 'text-red-600'
-                                             : novoAssunto.length > 450
-                                               ? 'text-orange-600'
-                                               : 'text-green-600'
-                                       }`}
-                                    >
-                                       {novoAssunto.length}/1000
-                                    </span>
-                                 </div>
-                              </div>
-                           </div>
+                        <div className="flex items-center gap-2">
+                           <div
+                              className={`h-2 w-2 rounded-full ${
+                                 novoAssunto.length > 800
+                                    ? 'bg-red-500'
+                                    : novoAssunto.length > 500
+                                      ? 'bg-amber-500'
+                                      : 'bg-green-500'
+                              }`}
+                           ></div>
+                           <span
+                              className={`text-sm font-semibold ${
+                                 novoAssunto.length > 800
+                                    ? 'text-red-600'
+                                    : novoAssunto.length > 500
+                                      ? 'text-amber-600'
+                                      : 'text-green-600'
+                              }`}
+                           >
+                              {novoAssunto.length}/1000
+                           </span>
                         </div>
                      </div>
                   </div>
 
-                  <AlertDialogDescription className="rounded-lg border-l-4 border-blue-400 bg-blue-50 p-4 text-center text-base font-semibold tracking-wider text-gray-900 select-none">
-                     <span className="inline-flex items-center justify-center gap-2">
-                        <FaExclamationTriangle
-                           className="text-blue-600"
-                           size={16}
-                        />
-                        <span>
-                           Esta alteração será salva no banco de dados e não
-                           poderá ser desfeita automaticamente.
-                        </span>
-                     </span>
+                  <AlertDialogDescription asChild>
+                     <div className="rounded-lg border-l-4 border-amber-400 bg-amber-50 p-4">
+                        <div className="flex items-start gap-3">
+                           <FaExclamationTriangle
+                              className="mt-0.5 flex-shrink-0 text-amber-600"
+                              size={16}
+                           />
+                           <p className="text-sm font-medium text-amber-800">
+                              Esta alteração será salva permanentemente no
+                              sistema.
+                           </p>
+                        </div>
+                     </div>
                   </AlertDialogDescription>
-               </AlertDialogHeader>
+               </div>
 
-               <AlertDialogFooter className="gap-6 pt-4">
+               <AlertDialogFooter className="gap-3 bg-slate-50 px-6 py-4">
                   <AlertDialogCancel
                      onClick={handleCancel}
                      disabled={isLoading}
-                     className={`cursor-pointer rounded-md border-none bg-red-600 px-8 py-3 text-lg font-extrabold tracking-widest text-white transition-all select-none hover:scale-105 hover:bg-red-800 hover:shadow-lg hover:shadow-black active:scale-95 ${
-                        isLoading
-                           ? 'cursor-not-allowed opacity-50 hover:scale-100'
-                           : ''
-                     }`}
+                     className="rounded-xl border-2 border-slate-200 bg-white px-6 py-2.5 font-semibold text-slate-700 transition-all duration-200 hover:scale-105 hover:border-slate-300 hover:bg-slate-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                   >
                      Cancelar
                   </AlertDialogCancel>
@@ -287,21 +303,36 @@ export default function AssuntoCellEditavel({
                   <AlertDialogAction
                      onClick={handleSave}
                      disabled={isLoading || novoAssunto.trim().length === 0}
-                     className="cursor-pointer rounded-md border-none bg-green-600 px-8 py-3 text-lg font-extrabold tracking-widest text-white transition-all select-none hover:scale-105 hover:bg-green-800 hover:shadow-lg hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                     className="rounded-xl bg-gradient-to-r from-green-600 to-blue-600 px-6 py-2.5 font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:from-green-700 hover:to-blue-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                   >
                      {isLoading ? (
-                        <div className="flex items-center justify-center gap-3">
-                           <LoadingSpinner size={20} />
+                        <div className="flex items-center gap-2">
+                           <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
                            <span>Salvando...</span>
                         </div>
                      ) : (
-                        <div className="flex items-center justify-center gap-2">
-                           <FaEdit size={16} />
-                           <span>Salvar Alteração</span>
+                        <div className="flex items-center gap-2">
+                           <FaSave size={14} />
+                           <span>Salvar</span>
                         </div>
                      )}
                   </AlertDialogAction>
                </AlertDialogFooter>
+
+               {/* Overlay de Loading */}
+               {isLoading && (
+                  <div className="absolute inset-0 z-50 flex items-center justify-center rounded-2xl bg-white/80 backdrop-blur-sm">
+                     <div className="flex flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white p-8 shadow-2xl">
+                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+                        <div className="text-lg font-bold text-slate-900">
+                           Salvando alterações...
+                        </div>
+                        <div className="text-sm text-slate-600">
+                           Por favor, aguarde...
+                        </div>
+                     </div>
+                  </div>
+               )}
             </AlertDialogContent>
          </AlertDialog>
       </>

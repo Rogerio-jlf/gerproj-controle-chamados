@@ -18,10 +18,10 @@ import { FaDownload, FaTasks } from 'react-icons/fa';
 import { IoCall } from 'react-icons/io5';
 import { GrServicePlay } from 'react-icons/gr';
 import { HiMiniSquaresPlus } from 'react-icons/hi2';
+import { FaExclamationTriangle } from 'react-icons/fa';
+import { FaBrain } from 'react-icons/fa';
 
-// 1. Importações adicionais
-import { BotaoAtribuicaoCircular } from '../../../../components/Button_Atribuicao_Inteligente';
-import { AlertTriangle, Brain, User } from 'lucide-react';
+import { Brain } from 'lucide-react';
 // ================================================================================
 
 export interface ChamadosProps {
@@ -49,7 +49,8 @@ export interface AcoesProps {
    onVisualizarOS: (codChamado: number) => void;
    onVisualizarTarefas: () => void;
    onUpdateAssunto?: (codChamado: number, novoAssunto: string) => Promise<void>;
-   onAtribuicaoInteligente?: (chamado: ChamadosProps) => void; // Nova função
+   onAtribuicaoInteligente?: (chamado: ChamadosProps) => void;
+   userType?: string; // Adicionar tipo de usuário
 }
 // ====================
 
@@ -121,13 +122,23 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
    // ====================
 
    // Atualizar as posições dos botões para acomodar o novo botão
-   const buttonPositions = [
-      { x: -80, y: -70, delay: 0.0 }, // Visualizar Chamado
-      { x: -90, y: -10, delay: 0.1 }, // Visualizar OS
-      { x: -80, y: 50, delay: 0.15 }, // Visualizar Tarefas
-      { x: -40, y: 95, delay: 0.2 }, // Download
-      { x: 20, y: 95, delay: 0.25 }, // Atribuição IA (novo)
-   ];
+   // Organizar os botões em semicírculo à esquerda do botão principal
+   // Distribui os botões em uma meia lua à esquerda do botão principal
+   // Calcula posições para os botões em uma meia lua voltada para o lado esquerdo da tela
+   const radius = 130; // aumente o raio para dar mais espaço entre os botões
+   const angleStart = 140;
+   const angleEnd = 240;
+   const totalButtons = 5;
+   const buttonPositions = Array.from({ length: totalButtons }).map((_, i) => {
+      const angle =
+         angleStart + ((angleEnd - angleStart) / (totalButtons - 1)) * i;
+      const rad = (angle * Math.PI) / 180;
+      return {
+         x: Math.cos(rad) * radius,
+         y: Math.sin(rad) * radius,
+         delay: 0.08 * i,
+      };
+   });
    // ====================
 
    // Atualizar o array de botões de ação
@@ -174,15 +185,15 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
          hoverRing: 'hover:ring-cyan-500',
       },
       {
-         icon: Brain,
+         icon: FaBrain,
          onClick: () => {
             acoes.onAtribuicaoInteligente?.(chamado);
             setIsOpen(false);
          },
-         tooltip: 'Atribuição Inteligente',
-         bgColor: 'bg-gradient-to-r from-purple-600 to-blue-600',
-         textColor: 'text-white',
-         hoverRing: 'hover:ring-purple-500',
+         tooltip: 'Atribuir Chamado',
+         bgColor: 'bg-white',
+         textColor: 'text-black',
+         hoverRing: 'hover:ring-cyan-500',
       },
    ];
    // ====================
@@ -282,205 +293,212 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
 
 // ===== COMPONENTE COLUNAS TABELA =====
 export const colunasTabela = (
-   acoes: AcoesProps
-): ColumnDef<ChamadosProps>[] => [
-   // Código chamado
-   {
-      accessorKey: 'COD_CHAMADO',
-      header: () => <div className="text-center">Chamado</div>,
-      cell: ({ getValue }) => (
-         <div className="rounded-md bg-pink-600 p-2 text-center text-white ring-1 ring-white">
-            {getValue() as string}
-         </div>
-      ),
-   },
-   // =====
-
-   // Data chamado
-   {
-      accessorKey: 'DATA_CHAMADO',
-      header: () => <div className="text-center">Data</div>,
-      cell: ({ getValue }) => {
-         const dateString = getValue() as string;
-         const dataFormatada = formatarDataParaBR(dateString);
-
-         return (
-            <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
-               {dataFormatada}
+   acoes: AcoesProps,
+   userType?: string // Parâmetro opcional para tipo de usuário
+): ColumnDef<ChamadosProps>[] => {
+   // Array base de colunas (sem a coluna de recurso)
+   const baseColumns: ColumnDef<ChamadosProps>[] = [
+      // Código chamado
+      {
+         accessorKey: 'COD_CHAMADO',
+         header: () => <div className="text-center">Chamado</div>,
+         cell: ({ getValue }) => (
+            <div className="rounded-md bg-pink-600 p-2 text-center text-white ring-1 ring-white">
+               {getValue() as string}
             </div>
-         );
+         ),
       },
-   },
-   // =====
+      // =====
 
-   // Assunto chamado (editável)
-   {
-      accessorKey: 'ASSUNTO_CHAMADO',
-      header: () => <div className="text-center">Assunto</div>,
-      cell: ({ row }) => (
-         <AssuntoCellEditavel
-            assunto={corrigirTextoCorrompido(row.original.ASSUNTO_CHAMADO)}
-            codChamado={row.original.COD_CHAMADO}
-            onUpdateAssunto={async (codChamado, novoAssunto) => {
-               try {
-                  const response = await fetch(
-                     `/api/atualizar-assunto-chamado/${codChamado}`,
-                     {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                           assuntoChamado: novoAssunto,
-                           codChamado: codChamado.toString(),
-                        }),
-                     }
-                  );
+      // Data chamado
+      {
+         accessorKey: 'DATA_CHAMADO',
+         header: () => <div className="text-center">Data</div>,
+         cell: ({ getValue }) => {
+            const dateString = getValue() as string;
+            const dataFormatada = formatarDataParaBR(dateString);
 
-                  if (!response.ok) {
-                     const errorData = await response.json();
-                     throw new Error(
-                        errorData.error || 'Erro ao atualizar Assunto'
+            return (
+               <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
+                  {dataFormatada}
+               </div>
+            );
+         },
+      },
+      // =====
+
+      // Assunto chamado (editável)
+      {
+         accessorKey: 'ASSUNTO_CHAMADO',
+         header: () => <div className="text-center">Assunto</div>,
+         cell: ({ row }) => (
+            <AssuntoCellEditavel
+               assunto={corrigirTextoCorrompido(row.original.ASSUNTO_CHAMADO)}
+               codChamado={row.original.COD_CHAMADO}
+               onUpdateAssunto={async (codChamado, novoAssunto) => {
+                  try {
+                     const response = await fetch(
+                        `/api/atualizar-assunto-chamado/${codChamado}`,
+                        {
+                           method: 'POST',
+                           headers: { 'Content-Type': 'application/json' },
+                           body: JSON.stringify({
+                              assuntoChamado: novoAssunto,
+                              codChamado: codChamado.toString(),
+                           }),
+                        }
                      );
-                  }
 
-                  row.original.ASSUNTO_CHAMADO = novoAssunto;
-               } catch (err) {
-                  console.error('Erro ao atualizar Assunto:', err);
-                  throw err;
-               }
-            }}
-            onClose={() => {}}
-         />
-      ),
-   },
-   // =====
-
-   // Status chamado (clicável) - ATUALIZADO PARA INCLUIR TAREFA
-   {
-      accessorKey: 'STATUS_CHAMADO',
-      header: () => <div className="text-center">Status</div>,
-      cell: ({ row }) => (
-         <StatusCellClicavel
-            status={row.original.STATUS_CHAMADO}
-            codChamado={row.original.COD_CHAMADO}
-            onUpdateStatus={async (
-               codChamado,
-               newStatus,
-               codClassificacao,
-               codTarefa
-            ) => {
-               try {
-                  const body: any = {
-                     statusChamado: newStatus,
-                     codChamado: codChamado.toString(),
-                  };
-
-                  // Adicionar classificação ou tarefa baseado no status
-                  if (newStatus === 'EM ATENDIMENTO' && codTarefa) {
-                     body.codTarefa = codTarefa;
-                  } else if (
-                     newStatus !== 'EM ATENDIMENTO' &&
-                     codClassificacao
-                  ) {
-                     body.codClassificacao = codClassificacao;
-                  }
-
-                  const response = await fetch(
-                     `/api/atualizar-status-chamado/${codChamado}`,
-                     {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(body),
+                     if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(
+                           errorData.error || 'Erro ao atualizar Assunto'
+                        );
                      }
-                  );
 
-                  if (!response.ok) {
-                     const errorData = await response.json();
-                     throw new Error(
-                        errorData.error || 'Erro ao atualizar Status'
+                     row.original.ASSUNTO_CHAMADO = novoAssunto;
+                  } catch (err) {
+                     console.error('Erro ao atualizar Assunto:', err);
+                     throw err;
+                  }
+               }}
+               onClose={() => {}}
+            />
+         ),
+      },
+      // =====
+
+      // Status chamado (clicável) - ATUALIZADO PARA INCLUIR TAREFA
+      {
+         accessorKey: 'STATUS_CHAMADO',
+         header: () => <div className="text-center">Status</div>,
+         cell: ({ row }) => (
+            <StatusCellClicavel
+               status={row.original.STATUS_CHAMADO}
+               codChamado={row.original.COD_CHAMADO}
+               onUpdateStatus={async (
+                  codChamado,
+                  newStatus,
+                  codClassificacao,
+                  codTarefa
+               ) => {
+                  try {
+                     const body: any = {
+                        statusChamado: newStatus,
+                        codChamado: codChamado.toString(),
+                     };
+
+                     if (newStatus === 'EM ATENDIMENTO' && codTarefa) {
+                        body.codTarefa = codTarefa;
+                     } else if (
+                        newStatus !== 'EM ATENDIMENTO' &&
+                        codClassificacao
+                     ) {
+                        body.codClassificacao = codClassificacao;
+                     }
+
+                     const response = await fetch(
+                        `/api/atualizar-status-chamado/${codChamado}`,
+                        {
+                           method: 'POST',
+                           headers: { 'Content-Type': 'application/json' },
+                           body: JSON.stringify(body),
+                        }
                      );
-                  }
 
-                  // Atualizar os dados locais
-                  row.original.STATUS_CHAMADO = newStatus;
-                  if (codClassificacao) {
-                     row.original.COD_CLASSIFICACAO = codClassificacao;
+                     if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(
+                           errorData.error || 'Erro ao atualizar Status'
+                        );
+                     }
+
+                     row.original.STATUS_CHAMADO = newStatus;
+                     if (codClassificacao) {
+                        row.original.COD_CLASSIFICACAO = codClassificacao;
+                     }
+                     if (codTarefa) {
+                        row.original.CODTRF_CHAMADO = codTarefa.toString();
+                     }
+                  } catch (err) {
+                     console.error('Erro ao atualizar Status:', err);
+                     throw err;
                   }
-                  if (codTarefa) {
-                     row.original.CODTRF_CHAMADO = codTarefa.toString();
-                  }
-               } catch (err) {
-                  console.error('Erro ao atualizar Status:', err);
-                  throw err;
-               }
-            }}
-         />
-      ),
-   },
+               }}
+            />
+         ),
+      },
+   ];
 
    // Adicionar após a coluna de status:
-   {
+   const recursoColumn: ColumnDef<ChamadosProps> = {
       accessorKey: 'NOME_RECURSO',
       header: () => <div className="text-center">Recurso</div>,
       cell: ({ row }) => {
          const recurso = row.original.NOME_RECURSO;
          const codRecurso = row.original.COD_RECURSO;
 
-         if (codRecurso && recurso) {
+         if (codRecurso !== null && codRecurso !== undefined && recurso) {
             return (
-               <div className="flex items-center justify-center">
-                  <div className="rounded-md bg-green-600 px-2 py-1 text-center text-white ring-1 ring-white">
-                     <div className="flex items-center gap-2">
-                        <User size={14} />
-                        <span className="text-xs">{recurso}</span>
-                     </div>
-                  </div>
+               <div className="rounded-md bg-lime-400 p-2 text-center text-black ring-1 ring-white">
+                  {corrigirTextoCorrompido(
+                     recurso.split(' ').slice(0, 2).join(' ')
+                  )}
                </div>
             );
          }
 
          return (
-            <div className="flex items-center justify-center">
-               <div className="rounded-md bg-gray-600 px-2 py-1 text-center text-white ring-1 ring-white">
-                  <div className="flex items-center gap-2">
-                     <AlertTriangle size={14} />
-                     <span className="text-xs">Não Atribuído</span>
-                  </div>
-               </div>
+            <div className="rounded-md bg-orange-400 p-2 text-center text-black ring-1 ring-white">
+               <span className="uppercase">Não atribuído</span>
             </div>
          );
       },
-   },
+   };
 
    // Email chamado
-   {
-      accessorKey: 'EMAIL_CHAMADO',
-      header: () => <div className="text-center">Email</div>,
-      cell: ({ getValue }) => {
-         const value = getValue() as string;
+   const finalColumns: ColumnDef<ChamadosProps>[] = [
+      // Email chamado
+      {
+         accessorKey: 'EMAIL_CHAMADO',
+         header: () => <div className="text-center">Email</div>,
+         cell: ({ getValue }) => {
+            const value = getValue() as string;
 
-         return (
-            <div>
-               {value ? (
-                  <Link href={`mailto:${value}`} className="hover:underline">
-                     <div className="">{value}</div>
-                  </Link>
-               ) : (
-                  <div className="text-center">-</div>
-               )}
-            </div>
-         );
+            return (
+               <div>
+                  {value ? (
+                     <Link href={`mailto:${value}`} className="hover:underline">
+                        <div className="">{value}</div>
+                     </Link>
+                  ) : (
+                     <div className="text-center">-</div>
+                  )}
+               </div>
+            );
+         },
       },
-   },
-   // =====
 
-   // Ações
-   {
-      id: 'actions',
-      header: () => <div className="text-center">Ações</div>,
-      cell: ({ row }) => {
-         const chamado = row.original;
-
-         return <CircularActionsMenu chamado={chamado} acoes={acoes} />;
+      // Ações
+      {
+         id: 'actions',
+         header: () => <div className="text-center">Ações</div>,
+         cell: ({ row }) => {
+            const chamado = row.original;
+            return <CircularActionsMenu chamado={chamado} acoes={acoes} />;
+         },
       },
-   },
-];
+   ];
+
+   // Montar array final de colunas condicionalmente
+   const allColumns = [
+      ...baseColumns,
+      // Inclui a coluna de recurso apenas se for ADM
+      ...(userType === 'ADM' || acoes.userType === 'ADM'
+         ? [recursoColumn]
+         : []),
+      ...finalColumns,
+   ];
+
+   return allColumns;
+};
