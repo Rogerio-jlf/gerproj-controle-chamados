@@ -7,86 +7,37 @@ import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from '../../../../components/ui/tooltip';
 // ====================
-import StatusCellClicavel from './Cell_Status';
+import StatusCell from './Cell_Status';
 import AssuntoCellEditavel from './Cell_Assunto';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 import { formatarDataParaBR } from '../../../../utils/formatters';
 // ====================
-import { FaDownload, FaTasks } from 'react-icons/fa';
+import { TabelaChamadosProps } from '../../../../types/types';
+// ====================
+import { FaDownload, FaTasks, FaBrain } from 'react-icons/fa';
 import { IoCall } from 'react-icons/io5';
 import { GrServicePlay } from 'react-icons/gr';
 import { HiMiniSquaresPlus } from 'react-icons/hi2';
-import { FaExclamationTriangle } from 'react-icons/fa';
-import { FaBrain } from 'react-icons/fa';
-
-import { Brain } from 'lucide-react';
 // ================================================================================
-
-export interface ChamadosProps {
-   COD_CHAMADO: number;
-   DATA_CHAMADO: string;
-   HORA_CHAMADO: string;
-   CONCLUSAO_CHAMADO: string | null;
-   STATUS_CHAMADO: string;
-   DTENVIO_CHAMADO: string | null;
-   COD_RECURSO: number;
-   CODTRF_CHAMADO: string | null;
-   COD_CLIENTE: number;
-   ASSUNTO_CHAMADO: string;
-   EMAIL_CHAMADO: string;
-   PRIOR_CHAMADO: string;
-   COD_CLASSIFICACAO: number;
-   NOME_CLIENTE: string;
-   NOME_RECURSO: string;
-}
-// ====================
 
 // 2. Atualizar a interface AcoesProps para incluir atribuição
 export interface AcoesProps {
    onVisualizarChamado: (codChamado: number) => void;
    onVisualizarOS: (codChamado: number) => void;
    onVisualizarTarefas: () => void;
+   onAtribuicaoInteligente?: (chamado: TabelaChamadosProps) => void;
+   userType?: string;
+   // MOVIDO PARA CÁ: função de atualizar assunto
    onUpdateAssunto?: (codChamado: number, novoAssunto: string) => Promise<void>;
-   onAtribuicaoInteligente?: (chamado: ChamadosProps) => void;
-   userType?: string; // Adicionar tipo de usuário
 }
 // ====================
 
 interface CircularActionsMenuProps {
-   chamado: ChamadosProps;
+   chamado: TabelaChamadosProps;
    acoes: AcoesProps;
 }
-// ================================================================================
-
-export const getStylesStatus = (status: string | undefined) => {
-   switch (status?.toUpperCase()) {
-      case 'NAO FINALIZADO':
-         return 'bg-yellow-600 text-white ring-1 ring-white';
-
-      case 'EM ATENDIMENTO':
-         return 'bg-blue-600 text-white ring-1 ring-white';
-
-      case 'FINALIZADO':
-         return 'bg-green-600 text-white ring-1 ring-white';
-
-      case 'NAO INICIADO':
-         return 'bg-red-600 text-white ring-1 ring-white';
-
-      case 'STANDBY':
-         return 'bg-orange-600 text-white ring-1 ring-white';
-
-      case 'ATRIBUIDO':
-         return 'bg-blue-600 text-white ring-1 ring-white';
-
-      case 'AGUARDANDO VALIDACAO':
-         return 'bg-purple-600 text-white ring-1 ring-white';
-
-      default:
-         return 'bg-gray-600 text-white ring-1 ring-white';
-   }
-};
 // ================================================================================
 
 // ===== MENU CIRCULAR AÇÕES =====
@@ -295,9 +246,9 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
 export const colunasTabela = (
    acoes: AcoesProps,
    userType?: string // Parâmetro opcional para tipo de usuário
-): ColumnDef<ChamadosProps>[] => {
+): ColumnDef<TabelaChamadosProps>[] => {
    // Array base de colunas (sem a coluna de recurso)
-   const baseColumns: ColumnDef<ChamadosProps>[] = [
+   const baseColumns: ColumnDef<TabelaChamadosProps>[] = [
       // Código chamado
       {
          accessorKey: 'COD_CHAMADO',
@@ -335,33 +286,7 @@ export const colunasTabela = (
             <AssuntoCellEditavel
                assunto={corrigirTextoCorrompido(row.original.ASSUNTO_CHAMADO)}
                codChamado={row.original.COD_CHAMADO}
-               onUpdateAssunto={async (codChamado, novoAssunto) => {
-                  try {
-                     const response = await fetch(
-                        `/api/atualizar-assunto-chamado/${codChamado}`,
-                        {
-                           method: 'POST',
-                           headers: { 'Content-Type': 'application/json' },
-                           body: JSON.stringify({
-                              assuntoChamado: novoAssunto,
-                              codChamado: codChamado.toString(),
-                           }),
-                        }
-                     );
-
-                     if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(
-                           errorData.error || 'Erro ao atualizar Assunto'
-                        );
-                     }
-
-                     row.original.ASSUNTO_CHAMADO = novoAssunto;
-                  } catch (err) {
-                     console.error('Erro ao atualizar Assunto:', err);
-                     throw err;
-                  }
-               }}
+               onUpdateAssunto={acoes.onUpdateAssunto} // USA A FUNÇÃO PASSADA PELO COMPONENTE PAI
                onClose={() => {}}
             />
          ),
@@ -373,7 +298,7 @@ export const colunasTabela = (
          accessorKey: 'STATUS_CHAMADO',
          header: () => <div className="text-center">Status</div>,
          cell: ({ row }) => (
-            <StatusCellClicavel
+            <StatusCell
                status={row.original.STATUS_CHAMADO}
                codChamado={row.original.COD_CHAMADO}
                onUpdateStatus={async (
@@ -431,7 +356,7 @@ export const colunasTabela = (
    ];
 
    // Adicionar após a coluna de status:
-   const recursoColumn: ColumnDef<ChamadosProps> = {
+   const recursoColumn: ColumnDef<TabelaChamadosProps> = {
       accessorKey: 'NOME_RECURSO',
       header: () => <div className="text-center">Recurso</div>,
       cell: ({ row }) => {
@@ -440,7 +365,7 @@ export const colunasTabela = (
 
          if (codRecurso !== null && codRecurso !== undefined && recurso) {
             return (
-               <div className="rounded-md bg-lime-400 p-2 text-center text-black ring-1 ring-white">
+               <div className="rounded-md bg-lime-500 p-2 text-center text-black ring-1 ring-white">
                   {corrigirTextoCorrompido(
                      recurso.split(' ').slice(0, 2).join(' ')
                   )}
@@ -449,7 +374,7 @@ export const colunasTabela = (
          }
 
          return (
-            <div className="rounded-md bg-orange-400 p-2 text-center text-black ring-1 ring-white">
+            <div className="rounded-md bg-orange-500 p-2 text-center text-black ring-1 ring-white">
                <span className="uppercase">Não atribuído</span>
             </div>
          );
@@ -457,7 +382,7 @@ export const colunasTabela = (
    };
 
    // Email chamado
-   const finalColumns: ColumnDef<ChamadosProps>[] = [
+   const finalColumns: ColumnDef<TabelaChamadosProps>[] = [
       // Email chamado
       {
          accessorKey: 'EMAIL_CHAMADO',

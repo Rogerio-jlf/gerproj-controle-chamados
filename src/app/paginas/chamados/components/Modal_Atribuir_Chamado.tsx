@@ -7,7 +7,7 @@ import { useClientes } from '../../../../hooks/useClientes';
 import { useEmailAtribuirCahamados } from '../../../../hooks/useEmailAtribuirChamados';
 import { useRecursos } from '../../../../hooks/useRecursos';
 import { useAuth } from '../../../../contexts/Auth_Context';
-import { ChamadosProps } from './Colunas_Tabela_Chamados';
+import { TabelaChamadosProps } from '../../../../types/types';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 // ================================================================================
 import {
@@ -65,7 +65,7 @@ type FormErrors = Partial<Record<keyof FormData | 'root', string>>;
 interface ModalChamadoProps {
    isOpen: boolean;
    onClose: () => void;
-   chamado: ChamadosProps | null;
+   chamado: TabelaChamadosProps | null;
 }
 // ================================================================================
 

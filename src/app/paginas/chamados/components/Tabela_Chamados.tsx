@@ -23,13 +23,14 @@ import {
 // ================================================================================
 import { useAuth } from '../../../../hooks/useAuth';
 import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
-import { ChamadosProps, colunasTabela } from './Colunas_Tabela_Chamados';
+import { colunasTabela } from './Colunas_Tabela_Chamados';
 import DashboardRecursos from './Dashboard_Recursos';
 import ModalAtribuirChamado from './Modal_Atribuir_Chamado';
 import TabelaTarefas from './Tabela_Tarefas';
 import TabelaOS from './Tabela_OS';
 import TarefasButton from '../../../../components/Button_Tarefa';
 import ModalAtribuicaoInteligente from './Modal_Atribuicao_Inteligente';
+import { TabelaChamadosProps } from '../../../../types/types';
 import IsLoading from './Loading';
 import IsError from './Error';
 // ================================================================================
@@ -43,10 +44,10 @@ import {
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { RiArrowUpDownLine } from 'react-icons/ri';
-import { IoArrowUp, IoArrowDown } from 'react-icons/io5';
+import { IoArrowUp, IoArrowDown, IoClose } from 'react-icons/io5';
 import { FaFilter, FaUsers } from 'react-icons/fa6';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
-import { Loader2, X } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 // ================================================================================
 // INTERFACES E TIPOS
@@ -289,9 +290,8 @@ export default function TabelaChamados() {
    // ESTADOS - MODAIS E COMPONENTES
    // ================================================================================
    const [modalChamadosOpen, setModalChamadosOpen] = useState(false);
-   const [selectedChamado, setSelectedChamado] = useState<ChamadosProps | null>(
-      null
-   );
+   const [selectedChamado, setSelectedChamado] =
+      useState<TabelaChamadosProps | null>(null);
    const [tabelaOSOpen, setTabelaOSOpen] = useState(false);
    const [selectedCodChamado, setSelectedCodChamado] = useState<number | null>(
       null
@@ -300,7 +300,7 @@ export default function TabelaChamados() {
    const [dashboardOpen, setDashboardOpen] = useState(false);
    const [modalAtribuicaoOpen, setModalAtribuicaoOpen] = useState(false);
    const [chamadoParaAtribuir, setChamadoParaAtribuir] =
-      useState<ChamadosProps | null>(null);
+      useState<TabelaChamadosProps | null>(null);
 
    // ================================================================================
    // ESTADOS - FILTROS E ORDENAÇÃO
@@ -426,6 +426,7 @@ export default function TabelaChamados() {
    // API E DADOS
    // ================================================================================
    const enabled = !!ano && !!mes && !!token && !!user;
+   // ====================
 
    const queryParams = useMemo(() => {
       if (!user) return new URLSearchParams();
@@ -435,11 +436,12 @@ export default function TabelaChamados() {
       });
       return params;
    }, [ano, mes, user]);
+   // ====================
 
    async function fetchChamados(
       params: URLSearchParams,
       token: string
-   ): Promise<ChamadosProps[]> {
+   ): Promise<TabelaChamadosProps[]> {
       const res = await fetch(`/api/chamados?${params}`, {
          headers: {
             Authorization: `Bearer ${token}`,
@@ -455,6 +457,53 @@ export default function TabelaChamados() {
       const data = await res.json();
       return Array.isArray(data) ? data : data.chamados || [];
    }
+   // ====================
+
+   const updateAssunto = useCallback(
+      async (codChamado: number, novoAssunto: string) => {
+         try {
+            const response = await fetch(
+               `/api/atualizar-assunto-chamado/${codChamado}`,
+               {
+                  method: 'POST',
+                  headers: {
+                     Authorization: `Bearer ${token}`,
+                     'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                     assuntoChamado: novoAssunto,
+                     codChamado: codChamado.toString(),
+                  }),
+               }
+            );
+
+            if (!response.ok) {
+               const errorData = await response.json();
+               throw new Error(errorData.error || 'Erro ao atualizar assunto');
+            }
+
+            queryClient.setQueryData(
+               ['chamadosAbertos', queryParams.toString(), token],
+               (oldData: TabelaChamadosProps[] | undefined) => {
+                  if (!oldData) return oldData;
+
+                  return oldData.map(chamado =>
+                     chamado.COD_CHAMADO === codChamado
+                        ? { ...chamado, ASSUNTO_CHAMADO: novoAssunto }
+                        : chamado
+                  );
+               }
+            );
+
+            return response.json();
+         } catch (error) {
+            console.error('Erro ao atualizar assunto:', error);
+            throw error;
+         }
+      },
+      [token, queryClient, queryParams]
+   );
+   // ====================
 
    const { data, isLoading, isError, error } = useQuery({
       queryKey: ['chamadosAbertos', queryParams.toString(), token],
@@ -471,11 +520,13 @@ export default function TabelaChamados() {
       setModalChamadosOpen(false);
       setSelectedChamado(null);
    };
+   // ====================
 
    const handleCloseTabelaOS = () => {
       setTabelaOSOpen(false);
       setSelectedCodChamado(null);
    };
+   // ====================
 
    const handleVisualizarChamado = useCallback(
       (codChamado: number) => {
@@ -487,22 +538,28 @@ export default function TabelaChamados() {
       },
       [data]
    );
+   // ====================
 
    const handleVisualizarOS = useCallback((codChamado: number) => {
       setSelectedCodChamado(codChamado);
       setTabelaOSOpen(true);
    }, []);
+   // ====================
 
    const handleAbrirAtribuicaoInteligente = useCallback(
-      (chamado: ChamadosProps) => {
+      (chamado: TabelaChamadosProps) => {
          setChamadoParaAtribuir(chamado);
          setModalAtribuicaoOpen(true);
       },
       []
    );
+   // ====================
 
    const handleAbrirDashboard = () => setDashboardOpen(true);
+   // ====================
+
    const handleFecharDashboard = () => setDashboardOpen(false);
+   // ====================
 
    const handleAtribuicaoSuccess = () => {
       queryClient.invalidateQueries({ queryKey: ['chamadosAbertos'] });
@@ -521,6 +578,8 @@ export default function TabelaChamados() {
                onVisualizarOS: handleVisualizarOS,
                onVisualizarTarefas: () => setTabelaTarefasOpen(true),
                onAtribuicaoInteligente: handleAbrirAtribuicaoInteligente,
+               onUpdateAssunto: updateAssunto, // ADICIONE ESTA LINHA
+               userType: user?.tipo,
             },
             user?.tipo
          ),
@@ -528,6 +587,7 @@ export default function TabelaChamados() {
          handleVisualizarChamado,
          handleVisualizarOS,
          handleAbrirAtribuicaoInteligente,
+         updateAssunto,
          user?.tipo,
       ]
    );
@@ -680,13 +740,25 @@ export default function TabelaChamados() {
                   <div className="flex items-center gap-6">
                      {/* botão dashboard recursos */}
                      {user?.tipo === 'ADM' && (
-                        <button
-                           onClick={handleAbrirDashboard}
-                           className="flex cursor-pointer items-center gap-4 rounded-md border border-white/50 bg-white/40 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:border-none hover:bg-white/70 hover:text-black active:scale-95"
-                        >
-                           <FaUsers size={24} />
-                           Recursos
-                        </button>
+                        <Tooltip>
+                           <TooltipTrigger asChild>
+                              <button
+                                 onClick={handleAbrirDashboard}
+                                 className="flex cursor-pointer items-center gap-4 rounded-md border border-white/50 bg-white/40 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:border-none hover:bg-white/70 hover:text-black active:scale-95"
+                              >
+                                 <FaUsers size={24} />
+                                 Recursos
+                              </button>
+                           </TooltipTrigger>
+                           <TooltipContent
+                              side="top"
+                              align="center"
+                              sideOffset={2}
+                              className="border-b-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+                           >
+                              Dashboard Recursos
+                           </TooltipContent>
+                        </Tooltip>
                      )}
 
                      {/* botão tabela OS */}
@@ -1185,9 +1257,9 @@ export default function TabelaChamados() {
                      <TooltipTrigger asChild>
                         <button
                            onClick={handleFecharDashboard}
-                           className="absolute top-6 right-65 z-10 cursor-pointer rounded-full bg-red-600/50 p-3 shadow-md shadow-white transition-all hover:scale-110 hover:bg-red-500 hover:shadow-lg hover:shadow-white active:scale-95"
+                           className="absolute top-6 right-65 z-10 cursor-pointer rounded-full bg-red-600/50 p-3 shadow-md shadow-white transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 hover:shadow-lg hover:shadow-white active:scale-95"
                         >
-                           <X size={28} className="text-white" />
+                           <IoClose size={28} className="text-white" />
                         </button>
                      </TooltipTrigger>
                      <TooltipContent

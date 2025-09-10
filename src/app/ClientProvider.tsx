@@ -4,17 +4,22 @@
 import { AuthProvider } from '@/contexts/Auth_Context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode, useState } from 'react';
-import { Toaster } from 'sonner';
+import { Toaster } from '@/components/ui/sonner';
 
 export function ClientProviders({ children }: { children: ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
+   const [queryClient] = useState(() => new QueryClient());
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        {children}
-        <Toaster richColors position="bottom-right" />
-      </AuthProvider>
-    </QueryClientProvider>
-  );
+   return (
+      <QueryClientProvider client={queryClient}>
+         <AuthProvider>
+            {children}
+            <Toaster
+               position="top-center" // 👈 aqui você muda
+               richColors
+               closeButton
+               expand
+            />
+         </AuthProvider>
+      </QueryClientProvider>
+   );
 }
