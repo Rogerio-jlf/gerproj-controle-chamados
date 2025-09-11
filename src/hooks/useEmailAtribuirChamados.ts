@@ -8,7 +8,8 @@ interface NotificacaoPayload {
    enviarEmailRecurso: boolean;
 }
 
-export function useEmailAtribuirCahamados() {
+export function useEmailAtribuirChamados() {
+   // Corrigido o nome
    const queryClient = useQueryClient();
 
    return useMutation({
@@ -41,7 +42,11 @@ export function useEmailAtribuirCahamados() {
       onSuccess: () => {
          // Invalida o cache dos chamados para forçar uma nova busca
          queryClient.invalidateQueries({
-            queryKey: ['chamadosAbertos'], // Chave correta baseada no seu componente
+            queryKey: ['chamadosAbertos'],
+         });
+
+         queryClient.invalidateQueries({
+            queryKey: ['dashboard-recursos'],
          });
 
          // Também pode invalidar queries relacionadas se necessário:

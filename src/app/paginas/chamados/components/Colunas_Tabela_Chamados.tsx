@@ -72,28 +72,8 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
    };
    // ====================
 
-   // Atualizar as posições dos botões para acomodar o novo botão
-   // Organizar os botões em semicírculo à esquerda do botão principal
-   // Distribui os botões em uma meia lua à esquerda do botão principal
-   // Calcula posições para os botões em uma meia lua voltada para o lado esquerdo da tela
-   const radius = 130; // aumente o raio para dar mais espaço entre os botões
-   const angleStart = 140;
-   const angleEnd = 240;
-   const totalButtons = 5;
-   const buttonPositions = Array.from({ length: totalButtons }).map((_, i) => {
-      const angle =
-         angleStart + ((angleEnd - angleStart) / (totalButtons - 1)) * i;
-      const rad = (angle * Math.PI) / 180;
-      return {
-         x: Math.cos(rad) * radius,
-         y: Math.sin(rad) * radius,
-         delay: 0.08 * i,
-      };
-   });
-   // ====================
-
    // Atualizar o array de botões de ação
-   const actionButtons = [
+   const allActionButtons = [
       {
          icon: IoCall,
          onClick: () => {
@@ -135,18 +115,42 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
          textColor: 'text-black',
          hoverRing: 'hover:ring-cyan-500',
       },
-      {
-         icon: FaBrain,
-         onClick: () => {
-            acoes.onAtribuicaoInteligente?.(chamado);
-            setIsOpen(false);
-         },
-         tooltip: 'Atribuir Chamado',
-         bgColor: 'bg-white',
-         textColor: 'text-black',
-         hoverRing: 'hover:ring-cyan-500',
-      },
+      // Botão de atribuição - só incluir se for ADM
+      ...(acoes.userType === 'ADM'
+         ? [
+              {
+                 icon: FaBrain,
+                 onClick: () => {
+                    acoes.onAtribuicaoInteligente?.(chamado);
+                    setIsOpen(false);
+                 },
+                 tooltip: 'Atribuir Chamado',
+                 bgColor: 'bg-white',
+                 textColor: 'text-black',
+                 hoverRing: 'hover:ring-cyan-500',
+              },
+           ]
+         : []),
    ];
+
+   const actionButtons = allActionButtons;
+   const totalButtons = actionButtons.length;
+
+   // Recalcular posições dos botões baseado no número total de botões
+   const radius = 130;
+   const angleStart = 140;
+   const angleEnd = 240;
+   const buttonPositions = Array.from({ length: totalButtons }).map((_, i) => {
+      const angle =
+         angleStart + ((angleEnd - angleStart) / (totalButtons - 1)) * i;
+      const rad = (angle * Math.PI) / 180;
+      return {
+         x: Math.cos(rad) * radius,
+         y: Math.sin(rad) * radius,
+         delay: 0.08 * i,
+      };
+   });
+
    // ====================
 
    return (

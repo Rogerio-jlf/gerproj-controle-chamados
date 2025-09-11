@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { z } from 'zod';
 // ================================================================================
 import { useClientes } from '../../../../hooks/useClientes';
-import { useEmailAtribuirCahamados } from '../../../../hooks/useEmailAtribuirChamados';
+import { useEmailAtribuirChamados } from '../../../../hooks/useEmailAtribuirChamados';
 import { useRecursos } from '../../../../hooks/useRecursos';
 import { useAuth } from '../../../../contexts/Auth_Context';
 import { TabelaChamadosProps } from '../../../../types/types';
@@ -89,7 +89,7 @@ export default function ModalAtribuirChamado({
    const { isAdmin } = useAuth();
    const { data: clientes = [], isLoading: loadingClientes } = useClientes();
    const { data: recursos = [], isLoading: loadingRecursos } = useRecursos();
-   const { mutate, isPending } = useEmailAtribuirCahamados();
+   const { mutate, isPending } = useEmailAtribuirChamados();
    // ================================================================================
 
    // Validação em tempo real
@@ -201,7 +201,7 @@ export default function ModalAtribuirChamado({
                      onClose();
                   }, 2000);
                },
-               onError: err => {
+               onError: (err: unknown) => {
                   console.error('Erro ao configurar notificação:', err);
                   setErrors({ root: 'Erro ao enviar notificação' });
                },

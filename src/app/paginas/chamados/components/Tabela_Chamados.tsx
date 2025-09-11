@@ -2,7 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import {
    flexRender,
    getCoreRowModel,
@@ -112,6 +112,8 @@ const GlobalFilterInput = ({
    placeholder = 'Buscar em todas as colunas...',
 }: GlobalFilterInputProps) => {
    const [localValue, setLocalValue] = useState(value);
+   const inputRef = useRef<HTMLInputElement>(null);
+   const [isFocused, setIsFocused] = useState(false);
 
    useEffect(() => {
       setLocalValue(value);
@@ -128,17 +130,20 @@ const GlobalFilterInput = ({
    };
 
    return (
-      <div className="group relative transition-all focus-within:text-black hover:scale-105">
+      <div className="group relative transition-all hover:-translate-y-1 hover:scale-102">
          <FaSearch
-            className="absolute top-1/2 left-4 -translate-y-1/2 text-white transition-colors duration-300 group-focus-within:text-black"
+            className="absolute top-1/2 left-4 -translate-y-1/2 text-white"
             size={18}
          />
          <input
             type="text"
             value={localValue}
             onChange={handleChange}
-            placeholder={placeholder}
-            className="w-full rounded-md border border-white/50 bg-white/40 py-2 pr-4 pl-12 text-base text-black placeholder-white focus:bg-white/70 focus:outline-none focus:placeholder:text-gray-200"
+            placeholder={isFocused ? '' : placeholder}
+            className="w-full rounded-md border-none bg-white/30 py-3 pl-12 text-base font-semibold tracking-wider text-white placeholder-white shadow-sm shadow-white select-none focus:ring-2 focus:ring-lime-500 focus:outline-none"
+            ref={inputRef}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
          />
       </div>
    );
@@ -726,7 +731,7 @@ export default function TabelaChamados() {
                   {/* ===== ITENS DA ESQUERDA ===== */}
                   <div className="flex items-center justify-center gap-6">
                      {/* ícone */}
-                     <div className="flex items-center justify-center rounded-xl border border-white/50 p-4">
+                     <div className="flex items-center justify-center rounded-xl border-t border-slate-600 p-4 shadow-md shadow-white">
                         <FaDatabase className="text-white" size={28} />
                      </div>
                      {/* título */}
@@ -739,7 +744,7 @@ export default function TabelaChamados() {
                   {/* ===== ITENS DA DIREITA ===== */}
                   <div className="flex items-center gap-6">
                      {/* botão dashboard recursos */}
-                     {user?.tipo === 'ADM' && (
+                     {/* {user?.tipo === 'ADM' && (
                         <Tooltip>
                            <TooltipTrigger asChild>
                               <button
@@ -759,7 +764,7 @@ export default function TabelaChamados() {
                               Dashboard Recursos
                            </TooltipContent>
                         </Tooltip>
-                     )}
+                     )} */}
 
                      {/* botão tabela OS */}
                      {/* <TarefasButton
@@ -773,11 +778,11 @@ export default function TabelaChamados() {
                         className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider italic transition-all select-none ${
                            showFilters
                               ? 'bg-blue-600 text-white hover:bg-blue-900'
-                              : 'border border-white/50 bg-white/40 text-white hover:border-none hover:bg-white/70 hover:text-black'
+                              : 'bg-white/30 text-white shadow-sm shadow-white hover:border-none hover:bg-white/70 hover:text-black hover:shadow-lg hover:shadow-white'
                         } ${
                            !data || data.length <= 1
                               ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
-                              : 'hover:scale-105 active:scale-95'
+                              : 'hover:-translate-y-1 hover:scale-105 active:scale-95'
                         }`}
                      >
                         {showFilters ? (
