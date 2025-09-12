@@ -400,7 +400,7 @@ export default function ModalApontamento({
                         </h1>
 
                         <div className="rounded-full bg-black px-6 py-1">
-                           <p className="text-base font-extrabold tracking-widest text-white italic select-none">
+                           <p className="text-center text-base font-extrabold tracking-widest text-white italic select-none">
                               Tarefa #{tarefa.COD_TAREFA}
                            </p>
                         </div>

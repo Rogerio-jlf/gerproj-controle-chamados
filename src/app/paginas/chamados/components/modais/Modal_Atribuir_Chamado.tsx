@@ -543,17 +543,19 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
                <header className="flex flex-col gap-6 border-b-4 border-slate-500 bg-black p-6">
                   {/* ===== CABEÇALHO ===== */}
                   <div className="flex items-center justify-between">
-                     <div className="flex items-center gap-4">
-                        <div className="rounded-md bg-blue-600 p-3 shadow-sm shadow-white">
+                     <div className="flex items-center justify-between gap-6">
+                        <div className="rounded-md border-none bg-blue-600 p-3 shadow-md shadow-white">
                            <ImTarget size={28} className="text-white" />
                         </div>
                         <div>
                            <h2 className="text-2xl font-extrabold tracking-wider text-white select-none">
-                              Atribuição Inteligente
+                              Atribuir Chamado
                            </h2>
-                           <p className="text-lg font-semibold tracking-widest text-slate-300 italic select-none">
-                              Chamado #{chamado.COD_CHAMADO}
-                           </p>
+                           <div className="rounded-full bg-cyan-300 px-6 py-1">
+                              <p className="text-center text-base font-extrabold tracking-widest text-black italic select-none">
+                                 Chamado #{chamado.COD_CHAMADO}
+                              </p>
+                           </div>
                         </div>
                      </div>
                      <button
@@ -742,10 +744,23 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
                               />
                               <input
                                  type="text"
-                                 placeholder="Buscar recurso..."
+                                 placeholder={
+                                    searchTerm === '' &&
+                                    !document.activeElement?.matches(
+                                       '.input-busca-recurso'
+                                    )
+                                       ? 'Buscar recurso...'
+                                       : ''
+                                 }
                                  value={searchTerm}
                                  onChange={e => setSearchTerm(e.target.value)}
-                                 className="w-full rounded-md border-none bg-white/20 py-2 pl-12 text-base font-semibold tracking-wider text-white placeholder-white shadow-sm shadow-white select-none focus:ring-2 focus:ring-lime-500 focus:outline-none"
+                                 onFocus={e => (e.target.placeholder = '')}
+                                 onBlur={e => {
+                                    if (e.target.value === '')
+                                       e.target.placeholder =
+                                          'Buscar recurso...';
+                                 }}
+                                 className="input-busca-recurso w-full rounded-md border-none bg-white/20 py-2 pl-12 text-base font-semibold tracking-wider text-white placeholder-white shadow-sm shadow-white select-none focus:ring-2 focus:ring-pink-500 focus:outline-none"
                               />
                            </div>
 
@@ -759,7 +774,7 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
                                  onChange={e =>
                                     setFiltroRecomendacao(e.target.value)
                                  }
-                                 className="cursor-pointer rounded-md border-none bg-white/20 py-2 pl-12 text-base font-semibold tracking-wider text-white shadow-sm shadow-white transition-all select-none focus:ring-2 focus:ring-lime-500 focus:outline-none"
+                                 className="cursor-pointer rounded-md border-none bg-white/20 py-2 pl-12 text-base font-semibold tracking-wider text-white shadow-sm shadow-white transition-all select-none focus:ring-2 focus:ring-pink-500 focus:outline-none"
                               >
                                  <option
                                     className="cursor-pointer text-base font-semibold tracking-wider text-black italic select-none"
@@ -797,7 +812,7 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
                      </div>
 
                      {/* Lista de recursos */}
-                     <div className="flex h-[calc(100vh-516px)] flex-col gap-6 overflow-y-auto p-6">
+                     <div className="flex h-[calc(100vh-548px)] flex-col gap-6 overflow-y-auto p-6">
                         {recursosFiltrados.map((recurso: RecursoStats) => (
                            <Tooltip key={recurso.COD_RECURSO}>
                               <TooltipTrigger asChild>
@@ -912,7 +927,7 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
                                           codCliente: e.target.value,
                                        }))
                                     }
-                                    className="w-full cursor-pointer rounded-md bg-white/20 px-4 py-2 text-base font-semibold tracking-wider text-white shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-lime-500 focus:outline-none"
+                                    className="w-full cursor-pointer rounded-md bg-white/20 px-4 py-2 text-base font-semibold tracking-wider text-white shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
                                  >
                                     <option
                                        value=""
@@ -1298,7 +1313,7 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
                                  onChange={e =>
                                     handleInputChange('cliente', e.target.value)
                                  }
-                                 className="w-full cursor-pointer rounded-md bg-white/20 px-4 py-2 text-base font-semibold tracking-wider text-white shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-lime-500 focus:outline-none"
+                                 className="w-full cursor-pointer rounded-md bg-white/20 px-4 py-2 text-base font-semibold tracking-wider text-white shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
                               >
                                  <option
                                     value=""

@@ -3,12 +3,6 @@ import { ColumnDef } from '@tanstack/react-table';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 // ====================
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from '../../../../../components/ui/tooltip';
-// ====================
 import StatusCell from '../Cell_Status';
 import AssuntoCellEditavel from '../Cell_Assunto';
 import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
@@ -167,14 +161,14 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
          <div className="relative flex items-center justify-center">
             <motion.button
                onClick={handleToggle}
-               className="flex h-10 w-10 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 px-4 py-1 shadow-lg ring-1 shadow-purple-300/50 ring-white/30 backdrop-blur-sm transition-all ease-out hover:from-indigo-600 hover:to-purple-700 hover:shadow-purple-400/60 active:scale-95"
+               className="cursor-pointer transition-all hover:scale-110 focus:outline-none active:scale-95"
                whileHover={{ scale: 1.1 }}
                whileTap={{ scale: 0.95 }}
             >
                <motion.div
                   animate={{ rotate: isOpen ? 135 : 0 }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
-                  className="text-white"
+                  // className="text-white"
                >
                   {isOpen ? (
                      <span className="text-xl font-bold">×</span>
