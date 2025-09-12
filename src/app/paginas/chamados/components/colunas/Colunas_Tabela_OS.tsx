@@ -6,12 +6,12 @@ import {
 // ================================================================================
 import { ColumnDef } from '@tanstack/react-table';
 // ================================================================================
-import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
+import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
 import {
    formatarDataParaBR,
    formatarDecimalParaTempo,
    formatarHora,
-} from '../../../../utils/formatters';
+} from '../../../../../utils/formatters';
 // ================================================================================
 import { MdEditDocument } from 'react-icons/md';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
@@ -155,7 +155,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
          const dataFormatada = formatarDataParaBR(dateString);
 
          return (
-            <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
+            <div className="rounded-md bg-green-500 p-2 text-center text-black ring-1 ring-white">
                {dataFormatada}
             </div>
          );
@@ -206,7 +206,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
          const tempoFormatado = formatarDecimalParaTempo(value);
 
          return (
-            <div className="rounded-md bg-green-600 p-2 text-center text-white ring-1 ring-white">
+            <div className="rounded-md bg-green-500 p-2 text-center text-black ring-1 ring-white">
                {tempoFormatado}
             </div>
          );
@@ -228,7 +228,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
                   <TooltipTrigger asChild>
                      <button
                         onClick={() => acoes.onEditarOS(os.COD_OS)}
-                        className="cursor-pointer transition-all hover:scale-110"
+                        className="cursor-pointer transition-all hover:-translate-y-1 hover:scale-102 active:scale-95"
                      >
                         <MdEditDocument size={32} />
                      </button>
@@ -237,7 +237,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
                      side="left"
                      align="end"
                      sideOffset={8}
-                     className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+                     className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
                   >
                      Editar OS
                   </TooltipContent>
@@ -249,7 +249,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
                   <TooltipTrigger asChild>
                      <button
                         onClick={() => acoes.onExcluirOS(os.COD_OS)}
-                        className="cursor-pointer transition-all hover:scale-110"
+                        className="cursor-pointer transition-all hover:-translate-y-1 hover:scale-102 active:scale-95"
                      >
                         <RiDeleteBin5Fill size={32} />
                      </button>
@@ -258,7 +258,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
                      side="top"
                      align="end"
                      sideOffset={8}
-                     className="border-t-4 border-red-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+                     className="border-t-4 border-red-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
                   >
                      Excluir OS
                   </TooltipContent>

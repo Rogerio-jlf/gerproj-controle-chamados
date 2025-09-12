@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Target, Zap, Users, Brain } from 'lucide-react';
-import ModalAtribuicaoInteligente from '../app/paginas/chamados/components/Modal_Atribuicao_Inteligente';
+import ModalAtribuicaoInteligente from '../../app/paginas/chamados/components/modais/Modal_Atribuir_Chamado';
 // Interface para o chamado
 interface ChamadoProps {
    COD_CHAMADO: number;

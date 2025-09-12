@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash';
 import {
@@ -18,7 +18,7 @@ import { TabelaOSProps } from '../../../../types/types';
 import {
    colunasOSTarefa,
    TabelaOSTarefaProps,
-} from './Colunas_Tabela_OS_Tarefa';
+} from '../components/colunas/Colunas_Tabela_OS_Tarefa';
 import {
    Tooltip,
    TooltipContent,
@@ -28,8 +28,8 @@ import {
 import IsLoading from './Loading';
 import IsError from './Error';
 // ====================
-import ModalEditarOS from './Modal_Editar_OS';
-import { ModalExcluirOS } from './Modal_Deletar_OS';
+import ModalEditarOS from './modais/Modal_Editar_OS';
+import { ModalExcluirOS } from './modais/Modal_Deletar_OS';
 // ====================
 import { BsEraserFill } from 'react-icons/bs';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
@@ -102,11 +102,11 @@ const GlobalFilterInput = ({
    value,
    onChange,
    placeholder = 'Buscar em todas as colunas...',
-   onClear,
 }: GlobalFilterInputProps) => {
    const [localValue, setLocalValue] = useState(value);
+   const inputRef = useRef<HTMLInputElement>(null);
+   const [isFocused, setIsFocused] = useState(false);
 
-   // Atualiza o valor local quando o valor externo muda
    useEffect(() => {
       setLocalValue(value);
    }, [value]);
@@ -122,17 +122,20 @@ const GlobalFilterInput = ({
    };
 
    return (
-      <div className="group relative transition-all focus-within:text-black hover:scale-105">
+      <div className="group relative transition-all hover:-translate-y-1 hover:scale-102">
          <FaSearch
-            className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-600 transition-colors duration-300 group-focus-within:text-black"
+            className="absolute top-1/2 left-4 -translate-y-1/2 text-black"
             size={18}
          />
          <input
             type="text"
             value={localValue}
             onChange={handleChange}
-            placeholder={placeholder}
-            className="w-full rounded-md border border-black/50 bg-white/20 py-2 pr-4 pl-12 text-base text-black placeholder-gray-600 focus:bg-white/40 focus:outline-none focus:placeholder:text-gray-400"
+            placeholder={isFocused ? '' : placeholder}
+            className="w-full rounded-md border-none bg-white/40 py-3 pl-12 text-base font-semibold tracking-wider text-black placeholder-black shadow-sm shadow-black select-none hover:bg-white/10 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            ref={inputRef}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
          />
       </div>
    );
@@ -199,13 +202,13 @@ const FilterIndicator = ({
 
    return (
       <div className="flex items-center gap-2">
-         <div className="rounded-full bg-blue-600 px-3 py-1 text-sm font-semibold tracking-wider text-white italic select-none">
+         <div className="rounded-full bg-blue-600 px-6 py-1 text-base font-semibold tracking-wider text-white italic select-none">
             {totalFilters} filtro{totalFilters > 1 ? 's' : ''} ativo
             {totalFilters > 1 ? 's' : ''}
          </div>
 
          {globalFilter && (
-            <div className="rounded-full bg-green-600 px-3 py-1 text-sm font-semibold tracking-wider text-white italic select-none">
+            <div className="rounded-full bg-green-600 px-6 py-1 text-base font-semibold tracking-wider text-white italic select-none">
                Busca global: "{globalFilter}"
             </div>
          )}
@@ -213,7 +216,7 @@ const FilterIndicator = ({
          {columnFilters.map(filter => (
             <div
                key={filter.id}
-               className="rounded-full bg-purple-600 px-3 py-1 text-sm font-semibold tracking-wider text-white italic select-none"
+               className="rounded-full bg-purple-600 px-6 py-1 text-base font-semibold tracking-wider text-white italic select-none"
             >
                {getColumnDisplayName(filter.id)}: "{String(filter.value)}"
             </div>
@@ -582,7 +585,7 @@ export default function TabelaOSTarefa({
                      <div className="text-center">
                         <div className="mx-auto mb-4 h-16 w-16 animate-spin rounded-full border-b-2 border-white"></div>
                         <h2 className="text-2xl font-bold tracking-widest text-white italic">
-                           Carregando os dados da tabela...
+                           Carregando as OS's da Tarefa selecionada...
                         </h2>
                      </div>
                   </main>
@@ -591,7 +594,7 @@ export default function TabelaOSTarefa({
 
             {/* Loading overlay centralizado - Z-INDEX MAIS ALTO */}
             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-               <IsLoading title="Carregando os dados da tabela" />
+               <IsLoading title="Carregando as OS's da Tarefa selecionada..." />
             </div>
          </>
       );
@@ -665,7 +668,7 @@ export default function TabelaOSTarefa({
                      {/* ===== ITENS DA ESQUERDA ===== */}
                      <div className="flex items-center justify-center gap-6">
                         {/* ícone */}
-                        <div className="flex items-center justify-center rounded-xl border border-black/50 bg-white/10 p-4">
+                        <div className="flex items-center justify-center rounded-md bg-white/10 p-4 shadow-sm shadow-black">
                            <FaTasks className="text-black" size={28} />
                         </div>
 
@@ -687,18 +690,18 @@ export default function TabelaOSTarefa({
 
                      {/* ===== ITENS DA DIREITA ===== */}
                      <div className="flex items-center gap-6">
-                        {/* botão mostrar/ocultar filtros */}
+                        {/* Botão mostrar/ocultar filtros */}
                         <button
                            onClick={() => setShowFilters(!showFilters)}
                            disabled={!dataOSTarefa || dataOSTarefa.length <= 1}
                            className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider italic transition-all select-none ${
                               showFilters
-                                 ? 'bg-blue-600 text-white hover:bg-blue-900'
-                                 : 'border border-black/50 bg-white/50 text-black hover:bg-white/70'
+                                 ? 'border-none bg-blue-600 text-white shadow-sm shadow-black hover:bg-blue-900'
+                                 : 'border-none bg-white/40 text-black shadow-sm shadow-black hover:bg-white/10'
                            } ${
                               !dataOSTarefa || dataOSTarefa.length <= 1
                                  ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
-                                 : 'hover:scale-105 active:scale-95'
+                                 : 'hover:-translate-y-1 hover:scale-105 active:scale-95'
                            }`}
                         >
                            {showFilters ? (
@@ -708,22 +711,24 @@ export default function TabelaOSTarefa({
                            )}
                            {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
                         </button>
+                        {/* ===== */}
 
-                        {/* botão limpar filtros */}
+                        {/* Botão limpar filtros */}
                         {totalActiveFilters > 0 && (
                            <button
                               onClick={clearFilters}
-                              className="flex cursor-pointer gap-4 rounded-md border border-white/30 bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:bg-red-900 active:scale-95"
+                              className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-105 hover:bg-red-900 active:scale-95"
                            >
                               <BsEraserFill className="text-white" size={24} />
                               Limpar Filtros
                            </button>
                         )}
+                        {/* ===== */}
 
-                        {/* botão - fechar modal */}
+                        {/* Botão fechar tabela */}
                         <button
                            onClick={handleClose}
-                           className="group cursor-pointer rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
+                           className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
                         >
                            <IoClose size={24} />
                         </button>
@@ -976,19 +981,17 @@ export default function TabelaOSTarefa({
                                              Number(e.target.value)
                                           )
                                        }
-                                       className="cursor-pointer rounded-md border border-black/30 px-4 py-1 text-base font-semibold tracking-widest text-black italic hover:bg-gray-500 hover:text-white"
+                                       className="cursor-pointer rounded-md px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
                                     >
-                                       {[5, 10, 15, 25, 50, 75, 100].map(
-                                          pageSize => (
-                                             <option
-                                                key={pageSize}
-                                                value={pageSize}
-                                                className="text-base font-semibold tracking-widest text-black italic"
-                                             >
-                                                {pageSize}
-                                             </option>
-                                          )
-                                       )}
+                                       {[10, 25, 50, 75, 100].map(pageSize => (
+                                          <option
+                                             key={pageSize}
+                                             value={pageSize}
+                                             className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
+                                          >
+                                             {pageSize}
+                                          </option>
+                                       ))}
                                     </select>
                                  </div>
 
@@ -997,24 +1000,26 @@ export default function TabelaOSTarefa({
                                     <button
                                        onClick={() => table.setPageIndex(0)}
                                        disabled={!table.getCanPreviousPage()}
-                                       className="cursor-pointer rounded-md border border-black/30 px-4 py-1 tracking-widest select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
+                                       className="group cursor-pointer rounded-md px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                        <FiChevronsLeft
-                                          className="text-white"
+                                          className="text-black group-disabled:text-white"
                                           size={24}
                                        />
                                     </button>
+                                    {/* ===== */}
 
                                     <button
                                        onClick={() => table.previousPage()}
                                        disabled={!table.getCanPreviousPage()}
-                                       className="cursor-pointer rounded-md border border-black/30 px-4 py-1 tracking-widest select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
+                                       className="group cursor-pointer rounded-md px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                        <MdChevronLeft
-                                          className="text-white"
+                                          className="text-black group-disabled:text-white"
                                           size={24}
                                        />
                                     </button>
+                                    {/* ===== */}
 
                                     <div className="flex items-center justify-center gap-2">
                                        <span className="text-base font-semibold tracking-widest text-black italic select-none">
@@ -1029,7 +1034,7 @@ export default function TabelaOSTarefa({
                                                    Number(e.target.value) - 1;
                                                 table.setPageIndex(page);
                                              }}
-                                             className="cursor-pointer rounded-md border border-black/30 px-4 py-1 text-base font-semibold tracking-widest text-black italic hover:bg-gray-500 hover:text-white"
+                                             className="cursor-pointer rounded-md px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
                                           >
                                              {Array.from(
                                                 {
@@ -1039,7 +1044,7 @@ export default function TabelaOSTarefa({
                                                    <option
                                                       key={i + 1}
                                                       value={i + 1}
-                                                      className="text-base font-semibold tracking-widest text-black italic"
+                                                      className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
                                                    >
                                                       {i + 1}
                                                    </option>
@@ -1056,13 +1061,14 @@ export default function TabelaOSTarefa({
                                     <button
                                        onClick={() => table.nextPage()}
                                        disabled={!table.getCanNextPage()}
-                                       className="cursor-pointer rounded-md border border-black/30 px-4 py-1 tracking-widest select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
+                                       className="group cursor-pointer rounded-md px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                        <MdChevronRight
-                                          className="text-white"
+                                          className="text-black group-disabled:text-white"
                                           size={24}
                                        />
                                     </button>
+                                    {/* ===== */}
 
                                     <button
                                        onClick={() =>
@@ -1071,10 +1077,10 @@ export default function TabelaOSTarefa({
                                           )
                                        }
                                        disabled={!table.getCanNextPage()}
-                                       className="cursor-pointer rounded-md border border-black/30 px-4 py-1 tracking-widest select-none hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-70"
+                                       className="group cursor-pointer rounded-md px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                        <FiChevronsRight
-                                          className="text-white"
+                                          className="text-black group-disabled:text-white"
                                           size={24}
                                        />
                                     </button>

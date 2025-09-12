@@ -23,13 +23,12 @@ import {
 // ================================================================================
 import { useAuth } from '../../../../hooks/useAuth';
 import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
-import { colunasTabela } from './Colunas_Tabela_Chamados';
+import { colunasTabela } from './colunas/Colunas_Tabela_Chamados';
 import DashboardRecursos from './Dashboard_Recursos';
-import ModalAtribuirChamado from './Modal_Atribuir_Chamado';
+import ModalAtribuirChamado from './modais/Modal_Dados_Chamado';
 import TabelaTarefas from './Tabela_Tarefas';
 import TabelaOS from './Tabela_OS';
-import TarefasButton from '../../../../components/Button_Tarefa';
-import ModalAtribuicaoInteligente from './Modal_Atribuicao_Inteligente';
+import ModalAtribuicaoInteligente from './modais/Modal_Atribuir_Chamado';
 import { TabelaChamadosProps } from '../../../../types/types';
 import IsLoading from './Loading';
 import IsError from './Error';
@@ -140,7 +139,7 @@ const GlobalFilterInput = ({
             value={localValue}
             onChange={handleChange}
             placeholder={isFocused ? '' : placeholder}
-            className="w-full rounded-md border-none bg-white/30 py-3 pl-12 text-base font-semibold tracking-wider text-white placeholder-white shadow-sm shadow-white select-none focus:ring-2 focus:ring-lime-500 focus:outline-none"
+            className="w-full rounded-md border-none bg-white/30 py-3 pl-12 text-base font-semibold tracking-wider text-white placeholder-white shadow-sm shadow-white select-none hover:bg-white/20 focus:ring-2 focus:ring-pink-500 focus:outline-none"
             ref={inputRef}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
@@ -210,13 +209,13 @@ const FilterIndicator = ({
 
    return (
       <div className="flex items-center gap-2">
-         <div className="rounded-full bg-blue-600 px-3 py-1 text-sm font-semibold tracking-wider text-white italic select-none">
+         <div className="rounded-full bg-blue-600 px-6 py-1 text-base font-semibold tracking-wider text-white italic select-none">
             {totalFilters} filtro{totalFilters > 1 ? 's' : ''} ativo
             {totalFilters > 1 ? 's' : ''}
          </div>
 
          {globalFilter && (
-            <div className="rounded-full bg-green-600 px-3 py-1 text-sm font-semibold tracking-wider text-white italic select-none">
+            <div className="rounded-full bg-green-600 px-6 py-1 text-base font-semibold tracking-wider text-white italic select-none">
                Busca global: "{globalFilter}"
             </div>
          )}
@@ -224,7 +223,7 @@ const FilterIndicator = ({
          {columnFilters.map(filter => (
             <div
                key={filter.id}
-               className="rounded-full bg-purple-600 px-3 py-1 text-sm font-semibold tracking-wider text-white italic select-none"
+               className="rounded-full bg-purple-600 px-6 py-1 text-base font-semibold tracking-wider text-white italic select-none"
             >
                {getColumnDisplayName(filter.id)}: "{String(filter.value)}"
             </div>
@@ -715,7 +714,8 @@ export default function TabelaChamados() {
       );
    }
 
-   if (isLoading) return <IsLoading title="Carregando os dados da tabela" />;
+   if (isLoading)
+      return <IsLoading title="Carregando os dados da tabela Chamados" />;
    if (isError) return <IsError error={error as Error} />;
 
    // ================================================================================
@@ -730,11 +730,10 @@ export default function TabelaChamados() {
                <section className="flex items-center justify-between gap-8">
                   {/* ===== ITENS DA ESQUERDA ===== */}
                   <div className="flex items-center justify-center gap-6">
-                     {/* ícone */}
-                     <div className="flex items-center justify-center rounded-xl border-t border-slate-600 p-4 shadow-md shadow-white">
+                     <div className="flex items-center justify-center rounded-md bg-white/30 p-4 shadow-sm shadow-white">
                         <FaDatabase className="text-white" size={28} />
                      </div>
-                     {/* título */}
+                     {/* ===== */}
                      <h1 className="text-4xl font-extrabold tracking-widest text-white select-none">
                         Tabela de Chamados
                      </h1>
@@ -771,14 +770,14 @@ export default function TabelaChamados() {
                         onVisualizarTarefas={() => setTabelaTarefasOpen(true)}
                      /> */}
 
-                     {/* botão mostrar/ocultar filtros */}
+                     {/* Botão mostrar/ocultar filtros */}
                      <button
                         onClick={() => setShowFilters(!showFilters)}
                         disabled={!data || data.length <= 1}
                         className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider italic transition-all select-none ${
                            showFilters
-                              ? 'bg-blue-600 text-white hover:bg-blue-900'
-                              : 'bg-white/30 text-white shadow-sm shadow-white hover:border-none hover:bg-white/70 hover:text-black hover:shadow-lg hover:shadow-white'
+                              ? 'border-none bg-blue-600 text-white shadow-sm shadow-white hover:bg-blue-900'
+                              : 'border-none bg-white/30 text-white shadow-sm shadow-white hover:bg-white/20'
                         } ${
                            !data || data.length <= 1
                               ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
@@ -792,12 +791,13 @@ export default function TabelaChamados() {
                         )}
                         {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
                      </button>
+                     {/* ===== */}
 
-                     {/* botão limpar filtros */}
+                     {/* Botão limpar filtros */}
                      {totalActiveFilters > 0 && (
                         <button
                            onClick={clearFilters}
-                           className="flex cursor-pointer gap-4 rounded-md border border-white/30 bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:bg-red-900 active:scale-95"
+                           className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-105 hover:bg-red-900 active:scale-95"
                         >
                            <BsEraserFill className="text-white" size={24} />
                            Limpar Filtros
@@ -1081,40 +1081,46 @@ export default function TabelaChamados() {
                               onChange={e =>
                                  table.setPageSize(Number(e.target.value))
                               }
-                              className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-white italic transition-all hover:bg-gray-500"
+                              className="cursor-pointer rounded-md bg-white/30 px-4 py-1 text-base font-semibold tracking-widest text-white italic shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
                            >
                               {[10, 25, 50, 75, 100].map(pageSize => (
                                  <option
                                     key={pageSize}
                                     value={pageSize}
-                                    className="text-base font-semibold tracking-widest text-black italic"
+                                    className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
                                  >
                                     {pageSize}
                                  </option>
                               ))}
                            </select>
                         </div>
+                        {/* ===== */}
 
                         {/* Botões de navegação */}
                         <div className="flex items-center gap-3">
                            <button
                               onClick={() => table.setPageIndex(0)}
                               disabled={!table.getCanPreviousPage()}
-                              className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 transition-all hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
+                              className="group cursor-pointer rounded-md bg-white/30 px-4 py-1 shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsLeft
-                                 className="text-white"
+                                 className="text-white group-disabled:text-slate-50"
                                  size={24}
                               />
                            </button>
+                           {/* ===== */}
 
                            <button
                               onClick={() => table.previousPage()}
                               disabled={!table.getCanPreviousPage()}
-                              className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 transition-all hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
+                              className="group cursor-pointer rounded-md bg-white/30 px-4 py-1 shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
-                              <MdChevronLeft className="text-white" size={24} />
+                              <MdChevronLeft
+                                 className="text-white group-disabled:text-slate-50"
+                                 size={24}
+                              />
                            </button>
+                           {/* ===== */}
 
                            <div className="flex items-center justify-center gap-2">
                               <span className="text-base font-semibold tracking-widest text-white italic select-none">
@@ -1127,7 +1133,7 @@ export default function TabelaChamados() {
                                        const page = Number(e.target.value) - 1;
                                        table.setPageIndex(page);
                                     }}
-                                    className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 text-base font-semibold tracking-widest text-white italic transition-all hover:bg-gray-500"
+                                    className="cursor-pointer rounded-md bg-white/30 px-4 py-1 text-base font-semibold tracking-widest text-white italic shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
                                  >
                                     {Array.from(
                                        { length: table.getPageCount() },
@@ -1135,7 +1141,7 @@ export default function TabelaChamados() {
                                           <option
                                              key={i + 1}
                                              value={i + 1}
-                                             className="text-base font-semibold tracking-widest text-black italic"
+                                             className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
                                           >
                                              {i + 1}
                                           </option>
@@ -1148,27 +1154,29 @@ export default function TabelaChamados() {
                                  de {table.getPageCount()}
                               </span>
                            </div>
+                           {/* ===== */}
 
                            <button
                               onClick={() => table.nextPage()}
                               disabled={!table.getCanNextPage()}
-                              className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 transition-all hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
+                              className="group cursor-pointer rounded-md bg-white/30 px-4 py-1 shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronRight
-                                 className="text-white"
+                                 className="text-white group-disabled:text-slate-50"
                                  size={24}
                               />
                            </button>
+                           {/* ===== */}
 
                            <button
                               onClick={() =>
                                  table.setPageIndex(table.getPageCount() - 1)
                               }
                               disabled={!table.getCanNextPage()}
-                              className="cursor-pointer rounded-md border border-white/30 bg-white/10 px-4 py-1 transition-all hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
+                              className="group cursor-pointer rounded-md bg-white/30 px-4 py-1 shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsRight
-                                 className="text-white"
+                                 className="text-white group-disabled:text-slate-50"
                                  size={24}
                               />
                            </button>

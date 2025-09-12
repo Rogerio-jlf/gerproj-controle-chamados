@@ -8,10 +8,10 @@ import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
-} from '../../../../components/ui/tooltip';
+} from '../../../../../components/ui/tooltip';
 // ================================================================================
-import { useEmailAtribuirChamados } from '../../../../hooks/useEmailAtribuirChamados';
-import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
+import { useEmailAtribuirChamados } from '../../../../../hooks/useEmailAtribuirChamados';
+import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
 // ================================================================================
 import {
    FaCheckCircle,

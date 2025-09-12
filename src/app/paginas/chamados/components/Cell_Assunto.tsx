@@ -20,7 +20,7 @@ import {
 import { Textarea } from '../../../../components/ui/textarea';
 // ================================================================================
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
-import { ToastCustom } from '@/components/Toast_Custom';
+import { ToastCustom } from '../../../../components/Toast_Custom';
 // ================================================================================
 import { FaEdit, FaExclamationTriangle } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';

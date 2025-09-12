@@ -58,7 +58,7 @@ export default function LogoutButton() {
             side="bottom"
             align="center"
             sideOffset={2}
-            className="border-b-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+            className="border-b-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
          >
             {isLoading ? 'Saindo...' : 'Sair'}
          </TooltipContent>

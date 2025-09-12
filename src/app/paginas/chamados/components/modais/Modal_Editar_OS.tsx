@@ -347,21 +347,21 @@ export default function ModalEditarOS({
          {/* ========== */}
 
          {/* ===== CONTAINER ===== */}
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-3xl overflow-hidden rounded-2xl border border-black bg-white transition-all duration-500 ease-out">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
-            <header className="relative bg-yellow-600 p-6">
+            <header className="relative bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 p-6 shadow-sm shadow-black">
                <section className="flex items-center justify-between">
                   <div className="flex items-center justify-between gap-6">
-                     <div className="rounded-2xl border border-black/50 bg-white/10 p-3 shadow-md shadow-black">
+                     <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
                         <IoMdClock className="text-black" size={36} />
                      </div>
 
-                     <div className="flex flex-col items-start justify-center">
-                        <h1 className="text-2xl font-bold tracking-wider text-black select-none">
+                     <div className="flex flex-col items-center justify-center">
+                        <h1 className="text-2xl font-extrabold tracking-wider text-black select-none">
                            Editar OS
                         </h1>
 
-                        <div className="inline-block rounded-full bg-black px-4 py-1">
+                        <div className="rounded-full bg-black px-6 py-1">
                            <p className="text-base font-extrabold tracking-widest text-white italic select-none">
                               OS - #{codOS}
                            </p>
@@ -373,7 +373,7 @@ export default function ModalEditarOS({
                   <button
                      onClick={handleClose}
                      disabled={isLoading}
-                     className="group cursor-pointer rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
+                     className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                      <IoClose size={24} />
                   </button>
@@ -568,7 +568,7 @@ export default function ModalEditarOS({
                      <button
                         onClick={handleClose}
                         disabled={isLoading}
-                        className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-lg font-extrabold text-white transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-lg hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="cursor-pointer rounded-xl border-none bg-red-500 px-6 py-2 text-lg font-extrabold text-white shadow-md shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
                      >
                         Cancelar
                      </button>
@@ -577,10 +577,10 @@ export default function ModalEditarOS({
                      <button
                         onClick={handleSubmit}
                         disabled={isLoading || !isFormValid()}
-                        className={`flex cursor-pointer items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-lg font-extrabold text-white transition-all select-none active:scale-95 ${
+                        className={`cursor-pointer rounded-xl border-none bg-blue-500 px-6 py-2 text-lg font-extrabold text-white transition-all select-none active:scale-95 ${
                            isLoading || !isFormValid()
                               ? 'disabled:cursor-not-allowed disabled:opacity-50'
-                              : 'hover:scale-105 hover:bg-blue-900 hover:shadow-lg hover:shadow-black'
+                              : 'hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black'
                         }`}
                      >
                         {isLoading ? (

@@ -7,14 +7,14 @@ import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
-} from '../../../../components/ui/tooltip';
+} from '../../../../../components/ui/tooltip';
 // ====================
-import StatusCell from './Cell_Status';
-import AssuntoCellEditavel from './Cell_Assunto';
-import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
-import { formatarDataParaBR } from '../../../../utils/formatters';
+import StatusCell from '../Cell_Status';
+import AssuntoCellEditavel from '../Cell_Assunto';
+import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+import { formatarDataParaBR } from '../../../../../utils/formatters';
 // ====================
-import { TabelaChamadosProps } from '../../../../types/types';
+import { TabelaChamadosProps } from '../../../../../types/types';
 // ====================
 import { FaDownload, FaTasks, FaBrain } from 'react-icons/fa';
 import { IoCall } from 'react-icons/io5';
@@ -29,22 +29,19 @@ export interface AcoesProps {
    onVisualizarTarefas: () => void;
    onAtribuicaoInteligente?: (chamado: TabelaChamadosProps) => void;
    userType?: string;
-   // MOVIDO PARA CÁ: função de atualizar assunto
    onUpdateAssunto?: (codChamado: number, novoAssunto: string) => Promise<void>;
 }
-// ====================
 
 interface CircularActionsMenuProps {
    chamado: TabelaChamadosProps;
    acoes: AcoesProps;
 }
-// ================================================================================
 
-// ===== MENU CIRCULAR AÇÕES =====
+// ===== MENU CIRCULAR AÇÕES MELHORADO =====
 const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
-   // ===== ESTADOS =====
    const [isOpen, setIsOpen] = useState(false);
    const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
+   const [hoveredButton, setHoveredButton] = useState<number | null>(null);
 
    const handleDownload = () => {
       const blob = new Blob([JSON.stringify(chamado, null, 2)], {
@@ -58,7 +55,6 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
       URL.revokeObjectURL(url);
       setIsOpen(false);
    };
-   // ====================
 
    const handleToggle = (e: React.MouseEvent) => {
       if (!isOpen) {
@@ -70,9 +66,8 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
       }
       setIsOpen(!isOpen);
    };
-   // ====================
 
-   // Atualizar o array de botões de ação
+   // Configuração melhorada dos botões com cores e estilos únicos
    const allActionButtons = [
       {
          icon: IoCall,
@@ -81,9 +76,12 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
             setIsOpen(false);
          },
          tooltip: 'Visualizar Chamado',
-         bgColor: 'bg-white',
-         textColor: 'text-black',
-         hoverRing: 'hover:ring-cyan-500',
+         bgGradient: 'from-blue-500 to-blue-600',
+         hoverGradient: 'from-blue-600 to-blue-700',
+         iconColor: 'text-white',
+         shadowColor: 'shadow-blue-300/50',
+         hoverShadow: 'hover:shadow-blue-400/60',
+         ringColor: 'hover:ring-blue-300/40',
       },
       {
          icon: GrServicePlay,
@@ -92,9 +90,12 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
             setIsOpen(false);
          },
          tooltip: 'Visualizar OS',
-         bgColor: 'bg-white',
-         textColor: 'text-black',
-         hoverRing: 'hover:ring-cyan-500',
+         bgGradient: 'from-emerald-500 to-emerald-600',
+         hoverGradient: 'from-emerald-600 to-emerald-700',
+         iconColor: 'text-white',
+         shadowColor: 'shadow-emerald-300/50',
+         hoverShadow: 'hover:shadow-emerald-400/60',
+         ringColor: 'hover:ring-emerald-300/40',
       },
       {
          icon: FaTasks,
@@ -103,17 +104,23 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
             setIsOpen(false);
          },
          tooltip: 'Visualizar Tarefa',
-         bgColor: 'bg-white',
-         textColor: 'text-black',
-         hoverRing: 'hover:ring-cyan-500',
+         bgGradient: 'from-orange-500 to-orange-600',
+         hoverGradient: 'from-orange-600 to-orange-700',
+         iconColor: 'text-white',
+         shadowColor: 'shadow-orange-300/50',
+         hoverShadow: 'hover:shadow-orange-400/60',
+         ringColor: 'hover:ring-orange-300/40',
       },
       {
          icon: FaDownload,
          onClick: handleDownload,
          tooltip: 'Download Arquivos',
-         bgColor: 'bg-white',
-         textColor: 'text-black',
-         hoverRing: 'hover:ring-cyan-500',
+         bgGradient: 'from-purple-500 to-purple-600',
+         hoverGradient: 'from-purple-600 to-purple-700',
+         iconColor: 'text-white',
+         shadowColor: 'shadow-purple-300/50',
+         hoverShadow: 'hover:shadow-purple-400/60',
+         ringColor: 'hover:ring-purple-300/40',
       },
       // Botão de atribuição - só incluir se for ADM
       ...(acoes.userType === 'ADM'
@@ -125,9 +132,12 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
                     setIsOpen(false);
                  },
                  tooltip: 'Atribuir Chamado',
-                 bgColor: 'bg-white',
-                 textColor: 'text-black',
-                 hoverRing: 'hover:ring-cyan-500',
+                 bgGradient: 'from-pink-500 to-pink-600',
+                 hoverGradient: 'from-pink-600 to-pink-700',
+                 iconColor: 'text-white',
+                 shadowColor: 'shadow-pink-300/50',
+                 hoverShadow: 'hover:shadow-pink-400/60',
+                 ringColor: 'hover:ring-pink-300/40',
               },
            ]
          : []),
@@ -136,8 +146,8 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
    const actionButtons = allActionButtons;
    const totalButtons = actionButtons.length;
 
-   // Recalcular posições dos botões baseado no número total de botões
-   const radius = 130;
+   // Recalcular posições dos botões
+   const radius = 140;
    const angleStart = 140;
    const angleEnd = 240;
    const buttonPositions = Array.from({ length: totalButtons }).map((_, i) => {
@@ -147,43 +157,48 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
       return {
          x: Math.cos(rad) * radius,
          y: Math.sin(rad) * radius,
-         delay: 0.08 * i,
+         delay: 0.1 * i,
       };
    });
 
-   // ====================
-
    return (
       <>
-         {/* Botão Principal */}
+         {/* Botão Principal Melhorado */}
          <div className="relative flex items-center justify-center">
             <motion.button
                onClick={handleToggle}
-               className="relative z-10 inline-flex cursor-pointer items-center justify-center transition-all hover:scale-125 active:scale-95"
+               className="flex h-10 w-10 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 px-4 py-1 shadow-lg ring-1 shadow-purple-300/50 ring-white/30 backdrop-blur-sm transition-all ease-out hover:from-indigo-600 hover:to-purple-700 hover:shadow-purple-400/60 active:scale-95"
+               whileHover={{ scale: 1.1 }}
+               whileTap={{ scale: 0.95 }}
             >
-               <motion.div animate={{ rotate: isOpen ? 135 : 0 }}>
+               <motion.div
+                  animate={{ rotate: isOpen ? 135 : 0 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  className="text-white"
+               >
                   {isOpen ? (
-                     <HiMiniSquaresPlus size={32} />
+                     <span className="text-xl font-bold">×</span>
                   ) : (
-                     <HiMiniSquaresPlus size={32} />
+                     <HiMiniSquaresPlus size={24} />
                   )}
                </motion.div>
             </motion.button>
          </div>
-         {/* ===== */}
 
-         {/* Portal para os botões de ação - renderiza fora da célula */}
+         {/* Portal para os botões de ação */}
          <AnimatePresence>
             {isOpen && (
                <>
+                  {/* Overlay de fundo */}
                   <motion.div
                      initial={{ opacity: 0 }}
                      animate={{ opacity: 1 }}
                      exit={{ opacity: 0 }}
-                     className="fixed inset-0 z-40"
+                     className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
                      onClick={() => setIsOpen(false)}
                   />
 
+                  {/* Container dos botões de ação */}
                   <div
                      className="pointer-events-none fixed z-50"
                      style={{
@@ -192,9 +207,27 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
                         transform: 'translate(-50%, -50%)',
                      }}
                   >
-                     {actionButtons.map((button, index) => (
-                        <Tooltip key={index}>
-                           <TooltipTrigger asChild>
+                     {actionButtons.map((button, index) => {
+                        const isHovered = hoveredButton === index;
+
+                        return (
+                           <div key={index} className="relative">
+                              {/* Tooltip melhorado */}
+                              <motion.div
+                                 className={`pointer-events-none absolute -top-14 left-1/2 z-60 -translate-x-1/2 transform rounded-md bg-black px-6 py-2 text-sm font-semibold tracking-wider whitespace-nowrap text-white shadow-sm shadow-white`}
+                                 initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                                 animate={{
+                                    opacity: isHovered ? 1 : 0,
+                                    scale: isHovered ? 1 : 0.8,
+                                    y: isHovered ? 0 : 10,
+                                 }}
+                                 transition={{ duration: 0.2 }}
+                              >
+                                 {button.tooltip}
+                                 <div className="absolute top-full left-1/2 h-0 w-0 -translate-x-1/2 transform border-t-4 border-r-4 border-l-4 border-transparent border-t-slate-900" />
+                              </motion.div>
+
+                              {/* Botão de ação melhorado */}
                               <motion.button
                                  initial={{
                                     opacity: 0,
@@ -215,28 +248,51 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
                                     y: 0,
                                  }}
                                  transition={{
-                                    duration: 0.3,
+                                    duration: 0.4,
                                     delay: buttonPositions[index].delay,
                                     type: 'spring',
-                                    stiffness: 200,
+                                    stiffness: 260,
                                     damping: 20,
                                  }}
+                                 whileHover={{
+                                    scale: 1.1,
+                                    transition: { duration: 0.2 },
+                                 }}
+                                 whileTap={{ scale: 0.95 }}
                                  onClick={button.onClick}
-                                 className={`pointer-events-auto absolute inline-flex cursor-pointer items-center justify-center rounded-full p-4 ring-1 transition-all hover:scale-110 hover:ring-4 active:scale-95 ${button.bgColor} ${button.textColor} ${button.hoverRing}`}
+                                 onHoverStart={() => setHoveredButton(index)}
+                                 onHoverEnd={() => setHoveredButton(null)}
+                                 className={`pointer-events-auto absolute h-14 w-14 rounded-full bg-gradient-to-br ${isHovered ? button.hoverGradient : button.bgGradient} ${button.iconColor} shadow-lg ${button.shadowColor} ${button.hoverShadow} border-2 border-white/20 ${button.ringColor} flex items-center justify-center backdrop-blur-sm transition-all duration-300 ease-out ${isHovered ? 'ring-4' : 'ring-0'} -translate-x-1/2 -translate-y-1/2 transform`}
                               >
-                                 <button.icon size={18} />
+                                 <button.icon size={20} />
                               </motion.button>
-                           </TooltipTrigger>
-                           <TooltipContent
-                              side="left"
-                              align="center"
-                              sideOffset={8}
-                              className="z-50 border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
-                           >
-                              {button.tooltip}
-                           </TooltipContent>
-                        </Tooltip>
-                     ))}
+
+                              {/* Efeito de pulso animado no hover */}
+                              <AnimatePresence>
+                                 {isHovered && (
+                                    <motion.div
+                                       className={`absolute h-14 w-14 rounded-full bg-gradient-to-br ${button.bgGradient} pointer-events-none -translate-x-1/2 -translate-y-1/2 transform opacity-30`}
+                                       style={{
+                                          x: buttonPositions[index].x,
+                                          y: buttonPositions[index].y,
+                                       }}
+                                       initial={{ scale: 1, opacity: 0.3 }}
+                                       animate={{
+                                          scale: [1, 1.3, 1],
+                                          opacity: [0.3, 0, 0.3],
+                                       }}
+                                       exit={{ opacity: 0 }}
+                                       transition={{
+                                          duration: 1.5,
+                                          repeat: Infinity,
+                                          ease: 'easeInOut',
+                                       }}
+                                    />
+                                 )}
+                              </AnimatePresence>
+                           </div>
+                        );
+                     })}
                   </div>
                </>
             )}
@@ -249,7 +305,7 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
 // ===== COMPONENTE COLUNAS TABELA =====
 export const colunasTabela = (
    acoes: AcoesProps,
-   userType?: string // Parâmetro opcional para tipo de usuário
+   userType?: string
 ): ColumnDef<TabelaChamadosProps>[] => {
    // Array base de colunas (sem a coluna de recurso)
    const baseColumns: ColumnDef<TabelaChamadosProps>[] = [
@@ -263,7 +319,6 @@ export const colunasTabela = (
             </div>
          ),
       },
-      // =====
 
       // Data chamado
       {
@@ -274,13 +329,12 @@ export const colunasTabela = (
             const dataFormatada = formatarDataParaBR(dateString);
 
             return (
-               <div className="rounded-md bg-blue-600 p-2 text-center text-white ring-1 ring-white">
+               <div className="rounded-md bg-pink-600 p-2 text-center text-white ring-1 ring-white">
                   {dataFormatada}
                </div>
             );
          },
       },
-      // =====
 
       // Assunto chamado (editável)
       {
@@ -290,14 +344,13 @@ export const colunasTabela = (
             <AssuntoCellEditavel
                assunto={corrigirTextoCorrompido(row.original.ASSUNTO_CHAMADO)}
                codChamado={row.original.COD_CHAMADO}
-               onUpdateAssunto={acoes.onUpdateAssunto} // USA A FUNÇÃO PASSADA PELO COMPONENTE PAI
+               onUpdateAssunto={acoes.onUpdateAssunto}
                onClose={() => {}}
             />
          ),
       },
-      // =====
 
-      // Status chamado (clicável) - ATUALIZADO PARA INCLUIR TAREFA
+      // Status chamado (clicável)
       {
          accessorKey: 'STATUS_CHAMADO',
          header: () => <div className="text-center">Status</div>,
@@ -359,7 +412,7 @@ export const colunasTabela = (
       },
    ];
 
-   // Adicionar após a coluna de status:
+   // Coluna de recurso
    const recursoColumn: ColumnDef<TabelaChamadosProps> = {
       accessorKey: 'NOME_RECURSO',
       header: () => <div className="text-center">Recurso</div>,
@@ -385,7 +438,7 @@ export const colunasTabela = (
       },
    };
 
-   // Email chamado
+   // Colunas finais
    const finalColumns: ColumnDef<TabelaChamadosProps>[] = [
       // Email chamado
       {

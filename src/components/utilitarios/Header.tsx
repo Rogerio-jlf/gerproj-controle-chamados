@@ -6,9 +6,9 @@ import {
    TooltipTrigger,
 } from '@/components/ui/tooltip';
 // ================================================================================
-import LogoutButton from './Button_Logout';
-import Filtros from '../app/paginas/chamados/components/Filtros';
-import { useFiltersTabelaChamados } from '../contexts/Filters_Context';
+import LogoutButton from '../botoes/Button_Logout';
+import Filtros from '../../app/paginas/chamados/components/Filtros';
+import { useFiltersTabelaChamados } from '../../contexts/Filters_Context';
 // ================================================================================
 import { LuRefreshCw } from 'react-icons/lu';
 // ================================================================================
@@ -54,11 +54,11 @@ export default function Header({ titulo, subtitulo, icon }: Props) {
 
                <div className="flex flex-col">
                   {/* Título */}
-                  <h1 className="text-4xl font-extrabold tracking-widest text-gray-900 uppercase select-none">
+                  <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
                      {titulo}
                   </h1>
                   {subtitulo && (
-                     <h2 className="text-base font-bold tracking-wider text-gray-900 italic select-none">
+                     <h2 className="text-base font-bold tracking-wider text-black italic select-none">
                         {subtitulo}
                      </h2>
                   )}
@@ -77,12 +77,12 @@ export default function Header({ titulo, subtitulo, icon }: Props) {
                <div className="flex items-center gap-4">
                   <div className="text-right">
                      {/* Título */}
-                     <h2 className="text-sm font-bold tracking-widest text-gray-900 italic select-none">
+                     <h2 className="text-sm font-bold tracking-widest text-black italic select-none">
                         Última atualização
                      </h2>
 
                      {/* Data atualizada */}
-                     <p className="text-base font-extrabold tracking-wider text-gray-900 italic select-none">
+                     <p className="text-base font-extrabold tracking-wider text-black italic select-none">
                         {new Date().toLocaleString('pt-BR')}
                      </p>
                   </div>
@@ -102,7 +102,7 @@ export default function Header({ titulo, subtitulo, icon }: Props) {
                         side="bottom"
                         align="center"
                         sideOffset={2}
-                        className="border-b-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+                        className="border-b-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
                      >
                         Atualizar dados
                      </TooltipContent>
