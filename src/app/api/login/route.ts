@@ -1,20 +1,19 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { firebirdQuery } from '@/lib/firebird/firebird-client'; // ajuste o caminho conforme seu projeto
+import { firebirdQuery } from '@/lib/firebird/firebird-client';
 
 export async function POST(request: Request) {
-  try {
-    const { login, senha } = await request.json();
+   try {
+      const { login, senha } = await request.json();
 
-    if (!login || !senha) {
-      return NextResponse.json(
-        { error: 'Login e senha são obrigatórios' },
-        { status: 400 }
-      );
-    }
+      if (!login || !senha) {
+         return NextResponse.json(
+            { error: 'Login e senha são obrigatórios' },
+            { status: 400 }
+         );
+      }
 
-    // Query para buscar o usuário e recurso
-    const sql = `
+      const sql = `
       SELECT 
         U.COD_USUARIO, 
         U.NOME_USUARIO, 
@@ -29,53 +28,53 @@ export async function POST(request: Request) {
       WHERE ID_USUARIO = ?
     `;
 
-    const result = await firebirdQuery(sql, [login.toUpperCase()]);
+      const result = await firebirdQuery(sql, [login.toUpperCase()]);
 
-    if (!result || result.length === 0) {
-      return NextResponse.json(
-        { error: 'Usuário não encontrado' },
-        { status: 401 }
+      if (!result || result.length === 0) {
+         return NextResponse.json(
+            { error: 'Usuário não encontrado' },
+            { status: 401 }
+         );
+      }
+
+      const user = result[0];
+
+      if (user.SENHA.trim() !== senha) {
+         return NextResponse.json({ error: 'Senha inválida' }, { status: 401 });
+      }
+
+      // Gerar token JWT
+      const token = jwt.sign(
+         {
+            id: user.COD_USUARIO,
+            nome: user.NOME_USUARIO.trim(),
+            tipo: user.TIPO_USUARIO,
+            recurso: {
+               id: user.COD_RECURSO,
+               nome: user.NOME_RECURSO,
+               email: user.EMAIL_RECURSO,
+               ativo: user.ATIVO_RECURSO,
+            },
+         },
+         process.env.JWT_SECRET || 'minha_chave_secreta',
+         { expiresIn: '1h' }
       );
-    }
 
-    const user = result[0];
+      const isAdmin = user.TIPO_USUARIO === 'ADM';
+      const codCliente = null; //
+      const codRecurso = user.COD_RECURSO || null;
 
-    if (user.SENHA.trim() !== senha) {
-      return NextResponse.json({ error: 'Senha inválida' }, { status: 401 });
-    }
-
-    // Gerar token JWT
-    const token = jwt.sign(
-      {
-        id: user.COD_USUARIO,
-        nome: user.NOME_USUARIO.trim(),
-        tipo: user.TIPO_USUARIO,
-        recurso: {
-          id: user.COD_RECURSO,
-          nome: user.NOME_RECURSO,
-          email: user.EMAIL_RECURSO,
-          ativo: user.ATIVO_RECURSO,
-        },
-      },
-      process.env.JWT_SECRET || 'minha_chave_secreta',
-      { expiresIn: '1h' }
-    );
-
-    const isAdmin = user.TIPO_USUARIO === 'ADM'; // ajuste conforme seu tipo de usuário
-    const codCliente = null; // se houver lógica para cliente, preencha aqui
-    const codRecurso = user.COD_RECURSO || null;
-
-    return NextResponse.json({
-      token,
-      isAdmin,
-      codCliente,
-      codRecurso,
-    });
-  } catch (error) {
-    console.error('Erro na API de login:', error);
-    return NextResponse.json(
-      { error: 'Erro interno no servidor' },
-      { status: 500 }
-    );
-  }
+      return NextResponse.json({
+         token,
+         isAdmin,
+         codCliente,
+         codRecurso,
+      });
+   } catch (error) {
+      console.error('Erro na API de login:', error);
+      return NextResponse.json(
+         { error: 'Erro interno no servidor' },
+         { status: 500 }
+      );
+   }
 }

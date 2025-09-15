@@ -188,15 +188,12 @@ const ErrorDisplay = ({
 
 const getRecomendacaoColor = (recomendacao: string) => {
    const colors = {
-      DISPONÍVEL: 'green-600',
-      MODERADO: 'yellow-500',
-      SOBRECARREGADO: 'orange-600',
-      CRÍTICO: 'red-600',
+      DISPONÍVEL: 'bg-green-600',
+      MODERADO: 'bg-yellow-500',
+      SOBRECARREGADO: 'bg-orange-600',
+      CRÍTICO: 'bg-red-600',
    };
-   return (
-      colors[recomendacao as keyof typeof colors] ||
-      'from-slate-500 to-slate-600'
-   );
+   return colors[recomendacao as keyof typeof colors] || 'bg-slate-600';
 };
 
 // ================================================================================
@@ -834,7 +831,7 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
                                              )}
                                           </h3>
                                           <div
-                                             className={`inline-flex items-center gap-2 rounded-full bg-${getRecomendacaoColor(recurso.RECOMENDACAO)} px-4 py-1 text-sm font-semibold tracking-wider text-black italic shadow-sm shadow-white select-none`}
+                                             className={`inline-flex items-center gap-2 rounded-full ${getRecomendacaoColor(recurso.RECOMENDACAO)} px-4 py-1 text-sm font-semibold tracking-wider text-black italic shadow-sm shadow-white select-none`}
                                           >
                                              <RecomendacaoIcon
                                                 recomendacao={

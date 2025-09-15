@@ -735,7 +735,7 @@ export default function TabelaChamados() {
                      </div>
                      {/* ===== */}
                      <h1 className="text-4xl font-extrabold tracking-widest text-white select-none">
-                        Tabela de Chamados
+                        Chamados
                      </h1>
                   </div>
                   {/* ===== */}
