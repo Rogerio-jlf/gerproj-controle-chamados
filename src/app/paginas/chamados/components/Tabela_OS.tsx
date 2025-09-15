@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-// ================================================================================
 import {
    flexRender,
    getCoreRowModel,
@@ -13,6 +12,13 @@ import {
    ColumnFiltersState,
    SortingState,
 } from '@tanstack/react-table';
+import { debounce } from 'lodash';
+// ================================================================================
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from '../../../../components/ui/tooltip';
 // ================================================================================
 import {
    colunasTabelaOS,
@@ -21,59 +27,53 @@ import {
 import { TabelaOSProps } from '../../../../types/types';
 import ModalEditarOS from './modais/Modal_Editar_OS';
 import { ModalExcluirOS } from './modais/Modal_Deletar_OS';
-// ================================================================================
 import IsLoading from './Loading';
 import IsError from './Error';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
-import { FaExclamationTriangle } from 'react-icons/fa';
-import { FaFilter } from 'react-icons/fa6';
-import { FaFileAlt } from 'react-icons/fa';
-import { MdChevronLeft } from 'react-icons/md';
-import { FiChevronsLeft } from 'react-icons/fi';
-import { MdChevronRight } from 'react-icons/md';
-import { FiChevronsRight } from 'react-icons/fi';
-import { IoArrowDown, IoArrowUp, IoClose } from 'react-icons/io5';
-import { FaThList } from 'react-icons/fa';
-import { FaSearch } from 'react-icons/fa';
 import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from '../../../../components/ui/tooltip';
+   FaExclamationTriangle,
+   FaThList,
+   FaSearch,
+   FaFilter,
+} from 'react-icons/fa';
+import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
+import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { RiArrowUpDownLine } from 'react-icons/ri';
-import { debounce } from 'lodash';
+import { IoArrowUp, IoArrowDown, IoClose } from 'react-icons/io5';
+
 // ================================================================================
+// INTERFACES E TIPOS
 // ================================================================================
 
-interface FilterInputWithDebounceProps {
+interface FilterInputTableHeaderProps {
    value: string;
    onChange: (value: string) => void;
    placeholder?: string;
    type?: string;
-   onClear?: () => void; // Nova prop para limpeza
+   onClear?: () => void;
 }
 
-// Componente de Filtro Global
 interface GlobalFilterInputProps {
    value: string;
    onChange: (value: string) => void;
    placeholder?: string;
-   onClear?: () => void; // Nova prop
+   onClear?: () => void;
 }
+
+// ================================================================================
+// COMPONENTES DE FILTRO
 // ================================================================================
 
-const FilterInputWithDebounce = ({
+const FilterInputTableHeaderDebounce = ({
    value,
    onChange,
    placeholder,
    type = 'text',
-   onClear,
-}: FilterInputWithDebounceProps) => {
+}: FilterInputTableHeaderProps) => {
    const [localValue, setLocalValue] = useState(value);
 
-   // Atualiza o valor local quando o valor externo muda (ex: limpeza)
    useEffect(() => {
       setLocalValue(value);
    }, [value]);
@@ -98,7 +98,7 @@ const FilterInputWithDebounce = ({
       />
    );
 };
-// =====
+// ====================
 
 const GlobalFilterInput = ({
    value,
@@ -143,7 +143,10 @@ const GlobalFilterInput = ({
    );
 };
 
-// Componente para ordenação do cabeçalho da tabela
+// ================================================================================
+// COMPONENTES DE UI DA TABELA
+// ================================================================================
+
 const SortableHeader = ({
    column,
    children,
@@ -170,7 +173,6 @@ const SortableHeader = ({
                </div>
             </div>
          </TooltipTrigger>
-
          <TooltipContent
             side="top"
             align="center"
@@ -187,8 +189,8 @@ const SortableHeader = ({
       </Tooltip>
    );
 };
+// ====================
 
-// Componente de Indicador de Filtros Ativos
 const FilterIndicator = ({
    columnFilters,
    globalFilter,
@@ -225,7 +227,10 @@ const FilterIndicator = ({
    );
 };
 
-// Função auxiliar para nomes das colunas
+// ================================================================================
+// UTILITÁRIOS
+// ================================================================================
+
 const getColumnDisplayName = (columnId: string): string => {
    const displayNames: Record<string, string> = {
       COD_OS: 'Código OS',
@@ -236,28 +241,49 @@ const getColumnDisplayName = (columnId: string): string => {
    };
    return displayNames[columnId] || columnId;
 };
+// ====================
+
+function getColumnWidth(columnId: string): string {
+   const widthMap: Record<string, string> = {
+      COD_OS: '8.5%',
+      NOME_CLIENTE: '15%',
+      CODTRF_OS: '7%',
+      OBS_OS: '29%',
+      DTINI_OS: '10%',
+      HRINI_OS: '8%',
+      HRFIM_OS: '8%',
+      QTD_HR_OS: '8%',
+      actions: '6.5%',
+   };
+
+   return widthMap[columnId] || 'auto';
+}
 
 // ================================================================================
+// COMPONENTE PRINCIPAL
+// ================================================================================
 
-// ===== COMPONENTE PRINCIPAL =====
 export default function TabelaOS({
    isOpen,
    onClose,
    onSuccess,
    codChamado,
 }: OSTarefaProps) {
-   // Estado para controle do modal de edição
+   // ================================================================================
+   // ESTADOS - MODAIS E COMPONENTES
+   // ================================================================================
    const [modalEditarOSOpen, setModalEditarOSOpen] = useState(false);
    const [selectedOS, setSelectedOS] = useState<string | null>(null);
+   const [osParaExcluir, setOsParaExcluir] = useState<string | null>(null);
+
+   // ================================================================================
+   // ESTADOS - FILTROS E ORDENAÇÃO
+   // ================================================================================
    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
    const [globalFilter, setGlobalFilter] = useState('');
    const [sorting, setSorting] = useState<SortingState>([
       { id: 'COD_OS', desc: false },
    ]);
-   const [showFilters, setShowFilters] = useState(false);
-   const [osParaExcluir, setOsParaExcluir] = useState<string | null>(null);
-
-   // Estados para os valores dos inputs de filtro
    const [filterValues, setFilterValues] = useState({
       COD_CHAMADO: '',
       DATA_CHAMADO: '',
@@ -266,96 +292,16 @@ export default function TabelaOS({
       EMAIL_CHAMADO: '',
       global: '',
    });
+   const [showFilters, setShowFilters] = useState(false);
 
-   // ==============================
-
-   const fetchDataOS = async (codChamado: number) => {
-      const response = await fetch(`/api/OS-chamado/${codChamado}`);
-
-      if (!response.ok) throw new Error(`Erro: ${response.status}`);
-
-      const data = await response.json();
-
-      return Array.isArray(data) ? data : [data];
-   };
-   // ==============================
-
-   const {
-      data: dataOS,
-      isLoading: isLoading,
-      isError: isError,
-      error,
-      refetch,
-   } = useQuery({
-      queryKey: ['dataOS', codChamado],
-      queryFn: () => fetchDataOS(codChamado!),
-      enabled: isOpen && !!codChamado,
-      staleTime: 1000 * 60 * 1,
-   });
-   // ==============================
-
-   useEffect(() => {
-      if (isOpen && codChamado) {
-         refetch();
-      }
-   }, [isOpen, codChamado, refetch]);
-   // ==============================
-
-   const handleClose = () => {
-      setTimeout(() => {
-         onClose();
-      }, 300);
-   };
-   // ==============================
-
-   // ==============================
-   // Função para abrir o modal de edição
-   const handleOpenEditarOS = (codOS: string) => {
-      setSelectedOS(codOS);
-      setModalEditarOSOpen(true);
-   };
-
-   // Função para fechar o modal de edição
-   const handleCloseEditarOS = () => {
-      setModalEditarOSOpen(false);
-      setSelectedOS(null);
-   };
-   // ==============================
-
-   // Função para abrir modal de exclusão
-   const handleAbrirModalExclusao = (codOS: string) => {
-      setOsParaExcluir(codOS);
-   };
-
-   // Função para fechar modal de exclusão
-   const handleFecharModalExclusao = () => {
-      setOsParaExcluir(null);
-   };
-
-   const handleEditarOSSuccess = () => {
-      handleCloseEditarOS(); // fecha o modal de edição
-      onSuccess?.(); // fecha a Tabela_OS
-   };
-
-   const handleExclusaoSuccess = () => {
-      handleFecharModalExclusao();
-      refetch(); // Atualiza a tabela
-   };
-
-   // Configuração da tabela
-   const colunas = colunasTabelaOS({
-      onEditarOS: handleOpenEditarOS,
-      onExcluirOS: handleAbrirModalExclusao,
-   });
-
-   // Função de filtro global otimizada
+   // ================================================================================
+   // FUNÇÕES DE FILTRO
+   // ================================================================================
    const globalFilterFn = useCallback(
       (row: any, columnId: string, filterValue: string) => {
          if (!filterValue) return true;
 
          const searchValue = filterValue.toLowerCase();
-
-         // Busca em todas as colunas principais da OS
          const searchableColumns = [
             'COD_OS',
             'NOME_CLIENTE',
@@ -367,7 +313,6 @@ export default function TabelaOS({
          return searchableColumns.some(colId => {
             const cellValue = row.getValue(colId);
 
-            // Para data, formata antes de comparar
             if (colId === 'DTINI_OS' && cellValue) {
                try {
                   const date = new Date(cellValue as string);
@@ -387,7 +332,6 @@ export default function TabelaOS({
       []
    );
 
-   // Função de filtro por coluna otimizada
    const columnFilterFn = useCallback(
       (row: any, columnId: string, filterValue: string) => {
          if (!filterValue || filterValue === '') return true;
@@ -396,15 +340,12 @@ export default function TabelaOS({
          const cellString = String(cellValue || '').toLowerCase();
          const filterString = String(filterValue).toLowerCase();
 
-         // Filtro específico por tipo de coluna
          switch (columnId) {
             case 'COD_OS':
             case 'CODTRF_OS':
-               // Para códigos, permite busca parcial em números
                return cellString.includes(filterString);
 
             case 'DTINI_OS':
-               // Para data, formata antes de comparar
                if (!cellValue) return false;
                try {
                   const date = new Date(cellValue as string);
@@ -417,14 +358,134 @@ export default function TabelaOS({
             case 'NOME_CLIENTE':
             case 'OBS_OS':
             default:
-               // Para texto, busca parcial case-insensitive
                return cellString.includes(filterString);
          }
       },
       []
    );
 
-   // ==============================
+   const totalActiveFilters = useMemo(() => {
+      let count = columnFilters.length;
+      if (globalFilter && globalFilter.trim()) count += 1;
+      return count;
+   }, [columnFilters.length, globalFilter]);
+
+   const clearFilters = () => {
+      setColumnFilters([]);
+      setGlobalFilter('');
+      setFilterValues({
+         COD_CHAMADO: '',
+         DATA_CHAMADO: '',
+         ASSUNTO_CHAMADO: '',
+         STATUS_CHAMADO: '',
+         EMAIL_CHAMADO: '',
+         global: '',
+      });
+      table.getAllColumns().forEach(column => {
+         column.setFilterValue('');
+      });
+   };
+
+   // Atualiza os valores locais quando os filtros mudam
+   useEffect(() => {
+      const newFilterValues = {
+         COD_CHAMADO: '',
+         DATA_CHAMADO: '',
+         ASSUNTO_CHAMADO: '',
+         STATUS_CHAMADO: '',
+         EMAIL_CHAMADO: '',
+         global: globalFilter || '',
+      };
+
+      columnFilters.forEach(filter => {
+         if (filter.id in newFilterValues) {
+            newFilterValues[filter.id as keyof typeof newFilterValues] = String(
+               filter.value || ''
+            );
+         }
+      });
+
+      setFilterValues(prev => {
+         const hasChanged = Object.keys(newFilterValues).some(
+            key =>
+               prev[key as keyof typeof prev] !==
+               newFilterValues[key as keyof typeof newFilterValues]
+         );
+         return hasChanged ? newFilterValues : prev;
+      });
+   }, [columnFilters, globalFilter]);
+
+   // ================================================================================
+   // API E DADOS
+   // ================================================================================
+   const fetchDataOS = async (codChamado: number) => {
+      const response = await fetch(`/api/OS-chamado/${codChamado}`);
+
+      if (!response.ok) throw new Error(`Erro: ${response.status}`);
+
+      const data = await response.json();
+      return Array.isArray(data) ? data : [data];
+   };
+
+   const {
+      data: dataOS,
+      isLoading,
+      isError,
+      error,
+      refetch,
+   } = useQuery({
+      queryKey: ['dataOS', codChamado],
+      queryFn: () => fetchDataOS(codChamado!),
+      enabled: isOpen && !!codChamado,
+      staleTime: 1000 * 60 * 1,
+   });
+
+   // ================================================================================
+   // HANDLERS E CALLBACKS
+   // ================================================================================
+   const handleClose = () => {
+      setTimeout(() => {
+         onClose();
+      }, 300);
+   };
+   // ====================
+
+   const handleOpenEditarOS = (codOS: string) => {
+      setSelectedOS(codOS);
+      setModalEditarOSOpen(true);
+   };
+
+   const handleCloseEditarOS = () => {
+      setModalEditarOSOpen(false);
+      setSelectedOS(null);
+   };
+   // ====================
+
+   const handleAbrirModalExclusao = (codOS: string) => {
+      setOsParaExcluir(codOS);
+   };
+
+   const handleFecharModalExclusao = () => {
+      setOsParaExcluir(null);
+   };
+
+   const handleEditarOSSuccess = () => {
+      handleCloseEditarOS();
+      onSuccess?.();
+   };
+
+   const handleExclusaoSuccess = () => {
+      handleFecharModalExclusao();
+      refetch();
+   };
+
+   // ================================================================================
+   // CONFIGURAÇÃO DA TABELA
+   // ================================================================================
+   const colunas = colunasTabelaOS({
+      onEditarOS: handleOpenEditarOS,
+      onExcluirOS: handleAbrirModalExclusao,
+   });
 
    const table = useReactTable({
       data: (dataOS ?? []) as TabelaOSProps[],
@@ -447,213 +508,47 @@ export default function TabelaOS({
             pageSize: 10,
          },
       },
-
-      // Função de filtro personalizada para colunas
       filterFns: {
          customColumnFilter: columnFilterFn,
       },
-
-      // Aplica o filtro customizado para todas as colunas
       defaultColumn: {
          filterFn: columnFilterFn,
       },
    });
 
-   // Calcula o total de filtros ativos
-   const totalActiveFilters = useMemo(() => {
-      let count = columnFilters.length;
-      if (globalFilter && globalFilter.trim()) count += 1;
-      return count;
-   }, [columnFilters.length, globalFilter]);
-
-   // ==============================
-
-   // Obter valores únicos para filtros de select - usando useMemo para otimização
-   const clienteOptions = Array.from(
-      new Set(
-         dataOS
-            ?.map(item => item.NOME_CLIENTE)
-            .filter(Boolean)
-            .filter(cliente => cliente && cliente.trim() !== '')
-      )
-   ).sort();
-
-   // ==============================
-
-   // Função para limpar todos os filtros e inputs
-   const clearFilters = () => {
-      setColumnFilters([]);
-      setGlobalFilter('');
-
-      // Limpa os valores dos inputs
-      setFilterValues({
-         COD_CHAMADO: '',
-         DATA_CHAMADO: '',
-         ASSUNTO_CHAMADO: '',
-         STATUS_CHAMADO: '',
-         EMAIL_CHAMADO: '',
-         global: '',
-      });
-
-      // Limpa os filtros da tabela
-      table.getAllColumns().forEach(column => {
-         column.setFilterValue('');
-      });
-   };
-
-   // Atualiza os valores locais quando os filtros mudam
-   // Atualiza os valores locais quando os filtros da tabela mudam
+   // ================================================================================
+   // EFEITOS
+   // ================================================================================
    useEffect(() => {
-      // Cria um novo objeto de valores baseado nos filtros atuais
-      const newFilterValues = {
-         COD_CHAMADO: '',
-         DATA_CHAMADO: '',
-         ASSUNTO_CHAMADO: '',
-         STATUS_CHAMADO: '',
-         EMAIL_CHAMADO: '',
-         global: globalFilter || '',
-      };
+      if (isOpen && codChamado) {
+         refetch();
+      }
+   }, [isOpen, codChamado, refetch]);
 
-      // Preenche os valores dos filtros de coluna
-      columnFilters.forEach(filter => {
-         if (filter.id in newFilterValues) {
-            newFilterValues[filter.id as keyof typeof newFilterValues] = String(
-               filter.value || ''
-            );
-         }
-      });
-
-      // Atualiza apenas se houver mudanças reais para evitar loops
-      setFilterValues(prev => {
-         // Verifica se os valores realmente mudaram
-         const hasChanged = Object.keys(newFilterValues).some(
-            key =>
-               prev[key as keyof typeof prev] !==
-               newFilterValues[key as keyof typeof newFilterValues]
-         );
-
-         return hasChanged ? newFilterValues : prev;
-      });
-   }, [columnFilters, globalFilter]); // Remova filterValues das dependências
-
-   // ==============================
-
+   // ================================================================================
+   // ESTADOS DE CARREGAMENTO E VALIDAÇÃO
+   // ================================================================================
    if (!isOpen) return null;
-   // ==============================
 
-   // ===== LOADING =====
    if (isLoading) {
       return (
-         <>
-            {/* ===== OVERLAY LOADING ===== */}
-            <div className="fixed inset-0 z-50 flex items-center justify-center">
-               <div
-                  className="absolute inset-0 bg-black/50 backdrop-blur-xl"
-                  onClick={onClose}
-               />
-               {/* ===== */}
-               <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-gray-300">
-                  {/* Header do modal mesmo durante loading */}
-                  <header className="flex items-center justify-between gap-8 bg-white/70 p-6">
-                     <section className="flex items-center justify-center gap-6">
-                        <div className="flex items-center justify-center rounded-xl border border-black/30 bg-white/10 p-4">
-                           <FaFileAlt
-                              className="animate-pulse text-black"
-                              size={44}
-                           />
-                        </div>
-                        <div className="flex flex-col items-center justify-center">
-                           <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
-                              Ordens de Serviço
-                           </h1>
-                           <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
-                              Chamado - {codChamado}
-                           </span>
-                        </div>
-                     </section>
-                     <button
-                        onClick={handleClose}
-                        className="group cursor-pointer rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
-                     >
-                        <IoClose size={24} />
-                     </button>
-                  </header>
-                  {/* Conteúdo com loading */}
-                  <main className="flex min-h-[400px] items-center justify-center overflow-hidden bg-black">
-                     <div className="text-center">
-                        {/* Aqui você pode personalizar o loading como quiser */}
-                        <div className="mx-auto mb-4 h-16 w-16 animate-spin rounded-full border-b-2 border-white"></div>
-                        <h2 className="text-2xl font-bold tracking-widest text-white italic">
-                           Carregando os dados da tabela OS...
-                        </h2>
-                     </div>
-                  </main>
-               </div>
-            </div>
-
-            {/* Loading overlay centralizado - Z-INDEX MAIS ALTO */}
-            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-               <IsLoading title="Carregando os dados da tabela OS..." />
-            </div>
-         </>
+         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-xl">
+            <IsLoading title={`Carregando as OS's do Chamado #${codChamado}`} />
+         </div>
       );
    }
-   // ==============================
 
-   // ===== ERROR =====
    if (isError) {
       return (
-         <>
-            {/* ===== OVERLAY ERROR ===== */}
-            <div className="fixed inset-0 z-50 flex items-center justify-center">
-               <div
-                  className="absolute inset-0 bg-black/50 backdrop-blur-xl"
-                  onClick={onClose}
-               />
-               {/* ===== */}
-               <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-gray-300">
-                  {/* Header do modal mesmo durante erro */}
-                  <header className="flex items-center justify-between gap-8 bg-white/70 p-6">
-                     <section className="flex items-center justify-center gap-6">
-                        <div className="flex items-center justify-center rounded-xl border border-black/30 bg-white/10 p-4">
-                           <FaFileAlt
-                              className="animate-pulse text-black"
-                              size={44}
-                           />
-                        </div>
-                        <div className="flex flex-col items-center justify-center">
-                           <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
-                              Ordens de Serviço
-                           </h1>
-                           <span className="rounded-full bg-black px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
-                              Chamado - {codChamado}
-                           </span>
-                        </div>
-                     </section>
-                     <button
-                        onClick={handleClose}
-                        className="group cursor-pointer rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
-                     >
-                        <IoClose size={24} />
-                     </button>
-                  </header>
-                  <main className="min-h-[400px] overflow-hidden bg-black">
-                     {/* Conteúdo vazio durante erro */}
-                  </main>
-               </div>
-            </div>
-
-            {/* Error overlay centralizado - Z-INDEX MAIS ALTO */}
-            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-               <IsError error={error as Error} />
-            </div>
-         </>
+         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-xl">
+            <IsError error={error as Error} />
+         </div>
       );
    }
 
    // ================================================================================
-
-   // ===== RENDERIZAÇÃO =====
+   // RENDERIZAÇÃO PRINCIPAL
+   // ================================================================================
    return (
       <>
          <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -662,7 +557,7 @@ export default function TabelaOS({
                className="absolute inset-0 bg-black/50 backdrop-blur-xl"
                onClick={onClose}
             />
-            {/* ===== */}
+
             {/* ===== MODAL ===== */}
             <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-black">
                {/* ===== HEADER ===== */}
@@ -671,11 +566,9 @@ export default function TabelaOS({
                   <section className="flex items-center justify-between gap-8">
                      {/* ===== ITENS DA ESQUERDA ===== */}
                      <div className="flex items-center justify-center gap-6">
-                        {/* ícone */}
                         <div className="flex items-center justify-center rounded-md bg-white/10 p-4 shadow-sm shadow-black">
                            <FaThList className="text-black" size={28} />
                         </div>
-                        {/* ===== */}
 
                         <div className="flex flex-col justify-center">
                            <div className="flex items-center justify-center gap-10">
@@ -692,7 +585,6 @@ export default function TabelaOS({
                            </p>
                         </div>
                      </div>
-                     {/* ===== */}
 
                      {/* ===== ITENS DA DIREITA ===== */}
                      <div className="flex items-center gap-6">
@@ -717,7 +609,6 @@ export default function TabelaOS({
                            )}
                            {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
                         </button>
-                        {/* ===== */}
 
                         {/* Botão limpar filtros */}
                         {totalActiveFilters > 0 && (
@@ -729,7 +620,6 @@ export default function TabelaOS({
                               Limpar Filtros
                            </button>
                         )}
-                        {/* ===== */}
 
                         {/* Botão fechar tabela */}
                         <button
@@ -762,7 +652,6 @@ export default function TabelaOS({
                      </section>
                   )}
                </header>
-               {/* ===== */}
 
                {/* ===== CONTEÚDO PRINCIPAL ===== */}
                <main className="overflow-hidden bg-black">
@@ -777,10 +666,8 @@ export default function TabelaOS({
                               {/* ===== CABEÇALHO DA TABELA ===== */}
                               <thead className="sticky top-0 z-20">
                                  {table.getHeaderGroups().map(headerGroup => (
-                                    // Linha do cabeçalho da tabela
                                     <tr key={headerGroup.id}>
                                        {headerGroup.headers.map(header => (
-                                          // Células do cabeçalho da tabela
                                           <th
                                              key={header.id}
                                              className="bg-teal-700 py-6 font-extrabold tracking-wider text-white uppercase select-none"
@@ -819,7 +706,6 @@ export default function TabelaOS({
                                        ))}
                                     </tr>
                                  ))}
-                                 {/* ===== */}
 
                                  {/* ===== FILTROS DA TABELA ===== */}
                                  {showFilters && (
@@ -835,7 +721,7 @@ export default function TabelaOS({
                                              }}
                                           >
                                              {column.id === 'COD_OS' && (
-                                                <FilterInputWithDebounce
+                                                <FilterInputTableHeaderDebounce
                                                    value={
                                                       (column.getFilterValue() as string) ??
                                                       ''
@@ -849,9 +735,8 @@ export default function TabelaOS({
                                                    type="text"
                                                 />
                                              )}
-
                                              {column.id === 'NOME_CLIENTE' && (
-                                                <FilterInputWithDebounce
+                                                <FilterInputTableHeaderDebounce
                                                    value={
                                                       (column.getFilterValue() as string) ??
                                                       ''
@@ -861,13 +746,11 @@ export default function TabelaOS({
                                                          value
                                                       )
                                                    }
-                                                   // options={clienteOptions}
                                                    placeholder="Cliente..."
                                                 />
                                              )}
-
                                              {column.id === 'CODTRF_OS' && (
-                                                <FilterInputWithDebounce
+                                                <FilterInputTableHeaderDebounce
                                                    value={
                                                       (column.getFilterValue() as string) ??
                                                       ''
@@ -880,9 +763,8 @@ export default function TabelaOS({
                                                    placeholder="Código..."
                                                 />
                                              )}
-
                                              {column.id === 'OBS_OS' && (
-                                                <FilterInputWithDebounce
+                                                <FilterInputTableHeaderDebounce
                                                    value={
                                                       (column.getFilterValue() as string) ??
                                                       ''
@@ -895,9 +777,8 @@ export default function TabelaOS({
                                                    placeholder="Observação..."
                                                 />
                                              )}
-
                                              {column.id === 'DTINI_OS' && (
-                                                <FilterInputWithDebounce
+                                                <FilterInputTableHeaderDebounce
                                                    value={
                                                       (column.getFilterValue() as string) ??
                                                       ''
@@ -916,7 +797,6 @@ export default function TabelaOS({
                                     </tr>
                                  )}
                               </thead>
-                              {/* ===== */}
 
                               {/* ===== CORPO DA TABELA ===== */}
                               <tbody>
@@ -925,7 +805,6 @@ export default function TabelaOS({
                                     table
                                        .getRowModel()
                                        .rows.map((row, rowIndex) => (
-                                          // Linha do corpo da tabela
                                           <tr
                                              key={row.id}
                                              className={`group border-b border-gray-600 transition-all hover:bg-amber-200 ${
@@ -937,7 +816,6 @@ export default function TabelaOS({
                                              {row
                                                 .getVisibleCells()
                                                 .map(cell => (
-                                                   // Células da tabela
                                                    <td
                                                       key={cell.id}
                                                       className="p-3 text-sm font-semibold tracking-wider text-white select-none group-hover:text-black"
@@ -1018,7 +896,6 @@ export default function TabelaOS({
                                        ))}
                                     </select>
                                  </div>
-                                 {/* ===== */}
 
                                  {/* Botões de navegação */}
                                  <div className="flex items-center gap-3">
@@ -1032,7 +909,6 @@ export default function TabelaOS({
                                           size={24}
                                        />
                                     </button>
-                                    {/* ===== */}
 
                                     <button
                                        onClick={() => table.previousPage()}
@@ -1044,7 +920,6 @@ export default function TabelaOS({
                                           size={24}
                                        />
                                     </button>
-                                    {/* ===== */}
 
                                     <div className="flex items-center justify-center gap-2">
                                        <span className="text-base font-semibold tracking-widest text-black italic select-none">
@@ -1077,13 +952,11 @@ export default function TabelaOS({
                                              )}
                                           </select>
                                        </span>
-                                       {/* ===== */}
                                        <span className="text-base font-semibold tracking-widest text-black italic select-none">
                                           {' '}
                                           de {table.getPageCount()}
                                        </span>
                                     </div>
-                                    {/* ===== */}
 
                                     <button
                                        onClick={() => table.nextPage()}
@@ -1095,7 +968,6 @@ export default function TabelaOS({
                                           size={24}
                                        />
                                     </button>
-                                    {/* ===== */}
 
                                     <button
                                        onClick={() =>
@@ -1117,47 +989,39 @@ export default function TabelaOS({
                         </section>
                      </section>
                   )}
-                  {/* ===== */}
 
                   {/* ===== MENSAGEM QUANDO NÃO HÁ OS ===== */}
                   {dataOS && dataOS.length === 0 && !isLoading && (
                      <section className="bg-black py-40 text-center">
-                        {/* ícone */}
                         <FaExclamationTriangle
                            className="mx-auto mb-6 text-yellow-500"
                            size={80}
                         />
-                        {/* título */}
                         <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
                            Nenhuma Ordem de Serviço foi encontrada para o
                            chamado #{codChamado}.
                         </h3>
                      </section>
                   )}
-                  {/* ===== */}
 
                   {/* ===== MENSAGEM QUANDO FILTROS NÃO RETORNAM RESULTADOS ===== */}
                   {dataOS &&
                      dataOS.length > 0 &&
                      table.getFilteredRowModel().rows.length === 0 && (
                         <section className="bg-slate-900 py-20 text-center">
-                           {/* ícone */}
                            <FaFilter
                               className="mx-auto mb-4 text-cyan-400"
                               size={60}
                            />
-                           {/* título */}
                            <h3 className="text-xl font-bold tracking-wider text-slate-200 select-none">
                               Nenhum registro foi encontrado para os filtros
                               aplicados.
                            </h3>
-                           {/* Subtítulo */}
                            <p className="mt-2 text-slate-400">
                               Tente ajustar os filtros ou limpe-os para
                               visualizar registros.
                            </p>
 
-                           {/* Botão para limpar filtros */}
                            {totalActiveFilters > 0 && (
                               <button
                                  onClick={clearFilters}
@@ -1172,7 +1036,6 @@ export default function TabelaOS({
                </main>
             </div>
          </div>
-         {/* ===== */}
 
          {/* ===== MODAL EDIÇÃO DE OS ===== */}
          {modalEditarOSOpen && selectedOS !== null && (
@@ -1187,7 +1050,6 @@ export default function TabelaOS({
                onSuccess={handleEditarOSSuccess}
             />
          )}
-         {/* ===== */}
 
          {/* ===== MODAL EXCLUSÃO DE OS ===== */}
          <ModalExcluirOS
@@ -1196,25 +1058,6 @@ export default function TabelaOS({
             codOS={osParaExcluir}
             onSuccess={handleExclusaoSuccess}
          />
-         {/* ===== */}
       </>
    );
-}
-// ================================================================================
-
-// Função para largura fixa das colunas
-function getColumnWidth(columnId: string): string {
-   const widthMap: Record<string, string> = {
-      COD_OS: '8.5%',
-      NOME_CLIENTE: '15%',
-      CODTRF_OS: '7%',
-      OBS_OS: '29%',
-      DTINI_OS: '10%',
-      HRINI_OS: '8%',
-      HRFIM_OS: '8%',
-      QTD_HR_OS: '8%',
-      actions: '6.5%',
-   };
-
-   return widthMap[columnId] || 'auto';
 }

@@ -533,50 +533,9 @@ export default function TabelaTarefas({
    if (isLoading) {
       return (
          <>
-            {/* Overlay do modal principal */}
-            <div className="fixed inset-0 z-50 flex items-center justify-center">
-               <div
-                  className="absolute inset-0 bg-black/50 backdrop-blur-xl"
-                  onClick={onClose}
-               />
-               <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-gray-300">
-                  {/* Header do modal mesmo durante loading */}
-                  <header className="flex items-center justify-between gap-8 bg-white/70 p-6">
-                     <section className="flex items-center justify-center gap-6">
-                        <div className="flex items-center justify-center rounded-xl border border-black/30 bg-white/10 p-4">
-                           <FaFileAlt
-                              className="animate-pulse text-black"
-                              size={44}
-                           />
-                        </div>
-                        <div className="flex flex-col items-center justify-center">
-                           <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
-                              Tarefas
-                           </h1>
-                        </div>
-                     </section>
-                     <button
-                        onClick={handleClose}
-                        className="group cursor-pointer rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
-                     >
-                        <IoClose size={24} />
-                     </button>
-                  </header>
-                  {/* Conteúdo com loading */}
-                  <main className="flex min-h-[400px] items-center justify-center overflow-hidden bg-black">
-                     <div className="text-center">
-                        <div className="mx-auto mb-4 h-16 w-16 animate-spin rounded-full border-b-2 border-white"></div>
-                        <h2 className="text-2xl font-bold tracking-widest text-white italic">
-                           Carregando os dados da tabela Tarefas...
-                        </h2>
-                     </div>
-                  </main>
-               </div>
-            </div>
-
             {/* Loading overlay centralizado - Z-INDEX MAIS ALTO */}
-            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-               <IsLoading title="Carregando os dados da tabela Tarefas" />
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-xl">
+               <IsLoading title="Carregando os dados da tabela Tarefa" />
             </div>
          </>
       );
@@ -585,43 +544,8 @@ export default function TabelaTarefas({
    if (isError) {
       return (
          <>
-            {/* Overlay do modal principal */}
-            <div className="fixed inset-0 z-50 flex items-center justify-center">
-               <div
-                  className="absolute inset-0 bg-black/50 backdrop-blur-xl"
-                  onClick={onClose}
-               />
-               <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-gray-300">
-                  {/* Header do modal mesmo durante erro */}
-                  <header className="flex items-center justify-between gap-8 bg-white/70 p-6">
-                     <section className="flex items-center justify-center gap-6">
-                        <div className="flex items-center justify-center rounded-xl border border-black/30 bg-white/10 p-4">
-                           <FaFileAlt
-                              className="animate-pulse text-black"
-                              size={44}
-                           />
-                        </div>
-                        <div className="flex flex-col items-center justify-center">
-                           <h1 className="mb-1 text-4xl font-extrabold tracking-widest text-black select-none">
-                              Tarefas
-                           </h1>
-                        </div>
-                     </section>
-                     <button
-                        onClick={handleClose}
-                        className="group cursor-pointer rounded-full bg-red-900 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
-                     >
-                        <IoClose size={24} />
-                     </button>
-                  </header>
-                  <main className="min-h-[400px] overflow-hidden bg-black">
-                     {/* Conteúdo vazio durante erro */}
-                  </main>
-               </div>
-            </div>
-
             {/* Error overlay centralizado - Z-INDEX MAIS ALTO */}
-            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-xl">
                <IsError error={error as Error} />
             </div>
          </>

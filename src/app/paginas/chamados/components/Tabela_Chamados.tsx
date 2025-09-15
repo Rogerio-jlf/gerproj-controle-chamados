@@ -33,19 +33,13 @@ import IsLoading from './Loading';
 import IsError from './Error';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
-import {
-   FaExclamationTriangle,
-   FaDatabase,
-   FaUserLock,
-   FaSearch,
-} from 'react-icons/fa';
+import { FaExclamationTriangle, FaDatabase, FaSearch } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { RiArrowUpDownLine } from 'react-icons/ri';
-import { IoArrowUp, IoArrowDown, IoClose } from 'react-icons/io5';
-import { FaFilter, FaUsers } from 'react-icons/fa6';
+import { IoArrowUp, IoArrowDown } from 'react-icons/io5';
+import { FaFilter } from 'react-icons/fa6';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
-import { Loader2 } from 'lucide-react';
 
 // ================================================================================
 // INTERFACES E TIPOS
@@ -283,7 +277,7 @@ export default function TabelaChamados() {
    // HOOKS E CONTEXTOS
    // ================================================================================
    const { filters } = useFiltersTabelaChamados();
-   const { user, loading } = useAuth();
+   const { user, loading, isTokenExpired, logout } = useAuth();
    const queryClient = useQueryClient();
    const { ano, mes } = filters;
    const token =
@@ -627,34 +621,41 @@ export default function TabelaChamados() {
    // ================================================================================
    // ESTADOS DE CARREGAMENTO E VALIDAÇÃO
    // ================================================================================
-   if (loading) {
+
+   if (!user || !token) {
       return (
-         <div className="flex flex-col items-center justify-center space-y-6 py-40">
-            <div className="relative">
-               <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-cyan-200 via-cyan-400 to-cyan-600 opacity-20 blur-lg"></div>
-               <div className="relative flex items-center justify-center">
-                  <Loader2 className="animate-spin text-blue-600" size={120} />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                     <FaUserLock className="text-blue-600" size={60} />
-                  </div>
-               </div>
-            </div>
-            <div className="space-y-3 text-center">
-               <h3 className="text-2xl font-bold tracking-wider text-blue-600 select-none">
-                  Verificando autenticação do usuário
+         <div className="flex flex-col items-center justify-center gap-6 py-40">
+            <FaExclamationTriangle
+               className="animate-pulse text-red-600"
+               size={120}
+            />
+
+            <div className="flex flex-col items-center justify-center gap-4">
+               <h3 className="text-3xl font-extrabold tracking-wider text-red-600 select-none">
+                  Acesso restrito!
                </h3>
-               <div className="flex items-center justify-center space-x-1">
-                  <span className="text-base font-semibold tracking-wider text-blue-600 italic select-none">
+               <p className="text-lg font-semibold tracking-wider text-red-500 italic select-none">
+                  Sua sessão expirou. Você precisa estar logado para acessar o
+                  sistema.
+               </p>
+               <p className="text-lg font-semibold tracking-wider text-red-500 italic select-none">
+                  Por medida de segurança, você será redirecionado para a página
+                  de login.
+               </p>
+
+               <div className="flex items-center justify-center gap-1">
+                  <span className="text-base font-semibold tracking-wider text-red-600 italic select-none">
                      Aguarde
                   </span>
-                  <div className="flex space-x-1">
-                     <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"></div>
+
+                  <div className="flex gap-1">
+                     <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-red-600"></div>
                      <div
-                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"
+                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-red-600"
                         style={{ animationDelay: '0.1s' }}
                      ></div>
                      <div
-                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"
+                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-red-600"
                         style={{ animationDelay: '0.2s' }}
                      ></div>
                   </div>
@@ -663,58 +664,12 @@ export default function TabelaChamados() {
          </div>
       );
    }
-
-   if (!user || !token) {
-      return (
-         <div className="flex flex-col items-center justify-center space-y-6 py-40">
-            <div className="relative">
-               <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-red-200 via-red-400 to-red-600 opacity-20 blur-lg"></div>
-               <div className="relative flex items-center justify-center">
-                  <FaExclamationTriangle
-                     className="animate-pulse text-red-600"
-                     size={120}
-                  />
-               </div>
-            </div>
-            <div className="space-y-3 text-center">
-               <h3 className="text-2xl font-bold tracking-wider text-red-600 select-none">
-                  Acesso restrito!
-               </h3>
-               <p className="mx-auto max-w-md text-base font-semibold tracking-wider text-red-500 italic select-none">
-                  Você precisa estar logado para visualizar os chamados do
-                  sistema.
-               </p>
-            </div>
-         </div>
-      );
-   }
-
-   if (!ano || !mes) {
-      return (
-         <div className="flex flex-col items-center justify-center space-y-6 py-40">
-            <div className="relative">
-               <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-blue-200 via-blue-400 to-blue-600 opacity-20 blur-lg"></div>
-               <div className="relative flex items-center justify-center">
-                  <FaExclamationTriangle
-                     className="animate-pulse text-blue-600"
-                     size={120}
-                  />
-               </div>
-            </div>
-            <div className="space-y-3 text-center">
-               <h3 className="text-2xl font-bold tracking-wider text-blue-600 select-none">
-                  Filtros obrigatórios
-               </h3>
-               <p className="mx-auto max-w-md text-base font-semibold tracking-wider text-blue-500 italic select-none">
-                  Por favor, selecione o ano e mês para visualizar os chamados.
-               </p>
-            </div>
-         </div>
-      );
-   }
+   // =====
 
    if (isLoading)
-      return <IsLoading title="Carregando os dados da tabela Chamados" />;
+      return <IsLoading title="Carregando os dados da tabela Chamado" />;
+   // =====
+
    if (isError) return <IsError error={error as Error} />;
 
    // ================================================================================
@@ -1267,6 +1222,7 @@ export default function TabelaChamados() {
             chamado={chamadoParaAtribuir}
             onAtribuicaoSuccess={handleAtribuicaoSuccess}
          />
+
          {/* ===== */}
       </>
    );

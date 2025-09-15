@@ -1,17 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { z } from 'zod';
 import { toast } from 'sonner';
 // ================================================================================
-import {
-   AlertDialog,
-   AlertDialogContent,
-   AlertDialogHeader,
-   AlertDialogTitle,
-   AlertDialogDescription,
-   AlertDialogFooter,
-   AlertDialogCancel,
-   AlertDialogAction,
-} from '../../../../components/ui/alert-dialog';
 import {
    Tooltip,
    TooltipContent,
@@ -46,9 +36,52 @@ interface Props {
    codChamado: number;
    onUpdateAssunto?: (codChamado: number, novoAssunto: string) => Promise<void>;
    onClose: () => void;
-   // NOVA PROP: Callback para notificar quando o assunto foi atualizado
    onAssuntoUpdated?: (codChamado: number, novoAssunto: string) => void;
 }
+
+// Modal Component
+interface ModalProps {
+   isOpen: boolean;
+   onClose: () => void;
+   children: React.ReactNode;
+}
+
+const Modal = ({ isOpen, onClose, children }: ModalProps) => {
+   useEffect(() => {
+      const handleEscape = (e: KeyboardEvent) => {
+         if (e.key === 'Escape') {
+            onClose();
+         }
+      };
+
+      if (isOpen) {
+         document.addEventListener('keydown', handleEscape);
+         document.body.style.overflow = 'hidden';
+      }
+
+      return () => {
+         document.removeEventListener('keydown', handleEscape);
+         document.body.style.overflow = 'unset';
+      };
+   }, [isOpen, onClose]);
+
+   if (!isOpen) return null;
+
+   return (
+      <div
+         className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+         onClick={onClose}
+      >
+         <div
+            className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+         >
+            {children}
+         </div>
+      </div>
+   );
+};
+
 // ================================================================================
 
 export default function AssuntoCellEditavel({
@@ -56,7 +89,7 @@ export default function AssuntoCellEditavel({
    assunto,
    codChamado,
    onUpdateAssunto,
-   onAssuntoUpdated, // Nova prop
+   onAssuntoUpdated,
 }: Props) {
    const [isModalOpen, setIsModalOpen] = useState(false);
    const [novoAssunto, setNovoAssunto] = useState(assunto);
@@ -87,9 +120,9 @@ export default function AssuntoCellEditavel({
    }, [novoAssunto, assunto]);
 
    // Atualizar erro de validação
-   useState(() => {
+   useEffect(() => {
       setValidationError(validation.error);
-   });
+   }, [validation.error]);
 
    const handleSave = async () => {
       if (!onUpdateAssunto || !validation.canSave) return;
@@ -103,7 +136,7 @@ export default function AssuntoCellEditavel({
 
          // Garantir pelo menos 800ms de loading para mostrar spinner
          const elapsed = Date.now() - start;
-         if (elapsed < 3000) {
+         if (elapsed < 800) {
             await new Promise(res => setTimeout(res, 800 - elapsed));
          }
 
@@ -116,6 +149,11 @@ export default function AssuntoCellEditavel({
          ));
 
          setIsModalOpen(false);
+
+         // Notificar callback se existir
+         if (onAssuntoUpdated) {
+            onAssuntoUpdated(codChamado, novoAssuntoSemAcentos);
+         }
       } catch (error) {
          console.error('Erro ao atualizar assunto:', error);
 
@@ -193,52 +231,48 @@ export default function AssuntoCellEditavel({
                </div>
             </TooltipContent>
          </Tooltip>
-         {/* ==================== */}
 
-         <AlertDialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <AlertDialogContent className="max-w-3xl overflow-hidden rounded-2xl border-none bg-white/95 p-0">
-               {isLoading && (
-                  <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
-                     <div className="flex flex-col items-center gap-3">
-                        <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-                        <span className="text-lg font-bold tracking-wider text-slate-800 select-none">
-                           Salvando alterações...
-                        </span>
-                        <span className="text-sm font-semibold tracking-wider text-slate-600 italic select-none">
-                           Chamado #{codChamado}
-                        </span>
-                     </div>
-                  </div>
-               )}
+         {/* Modal Customizado */}
+         <Modal isOpen={isModalOpen} onClose={handleClose}>
+            <div
+               className="absolute inset-0 bg-black/50 backdrop-blur-xl"
+               onClick={handleClose}
+            />
+            {/* ========== */}
+            <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
+               {/* Header */}
+               <header className="relative bg-gradient-to-r from-pink-500 via-pink-600 to-pink-700 p-6 shadow-sm shadow-black">
+                  <section className="flex items-center justify-between">
+                     <div className="flex items-center justify-between gap-6">
+                        <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
+                           <FaEdit className="text-black" size={36} />
+                        </div>
 
-               <header className="bg-blue-600 p-6 text-white">
-                  <AlertDialogHeader className="space-y-0">
-                     <AlertDialogTitle className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                           <div className="rounded-md bg-white/10 p-4 shadow-md shadow-black">
-                              <FaEdit className="text-white" size={24} />
-                           </div>
-                           <div>
-                              <h3 className="text-2xl font-extrabold tracking-wider text-white select-none">
-                                 Editar Assunto
-                              </h3>
-                              <p className="text-base font-semibold tracking-widest text-gray-200 italic select-none">
+                        <div className="flex flex-col items-center justify-center">
+                           <h1 className="text-2xl font-extrabold tracking-wider text-black select-none">
+                              Editar Assunto
+                           </h1>
+
+                           <div className="rounded-full bg-black px-6 py-1">
+                              <p className="text-center text-base font-extrabold tracking-widest text-white italic select-none">
                                  Chamado #{codChamado}
                               </p>
                            </div>
                         </div>
-                        <button
-                           onClick={handleClose}
-                           disabled={isLoading}
-                           className="group cursor-pointer rounded-full bg-red-600/50 p-2 transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
-                        >
-                           <IoClose size={20} />
-                        </button>
-                     </AlertDialogTitle>
-                  </AlertDialogHeader>
+                     </div>
+
+                     <button
+                        onClick={handleClose}
+                        disabled={isLoading}
+                        className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                     >
+                        <IoClose size={24} />
+                     </button>
+                  </section>
                </header>
 
-               <div className="space-y-6 p-6">
+               {/* Content */}
+               <main className="space-y-6 p-6">
                   {/* Informações do Chamado */}
                   <div className="rounded-md bg-slate-50 p-6 shadow-sm shadow-black">
                      <div className="space-y-4 text-center">
@@ -345,49 +379,53 @@ export default function AssuntoCellEditavel({
                      </div>
                   </div>
 
+                  {/* Aviso de alteração */}
                   {validation.hasChanges && (
-                     <AlertDialogDescription asChild>
-                        <div className="rounded-lg border-l-4 border-amber-500 bg-amber-100 p-4 shadow-sm shadow-black">
-                           <div className="flex items-start gap-3">
-                              <FaExclamationTriangle
-                                 className="mt-0.5 text-amber-600"
-                                 size={16}
-                              />
-                              <p className="text-sm font-semibold tracking-wider text-amber-600 italic select-none">
-                                 Esta alteração será salva permanentemente.
-                              </p>
-                           </div>
+                     <div className="rounded-lg border-l-4 border-amber-500 bg-amber-100 p-4 shadow-sm shadow-black">
+                        <div className="flex items-start gap-3">
+                           <FaExclamationTriangle
+                              className="mt-0.5 text-amber-600"
+                              size={16}
+                           />
+                           <p className="text-sm font-semibold tracking-wider text-amber-600 italic select-none">
+                              Esta alteração será salva permanentemente.
+                           </p>
                         </div>
-                     </AlertDialogDescription>
+                     </div>
                   )}
-               </div>
+               </main>
 
-               <AlertDialogFooter className="relative gap-6 border-t border-red-600 bg-slate-50 p-6">
-                  <AlertDialogCancel
+               {/* Footer */}
+               <footer className="relative flex justify-end gap-4 border-t border-red-600 bg-slate-50 p-6">
+                  <button
                      onClick={handleCancel}
                      disabled={isLoading}
-                     className="cursor-pointer rounded-xl border-none bg-red-600 px-6 py-2 text-lg font-bold tracking-wider text-white transition-all select-none hover:scale-110 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
+                     className="cursor-pointer rounded-xl border-none bg-red-500 px-6 py-2 text-lg font-extrabold text-white shadow-md shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
                   >
                      Cancelar
-                  </AlertDialogCancel>
+                  </button>
 
-                  <AlertDialogAction
+                  <button
                      onClick={handleSave}
                      disabled={isLoading || !validation.canSave}
-                     className={`rounded-xl border-none bg-blue-600 px-6 py-2 text-lg font-bold tracking-wider text-white transition-all select-none hover:scale-110 hover:bg-blue-900 hover:shadow-md hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-900 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-slate-900 disabled:hover:shadow-none`}
+                     className={`cursor-pointer rounded-xl border-none bg-blue-500 px-6 py-2 text-lg font-extrabold text-white transition-all select-none active:scale-95 ${
+                        isLoading || !validation.canSave
+                           ? 'disabled:cursor-not-allowed disabled:opacity-50'
+                           : 'hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black'
+                     }`}
                   >
                      {isLoading ? (
-                        <div className="flex items-center gap-2">
-                           <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                        <>
+                           <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                            <span>Salvando...</span>
-                        </div>
+                        </>
                      ) : (
-                        <span>Salvar</span>
+                        <>Atualizar</>
                      )}
-                  </AlertDialogAction>
-               </AlertDialogFooter>
-            </AlertDialogContent>
-         </AlertDialog>
+                  </button>
+               </footer>
+            </div>
+         </Modal>
       </>
    );
 }
