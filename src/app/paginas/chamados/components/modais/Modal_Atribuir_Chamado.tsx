@@ -315,7 +315,7 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
       queryKey: ['dashboard-recursos'],
       queryFn: async () => {
          try {
-            const response = await fetch('/api/dashboard/recursos', {
+            const response = await fetch('/api/atribuir-chamado/recursos', {
                headers: { Authorization: `Bearer ${token}` },
             });
             if (!response.ok) throw new Error('Erro ao buscar recursos');
@@ -348,14 +348,17 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
    const { data: sugestaoData, isLoading: loadingSugestao } = useQuery({
       queryKey: ['sugestao-recurso', novoChamado],
       queryFn: async () => {
-         const response = await fetch('/api/dashboard/sugestao-recurso', {
-            method: 'POST',
-            headers: {
-               Authorization: `Bearer ${token}`,
-               'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(novoChamado),
-         });
+         const response = await fetch(
+            '/api/atribuir-chamado/sugestao-recurso',
+            {
+               method: 'POST',
+               headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+               },
+               body: JSON.stringify(novoChamado),
+            }
+         );
          if (!response.ok) throw new Error('Erro ao buscar sugestão');
          return response.json();
       },
@@ -371,7 +374,7 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
       queryFn: async () => {
          try {
             const response = await fetch(
-               `/api/dashboard/recurso/${selectedRecurso}`,
+               `/api/atribuir-chamado/recurso/${selectedRecurso}`,
                {
                   headers: { Authorization: `Bearer ${token}` },
                }

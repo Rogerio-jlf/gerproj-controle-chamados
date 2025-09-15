@@ -24,7 +24,6 @@ import {
 import { useAuth } from '../../../../hooks/useAuth';
 import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
 import { colunasTabela } from './colunas/Colunas_Tabela_Chamados';
-import DashboardRecursos from './Dashboard_Recursos';
 import ModalAtribuirChamado from './modais/Modal_Dados_Chamado';
 import TabelaTarefas from './Tabela_Tarefas';
 import TabelaOS from './Tabela_OS';
@@ -1260,34 +1259,6 @@ export default function TabelaChamados() {
             onClose={() => setTabelaTarefasOpen(false)}
             codChamado={selectedCodChamado}
          />
-
-         {/* ===== DASHBOARD RECURSOS ===== */}
-         {dashboardOpen && user?.tipo === 'ADM' && (
-            <div className="fixed inset-0 z-50 bg-black">
-               <div className="relative h-full">
-                  <div className="absolute inset-0 bg-black opacity-50" />
-                  <Tooltip>
-                     <TooltipTrigger asChild>
-                        <button
-                           onClick={handleFecharDashboard}
-                           className="absolute top-6 right-65 z-10 cursor-pointer rounded-full bg-red-600/50 p-3 shadow-md shadow-white transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 hover:shadow-lg hover:shadow-white active:scale-95"
-                        >
-                           <IoClose size={28} className="text-white" />
-                        </button>
-                     </TooltipTrigger>
-                     <TooltipContent
-                        side="bottom"
-                        align="center"
-                        sideOffset={8}
-                        className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
-                     >
-                        Sair
-                     </TooltipContent>
-                  </Tooltip>
-                  <DashboardRecursos />
-               </div>
-            </div>
-         )}
 
          {/* ===== MODAL ATRIBUIÇÃO INTELIGENTE ===== */}
          <ModalAtribuicaoInteligente
