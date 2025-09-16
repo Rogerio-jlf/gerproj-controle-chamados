@@ -8,16 +8,6 @@ import {
    TooltipProvider,
    TooltipTrigger,
 } from '../../../../components/ui/tooltip';
-import {
-   AlertDialog,
-   AlertDialogAction,
-   AlertDialogCancel,
-   AlertDialogContent,
-   AlertDialogDescription,
-   AlertDialogFooter,
-   AlertDialogHeader,
-   AlertDialogTitle,
-} from '../../../../components/ui/alert-dialog';
 // ================================================================================
 import { getStylesStatus } from '../../../../utils/formatters';
 import { ToastCustom } from '../../../../components/Toast_Custom';
@@ -50,6 +40,49 @@ interface Props {
       codTarefa?: number
    ) => Promise<void>;
 }
+
+// Modal Component
+interface ModalProps {
+   isOpen: boolean;
+   onClose: () => void;
+   children: React.ReactNode;
+}
+
+const Modal = ({ isOpen, onClose, children }: ModalProps) => {
+   useEffect(() => {
+      const handleEscape = (e: KeyboardEvent) => {
+         if (e.key === 'Escape') {
+            onClose();
+         }
+      };
+
+      if (isOpen) {
+         document.addEventListener('keydown', handleEscape);
+         document.body.style.overflow = 'hidden';
+      }
+
+      return () => {
+         document.removeEventListener('keydown', handleEscape);
+         document.body.style.overflow = 'unset';
+      };
+   }, [isOpen, onClose]);
+
+   if (!isOpen) return null;
+
+   return (
+      <div
+         className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xl"
+         onClick={onClose}
+      >
+         <div
+            className="relative max-h-[100vh] w-full max-w-4xl overflow-hidden"
+            onClick={e => e.stopPropagation()}
+         >
+            {children}
+         </div>
+      </div>
+   );
+};
 
 // ================================================================================
 // CONSTANTES E CONFIGURAÇÕES
@@ -219,6 +252,7 @@ export default function StatusCell({
       setIsUpdating(true);
 
       try {
+         const start = Date.now();
          await onUpdateStatus(
             codChamado,
             pendingStatus,
@@ -227,6 +261,12 @@ export default function StatusCell({
                : undefined,
             pendingStatus === 'EM ATENDIMENTO' ? selectedTarefa! : undefined
          );
+
+         // Garantir pelo menos 800ms de loading para mostrar spinner
+         const elapsed = Date.now() - start;
+         if (elapsed < 800) {
+            await new Promise(res => setTimeout(res, 800 - elapsed));
+         }
 
          setStatus(pendingStatus);
 
@@ -238,6 +278,8 @@ export default function StatusCell({
                description={`Chamado #${codChamado}`}
             />
          ));
+
+         setShowConfirmDialog(false);
       } catch (error) {
          console.error('Erro ao atualizar status:', error);
 
@@ -248,16 +290,12 @@ export default function StatusCell({
                description="Tente novamente em instantes."
             />
          ));
-      }
-
-      // Delay para mostrar o resultado antes de fechar
-      setTimeout(() => {
+      } finally {
          setIsUpdating(false);
          setPendingStatus(null);
          setSelectedClassificacao(null);
          setSelectedTarefa(null);
-         setShowConfirmDialog(false);
-      }, 2000);
+      }
    };
 
    const handleCancelChange = () => {
@@ -281,12 +319,14 @@ export default function StatusCell({
    };
 
    const handleCloseModal = () => {
-      setTimeout(() => {
-         setShowConfirmDialog(false);
-         setPendingStatus(null);
-         setSelectedClassificacao(null);
-         setSelectedTarefa(null);
-      }, 300);
+      if (!isUpdating) {
+         setTimeout(() => {
+            setShowConfirmDialog(false);
+            setPendingStatus(null);
+            setSelectedClassificacao(null);
+            setSelectedTarefa(null);
+         }, 300);
+      }
    };
 
    // ================================================================================
@@ -353,7 +393,7 @@ export default function StatusCell({
                   ))}
                </select>
             ) : (
-               // ===== MODO DE VISUALIZAÇÃO - TOOLTIP =====
+               // ===== TOOLTIP =====
                <TooltipProvider>
                   <Tooltip>
                      <TooltipTrigger asChild>
@@ -397,93 +437,89 @@ export default function StatusCell({
                </TooltipProvider>
             )}
          </div>
+         {/* ==================== */}
 
          {/* ===== MODAL DE CONFIRMAÇÃO ===== */}
-         <AlertDialog
-            open={showConfirmDialog}
-            onOpenChange={setShowConfirmDialog}
-         >
-            <AlertDialogContent className="max-w-3xl overflow-hidden rounded-2xl border-none bg-slate-50 p-0">
-               {/* ===== OVERLAY DE LOADING - ATUALIZAÇÃO ===== */}
-               {isUpdating && (
-                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
-                     <div className="flex flex-col items-center gap-3">
-                        <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-                        <span className="text-lg font-bold tracking-wider text-slate-800 select-none">
-                           Atualizando status...
-                        </span>
-                        <span className="text-sm font-semibold tracking-wider text-slate-600 italic select-none">
-                           Chamado #{codChamado}
-                        </span>
-                     </div>
-                  </div>
-               )}
-
+         <Modal isOpen={showConfirmDialog} onClose={handleCloseModal}>
+            <div
+               className="absolute inset-0 bg-black/50 backdrop-blur-xl"
+               onClick={handleCloseModal}
+            />
+            {/* ========== */}
+            <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
                {/* ===== OVERLAY DE LOADING - BUSCAR DADOS ===== */}
                {(loadingClassificacoes || loadingTarefas) && (
-                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/70">
+                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50">
                      <div className="flex flex-col items-center gap-2">
                         <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-                        <span className="text-base font-semibold tracking-wider text-slate-800 select-none">
+                        <span className="text-lg font-extrabold tracking-wider text-black select-none">
                            Carregando dados...
                         </span>
                      </div>
                   </div>
                )}
+               {/* ==================== */}
 
-               {/* ===== HEADER DO MODAL ===== */}
-               <header className="bg-blue-600 p-6 text-white">
-                  <AlertDialogHeader className="space-y-0">
-                     <AlertDialogTitle className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                           <div className="rounded-md bg-white/10 p-4 shadow-md shadow-black">
-                              <FaSync className="text-white" size={24} />
-                           </div>
-                           <div>
-                              <h3 className="text-2xl font-extrabold tracking-wider text-white select-none">
-                                 Alterar Status
-                              </h3>
-                              <p className="text-base font-semibold tracking-widest text-gray-200 italic select-none">
-                                 Chamado #{codChamado}
-                              </p>
-                           </div>
-                        </div>
-                        <button
-                           onClick={handleCloseModal}
-                           className="group cursor-pointer rounded-full bg-red-600/50 p-2 transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
-                        >
-                           <IoClose size={20} />
-                        </button>
-                     </AlertDialogTitle>
-                  </AlertDialogHeader>
+               {/* ===== HEADER ===== */}
+               <header className="relative flex items-center justify-between bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 p-6 shadow-md shadow-black">
+                  <div className="flex items-center justify-center gap-6">
+                     <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
+                        <FaSync className="text-black" size={36} />
+                     </div>
+                     <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
+                        Alterar Status
+                     </h1>
+                  </div>
+                  {/* ========== */}
+
+                  <button
+                     onClick={handleCloseModal}
+                     disabled={isUpdating}
+                     className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                     <IoClose size={24} />
+                  </button>
                </header>
+               {/* ==================== */}
 
-               {/* ===== CONTEÚDO DO MODAL ===== */}
-               <main className="space-y-6 p-6">
-                  {/* ===== VISUALIZAÇÃO DA MUDANÇA ===== */}
-                  <section className="rounded-md bg-white p-6 shadow-sm shadow-black">
+               {/* ===== CONTEÚDO ===== */}
+               <main className="flex flex-col gap-12 p-6">
+                  {/* ===== CARD DE VISUALIZAÇÃO ===== */}
+                  <section className="flex flex-col items-center justify-center gap-10 rounded-md border-l-8 border-blue-600 bg-slate-50 p-6 text-center shadow-sm shadow-black">
+                     <div className="flex flex-col items-center justify-center">
+                        <div className="flex items-center justify-center gap-3">
+                           <FaSync className="text-black" size={20} />
+                           <h4 className="text-xl font-extrabold tracking-wider text-black select-none">
+                              Alteração de Status
+                           </h4>
+                        </div>
+                        <p className="text-2xl font-extrabold tracking-widest text-black italic select-none">
+                           Chamado - #{codChamado}
+                        </p>
+                     </div>
+
                      <div className="flex items-center justify-center gap-8">
-                        <div className="space-y-2 text-center">
-                           <p className="text-xs font-semibold tracking-wide text-slate-800 uppercase select-none">
+                        <div className="flex flex-col items-center gap-1">
+                           <p className="text-xs font-bold tracking-widest text-black uppercase italic select-none">
                               Status Atual
                            </p>
                            <div
-                              className={`inline-block rounded-md border-none px-6 py-2 text-sm font-semibold tracking-wider select-none ${getStylesStatus(status)}`}
+                              className={`inline-block rounded-md px-6 py-2 text-lg font-extrabold tracking-widest select-none ${getStylesStatus(status)}`}
                            >
                               {getStatusDisplayName(status)}
                            </div>
                         </div>
 
-                        <div className="flex items-center">
+                        <div className="mt-6 flex items-center justify-center">
                            <FaArrowRightLong className="text-black" size={24} />
                         </div>
 
-                        <div className="space-y-2 text-center">
-                           <p className="text-xs font-semibold tracking-wide text-slate-800 uppercase select-none">
+                        <div className="flex flex-col items-center gap-1">
+                           <p className="text-xs font-bold tracking-widest text-black uppercase italic select-none">
                               Novo Status
                            </p>
                            <div
-                              className={`inline-block rounded-md border-none px-6 py-2 text-sm font-semibold tracking-wider select-none ${getStylesStatus(pendingStatus || '')}`}
+                              className={`inline-block rounded-md border-none px-6 py-2 text-lg font-extrabold tracking-widest select-none ${getStylesStatus(pendingStatus || '')}`}
                            >
                               {pendingStatus
                                  ? getStatusDisplayName(pendingStatus)
@@ -492,10 +528,15 @@ export default function StatusCell({
                         </div>
                      </div>
                   </section>
+                  {/* ==================== */}
 
                   {/* ===== SELECT DE CLASSIFICAÇÃO ===== */}
                   {shouldShowClassificacao && (
-                     <section className="space-y-4">
+                     <section className="flex flex-col gap-1">
+                        <label className="text-lg font-extrabold tracking-wider text-black select-none">
+                           Classificação do Chamado
+                        </label>
+
                         {!loadingClassificacoes && (
                            <div className="space-y-2">
                               <select
@@ -505,12 +546,12 @@ export default function StatusCell({
                                        Number(e.target.value) || null
                                     )
                                  }
-                                 className="w-full cursor-pointer rounded-md border-none bg-white px-4 py-2 font-semibold text-slate-900 shadow-sm shadow-black transition-all hover:scale-105 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 focus:outline-none"
+                                 className="w-full cursor-pointer rounded-md border-none bg-slate-50 px-4 py-3 font-bold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none"
                                  required
                               >
                                  <option
                                     value=""
-                                    className="cursor-pointer font-semibold tracking-wider text-black select-none"
+                                    className="cursor-pointer bg-white font-bold tracking-wider text-black italic select-none"
                                  >
                                     Selecione uma classificação...
                                  </option>
@@ -518,25 +559,42 @@ export default function StatusCell({
                                     <option
                                        key={classificacao.COD_CLASSIFICACAO}
                                        value={classificacao.COD_CLASSIFICACAO}
+                                       className="cursor-pointer bg-white font-bold tracking-wider text-black italic select-none"
                                     >
                                        {classificacao.NOME_CLASSIFICACAO}
                                     </option>
                                  ))}
                               </select>
-                              <div className="flex items-center gap-2">
-                                 <div className="h-2 w-2 rounded-full bg-slate-800"></div>
-                                 <span className="text-xs font-semibold tracking-wider text-slate-800 italic select-none">
-                                    Campo obrigatório
-                                 </span>
-                              </div>
+                              {!selectedClassificacao && (
+                                 <div className="flex items-center gap-2">
+                                    <div className="h-2 w-2 rounded-full bg-red-600"></div>
+                                    <span className="text-sm font-semibold tracking-wider text-red-600 italic select-none">
+                                       Campo obrigatório
+                                    </span>
+                                 </div>
+                              )}
+                              {selectedClassificacao && (
+                                 <div className="flex items-center gap-2">
+                                    <div className="h-2 w-2 rounded-full bg-green-600"></div>
+                                    <span className="text-sm font-semibold tracking-wider text-green-600 italic select-none">
+                                       Classificação selecionada, pronto para
+                                       salvar.
+                                    </span>
+                                 </div>
+                              )}
                            </div>
                         )}
                      </section>
                   )}
+                  {/* ==================== */}
 
                   {/* ===== SELECT DE TAREFA ===== */}
                   {shouldShowTarefa && (
                      <section className="space-y-4">
+                        <label className="text-lg font-extrabold tracking-wider text-black select-none">
+                           Tarefa do Chamado
+                        </label>
+
                         {!loadingTarefas && (
                            <div className="space-y-2">
                               <select
@@ -546,81 +604,103 @@ export default function StatusCell({
                                        Number(e.target.value) || null
                                     )
                                  }
-                                 className="w-full cursor-pointer rounded-md border-none bg-slate-50 px-4 py-2 font-semibold text-slate-900 shadow-sm shadow-black transition-all hover:scale-105 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 focus:outline-none"
+                                 className="w-full cursor-pointer rounded-md border-none bg-slate-50 px-4 py-3 font-bold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none"
                                  required
                               >
-                                 <option value="">
+                                 <option
+                                    value=""
+                                    className="cursor-pointer bg-white font-bold tracking-wider text-black italic select-none"
+                                 >
                                     Selecione uma tarefa...
                                  </option>
                                  {tarefas.map(tarefa => (
                                     <option
                                        key={tarefa.COD_TAREFA}
                                        value={tarefa.COD_TAREFA}
-                                       className="cursor-pointer font-semibold tracking-wider text-black select-none"
+                                       className="cursor-pointer bg-white font-bold tracking-wider text-black italic select-none"
                                     >
                                        {tarefa.NOME_TAREFA}
                                     </option>
                                  ))}
                               </select>
-                              <div className="flex items-center gap-2">
-                                 <div className="h-2 w-2 rounded-full bg-slate-800"></div>
-                                 <span className="text-xs font-semibold tracking-wider text-slate-800 italic select-none">
-                                    Campo obrigatório
-                                 </span>
-                              </div>
+                              {!selectedTarefa && (
+                                 <div className="flex items-center gap-2">
+                                    <div className="h-2 w-2 rounded-full bg-red-600"></div>
+                                    <span className="text-sm font-semibold tracking-wider text-red-600 italic select-none">
+                                       Campo obrigatório
+                                    </span>
+                                 </div>
+                              )}
+                              {selectedTarefa && (
+                                 <div className="flex items-center gap-2">
+                                    <div className="h-2 w-2 rounded-full bg-green-600"></div>
+                                    <span className="text-sm font-semibold tracking-wider text-green-600 italic select-none">
+                                       Tarefa selecionada
+                                    </span>
+                                 </div>
+                              )}
                            </div>
                         )}
                      </section>
                   )}
+                  {/* ==================== */}
 
                   {/* ===== AVISO DE CONFIRMAÇÃO ===== */}
                   {(selectedClassificacao || selectedTarefa) && (
-                     <AlertDialogDescription asChild>
-                        <section className="rounded-lg border-l-4 border-amber-500 bg-amber-100 p-4 shadow-sm shadow-black">
-                           <div className="flex items-start gap-3">
-                              <FaExclamationTriangle
-                                 className="mt-0.5 text-amber-600"
-                                 size={16}
-                              />
-                              <p className="text-sm font-semibold tracking-wider text-amber-600 italic select-none">
-                                 Esta alteração será salva permanentemente.
-                              </p>
-                           </div>
-                        </section>
-                     </AlertDialogDescription>
+                     <div className="rounded-lg border-l-4 border-red-600 bg-amber-200 p-4 shadow-sm shadow-black">
+                        <div className="flex items-start gap-3">
+                           <FaExclamationTriangle
+                              className="mt-0.5 text-red-600"
+                              size={16}
+                           />
+                           <p className="text-sm font-semibold tracking-widest text-black italic select-none">
+                              Esta alteração será salva permanentemente.
+                           </p>
+                        </div>
+                     </div>
                   )}
+                  {/* ========== */}
                </main>
+               {/* ==================== */}
 
-               {/* ===== FOOTER DO MODAL ===== */}
-               <AlertDialogFooter className="gap-3 border-t border-red-600 bg-slate-50 p-6">
-                  <AlertDialogCancel
+               {/* ===== FOOTER ===== */}
+               <footer className="relative flex justify-end gap-4 border-t-4 border-red-600 p-6">
+                  <button
                      onClick={handleCancelChange}
-                     className="cursor-pointer rounded-xl border-none bg-red-600 px-6 py-2 text-lg font-bold tracking-wider text-white transition-all select-none hover:scale-110 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
+                     disabled={isUpdating}
+                     className="cursor-pointer rounded-xl border-none bg-red-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
                   >
                      Cancelar
-                  </AlertDialogCancel>
+                  </button>
+                  {/* ===== */}
 
-                  <AlertDialogAction
+                  <button
                      onClick={handleConfirmChange}
                      disabled={
                         isUpdating ||
                         (shouldShowClassificacao && !selectedClassificacao) ||
                         (shouldShowTarefa && !selectedTarefa)
                      }
-                     className={`rounded-xl border-none bg-blue-600 px-6 py-2 text-lg font-bold tracking-wider text-white transition-all select-none hover:scale-110 hover:bg-blue-900 hover:shadow-md hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-900 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-slate-900 disabled:hover:shadow-none`}
+                     className={`cursor-pointer rounded-xl border-none bg-blue-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black select-none ${
+                        isUpdating ||
+                        (shouldShowClassificacao && !selectedClassificacao) ||
+                        (shouldShowTarefa && !selectedTarefa)
+                           ? 'disabled:cursor-not-allowed disabled:opacity-50'
+                           : 'transition-all hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black active:scale-95'
+                     }`}
                   >
                      {isUpdating ? (
                         <div className="flex items-center gap-2">
-                           <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                           <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                            <span>Atualizando...</span>
                         </div>
                      ) : (
-                        <span>Atualizar</span>
+                        <>Atualizar</>
                      )}
-                  </AlertDialogAction>
-               </AlertDialogFooter>
-            </AlertDialogContent>
-         </AlertDialog>
+                  </button>
+               </footer>
+            </div>
+         </Modal>
       </>
    );
 }

@@ -69,11 +69,11 @@ const Modal = ({ isOpen, onClose, children }: ModalProps) => {
 
    return (
       <div
-         className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+         className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xl"
          onClick={onClose}
       >
          <div
-            className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto"
+            className="relative max-h-[100vh] w-full max-w-4xl overflow-hidden"
             onClick={e => e.stopPropagation()}
          >
             {children}
@@ -181,7 +181,7 @@ export default function AssuntoCellEditavel({
       setIsModalOpen(true);
    };
 
-   const handleClose = () => {
+   const handleCloseModal = () => {
       if (!isLoading) {
          setTimeout(() => {
             setIsModalOpen(false);
@@ -195,8 +195,13 @@ export default function AssuntoCellEditavel({
       setNovoAssunto(value);
    };
 
+   // ================================================================================
+   // RENDERIZAÇÃO PRINCIPAL
+   // ================================================================================
+
    return (
       <>
+         {/* ===== TOOLTIP ===== */}
          <Tooltip>
             <TooltipTrigger asChild>
                <div
@@ -231,194 +236,190 @@ export default function AssuntoCellEditavel({
                </div>
             </TooltipContent>
          </Tooltip>
+         {/* ==================== */}
 
-         {/* Modal Customizado */}
-         <Modal isOpen={isModalOpen} onClose={handleClose}>
+         {/* ===== MODAL DE CONFIRMAÇÃO ===== */}
+         <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
             <div
                className="absolute inset-0 bg-black/50 backdrop-blur-xl"
-               onClick={handleClose}
+               onClick={handleCloseModal}
             />
             {/* ========== */}
             <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
-               {/* Header */}
-               <header className="relative bg-gradient-to-r from-pink-500 via-pink-600 to-pink-700 p-6 shadow-sm shadow-black">
-                  <section className="flex items-center justify-between">
-                     <div className="flex items-center justify-between gap-6">
-                        <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
-                           <FaEdit className="text-black" size={36} />
-                        </div>
-
-                        <div className="flex flex-col items-center justify-center">
-                           <h1 className="text-2xl font-extrabold tracking-wider text-black select-none">
-                              Editar Assunto
-                           </h1>
-
-                           <div className="rounded-full bg-black px-6 py-1">
-                              <p className="text-center text-base font-extrabold tracking-widest text-white italic select-none">
-                                 Chamado #{codChamado}
-                              </p>
-                           </div>
-                        </div>
+               {/* ===== HEADER ===== */}
+               <header className="relative flex items-center justify-between bg-gradient-to-r from-pink-500 via-pink-600 to-pink-700 p-6 shadow-md shadow-black">
+                  <div className="flex items-center justify-center gap-6">
+                     <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
+                        <FaEdit className="text-black" size={36} />
                      </div>
+                     <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
+                        Editar Assunto
+                     </h1>
+                  </div>
+                  {/* ========== */}
 
-                     <button
-                        onClick={handleClose}
-                        disabled={isLoading}
-                        className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                     >
-                        <IoClose size={24} />
-                     </button>
-                  </section>
+                  <button
+                     onClick={handleCloseModal}
+                     disabled={isLoading}
+                     className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                     <IoClose size={24} />
+                  </button>
                </header>
+               {/* ==================== */}
 
-               {/* Content */}
-               <main className="space-y-6 p-6">
-                  {/* Informações do Chamado */}
-                  <div className="rounded-md bg-slate-50 p-6 shadow-sm shadow-black">
-                     <div className="space-y-4 text-center">
-                        <div className="flex items-center justify-center gap-4">
+               {/* ===== CONTEÚDO ===== */}
+               <main className="flex flex-col gap-12 p-6">
+                  {/* ===== CARD DE VISUALIZAÇÃO ===== */}
+                  <section className="flex flex-col items-center justify-center gap-10 rounded-md border-l-8 border-blue-600 bg-slate-50 p-6 text-center shadow-sm shadow-black">
+                     {/* Cabeçalho */}
+                     <div className="flex flex-col items-center justify-center">
+                        <div className="flex items-center justify-center gap-3">
                            <FaEdit className="text-black" size={20} />
-                           <h4 className="text-lg font-extrabold tracking-wider text-black select-none">
+                           <h4 className="text-xl font-extrabold tracking-wider text-black select-none">
                               Edição de Assunto
                            </h4>
                         </div>
+                        <p className="text-2xl font-extrabold tracking-widest text-black italic select-none">
+                           Chamado - #{codChamado}
+                        </p>
+                     </div>
+                     {/* ========== */}
 
-                        <div className="inline-block rounded-md bg-white px-6 py-2 shadow-sm shadow-black">
-                           <p className="text-xs font-semibold tracking-wider text-slate-800 uppercase select-none">
-                              Chamado
-                           </p>
-                           <div className="text-3xl font-extrabold tracking-widest text-black italic select-none">
-                              #{codChamado}
+                     {/* Textarea assunto */}
+                     <div className="flex w-full flex-col items-start justify-center gap-1">
+                        <label
+                           htmlFor="assunto"
+                           className="text-lg font-extrabold tracking-wider text-black select-none"
+                        >
+                           Assunto do Chamado
+                        </label>
+
+                        <Textarea
+                           id="assunto"
+                           value={novoAssunto}
+                           onChange={handleTextareaChange}
+                           placeholder="Digite o assunto do chamado..."
+                           className={`min-h-[140px] resize-none rounded-md bg-slate-50 p-4 font-semibold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 ${
+                              validationError
+                                 ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500'
+                                 : 'hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none'
+                           }`}
+                           disabled={isLoading}
+                           maxLength={200}
+                        />
+
+                        {/* Erro de Validação */}
+                        {validationError && (
+                           <div className="flex items-center gap-2">
+                              <FaExclamationTriangle
+                                 className="text-red-600"
+                                 size={14}
+                              />
+                              <span className="text-sm font-semibold tracking-widest text-red-600 italic select-none">
+                                 {validationError}
+                              </span>
+                           </div>
+                        )}
+
+                        {/* Status das Mudanças */}
+                        {!validation.hasChanges &&
+                           novoAssunto.trim() !== '' && (
+                              <div className="flex items-center gap-2">
+                                 <div className="h-2 w-2 rounded-full bg-red-600"></div>
+                                 <span className="text-sm font-semibold tracking-widest text-red-600 italic select-none">
+                                    Nenhuma alteração realizada.
+                                 </span>
+                              </div>
+                           )}
+
+                        {validation.hasChanges && validation.isValid && (
+                           <div className="flex items-center gap-2">
+                              <div className="h-2 w-2 rounded-full bg-green-600"></div>
+                              <span className="text-sm font-semibold tracking-widest text-green-600 italic select-none">
+                                 Alteração realizada, pronto para salvar.
+                              </span>
+                           </div>
+                        )}
+
+                        {/* Contador de Caracteres */}
+                        <div className="flex w-full items-center justify-between">
+                           <div className="flex items-center gap-2">
+                              <div className="h-2 w-2 rounded-full bg-black"></div>
+                              <span className="text-sm font-semibold tracking-widest text-black italic select-none">
+                                 Máximo de 200 caracteres.
+                              </span>
+                           </div>
+                           <div className="flex items-center gap-2">
+                              <div
+                                 className={`h-2 w-2 rounded-full ${
+                                    novoAssunto.length > 180
+                                       ? 'bg-red-600'
+                                       : novoAssunto.length > 150
+                                         ? 'bg-amber-600'
+                                         : 'bg-green-600'
+                                 }`}
+                              ></div>
+                              <span
+                                 className={`text-sm font-semibold tracking-widest italic select-none ${
+                                    novoAssunto.length > 180
+                                       ? 'text-red-600'
+                                       : novoAssunto.length > 150
+                                         ? 'text-amber-600'
+                                         : 'text-green-600'
+                                 }`}
+                              >
+                                 {novoAssunto.length}/200
+                              </span>
                            </div>
                         </div>
                      </div>
-                  </div>
+                  </section>
+                  {/* ========== */}
 
-                  {/* Editor de Assunto */}
-                  <div className="space-y-4">
-                     <label
-                        htmlFor="assunto"
-                        className="text-lg font-extrabold tracking-wider text-black select-none"
-                     >
-                        Assunto do Chamado
-                     </label>
-
-                     <Textarea
-                        id="assunto"
-                        value={novoAssunto}
-                        onChange={handleTextareaChange}
-                        placeholder="Digite o assunto do chamado..."
-                        className={`min-h-[140px] resize-none rounded-md bg-slate-50 p-4 font-semibold text-black shadow-sm shadow-black transition-all focus:outline-none ${
-                           validationError
-                              ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500'
-                              : 'focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500'
-                        }`}
-                        disabled={isLoading}
-                        maxLength={200}
-                     />
-
-                     {/* Erro de Validação */}
-                     {validationError && (
-                        <div className="flex items-center gap-2 text-red-600">
-                           <FaExclamationTriangle size={14} />
-                           <span className="text-sm font-semibold">
-                              {validationError}
-                           </span>
-                        </div>
-                     )}
-
-                     {/* Status das Mudanças */}
-                     {!validation.hasChanges && novoAssunto.trim() !== '' && (
-                        <div className="flex items-center gap-2">
-                           <div className="h-2 w-2 rounded-full bg-blue-600"></div>
-                           <span className="text-sm font-semibold tracking-wider text-slate-800 italic select-none">
-                              Nenhuma alteração detectada
-                           </span>
-                        </div>
-                     )}
-
-                     {validation.hasChanges && validation.isValid && (
-                        <div className="flex items-center gap-2">
-                           <div className="h-2 w-2 rounded-full bg-green-600"></div>
-                           <span className="text-sm font-semibold tracking-wider text-green-700 italic select-none">
-                              Alterações detectadas - pronto para salvar
-                           </span>
-                        </div>
-                     )}
-
-                     {/* Contador de Caracteres */}
-                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                           <div className="h-2 w-2 rounded-full bg-blue-600"></div>
-                           <span className="text-sm font-semibold tracking-wider text-slate-800 italic select-none">
-                              Máximo de 200 caracteres
-                           </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                           <div
-                              className={`h-2 w-2 rounded-full ${
-                                 novoAssunto.length > 180
-                                    ? 'bg-red-600'
-                                    : novoAssunto.length > 150
-                                      ? 'bg-amber-600'
-                                      : 'bg-green-600'
-                              }`}
-                           ></div>
-                           <span
-                              className={`text-sm font-semibold tracking-wider italic select-none ${
-                                 novoAssunto.length > 180
-                                    ? 'text-red-600'
-                                    : novoAssunto.length > 150
-                                      ? 'text-amber-600'
-                                      : 'text-green-600'
-                              }`}
-                           >
-                              {novoAssunto.length}/200
-                           </span>
-                        </div>
-                     </div>
-                  </div>
-
-                  {/* Aviso de alteração */}
+                  {/* ===== AVISO DE CONFIRMAÇÃO ===== */}
                   {validation.hasChanges && (
-                     <div className="rounded-lg border-l-4 border-amber-500 bg-amber-100 p-4 shadow-sm shadow-black">
+                     <div className="rounded-lg border-l-4 border-red-600 bg-amber-200 p-4 shadow-sm shadow-black">
                         <div className="flex items-start gap-3">
                            <FaExclamationTriangle
-                              className="mt-0.5 text-amber-600"
+                              className="mt-0.5 text-red-600"
                               size={16}
                            />
-                           <p className="text-sm font-semibold tracking-wider text-amber-600 italic select-none">
+                           <p className="text-sm font-semibold tracking-widest text-black italic select-none">
                               Esta alteração será salva permanentemente.
                            </p>
                         </div>
                      </div>
                   )}
+                  {/* ========== */}
                </main>
+               {/* ==================== */}
 
-               {/* Footer */}
-               <footer className="relative flex justify-end gap-4 border-t border-red-600 bg-slate-50 p-6">
+               {/* ===== FOOTER ===== */}
+               <footer className="relative flex justify-end gap-4 border-t-4 border-red-600 p-6">
                   <button
                      onClick={handleCancel}
                      disabled={isLoading}
-                     className="cursor-pointer rounded-xl border-none bg-red-500 px-6 py-2 text-lg font-extrabold text-white shadow-md shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
+                     className="cursor-pointer rounded-xl border-none bg-red-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
                   >
                      Cancelar
                   </button>
+                  {/* ===== */}
 
                   <button
                      onClick={handleSave}
                      disabled={isLoading || !validation.canSave}
-                     className={`cursor-pointer rounded-xl border-none bg-blue-500 px-6 py-2 text-lg font-extrabold text-white transition-all select-none active:scale-95 ${
+                     className={`cursor-pointer rounded-xl border-none bg-blue-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black select-none ${
                         isLoading || !validation.canSave
                            ? 'disabled:cursor-not-allowed disabled:opacity-50'
-                           : 'hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black'
+                           : 'transition-all hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black active:scale-95'
                      }`}
                   >
                      {isLoading ? (
-                        <>
+                        <div className="flex items-center gap-2">
                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                           <span>Salvando...</span>
-                        </>
+                           <span>Atualizando...</span>
+                        </div>
                      ) : (
                         <>Atualizar</>
                      )}
