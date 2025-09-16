@@ -111,6 +111,10 @@ export default function ModalVisualizarChamado({
    if (!isOpen || !chamado) return null;
    // ================================================================================
 
+   // ================================================================================
+   // RENDERIZAÇÃO PRINCIPAL
+   // ================================================================================
+
    return (
       <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
          {/* ===== OVERLAY ===== */}
@@ -118,39 +122,39 @@ export default function ModalVisualizarChamado({
             className="absolute inset-0 bg-black/50 backdrop-blur-xl"
             onClick={handleClose}
          />
+         {/* ========== */}
 
-         {/* ===== CONTAINER ===== */}
          <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
-            <header className="relative bg-gradient-to-r from-indigo-500 via-indigo-600 to-indigo-700 p-6 shadow-sm shadow-black">
-               <section className="flex items-center justify-between">
-                  <div className="flex items-center justify-between gap-6">
-                     <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
-                        <FaFileAlt className="text-white" size={32} />
-                     </div>
-
-                     <div className="flex flex-col items-center justify-center">
-                        <h1 className="text-2xl font-extrabold tracking-wider text-black select-none">
-                           Dados Chamado
-                        </h1>
-
-                        <div className="rounded-full bg-black px-6 py-1">
-                           <p className="text-center text-base font-extrabold tracking-widest text-white italic select-none">
-                              #{chamado.COD_CHAMADO}
-                           </p>
-                        </div>
-                     </div>
+            <header className="relative flex items-center justify-between bg-gradient-to-r from-indigo-500 via-indigo-600 to-indigo-700 p-6 shadow-md shadow-black">
+               {/* Título do modal */}
+               <div className="flex items-center justify-center gap-6">
+                  <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
+                     <FaFileAlt className="text-black" size={36} />
                   </div>
 
-                  {/* Botão fechar modal */}
-                  <button
-                     onClick={handleClose}
-                     disabled={isLoading}
-                     className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                     <IoClose size={24} />
-                  </button>
-               </section>
+                  <div className="flex flex-col items-start justify-center">
+                     <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
+                        Dados Chamado
+                     </h1>
+
+                     <div className="rounded-full bg-black px-6 py-1">
+                        <p className="text-center text-base font-extrabold tracking-widest text-white italic select-none">
+                           #{chamado.COD_CHAMADO}
+                        </p>
+                     </div>
+                  </div>
+               </div>
+               {/* ========== */}
+
+               {/* Botão fechar modal */}
+               <button
+                  onClick={handleClose}
+                  disabled={isLoading}
+                  className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+               >
+                  <IoClose size={24} />
+               </button>
             </header>
 
             {/* ===== CONTEÚDO ===== */}

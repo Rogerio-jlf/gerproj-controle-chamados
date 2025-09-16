@@ -240,6 +240,7 @@ export default function AssuntoCellEditavel({
 
          {/* ===== MODAL DE CONFIRMAÇÃO ===== */}
          <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+            {/* ===== OVERLAY ===== */}
             <div
                className="absolute inset-0 bg-black/50 backdrop-blur-xl"
                onClick={handleCloseModal}
@@ -248,6 +249,7 @@ export default function AssuntoCellEditavel({
             <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
                {/* ===== HEADER ===== */}
                <header className="relative flex items-center justify-between bg-gradient-to-r from-pink-500 via-pink-600 to-pink-700 p-6 shadow-md shadow-black">
+                  {/* Título do modal */}
                   <div className="flex items-center justify-center gap-6">
                      <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
                         <FaEdit className="text-black" size={36} />
@@ -258,6 +260,7 @@ export default function AssuntoCellEditavel({
                   </div>
                   {/* ========== */}
 
+                  {/* Botão fechar modal */}
                   <button
                      onClick={handleCloseModal}
                      disabled={isLoading}
@@ -271,11 +274,11 @@ export default function AssuntoCellEditavel({
                {/* ===== CONTEÚDO ===== */}
                <main className="flex flex-col gap-12 p-6">
                   {/* ===== CARD DE VISUALIZAÇÃO ===== */}
-                  <section className="flex flex-col items-center justify-center gap-10 rounded-md border-l-8 border-blue-600 bg-slate-50 p-6 text-center shadow-sm shadow-black">
-                     {/* Cabeçalho */}
+                  <div className="flex flex-col items-center justify-center gap-10 rounded-md border-l-8 border-blue-600 bg-slate-50 p-6 text-center shadow-sm shadow-black">
+                     {/* Cabeçalho do card */}
                      <div className="flex flex-col items-center justify-center">
                         <div className="flex items-center justify-center gap-3">
-                           <FaEdit className="text-black" size={20} />
+                           <FaEdit className="text-black" size={28} />
                            <h4 className="text-xl font-extrabold tracking-wider text-black select-none">
                               Edição de Assunto
                            </h4>
@@ -286,7 +289,7 @@ export default function AssuntoCellEditavel({
                      </div>
                      {/* ========== */}
 
-                     {/* Textarea assunto */}
+                     {/* Textarea do card */}
                      <div className="flex w-full flex-col items-start justify-center gap-1">
                         <label
                            htmlFor="assunto"
@@ -333,6 +336,7 @@ export default function AssuntoCellEditavel({
                               </div>
                            )}
 
+                        {/* Status das Mudanças */}
                         {validation.hasChanges && validation.isValid && (
                            <div className="flex items-center gap-2">
                               <div className="h-2 w-2 rounded-full bg-green-600"></div>
@@ -374,7 +378,7 @@ export default function AssuntoCellEditavel({
                            </div>
                         </div>
                      </div>
-                  </section>
+                  </div>
                   {/* ========== */}
 
                   {/* ===== AVISO DE CONFIRMAÇÃO ===== */}
@@ -391,7 +395,6 @@ export default function AssuntoCellEditavel({
                         </div>
                      </div>
                   )}
-                  {/* ========== */}
                </main>
                {/* ==================== */}
 

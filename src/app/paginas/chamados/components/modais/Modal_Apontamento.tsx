@@ -13,6 +13,9 @@ import { IoMdClock } from 'react-icons/io';
 import { FaUserClock } from 'react-icons/fa';
 import { IoClose, IoDocumentText } from 'react-icons/io5';
 import { BsFillXOctagonFill } from 'react-icons/bs';
+import { toast } from 'sonner';
+import { ToastCustom } from '../../../../../components/Toast_Custom';
+import { IoIosSave } from 'react-icons/io';
 // ================================================================================
 
 export interface Props {
@@ -250,7 +253,7 @@ export default function ModalApontamento({
    // ====================
 
    // ===== ENVIO DO FORMULÁRIO =====
-   const handleSubmit = async () => {
+   const handleSubmitForm = async () => {
       setIsLoading(true);
       setErrors({});
 
@@ -312,26 +315,23 @@ export default function ModalApontamento({
             throw new Error(responseData.error || `Erro ${response.status}`);
          }
 
-         // Log das informações retornadas pela API para debug
-         console.log('OS criada com sucesso:', {
-            COD_OS: responseData.data?.COD_OS,
-            NUM_OS: responseData.data?.NUM_OS,
-            codChamado: responseData.data?.codChamado,
-            exibeChamado: responseData.data?.exibeChamado,
-            respCliente: responseData.data?.respCliente,
-         });
+         toast.custom(t => (
+            <ToastCustom
+               type="success"
+               title="Operação realizada com sucesso!"
+               description={`O Apontamento #${responseData.data?.COD_APONTAMENTO} foi realizado com sucesso!`}
+            />
+         ));
+      } catch (error) {
+         console.error('Erro ao realizar Apontamento:', error);
 
-         setSuccess(true);
-
-         setTimeout(() => {
-            resetForm();
-            onClose();
-            onSuccess?.();
-         }, 2000);
-      } catch (err) {
-         const errorMessage =
-            err instanceof Error ? err.message : 'Erro desconhecido';
-         setErrors({ root: errorMessage });
+         toast.custom(t => (
+            <ToastCustom
+               type="error"
+               title="Erro ao tentar realizar Apontamento"
+               description="Tente novamente em instantes."
+            />
+         ));
       } finally {
          setIsLoading(false);
       }
@@ -372,9 +372,11 @@ export default function ModalApontamento({
    // ====================
 
    if (!isOpen || !tarefa) return null;
+
+   // ================================================================================
+   // RENDERIZAÇÃO PRINCIPAL
    // ================================================================================
 
-   // ===== RENDERIZAÇÃO DO COMPONENTE =====
    return (
       <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
          {/* ===== OVERLAY ===== */}
@@ -384,74 +386,35 @@ export default function ModalApontamento({
          />
          {/* ========== */}
 
-         {/* ===== CONTAINER ===== */}
          <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
-            <header className="relative bg-gradient-to-r from-green-500 via-green-600 to-green-700 p-6 shadow-sm shadow-black">
-               <section className="flex items-center justify-between">
-                  <div className="flex items-center justify-between gap-6">
-                     <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
-                        <FaUserClock className="text-black" size={36} />
-                     </div>
-
-                     <div className="flex flex-col items-center justify-center">
-                        <h1 className="text-2xl font-extrabold tracking-wider text-black select-none">
-                           Apontamento
-                        </h1>
-
-                        <div className="rounded-full bg-black px-6 py-1">
-                           <p className="text-center text-base font-extrabold tracking-widest text-white italic select-none">
-                              Tarefa #{tarefa.COD_TAREFA}
-                           </p>
-                        </div>
-                     </div>
+            <header className="relative flex items-center justify-between bg-gradient-to-r from-green-500 via-green-600 to-green-700 p-6 shadow-md shadow-black">
+               {/* Título do modal */}
+               <div className="flex items-center justify-center gap-6">
+                  <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
+                     <FaUserClock className="text-black" size={36} />
                   </div>
+                  <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
+                     Realizar Apontamento
+                  </h1>
+               </div>
+               {/* ========== */}
 
-                  {/* Botão fechar modal */}
-                  <button
-                     onClick={handleClose}
-                     disabled={isLoading}
-                     className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                     <IoClose size={24} />
-                  </button>
-               </section>
+               {/* Botão fechar modal */}
+               <button
+                  onClick={handleClose}
+                  disabled={isLoading}
+                  className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+               >
+                  <IoClose size={24} />
+               </button>
             </header>
             {/* ==================== */}
 
-            {/* ===== CONTEÚDO PRINCIPAL ===== */}
-            <main className="max-h-[calc(95vh-140px)] overflow-y-auto bg-gray-50 p-6">
-               {/* Alerta de sucesso */}
-               {success && (
-                  <div className="mb-6 rounded-full border border-green-200 bg-green-600 px-6 py-2">
-                     <div className="flex items-center gap-3">
-                        <FaCheckCircle className="text-green-500" size={20} />
-
-                        <p className="text-base font-semibold tracking-wider text-white select-none">
-                           Apontamento realizado com sucesso!
-                        </p>
-                     </div>
-                  </div>
-               )}
-
-               {/* Alerta de erro geral */}
-               {errors.root && (
-                  <div className="mb-6 rounded-full border border-red-200 bg-red-600 px-6 py-2">
-                     <div className="flex items-center gap-3">
-                        <FaExclamationTriangle
-                           className="text-red-500"
-                           size={20}
-                        />
-
-                        <p className="text-base font-semibold tracking-wider text-white select-none">
-                           {errors.root}
-                        </p>
-                     </div>
-                  </div>
-               )}
-
-               {/* Formulário */}
-               <section className="space-y-6">
+            {/* ===== CONTEÚDO ===== */}
+            <main className="p-6">
+               {/* ===== FORMULÁRIO ===== */}
+               <div className="flex flex-col gap-6">
                   {/* Data */}
                   <FormSection
                      title="Data"
@@ -464,7 +427,7 @@ export default function ModalApontamento({
                         value={formData.dataInicioOS}
                         onChange={handleInputChange}
                         disabled={isLoading}
-                        className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-black shadow-sm shadow-black transition-all focus:border-blue-500 focus:bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
+                        className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none ${
                            errors.dataInicioOS
                               ? 'border-red-500 ring-2 ring-red-600'
                               : ''
@@ -476,14 +439,15 @@ export default function ModalApontamento({
                               className="text-red-600"
                               size={16}
                            />
-                           <p className="text-sm font-semibold text-red-600">
+                           <p className="text-sm font-semibold tracking-widest text-red-600 italic select-none">
                               {errors.dataInicioOS}
                            </p>
                         </div>
                      )}
                   </FormSection>
+                  {/* ========== */}
 
-                  {/* Horários */}
+                  {/* Horário */}
                   <FormSection
                      title="Horário"
                      icon={<IoMdClock className="text-white" size={20} />}
@@ -501,7 +465,7 @@ export default function ModalApontamento({
                               onChange={handleInputChange}
                               onBlur={handleTimeBlur}
                               disabled={isLoading}
-                              className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-black shadow-sm shadow-black transition-all focus:border-blue-500 focus:bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
+                              className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none ${
                                  errors.horaInicioOS
                                     ? 'border-red-500 ring-2 ring-red-600'
                                     : ''
@@ -513,7 +477,7 @@ export default function ModalApontamento({
                                     className="text-red-600"
                                     size={16}
                                  />
-                                 <p className="text-sm font-semibold text-red-600">
+                                 <p className="text-sm font-semibold tracking-widest text-red-600 italic select-none">
                                     {errors.horaInicioOS}
                                  </p>
                               </div>
@@ -531,7 +495,7 @@ export default function ModalApontamento({
                               onChange={handleInputChange}
                               onBlur={handleTimeBlur}
                               disabled={isLoading}
-                              className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-black shadow-sm shadow-black transition-all focus:border-blue-500 focus:bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
+                              className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none ${
                                  errors.horaFimOS
                                     ? 'border-red-500 ring-2 ring-red-600'
                                     : ''
@@ -543,7 +507,7 @@ export default function ModalApontamento({
                                     className="text-red-600"
                                     size={16}
                                  />
-                                 <p className="text-sm font-semibold text-red-600">
+                                 <p className="text-sm font-semibold tracking-widest text-red-600 italic select-none">
                                     {errors.horaFimOS}
                                  </p>
                               </div>
@@ -551,6 +515,7 @@ export default function ModalApontamento({
                         </div>
                      </div>
                   </FormSection>
+                  {/* ========== */}
 
                   {/* Observação */}
                   <FormSection
@@ -566,7 +531,7 @@ export default function ModalApontamento({
                         rows={4}
                         maxLength={200}
                         placeholder="Descreva detalhadamente o serviço realizado, procedimentos executados, materiais utilizados e resultados obtidos..."
-                        className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-black shadow-sm shadow-black transition-all focus:border-blue-500 focus:bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
+                        className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none ${
                            errors.observacaoOS
                               ? 'border-red-500 ring-2 ring-red-600'
                               : ''
@@ -578,61 +543,84 @@ export default function ModalApontamento({
                               className="text-red-600"
                               size={16}
                            />
-                           <p className="text-sm font-semibold text-red-600">
+                           <p className="text-sm font-semibold tracking-widest text-red-600 italic select-none">
                               {errors.observacaoOS}
                            </p>
                         </div>
                      )}
-                     <div className="mt-1 flex items-center justify-between">
-                        <p className="text-xs font-extrabold tracking-widest text-black italic select-none">
-                           *Mínimo de 10 caracteres e máximo de 200.
-                        </p>
-                        <p
-                           className={`text-xs font-extrabold tracking-widest italic select-none ${
-                              formData.observacaoOS.length > 200
-                                 ? 'text-red-600'
-                                 : 'text-black'
-                           }`}
-                        >
-                           {formData.observacaoOS.length}/200
-                        </p>
+
+                     {/* Contador de caracteres */}
+                     <div className="flex w-full items-center justify-between">
+                        <div className="flex items-center gap-2">
+                           <div className="h-2 w-2 rounded-full bg-black"></div>
+                           <span className="text-sm font-semibold tracking-widest text-black italic select-none">
+                              Máximo de 200 caracteres.
+                           </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <div
+                              className={`h-2 w-2 rounded-full ${
+                                 formData.observacaoOS.length > 180
+                                    ? 'bg-red-600'
+                                    : formData.observacaoOS.length > 150
+                                      ? 'bg-amber-600'
+                                      : 'bg-green-600'
+                              }`}
+                           ></div>
+                           <span
+                              className={`text-sm font-semibold tracking-widest italic select-none ${
+                                 formData.observacaoOS.length > 180
+                                    ? 'text-red-600'
+                                    : formData.observacaoOS.length > 150
+                                      ? 'text-amber-600'
+                                      : 'text-green-600'
+                              }`}
+                           >
+                              {formData.observacaoOS.length}/200
+                           </span>
+                        </div>
                      </div>
                   </FormSection>
                   {/* ==================== */}
-
-                  {/* ===== BOTÕES DE AÇÃO ===== */}
-                  <section className="flex items-center justify-end gap-6">
-                     {/* Botão cancelar */}
-                     <button
-                        onClick={handleClose}
-                        disabled={isLoading}
-                        className="cursor-pointer rounded-xl border-none bg-red-500 px-6 py-2 text-lg font-extrabold text-white shadow-md shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
-                     >
-                        Cancelar
-                     </button>
-
-                     {/* Botão de atualizar */}
-                     <button
-                        onClick={handleSubmit}
-                        disabled={isLoading || !isFormValid()}
-                        className={`cursor-pointer rounded-xl border-none bg-blue-500 px-6 py-2 text-lg font-extrabold text-white transition-all select-none active:scale-95 ${
-                           isLoading || !isFormValid()
-                              ? 'disabled:cursor-not-allowed disabled:opacity-50'
-                              : 'hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black'
-                        }`}
-                     >
-                        {isLoading ? (
-                           <>
-                              <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                              <span>Salvando...</span>
-                           </>
-                        ) : (
-                           <>Apontar</>
-                        )}
-                     </button>
-                  </section>
-               </section>
+               </div>
             </main>
+            {/* ==================== */}
+
+            {/* ===== FOOTER ===== */}
+            <footer className="relative flex justify-end gap-4 border-t-4 border-red-600 p-6">
+               {/* Botão cancelar */}
+               <button
+                  onClick={handleClose}
+                  disabled={isLoading}
+                  className="cursor-pointer rounded-xl border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
+               >
+                  Cancelar
+               </button>
+               {/* ===== */}
+
+               {/* Botão de atualizar/salvar */}
+               <button
+                  onClick={handleSubmitForm}
+                  disabled={isLoading || !isFormValid()}
+                  className={`cursor-pointer rounded-xl border-none bg-blue-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black select-none ${
+                     isLoading || !isFormValid()
+                        ? 'disabled:cursor-not-allowed disabled:opacity-50'
+                        : 'transition-all hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black active:scale-95'
+                  }`}
+               >
+                  {isLoading ? (
+                     <div className="flex items-center gap-2">
+                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        <span>Apontando...</span>
+                     </div>
+                  ) : (
+                     <div className="flex items-center gap-1">
+                        <IoIosSave className="mr-2 inline-block" size={20} />
+                        <span>Apontar</span>
+                     </div>
+                  )}
+               </button>
+            </footer>
          </div>
       </div>
    );
