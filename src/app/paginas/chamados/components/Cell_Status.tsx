@@ -376,7 +376,7 @@ export default function StatusCell({
                      <option
                         key={status}
                         value={status}
-                        className="bg-white text-gray-900"
+                        className="bg-white text-black"
                      >
                         {getStatusDisplayName(status)}
                      </option>
@@ -386,7 +386,7 @@ export default function StatusCell({
                      <option
                         key={opt}
                         value={opt}
-                        className="bg-white text-gray-900"
+                        className="bg-white text-black"
                      >
                         {getStatusDisplayName(opt)}
                      </option>
@@ -418,19 +418,14 @@ export default function StatusCell({
                         side="right"
                         align="start"
                         sideOffset={8}
-                        className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+                        className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
                      >
-                        <div>
-                           <div className="break-words">
-                              Status atual: {status}
-                           </div>
-                           <div className="mt-1 text-xs font-semibold tracking-wider text-gray-700 italic select-none">
-                              {isUpdating
-                                 ? 'Aguarde...'
-                                 : status === 'ATRIBUIDO'
-                                   ? 'Clique para colocar em atendimento'
-                                   : 'Clique para alterar o status'}
-                           </div>
+                        <div className="text-sm font-semibold tracking-wider text-black italic select-none">
+                           {isUpdating
+                              ? 'Aguarde...'
+                              : status === 'ATRIBUIDO'
+                                ? 'Clique para colocar "EM ATENDIMENTO"'
+                                : 'Clique para alterar o Status'}
                         </div>
                      </TooltipContent>
                   </Tooltip>

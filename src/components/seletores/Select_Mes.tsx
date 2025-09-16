@@ -26,8 +26,8 @@ export default function SelectMes({ value, onChange }: Props) {
    // ================================================================================
 
    return (
-      <div className="group flex w-full flex-col">
-         <label className="flex items-center gap-2 text-base font-bold tracking-widest text-gray-900 select-none">
+      <div className="group flex w-full flex-col gap-1">
+         <label className="flex items-center gap-2 text-base font-extrabold tracking-widest text-black select-none">
             <FaFilter className="text-black" size={16} />
             Mês
          </label>
@@ -43,7 +43,7 @@ export default function SelectMes({ value, onChange }: Props) {
                   onChange(Number(selectedValue));
                }
             }}
-            className="w-full cursor-pointer rounded-md border-none bg-white px-4 py-2 text-lg font-bold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:translate-y-1 hover:scale-102 focus:ring-2 focus:ring-lime-500 focus:outline-none"
+            className="w-full cursor-pointer rounded-md border-none bg-white px-4 py-2 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-105 focus:ring-2 focus:ring-amber-500 focus:outline-none"
          >
             <option
                value="todos"
@@ -55,7 +55,7 @@ export default function SelectMes({ value, onChange }: Props) {
                <option
                   key={i}
                   value={i + 1}
-                  className="p-4 text-lg font-semibold tracking-wider text-gray-900 italic select-none"
+                  className="p-4 text-lg font-semibold tracking-wider text-black italic select-none"
                >
                   {mes}
                </option>

@@ -83,7 +83,7 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
             acoes.onVisualizarOS(chamado.COD_CHAMADO);
             setIsOpen(false);
          },
-         tooltip: 'Visualizar OS',
+         tooltip: "Visualizar OS's",
          bgGradient: 'from-emerald-500 to-emerald-600',
          hoverGradient: 'from-emerald-600 to-emerald-700',
          iconColor: 'text-white',
@@ -97,7 +97,7 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
             acoes.onVisualizarTarefas();
             setIsOpen(false);
          },
-         tooltip: 'Visualizar Tarefa',
+         tooltip: 'Visualizar Tarefas',
          bgGradient: 'from-orange-500 to-orange-600',
          hoverGradient: 'from-orange-600 to-orange-700',
          iconColor: 'text-white',
@@ -108,7 +108,7 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
       {
          icon: FaDownload,
          onClick: handleDownload,
-         tooltip: 'Download Arquivos',
+         tooltip: "Download Arquivo's",
          bgGradient: 'from-purple-500 to-purple-600',
          hoverGradient: 'from-purple-600 to-purple-700',
          iconColor: 'text-white',
@@ -173,7 +173,7 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
                   {isOpen ? (
                      <span className="text-xl font-bold">×</span>
                   ) : (
-                     <HiMiniSquaresPlus size={24} />
+                     <HiMiniSquaresPlus size={32} />
                   )}
                </motion.div>
             </motion.button>
@@ -208,7 +208,7 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
                            <div key={index} className="relative">
                               {/* Tooltip melhorado */}
                               <motion.div
-                                 className={`pointer-events-none absolute -top-14 left-1/2 z-60 -translate-x-1/2 transform rounded-md bg-black px-6 py-2 text-sm font-semibold tracking-wider whitespace-nowrap text-white shadow-sm shadow-white`}
+                                 className={`pointer-events-none absolute -top-14 left-1/2 z-60 -translate-x-1/2 transform rounded-md border-t-4 border-cyan-500 bg-black px-6 py-2 text-sm font-semibold tracking-wider whitespace-nowrap text-white shadow-sm shadow-white`}
                                  initial={{ opacity: 0, scale: 0.8, y: 10 }}
                                  animate={{
                                     opacity: isHovered ? 1 : 0,
@@ -308,7 +308,7 @@ export const colunasTabela = (
          accessorKey: 'COD_CHAMADO',
          header: () => <div className="text-center">Chamado</div>,
          cell: ({ getValue }) => (
-            <div className="rounded-md bg-pink-600 p-2 text-center text-white ring-1 ring-white">
+            <div className="rounded-md bg-slate-900 p-2 text-center text-white ring-1 ring-white">
                {getValue() as string}
             </div>
          ),
@@ -323,7 +323,7 @@ export const colunasTabela = (
             const dataFormatada = formatarDataParaBR(dateString);
 
             return (
-               <div className="rounded-md bg-pink-600 p-2 text-center text-white ring-1 ring-white">
+               <div className="rounded-md bg-slate-900 p-2 text-center text-white ring-1 ring-white">
                   {dataFormatada}
                </div>
             );

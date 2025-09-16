@@ -224,13 +224,13 @@ export default function AssuntoCellEditavel({
                side="left"
                align="end"
                sideOffset={8}
-               className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+               className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
             >
                <div>
                   <div className="max-w-xs break-words">
                      {corrigirTextoCorrompido(assunto)}
                   </div>
-                  <div className="mt-1 text-xs font-semibold tracking-wider text-gray-700 italic select-none">
+                  <div className="mt-1 text-xs font-semibold tracking-widest text-black italic select-none">
                      Clique para editar
                   </div>
                </div>

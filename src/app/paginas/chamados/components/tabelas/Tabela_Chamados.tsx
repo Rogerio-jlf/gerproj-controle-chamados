@@ -31,13 +31,19 @@ import ModalAtribuicaoInteligente from '../modais/Modal_Atribuir_Chamado';
 import { TabelaChamadosProps } from '../../../../../types/types';
 import IsLoading from '../Loading';
 import IsError from '../Error';
+import DashboardRecursos from '../Dashboard_Recursos';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
-import { FaExclamationTriangle, FaDatabase, FaSearch } from 'react-icons/fa';
+import {
+   FaExclamationTriangle,
+   FaDatabase,
+   FaSearch,
+   FaUsers,
+} from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { RiArrowUpDownLine } from 'react-icons/ri';
-import { IoArrowUp, IoArrowDown } from 'react-icons/io5';
+import { IoArrowUp, IoArrowDown, IoClose } from 'react-icons/io5';
 import { FaFilter } from 'react-icons/fa6';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
 
@@ -71,6 +77,7 @@ const FilterInputTableHeaderDebounce = ({
    type = 'text',
 }: FilterInputTableHeaderProps) => {
    const [localValue, setLocalValue] = useState(value);
+   const [isFocused, setIsFocused] = useState(false);
 
    useEffect(() => {
       setLocalValue(value);
@@ -91,8 +98,10 @@ const FilterInputTableHeaderDebounce = ({
          type={type}
          value={localValue}
          onChange={handleChange}
-         placeholder={placeholder}
-         className="w-full rounded-md border border-white/50 bg-teal-950 px-4 py-2 text-base text-white placeholder-gray-500 hover:scale-105 focus:bg-black focus:outline-none focus:placeholder:text-gray-700"
+         placeholder={isFocused ? '' : placeholder}
+         className="w-full rounded-md bg-teal-950 px-4 py-2 text-base text-white placeholder-slate-400 shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-105 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+         onFocus={() => setIsFocused(true)}
+         onBlur={() => setIsFocused(false)}
       />
    );
 };
@@ -122,7 +131,7 @@ const GlobalFilterInput = ({
    };
 
    return (
-      <div className="group relative transition-all hover:-translate-y-1 hover:scale-102">
+      <div className="group relative transition-all hover:-translate-y-1 hover:scale-105">
          <FaSearch
             className="absolute top-1/2 left-4 -translate-y-1/2 text-white"
             size={18}
@@ -132,7 +141,7 @@ const GlobalFilterInput = ({
             value={localValue}
             onChange={handleChange}
             placeholder={isFocused ? '' : placeholder}
-            className="w-full rounded-md border-none bg-white/30 py-3 pl-12 text-base font-semibold tracking-wider text-white placeholder-white shadow-sm shadow-white select-none hover:bg-white/20 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+            className="w-full rounded-md border-none bg-white/30 py-3 pl-12 text-base font-semibold tracking-wider text-white placeholder-white shadow-sm shadow-white select-none focus:ring-2 focus:ring-amber-500 focus:outline-none"
             ref={inputRef}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
@@ -682,47 +691,31 @@ export default function TabelaChamados() {
             <header className="flex flex-col gap-6 bg-black p-6">
                {/* ===== LINHA SUPERIOR ===== */}
                <section className="flex items-center justify-between gap-8">
-                  {/* ===== ITENS DA ESQUERDA ===== */}
                   <div className="flex items-center justify-center gap-6">
                      <div className="flex items-center justify-center rounded-md bg-white/30 p-4 shadow-sm shadow-white">
                         <FaDatabase className="text-white" size={28} />
                      </div>
                      {/* ===== */}
-                     <h1 className="text-4xl font-extrabold tracking-widest text-white select-none">
+
+                     <h1 className="text-4xl font-extrabold tracking-widest text-white uppercase select-none">
                         Chamados
                      </h1>
                   </div>
-                  {/* ===== */}
+                  {/* ========== */}
 
-                  {/* ===== ITENS DA DIREITA ===== */}
+                  {/* ===== BOTÕES DE AÇÃO DO HEADER ===== */}
                   <div className="flex items-center gap-6">
-                     {/* botão dashboard recursos */}
+                     {/* Botão dashboard de recursos */}
                      {/* {user?.tipo === 'ADM' && (
-                        <Tooltip>
-                           <TooltipTrigger asChild>
-                              <button
-                                 onClick={handleAbrirDashboard}
-                                 className="flex cursor-pointer items-center gap-4 rounded-md border border-white/50 bg-white/40 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic transition-all select-none hover:scale-105 hover:border-none hover:bg-white/70 hover:text-black active:scale-95"
-                              >
-                                 <FaUsers size={24} />
-                                 Recursos
-                              </button>
-                           </TooltipTrigger>
-                           <TooltipContent
-                              side="top"
-                              align="center"
-                              sideOffset={2}
-                              className="border-b-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
-                           >
-                              Dashboard Recursos
-                           </TooltipContent>
-                        </Tooltip>
+                        <button
+                           onClick={handleAbrirDashboard}
+                           className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-white/30 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-105 hover:bg-white/20 active:scale-95"
+                        >
+                           <FaUsers size={24} />
+                           Dashboard
+                        </button>
                      )} */}
-
-                     {/* botão tabela OS */}
-                     {/* <TarefasButton
-                        onVisualizarTarefas={() => setTabelaTarefasOpen(true)}
-                     /> */}
+                     {/* ===== */}
 
                      {/* Botão mostrar/ocultar filtros */}
                      <button
@@ -759,11 +752,12 @@ export default function TabelaChamados() {
                      )}
                   </div>
                </section>
+               {/* ========== */}
 
-               {/* ===== FILTRO GLOBAL ===== */}
+               {/* ===== LINHA INFERIOR ===== */}
                {data && data.length > 0 && (
                   <section className="flex items-center justify-between gap-6">
-                     {/* Campo de busca global */}
+                     {/* Input de filtro global */}
                      <div className="max-w-md flex-1 font-semibold tracking-wider select-none placeholder:tracking-wider placeholder:text-gray-400 placeholder:italic placeholder:select-none">
                         <GlobalFilterInput
                            value={globalFilter ?? ''}
@@ -774,6 +768,7 @@ export default function TabelaChamados() {
                            }}
                         />
                      </div>
+                     {/* ========== */}
 
                      {/* Indicadores de filtros ativos */}
                      <FilterIndicator
@@ -784,7 +779,7 @@ export default function TabelaChamados() {
                   </section>
                )}
             </header>
-            {/* ===== */}
+            {/* ==================== */}
 
             {/* ===== CONTEÚDO DA TABELA ===== */}
             <main className="h-full w-full overflow-hidden bg-black">
@@ -930,22 +925,6 @@ export default function TabelaChamados() {
                                           placeholder="Filtrar por recurso..."
                                        />
                                     )}
-                                    {/* ===== */}
-                                    {column.id === 'EMAIL_CHAMADO' && (
-                                       <FilterInputTableHeaderDebounce
-                                          value={
-                                             (column.getFilterValue() as string) ??
-                                             ''
-                                          }
-                                          onChange={value =>
-                                             column.setFilterValue(value)
-                                          }
-                                          onClear={() =>
-                                             column.setFilterValue('')
-                                          }
-                                          placeholder="Filtrar por email..."
-                                       />
-                                    )}
                                  </th>
                               ))}
                            </tr>
@@ -963,8 +942,8 @@ export default function TabelaChamados() {
                                  key={row.id}
                                  className={`group border-b border-gray-600 transition-all hover:bg-amber-200 ${
                                     rowIndex % 2 === 0
-                                       ? 'bg-stone-800'
-                                       : 'bg-stone-700'
+                                       ? 'bg-stone-600'
+                                       : 'bg-stone-500'
                                  }`}
                               >
                                  {row.getVisibleCells().map(cell => (
@@ -1035,7 +1014,7 @@ export default function TabelaChamados() {
                               onChange={e =>
                                  table.setPageSize(Number(e.target.value))
                               }
-                              className="cursor-pointer rounded-md bg-white/30 px-4 py-1 text-base font-semibold tracking-widest text-white italic shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                              className="cursor-pointer rounded-md bg-white/30 px-4 py-1 text-base font-semibold tracking-widest text-white italic shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-amber-500 focus:outline-none"
                            >
                               {[10, 25, 50, 75, 100].map(pageSize => (
                                  <option
@@ -1055,7 +1034,7 @@ export default function TabelaChamados() {
                            <button
                               onClick={() => table.setPageIndex(0)}
                               disabled={!table.getCanPreviousPage()}
-                              className="group cursor-pointer rounded-md bg-white/30 px-4 py-1 shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md bg-white/30 px-4 py-1 shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-amber-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsLeft
                                  className="text-white group-disabled:text-slate-50"
@@ -1067,7 +1046,7 @@ export default function TabelaChamados() {
                            <button
                               onClick={() => table.previousPage()}
                               disabled={!table.getCanPreviousPage()}
-                              className="group cursor-pointer rounded-md bg-white/30 px-4 py-1 shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md bg-white/30 px-4 py-1 shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-amber-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronLeft
                                  className="text-white group-disabled:text-slate-50"
@@ -1087,7 +1066,7 @@ export default function TabelaChamados() {
                                        const page = Number(e.target.value) - 1;
                                        table.setPageIndex(page);
                                     }}
-                                    className="cursor-pointer rounded-md bg-white/30 px-4 py-1 text-base font-semibold tracking-widest text-white italic shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                                    className="cursor-pointer rounded-md bg-white/30 px-4 py-1 text-base font-semibold tracking-widest text-white italic shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-amber-500 focus:outline-none"
                                  >
                                     {Array.from(
                                        { length: table.getPageCount() },
@@ -1113,7 +1092,7 @@ export default function TabelaChamados() {
                            <button
                               onClick={() => table.nextPage()}
                               disabled={!table.getCanNextPage()}
-                              className="group cursor-pointer rounded-md bg-white/30 px-4 py-1 shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md bg-white/30 px-4 py-1 shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-amber-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronRight
                                  className="text-white group-disabled:text-slate-50"
@@ -1127,7 +1106,7 @@ export default function TabelaChamados() {
                                  table.setPageIndex(table.getPageCount() - 1)
                               }
                               disabled={!table.getCanNextPage()}
-                              className="group cursor-pointer rounded-md bg-white/30 px-4 py-1 shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md bg-white/30 px-4 py-1 shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-amber-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsRight
                                  className="text-white group-disabled:text-slate-50"
@@ -1214,6 +1193,34 @@ export default function TabelaChamados() {
             onClose={() => setTabelaTarefasOpen(false)}
             codChamado={selectedCodChamado}
          />
+
+         {/* ===== DASHBOARD RECURSOS ===== */}
+         {dashboardOpen && user?.tipo === 'ADM' && (
+            <div className="fixed inset-0 z-50 bg-black">
+               <div className="relative h-full">
+                  <div className="absolute inset-0 bg-black opacity-50" />
+                  <Tooltip>
+                     <TooltipTrigger asChild>
+                        <button
+                           onClick={handleFecharDashboard}
+                           className="absolute top-6 right-35 z-10 cursor-pointer rounded-full bg-red-600/50 p-3 shadow-md shadow-white transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 hover:shadow-lg hover:shadow-white active:scale-95"
+                        >
+                           <IoClose size={28} className="text-white" />
+                        </button>
+                     </TooltipTrigger>
+                     <TooltipContent
+                        side="bottom"
+                        align="center"
+                        sideOffset={8}
+                        className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+                     >
+                        Sair
+                     </TooltipContent>
+                  </Tooltip>
+                  <DashboardRecursos />
+               </div>
+            </div>
+         )}
 
          {/* ===== MODAL ATRIBUIÇÃO INTELIGENTE ===== */}
          <ModalAtribuicaoInteligente

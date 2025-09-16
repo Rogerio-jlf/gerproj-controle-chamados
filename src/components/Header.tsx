@@ -6,9 +6,9 @@ import {
    TooltipTrigger,
 } from '@/components/ui/tooltip';
 // ================================================================================
-import LogoutButton from '../botoes/Button_Logout';
-import Filtros from '../../app/paginas/chamados/components/Filtros';
-import { useFiltersTabelaChamados } from '../../contexts/Filters_Context';
+import LogoutButton from './botoes/Button_Logout';
+import Filtros from '../app/paginas/chamados/components/Filtros';
+import { useFiltersTabelaChamados } from '../contexts/Filters_Context';
 // ================================================================================
 import { LuRefreshCw } from 'react-icons/lu';
 // ================================================================================
@@ -37,7 +37,7 @@ export default function Header({ titulo, subtitulo, icon }: Props) {
 
    return (
       <header>
-         <div className="grid grid-cols-[30%_40%_30%] border-b-2 border-red-500 bg-gray-100 pb-6">
+         <div className="grid grid-cols-[30%_40%_30%] border-b-4 border-red-500 bg-gray-100 pb-6">
             {/* Itens da esquerda */}
             <section className="flex items-center gap-4">
                {/* Ícone */}
