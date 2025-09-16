@@ -19,18 +19,18 @@ import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
-} from '../../../../components/ui/tooltip';
+} from '../../../../../components/ui/tooltip';
 // ================================================================================
-import { useAuth } from '../../../../hooks/useAuth';
-import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
-import { colunasTabela } from './colunas/Colunas_Tabela_Chamados';
-import ModalAtribuirChamado from './modais/Modal_Dados_Chamado';
+import { useAuth } from '../../../../../hooks/useAuth';
+import { useFiltersTabelaChamados } from '../../../../../contexts/Filters_Context';
+import { colunasTabela } from '../colunas/Colunas_Tabela_Chamados';
+import ModalAtribuirChamado from '../modais/Modal_Dados_Chamado';
 import TabelaTarefas from './Tabela_Tarefas';
 import TabelaOS from './Tabela_OS';
-import ModalAtribuicaoInteligente from './modais/Modal_Atribuir_Chamado';
-import { TabelaChamadosProps } from '../../../../types/types';
-import IsLoading from './Loading';
-import IsError from './Error';
+import ModalAtribuicaoInteligente from '../modais/Modal_Atribuir_Chamado';
+import { TabelaChamadosProps } from '../../../../../types/types';
+import IsLoading from '../Loading';
+import IsError from '../Error';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
 import { FaExclamationTriangle, FaDatabase, FaSearch } from 'react-icons/fa';

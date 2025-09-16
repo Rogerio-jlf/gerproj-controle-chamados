@@ -14,12 +14,12 @@ import {
    SortingState,
 } from '@tanstack/react-table';
 // ================================================================================
-import { TarefasProps, colunasTabela } from './colunas/Colunas_Tabela_Tarefas';
+import { TarefasProps, colunasTabela } from '../colunas/Colunas_Tabela_Tarefas';
 import TabelaChamadosTarefa from './Tabela_Chamados_Tarefa';
 import TabelaOSTarefa from './Tabela_OS_Tarefa';
 // ================================================================================
-import IsLoading from './Loading';
-import IsError from './Error';
+import IsLoading from '../Loading';
+import IsError from '../Error';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
@@ -40,7 +40,7 @@ import {
 import { RiArrowUpDownLine } from 'react-icons/ri';
 import { IoArrowDown, IoArrowUp } from 'react-icons/io5';
 import { debounce } from 'lodash';
-import ModalApontamento from '../components/modais/Modal_Apontamento';
+import ModalApontamento from '../modais/Modal_Apontamento';
 // ================================================================================
 // ================================================================================
 

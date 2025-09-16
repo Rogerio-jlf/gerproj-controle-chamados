@@ -1,8 +1,8 @@
 'use client';
 
-import { useAuth } from '@/hooks/useAuth';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { debounce } from 'lodash';
 import {
    flexRender,
    getCoreRowModel,
@@ -13,48 +13,37 @@ import {
    ColumnFiltersState,
    SortingState,
 } from '@tanstack/react-table';
-// ================================================================================
+// ====================
+import { TabelaOSProps } from '../../../../../types/types';
 import {
-   ChamadosProps,
-   colunasTabela,
-} from '../components/colunas/Colunas_Tabela_Chamados_Tarefa';
-// ================================================================================
-import IsLoading from './Loading';
-import IsError from './Error';
-// ================================================================================
-import { BsEraserFill } from 'react-icons/bs';
-import { LuFilter, LuFilterX } from 'react-icons/lu';
-import { FaExclamationTriangle, FaFileAlt } from 'react-icons/fa';
-import { FaFilter } from 'react-icons/fa6';
-import { FaPhoneAlt } from 'react-icons/fa';
-import { MdChevronLeft } from 'react-icons/md';
-import { FiChevronsLeft } from 'react-icons/fi';
-import { MdChevronRight } from 'react-icons/md';
-import { FiChevronsRight } from 'react-icons/fi';
-import { LuArrowUpDown } from 'react-icons/lu';
-import { FaArrowUpLong } from 'react-icons/fa6';
-import { FaArrowDownLong } from 'react-icons/fa6';
-import { IoArrowDown, IoArrowUp, IoClose } from 'react-icons/io5';
-import { FaSearch } from 'react-icons/fa';
-import { debounce } from 'lodash';
+   colunasOSTarefa,
+   TabelaOSTarefaProps,
+} from '../colunas/Colunas_Tabela_OS_Tarefa';
 import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
-} from '../../../../components/ui/tooltip';
+} from '../../../../../components/ui/tooltip';
+// ====================
+import IsLoading from '../Loading';
+import IsError from '../Error';
+// ====================
+import ModalEditarOS from '../modais/Modal_Editar_OS';
+import { ModalExcluirOS } from '../modais/Modal_Deletar_OS';
+// ====================
+import { BsEraserFill } from 'react-icons/bs';
+import { LuFilter, LuFilterX } from 'react-icons/lu';
+import { FaExclamationTriangle, FaFileAlt } from 'react-icons/fa';
+import { FaFilter } from 'react-icons/fa6';
+import { FaTasks } from 'react-icons/fa';
+import { MdChevronLeft } from 'react-icons/md';
+import { FiChevronsLeft } from 'react-icons/fi';
+import { MdChevronRight } from 'react-icons/md';
+import { FiChevronsRight } from 'react-icons/fi';
+import { IoArrowDown, IoArrowUp, IoClose } from 'react-icons/io5';
+import { FaSearch } from 'react-icons/fa';
 import { RiArrowUpDownLine } from 'react-icons/ri';
 // ================================================================================
-// ================================================================================
-
-interface ChamadosTarefaProps {
-   isOpen: boolean;
-   onClose: () => void;
-   codTarefa: number | null;
-   codChamado: number | null;
-}
-
-// ================================================================================
-// COMPONENTES AUXILIARES
 
 interface FilterInputWithDebounceProps {
    value: string;
@@ -64,20 +53,20 @@ interface FilterInputWithDebounceProps {
    onClear?: () => void;
 }
 
-// Componente de Filtro Global
 interface GlobalFilterInputProps {
    value: string;
    onChange: (value: string) => void;
    placeholder?: string;
    onClear?: () => void;
 }
+// ================================================================================
 
+// Componente para input de filtro com debounce
 const FilterInputWithDebounce = ({
    value,
    onChange,
    placeholder,
    type = 'text',
-   onClear,
 }: FilterInputWithDebounceProps) => {
    const [localValue, setLocalValue] = useState(value);
 
@@ -106,7 +95,9 @@ const FilterInputWithDebounce = ({
       />
    );
 };
+// ====================
 
+// Componente para input de filtro global com debounce
 const GlobalFilterInput = ({
    value,
    onChange,
@@ -149,8 +140,9 @@ const GlobalFilterInput = ({
       </div>
    );
 };
+// ====================
 
-// Componente para cabeçalho ordenável
+// Componente para ordenação do cabeçalho da tabela
 const SortableHeader = ({
    column,
    children,
@@ -194,8 +186,9 @@ const SortableHeader = ({
       </Tooltip>
    );
 };
+// ====================
 
-// Componente de Indicador de Filtros Ativos
+// Componente para indicar filtros ativos
 const FilterIndicator = ({
    columnFilters,
    globalFilter,
@@ -231,92 +224,129 @@ const FilterIndicator = ({
       </div>
    );
 };
+// ====================
 
-// Função auxiliar para nomes das colunas
+// Função para definir a largura das colunas com base no ID
 const getColumnDisplayName = (columnId: string): string => {
    const displayNames: Record<string, string> = {
-      COD_CHAMADO: 'Código',
-      DATA_CHAMADO: 'Data',
-      STATUS_CHAMADO: 'Status',
-      ASSUNTO_CHAMADO: 'Assunto',
-      NOME_TAREFA: 'Tarefa',
+      COD_OS: 'Código OS',
       NOME_CLIENTE: 'Cliente',
+      CHAMADO_OS: 'Chamado',
+      STATUS_OS: 'Status',
+      OBS_OS: 'Observação',
+      DTINI_OS: 'Data Início',
    };
    return displayNames[columnId] || columnId;
 };
-
 // ================================================================================
 
-// Função para buscar chamados do banco de dados
-async function fetchChamados(
-   token: string,
-   codTarefa: number
-): Promise<ChamadosProps[]> {
-   const res = await fetch(`/api/chamados-tarefa/${codTarefa}`, {
-      headers: {
-         Authorization: `Bearer ${token}`,
-         'Content-Type': 'application/json',
-      },
-   });
-
-   if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.error || 'Erro ao buscar chamados');
-   }
-
-   const data = await res.json();
-   return Array.isArray(data) ? data : [];
-}
-// ================================================================================
-
-export default function TabelaChamadosTarefa({
+// ===== COMPONENTE PRINCIPAL =====
+export default function TabelaOSTarefa({
    isOpen,
    onClose,
    codTarefa,
    codChamado,
-}: ChamadosTarefaProps) {
-   const { user } = useAuth();
+   onSuccess,
+}: TabelaOSTarefaProps) {
    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
    const [globalFilter, setGlobalFilter] = useState('');
    const [sorting, setSorting] = useState<SortingState>([
-      { id: 'DATA_CHAMADO', desc: true },
+      { id: 'COD_OS', desc: false },
    ]);
    const [showFilters, setShowFilters] = useState(false);
+   const [selectedOS, setSelectedOS] = useState<string | null>(null);
+   const [modalEditarOSOpen, setModalEditarOSOpen] = useState(false);
+   const [osParaExcluir, setOsParaExcluir] = useState<string | null>(null);
 
    // Estados para os valores dos inputs de filtro
    const [filterValues, setFilterValues] = useState({
-      COD_CHAMADO: '',
-      DATA_CHAMADO: '',
-      STATUS_CHAMADO: '',
-      ASSUNTO_CHAMADO: '',
-      NOME_TAREFA: '',
+      COD_OS: '',
       NOME_CLIENTE: '',
+      CHAMADO_OS: '',
+      STATUS_OS: '',
+      OBS_OS: '',
+      DTINI_OS: '',
       global: '',
    });
 
    const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-   const enabled = !!token && !!user && isOpen && !!codTarefa;
+
+   const fetchDataOSTarefa = async (codTarefa: number) => {
+      const response = await fetch(`/api/OS-tarefa/${codTarefa}`, {
+         headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+         },
+      });
+
+      if (!response.ok) {
+         const errorData = await response.json();
+         throw new Error(errorData.error || `Erro: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return Array.isArray(data) ? data : [data];
+   };
 
    const {
-      data: dataChamadosTarefa,
-      isLoading,
-      isError,
+      data: dataOSTarefa,
+      isLoading: isLoading,
+      isError: isError,
       error,
       refetch,
    } = useQuery({
-      queryKey: ['chamados', token, codTarefa],
-      queryFn: () => fetchChamados(token!, codTarefa!),
-      enabled,
-      staleTime: 1000 * 60 * 5,
-      retry: 2,
+      queryKey: ['dataOSTarefa', codTarefa],
+      queryFn: () => fetchDataOSTarefa(codTarefa!),
+      enabled: isOpen && !!codTarefa && !!token,
+      staleTime: 1000 * 60 * 1,
    });
+
+   useEffect(() => {
+      if (isOpen && codTarefa) {
+         refetch();
+      }
+   }, [isOpen, codTarefa, refetch]);
 
    const handleClose = () => {
       setTimeout(() => {
          onClose();
       }, 300);
    };
+
+   const handleOpenEditarOS = (codOS: string) => {
+      setSelectedOS(codOS);
+      setModalEditarOSOpen(true);
+   };
+
+   const handleAbrirModalExclusao = (codOS: string) => {
+      setOsParaExcluir(codOS);
+   };
+
+   const handleFecharModalExclusao = () => {
+      setOsParaExcluir(null);
+   };
+
+   const handleCloseEditarOS = () => {
+      setModalEditarOSOpen(false);
+      setSelectedOS(null);
+   };
+
+   const handleEditarOSSuccess = () => {
+      handleCloseEditarOS();
+      onSuccess?.();
+   };
+
+   const handleExclusaoSuccess = () => {
+      handleFecharModalExclusao();
+      refetch();
+   };
+
+   // Configuração da tabela
+   const colunas = colunasOSTarefa({
+      onEditarOS: handleOpenEditarOS,
+      onExcluirOS: handleAbrirModalExclusao,
+   });
 
    // Função de filtro global otimizada
    const globalFilterFn = useCallback(
@@ -325,28 +355,22 @@ export default function TabelaChamadosTarefa({
 
          const searchValue = filterValue.toLowerCase();
 
-         // Busca em todas as colunas principais dos chamados
+         // Busca em todas as colunas principais da OS Tarefa
          const searchableColumns = [
-            'COD_CHAMADO',
-            'DATA_CHAMADO',
-            'STATUS_CHAMADO',
-            'ASSUNTO_CHAMADO',
-            'NOME_TAREFA',
+            'COD_OS',
             'NOME_CLIENTE',
+            'CHAMADO_OS',
+            'STATUS_OS',
+            'OBS_OS',
+            'DTINI_OS',
          ];
 
          return searchableColumns.some(colId => {
             const cellValue = row.getValue(colId);
 
             // Para data, formata antes de comparar
-            if (colId === 'DATA_CHAMADO' && cellValue) {
+            if (colId === 'DTINI_OS' && cellValue) {
                try {
-                  // Se já está formatada
-                  if (/^\d{2}\/\d{2}\/\d{4}$/.test(cellValue as string)) {
-                     return (cellValue as string)
-                        .toLowerCase()
-                        .includes(searchValue);
-                  }
                   const date = new Date(cellValue as string);
                   const formattedDate = date.toLocaleDateString('pt-BR');
                   return formattedDate.includes(searchValue);
@@ -375,18 +399,15 @@ export default function TabelaChamadosTarefa({
 
          // Filtro específico por tipo de coluna
          switch (columnId) {
-            case 'COD_CHAMADO':
+            case 'COD_OS':
+            case 'CHAMADO_OS':
                // Para códigos, permite busca parcial em números
                return cellString.includes(filterString);
 
-            case 'DATA_CHAMADO':
+            case 'DTINI_OS':
                // Para data, formata antes de comparar
                if (!cellValue) return false;
                try {
-                  // Se já está formatada
-                  if (/^\d{2}\/\d{2}\/\d{4}$/.test(cellValue as string)) {
-                     return (cellValue as string).includes(filterString);
-                  }
                   const date = new Date(cellValue as string);
                   const formattedDate = date.toLocaleDateString('pt-BR');
                   return formattedDate.includes(filterString);
@@ -394,10 +415,9 @@ export default function TabelaChamadosTarefa({
                   return cellString.includes(filterString);
                }
 
-            case 'STATUS_CHAMADO':
-            case 'ASSUNTO_CHAMADO':
-            case 'NOME_TAREFA':
             case 'NOME_CLIENTE':
+            case 'STATUS_OS':
+            case 'OBS_OS':
             default:
                // Para texto, busca parcial case-insensitive
                return cellString.includes(filterString);
@@ -406,10 +426,8 @@ export default function TabelaChamadosTarefa({
       []
    );
 
-   const colunas = useMemo(() => colunasTabela(), []);
-
    const table = useReactTable({
-      data: (dataChamadosTarefa ?? []) as ChamadosProps[],
+      data: (dataOSTarefa ?? []) as TabelaOSProps[],
       columns: colunas,
       getCoreRowModel: getCoreRowModel(),
       getFilteredRowModel: getFilteredRowModel(),
@@ -448,6 +466,25 @@ export default function TabelaChamadosTarefa({
       return count;
    }, [columnFilters.length, globalFilter]);
 
+   // Obter valores únicos para filtros de select - usando useMemo para otimização
+   const clienteOptions = Array.from(
+      new Set(
+         dataOSTarefa
+            ?.map(item => item.NOME_CLIENTE)
+            .filter(Boolean)
+            .filter(cliente => cliente && cliente.trim() !== '')
+      )
+   ).sort();
+
+   const statusOptions = Array.from(
+      new Set(
+         dataOSTarefa
+            ?.map(item => item.STATUS_OS)
+            .filter(Boolean)
+            .filter(status => String(status).trim() !== '')
+      )
+   ).sort();
+
    // Função para limpar todos os filtros e inputs
    const clearFilters = () => {
       setColumnFilters([]);
@@ -455,12 +492,12 @@ export default function TabelaChamadosTarefa({
 
       // Limpa os valores dos inputs
       setFilterValues({
-         COD_CHAMADO: '',
-         DATA_CHAMADO: '',
-         STATUS_CHAMADO: '',
-         ASSUNTO_CHAMADO: '',
-         NOME_TAREFA: '',
+         COD_OS: '',
          NOME_CLIENTE: '',
+         CHAMADO_OS: '',
+         STATUS_OS: '',
+         OBS_OS: '',
+         DTINI_OS: '',
          global: '',
       });
 
@@ -470,16 +507,16 @@ export default function TabelaChamadosTarefa({
       });
    };
 
-   // Atualiza os valores locais quando os filtros mudam
+   // Atualiza os valores locais quando os filtros da tabela mudam
    useEffect(() => {
       // Cria um novo objeto de valores baseado nos filtros atuais
       const newFilterValues = {
-         COD_CHAMADO: '',
-         DATA_CHAMADO: '',
-         STATUS_CHAMADO: '',
-         ASSUNTO_CHAMADO: '',
-         NOME_TAREFA: '',
+         COD_OS: '',
          NOME_CLIENTE: '',
+         CHAMADO_OS: '',
+         STATUS_OS: '',
+         OBS_OS: '',
+         DTINI_OS: '',
          global: globalFilter || '',
       };
 
@@ -507,14 +544,14 @@ export default function TabelaChamadosTarefa({
 
    if (!isOpen) return null;
 
-   // ===== LOADING CENTRALIZADO - NOVA IMPLEMENTAÇÃO =====
+   // ===== LOADING CENTRALIZADO =====
    if (isLoading) {
       return (
          <>
             {/* Loading overlay centralizado - Z-INDEX MAIS ALTO */}
             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-xl">
                <IsLoading
-                  title={`Carregando os Chamados da Tarefa #${codTarefa}`}
+                  title={`Carregando as OS's da Tarefa #${codTarefa}`}
                />
             </div>
          </>
@@ -532,6 +569,8 @@ export default function TabelaChamadosTarefa({
       );
    }
 
+   // ================================================================================
+
    return (
       <>
          <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -540,8 +579,7 @@ export default function TabelaChamadosTarefa({
                className="absolute inset-0 bg-black/50 backdrop-blur-xl"
                onClick={onClose}
             />
-            {/* ===== */}
-            {/* ===== MODAL ===== */}
+            {/* ===== CONTAINER ===== */}
             <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-black">
                {/* ===== HEADER ===== */}
                <header className="flex flex-col gap-4 bg-white/70 p-6">
@@ -551,14 +589,13 @@ export default function TabelaChamadosTarefa({
                      <div className="flex items-center justify-center gap-6">
                         {/* ícone */}
                         <div className="flex items-center justify-center rounded-md bg-white/10 p-4 shadow-sm shadow-black">
-                           <FaPhoneAlt className="text-black" size={28} />
+                           <FaTasks className="text-black" size={28} />
                         </div>
-                        {/* ===== */}
 
                         <div className="flex flex-col justify-center">
                            <div className="flex items-center justify-center gap-10">
                               <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
-                                 Chamados Tarefa
+                                 OS Tarefa
                               </h1>
                               <span className="rounded-full bg-black px-6 py-1 text-base font-extrabold tracking-widest text-white italic select-none">
                                  Tarefa - #{codTarefa}
@@ -566,28 +603,23 @@ export default function TabelaChamadosTarefa({
                            </div>
 
                            <p className="text-base font-semibold tracking-widest text-black italic select-none">
-                              Todos os Chamados vinculados a uma Tarefa
+                              Todas as OS's vinculadas a uma Tarefa
                            </p>
                         </div>
                      </div>
-                     {/* ===== */}
 
                      {/* ===== ITENS DA DIREITA ===== */}
                      <div className="flex items-center gap-6">
                         {/* Botão mostrar/ocultar filtros */}
                         <button
                            onClick={() => setShowFilters(!showFilters)}
-                           disabled={
-                              !dataChamadosTarefa ||
-                              dataChamadosTarefa.length <= 1
-                           }
+                           disabled={!dataOSTarefa || dataOSTarefa.length <= 1}
                            className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider italic transition-all select-none ${
                               showFilters
                                  ? 'border-none bg-blue-600 text-white shadow-sm shadow-black hover:bg-blue-900'
                                  : 'border-none bg-white/40 text-black shadow-sm shadow-black hover:bg-white/10'
                            } ${
-                              !dataChamadosTarefa ||
-                              dataChamadosTarefa.length <= 1
+                              !dataOSTarefa || dataOSTarefa.length <= 1
                                  ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
                                  : 'hover:-translate-y-1 hover:scale-105 active:scale-95'
                            }`}
@@ -624,7 +656,7 @@ export default function TabelaChamadosTarefa({
                   </section>
 
                   {/* ===== FILTRO GLOBAL ===== */}
-                  {dataChamadosTarefa && dataChamadosTarefa.length > 0 && (
+                  {dataOSTarefa && dataOSTarefa.length > 0 && (
                      <section className="flex items-center justify-between gap-6">
                         {/* Campo de busca global */}
                         <div className="max-w-md flex-1 font-semibold tracking-wider select-none placeholder:tracking-wider placeholder:text-gray-600 placeholder:italic placeholder:select-none">
@@ -644,18 +676,15 @@ export default function TabelaChamadosTarefa({
                      </section>
                   )}
                </header>
-               {/* ===== */}
 
-               {/* ===== CONTEÚDO ===== */}
+               {/* ===== CONTEÚDO PRINCIPAL ===== */}
                <main className="overflow-hidden bg-black">
                   {/* ===== TABELA ===== */}
-                  {dataChamadosTarefa && dataChamadosTarefa.length > 0 && (
+                  {dataOSTarefa && dataOSTarefa.length > 0 && (
                      <section className="h-full w-full overflow-hidden bg-black">
                         <div
                            className="h-full overflow-y-auto"
-                           style={{
-                              maxHeight: 'calc(100vh - 420px)',
-                           }}
+                           style={{ maxHeight: 'calc(100vh - 420px)' }}
                         >
                            <table className="w-full table-fixed border-collapse">
                               {/* ===== CABEÇALHO DA TABELA ===== */}
@@ -675,18 +704,12 @@ export default function TabelaChamadosTarefa({
                                              }}
                                           >
                                              {header.isPlaceholder ? null : header
-                                                  .column.id ===
-                                                  'COD_CHAMADO' ||
+                                                  .column.id === 'COD_OS' ||
                                                header.column.id ===
-                                                  'DATA_CHAMADO' ||
+                                                  'NOME_CLIENTE' ||
+                                               header.column.id === 'OBS_OS' ||
                                                header.column.id ===
-                                                  'STATUS_CHAMADO' ||
-                                               header.column.id ===
-                                                  'ASSUNTO_CHAMADO' ||
-                                               header.column.id ===
-                                                  'NOME_TAREFA' ||
-                                               header.column.id ===
-                                                  'NOME_CLIENTE' ? (
+                                                  'DTINI_OS' ? (
                                                 <SortableHeader
                                                    column={header.column}
                                                 >
@@ -721,7 +744,7 @@ export default function TabelaChamadosTarefa({
                                                 ),
                                              }}
                                           >
-                                             {column.id === 'COD_CHAMADO' && (
+                                             {column.id === 'COD_OS' && (
                                                 <FilterInputWithDebounce
                                                    value={
                                                       (column.getFilterValue() as string) ??
@@ -733,9 +756,44 @@ export default function TabelaChamadosTarefa({
                                                       )
                                                    }
                                                    placeholder="Código..."
+                                                   type="text"
                                                 />
                                              )}
-                                             {column.id === 'DATA_CHAMADO' && (
+
+                                             {column.id === 'NOME_CLIENTE' && (
+                                                <FilterInputWithDebounce
+                                                   value={
+                                                      (column.getFilterValue() as string) ??
+                                                      ''
+                                                   }
+                                                   onChange={value =>
+                                                      column.setFilterValue(
+                                                         value
+                                                      )
+                                                   }
+                                                   onClear={() =>
+                                                      column.setFilterValue('')
+                                                   }
+                                                   placeholder="Cliente..."
+                                                />
+                                             )}
+
+                                             {column.id === 'OBS_OS' && (
+                                                <FilterInputWithDebounce
+                                                   value={
+                                                      (column.getFilterValue() as string) ??
+                                                      ''
+                                                   }
+                                                   onChange={value =>
+                                                      column.setFilterValue(
+                                                         value
+                                                      )
+                                                   }
+                                                   placeholder="Observação..."
+                                                />
+                                             )}
+
+                                             {column.id === 'DTINI_OS' && (
                                                 <FilterInputWithDebounce
                                                    value={
                                                       (column.getFilterValue() as string) ??
@@ -748,64 +806,6 @@ export default function TabelaChamadosTarefa({
                                                    }
                                                    placeholder="dd/mm/aaaa"
                                                    type="text"
-                                                />
-                                             )}
-                                             {column.id ===
-                                                'STATUS_CHAMADO' && (
-                                                <FilterInputWithDebounce
-                                                   value={
-                                                      (column.getFilterValue() as string) ??
-                                                      ''
-                                                   }
-                                                   onChange={value =>
-                                                      column.setFilterValue(
-                                                         value
-                                                      )
-                                                   }
-                                                   placeholder="Status..."
-                                                />
-                                             )}
-                                             {column.id ===
-                                                'ASSUNTO_CHAMADO' && (
-                                                <FilterInputWithDebounce
-                                                   value={
-                                                      (column.getFilterValue() as string) ??
-                                                      ''
-                                                   }
-                                                   onChange={value =>
-                                                      column.setFilterValue(
-                                                         value
-                                                      )
-                                                   }
-                                                   placeholder="Assunto..."
-                                                />
-                                             )}
-                                             {column.id === 'NOME_TAREFA' && (
-                                                <FilterInputWithDebounce
-                                                   value={
-                                                      (column.getFilterValue() as string) ??
-                                                      ''
-                                                   }
-                                                   onChange={value =>
-                                                      column.setFilterValue(
-                                                         value
-                                                      )
-                                                   }
-                                                   placeholder="Tarefa..."
-                                                />
-                                             )}
-                                             {column.id === 'NOME_CLIENTE' && (
-                                                <FilterInputWithDebounce
-                                                   value={
-                                                      (column.getFilterValue() as string) ??
-                                                      ''
-                                                   }
-                                                   onChange={value =>
-                                                      column.setFilterValue(
-                                                         value
-                                                      )
-                                                   }
-                                                   placeholder="Cliente..."
                                                 />
                                              )}
                                           </th>
@@ -880,8 +880,7 @@ export default function TabelaChamadosTarefa({
                                  {/* Total de registros (sem filtros) */}
                                  {totalActiveFilters > 0 && (
                                     <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
-                                       de um total de{' '}
-                                       {dataChamadosTarefa.length}
+                                       de um total de {dataOSTarefa.length}
                                     </span>
                                  )}
                               </section>
@@ -915,7 +914,6 @@ export default function TabelaChamadosTarefa({
                                        ))}
                                     </select>
                                  </div>
-                                 {/* ===== */}
 
                                  {/* Botões de navegação */}
                                  <div className="flex items-center gap-3">
@@ -974,13 +972,11 @@ export default function TabelaChamadosTarefa({
                                              )}
                                           </select>
                                        </span>
-                                       {/* ===== */}
                                        <span className="text-base font-semibold tracking-widest text-black italic select-none">
                                           {' '}
                                           de {table.getPageCount()}
                                        </span>
                                     </div>
-                                    {/* ===== */}
 
                                     <button
                                        onClick={() => table.nextPage()}
@@ -1015,27 +1011,24 @@ export default function TabelaChamadosTarefa({
                      </section>
                   )}
 
-                  {/* ===== MENSAGEM QUANDO NÃO HÁ CHAMADOS ===== */}
-                  {dataChamadosTarefa &&
-                     dataChamadosTarefa.length === 0 &&
-                     !isLoading && (
-                        <section className="bg-black py-40 text-center">
-                           {/* ícone */}
-                           <FaExclamationTriangle
-                              className="mx-auto mb-6 text-yellow-500"
-                              size={80}
-                           />
-                           {/* título */}
-                           <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
-                              Nenhum chamado foi encontrado para a tarefa #
-                              {codTarefa}.
-                           </h3>
-                        </section>
-                     )}
+                  {/* ===== MENSAGEM QUANDO NÃO HÁ OS ===== */}
+                  {dataOSTarefa && dataOSTarefa.length === 0 && !isLoading && (
+                     <section className="bg-black py-40 text-center">
+                        {/* ícone */}
+                        <FaExclamationTriangle
+                           className="mx-auto mb-6 text-yellow-500"
+                           size={80}
+                        />
+                        {/* título */}
+                        <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
+                           Nenhuma OS foi encontrada para a tarefa #{codTarefa}.
+                        </h3>
+                     </section>
+                  )}
 
                   {/* ===== MENSAGEM QUANDO FILTROS NÃO RETORNAM RESULTADOS ===== */}
-                  {dataChamadosTarefa &&
-                     dataChamadosTarefa.length > 0 &&
+                  {dataOSTarefa &&
+                     dataOSTarefa.length > 0 &&
                      table.getFilteredRowModel().rows.length === 0 && (
                         <section className="bg-slate-900 py-20 text-center">
                            {/* ícone */}
@@ -1069,20 +1062,48 @@ export default function TabelaChamadosTarefa({
                </main>
             </div>
          </div>
+
+         {/* ===== MODAL EDIÇÃO DE OS ===== */}
+         {modalEditarOSOpen && selectedOS !== null && (
+            <ModalEditarOS
+               isOpen={modalEditarOSOpen}
+               onClose={handleCloseEditarOS}
+               codChamado={codChamado !== null ? Number(codChamado) : null}
+               codOS={selectedOS}
+               nomeCliente={
+                  dataOSTarefa?.find(os => os.COD_OS === selectedOS)
+                     ?.NOME_CLIENTE
+               }
+               onSuccess={handleEditarOSSuccess}
+            />
+         )}
+
+         {/* ===== MODAL EXCLUSÃO DE OS ===== */}
+         <ModalExcluirOS
+            isOpen={!!osParaExcluir}
+            onClose={handleFecharModalExclusao}
+            codOS={osParaExcluir}
+            onSuccess={handleExclusaoSuccess}
+         />
       </>
    );
 }
 
+// ================================================================================
+
 // Função para largura fixa das colunas
 function getColumnWidth(columnId: string): string {
    const widthMap: Record<string, string> = {
-      COD_CHAMADO: '10%',
-      DATA_CHAMADO: '10%',
-      STATUS_CHAMADO: '15%',
-      ASSUNTO_CHAMADO: '25%',
-      NOME_TAREFA: '21%',
-      NOME_CLIENTE: '10%',
-      actions: '9%',
+      COD_OS: '8.5%',
+      NOME_CLIENTE: '15%',
+      CHAMADO_OS: '8%',
+      STATUS_OS: '10%',
+      OBS_OS: '18%',
+      DTINI_OS: '10%',
+      HRINI_OS: '8%',
+      HRFIM_OS: '8%',
+      QTD_HR_OS: '8%',
+      actions: '6.5%',
    };
 
    return widthMap[columnId] || 'auto';

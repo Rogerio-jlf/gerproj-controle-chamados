@@ -18,17 +18,14 @@ import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
-} from '../../../../components/ui/tooltip';
+} from '../../../../../components/ui/tooltip';
 // ================================================================================
-import {
-   colunasTabelaOS,
-   OSTarefaProps,
-} from '../components/colunas/Colunas_Tabela_OS';
-import { TabelaOSProps } from '../../../../types/types';
-import ModalEditarOS from './modais/Modal_Editar_OS';
-import { ModalExcluirOS } from './modais/Modal_Deletar_OS';
-import IsLoading from './Loading';
-import IsError from './Error';
+import { colunasTabelaOS, OSTarefaProps } from '../colunas/Colunas_Tabela_OS';
+import { TabelaOSProps } from '../../../../../types/types';
+import ModalEditarOS from '../modais/Modal_Editar_OS';
+import { ModalExcluirOS } from '../modais/Modal_Deletar_OS';
+import IsLoading from '../Loading';
+import IsError from '../Error';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
