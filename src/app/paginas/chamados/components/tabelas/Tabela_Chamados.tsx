@@ -24,22 +24,22 @@ import {
 import { useAuth } from '../../../../../hooks/useAuth';
 import { useFiltersTabelaChamados } from '../../../../../contexts/Filters_Context';
 import { colunasTabela } from '../colunas/Colunas_Tabela_Chamados';
-import ModalAtribuirChamado from '../modais/Modal_Dados_Chamado';
+import { TabelaChamadosProps } from '../../../../../types/types';
+import DashboardRecursos from '../Dashboard_Recursos';
 import TabelaTarefas from './Tabela_Tarefas';
 import TabelaOS from './Tabela_OS';
+import ModalAtribuirChamado from '../modais/Modal_Dados_Chamado';
 import ModalAtribuicaoInteligente from '../modais/Modal_Atribuir_Chamado';
-import { TabelaChamadosProps } from '../../../../../types/types';
 import IsLoading from '../Loading';
 import IsError from '../Error';
-import DashboardRecursos from '../Dashboard_Recursos';
 // ================================================================================
-import { BsEraserFill } from 'react-icons/bs';
 import {
    FaExclamationTriangle,
    FaDatabase,
    FaSearch,
    FaUsers,
 } from 'react-icons/fa';
+import { BsEraserFill } from 'react-icons/bs';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { RiArrowUpDownLine } from 'react-icons/ri';
@@ -184,7 +184,7 @@ const OrderTableHeader = ({
             side="top"
             align="center"
             sideOffset={8}
-            className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+            className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
          >
             Clique para ordenar{' '}
             {sorted === 'asc'
@@ -244,8 +244,8 @@ const getColumnDisplayName = (columnId: string): string => {
       DATA_CHAMADO: 'Data',
       ASSUNTO_CHAMADO: 'Assunto',
       STATUS_CHAMADO: 'Status',
-      EMAIL_CHAMADO: 'Email',
       NOME_RECURSO: 'Recurso',
+      EMAIL_CHAMADO: 'Email',
    };
    return displayNames[columnId] || columnId;
 };
@@ -286,7 +286,7 @@ export default function TabelaChamados() {
    // HOOKS E CONTEXTOS
    // ================================================================================
    const { filters } = useFiltersTabelaChamados();
-   const { user, loading, isTokenExpired, logout } = useAuth();
+   const { user } = useAuth();
    const queryClient = useQueryClient();
    const { ano, mes } = filters;
    const token =
@@ -340,8 +340,8 @@ export default function TabelaChamados() {
             'DATA_CHAMADO',
             'ASSUNTO_CHAMADO',
             'STATUS_CHAMADO',
-            'EMAIL_CHAMADO',
             'NOME_RECURSO',
+            'EMAIL_CHAMADO',
          ];
 
          return searchableColumns.some(colId => {
@@ -352,6 +352,7 @@ export default function TabelaChamados() {
       },
       []
    );
+   // ===================
 
    const columnFilterFn = useCallback(
       (row: any, columnId: string, filterValue: string) => {
@@ -366,14 +367,15 @@ export default function TabelaChamados() {
             case 'DATA_CHAMADO':
             case 'ASSUNTO_CHAMADO':
             case 'STATUS_CHAMADO':
-            case 'EMAIL_CHAMADO':
             case 'NOME_RECURSO':
+            case 'EMAIL_CHAMADO':
             default:
                return cellString.includes(filterString);
          }
       },
       []
    );
+   // ===================
 
    const totalActiveFilters = useMemo(() => {
       let count = columnFilters.length;
@@ -389,14 +391,15 @@ export default function TabelaChamados() {
          DATA_CHAMADO: '',
          ASSUNTO_CHAMADO: '',
          STATUS_CHAMADO: '',
-         EMAIL_CHAMADO: '',
          NOME_RECURSO: '',
+         EMAIL_CHAMADO: '',
          global: '',
       });
       table.getAllColumns().forEach(column => {
          column.setFilterValue('');
       });
    };
+   // ==================
 
    // Atualiza os valores locais quando os filtros mudam
    useEffect(() => {
@@ -432,7 +435,6 @@ export default function TabelaChamados() {
    // API E DADOS
    // ================================================================================
    const enabled = !!ano && !!mes && !!token && !!user;
-   // ====================
 
    const queryParams = useMemo(() => {
       if (!user) return new URLSearchParams();
@@ -584,7 +586,7 @@ export default function TabelaChamados() {
                onVisualizarOS: handleVisualizarOS,
                onVisualizarTarefas: () => setTabelaTarefasOpen(true),
                onAtribuicaoInteligente: handleAbrirAtribuicaoInteligente,
-               onUpdateAssunto: updateAssunto, // ADICIONE ESTA LINHA
+               onUpdateAssunto: updateAssunto,
                userType: user?.tipo,
             },
             user?.tipo
@@ -630,7 +632,6 @@ export default function TabelaChamados() {
    // ================================================================================
    // ESTADOS DE CARREGAMENTO E VALIDAÇÃO
    // ================================================================================
-
    if (!user || !token) {
       return (
          <div className="flex flex-col items-center justify-center gap-6 py-40">
@@ -673,11 +674,11 @@ export default function TabelaChamados() {
          </div>
       );
    }
-   // =====
+   // ====================
 
    if (isLoading)
       return <IsLoading title="Carregando os dados da tabela Chamado" />;
-   // =====
+   // ====================
 
    if (isError) return <IsError error={error as Error} />;
 
@@ -690,7 +691,8 @@ export default function TabelaChamados() {
             {/* ===== HEADER ===== */}
             <header className="flex flex-col gap-6 bg-black p-6">
                {/* ===== LINHA SUPERIOR ===== */}
-               <section className="flex items-center justify-between gap-8">
+               <div className="flex items-center justify-between gap-8">
+                  {/* Título da tabela */}
                   <div className="flex items-center justify-center gap-6">
                      <div className="flex items-center justify-center rounded-md bg-white/30 p-4 shadow-sm shadow-white">
                         <FaDatabase className="text-white" size={28} />
@@ -703,7 +705,7 @@ export default function TabelaChamados() {
                   </div>
                   {/* ========== */}
 
-                  {/* ===== BOTÕES DE AÇÃO DO HEADER ===== */}
+                  {/* Botões de ação do header */}
                   <div className="flex items-center gap-6">
                      {/* Botão dashboard de recursos */}
                      {/* {user?.tipo === 'ADM' && (
@@ -751,7 +753,7 @@ export default function TabelaChamados() {
                         </button>
                      )}
                   </div>
-               </section>
+               </div>
                {/* ========== */}
 
                {/* ===== LINHA INFERIOR ===== */}
@@ -779,7 +781,7 @@ export default function TabelaChamados() {
                   </section>
                )}
             </header>
-            {/* ==================== */}
+            {/* ============================== */}
 
             {/* ===== CONTEÚDO DA TABELA ===== */}
             <main className="h-full w-full overflow-hidden bg-black">
@@ -828,7 +830,7 @@ export default function TabelaChamados() {
                               ))}
                            </tr>
                         ))}
-                        {/* ===== */}
+                        {/* ========== */}
 
                         {/* ===== FILTROS DA TABELA ===== */}
                         {showFilters && (
@@ -930,7 +932,7 @@ export default function TabelaChamados() {
                            </tr>
                         )}
                      </thead>
-                     {/* ===== */}
+                     {/* ==================== */}
 
                      {/* ===== CORPO DA TABELA ===== */}
                      <tbody>
@@ -969,19 +971,16 @@ export default function TabelaChamados() {
                               </tr>
                            ))}
                      </tbody>
-                     {/* ===== */}
                   </table>
-                  {/* ===== */}
                </div>
-               {/* ===== */}
             </main>
-            {/* ===== */}
+            {/* ============================== */}
 
             {/* ===== PAGINAÇÃO DA TABELA ===== */}
             {Array.isArray(data) && data.length > 0 && (
-               <section className="bg-black px-12 py-4">
+               <div className="bg-black px-12 py-4">
                   <div className="flex items-center justify-between">
-                     {/* Informações da página */}
+                     {/* Registros encontrados */}
                      <div className="flex items-center gap-2">
                         <span className="text-base font-semibold tracking-widest text-white italic select-none">
                            {table.getFilteredRowModel().rows.length} registro
@@ -1001,14 +1000,16 @@ export default function TabelaChamados() {
                            </span>
                         )}
                      </div>
+                     {/* ========== */}
 
                      {/* Controles de paginação */}
                      <div className="flex items-center gap-3">
-                        {/* Seletor de itens por página */}
+                        {/* Select quantidade de itens por página */}
                         <div className="flex items-center gap-2">
                            <span className="text-base font-semibold tracking-widest text-white italic select-none">
                               Itens por página:
                            </span>
+                           {/* ===== */}
                            <select
                               value={table.getState().pagination.pageSize}
                               onChange={e =>
@@ -1029,8 +1030,9 @@ export default function TabelaChamados() {
                         </div>
                         {/* ===== */}
 
-                        {/* Botões de navegação */}
+                        {/* Botões de navegação da paginação */}
                         <div className="flex items-center gap-3">
+                           {/* Botão de ir para a primeira página */}
                            <button
                               onClick={() => table.setPageIndex(0)}
                               disabled={!table.getCanPreviousPage()}
@@ -1043,6 +1045,7 @@ export default function TabelaChamados() {
                            </button>
                            {/* ===== */}
 
+                           {/* Botão de ir para a página anterior */}
                            <button
                               onClick={() => table.previousPage()}
                               disabled={!table.getCanPreviousPage()}
@@ -1053,11 +1056,12 @@ export default function TabelaChamados() {
                                  size={24}
                               />
                            </button>
-                           {/* ===== */}
+                           {/* ========== */}
 
+                           {/* Indicador de página atual */}
                            <div className="flex items-center justify-center gap-2">
                               <span className="text-base font-semibold tracking-widest text-white italic select-none">
-                                 Página{' '}
+                                 Página {/* ===== */}
                                  <select
                                     value={
                                        table.getState().pagination.pageIndex + 1
@@ -1082,13 +1086,16 @@ export default function TabelaChamados() {
                                     )}
                                  </select>
                               </span>
+                              {/* ===== */}
+
                               <span className="text-base font-semibold tracking-widest text-white italic select-none">
                                  {' '}
                                  de {table.getPageCount()}
                               </span>
                            </div>
-                           {/* ===== */}
+                           {/* ========== */}
 
+                           {/* Botão de ir para a próxima página */}
                            <button
                               onClick={() => table.nextPage()}
                               disabled={!table.getCanNextPage()}
@@ -1101,6 +1108,7 @@ export default function TabelaChamados() {
                            </button>
                            {/* ===== */}
 
+                           {/* Botão de ir para a última página */}
                            <button
                               onClick={() =>
                                  table.setPageIndex(table.getPageCount() - 1)
@@ -1116,47 +1124,47 @@ export default function TabelaChamados() {
                         </div>
                      </div>
                   </div>
-               </section>
+               </div>
             )}
-            {/* ===== */}
+            {/* ==================== */}
 
             {/* ===== MENSAGEM QUANDO NÃO HÁ CHAMADOS ===== */}
             {data && data.length === 0 && !isLoading && (
                <section className="bg-black py-40 text-center">
-                  {/* ícone */}
                   <FaExclamationTriangle
                      className="mx-auto mb-6 text-yellow-500"
                      size={80}
                   />
-                  {/* título */}
+                  {/* ===== */}
+
                   <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
                      Nenhum chamado foi encontrado para o período{' '}
                      {mes.toString().padStart(2, '0')}/{ano}.
                   </h3>
                </section>
             )}
-            {/* ===== */}
+            {/* ==================== */}
 
-            {/* ===== MENSAGEM QUANDO FILTROS NÃO RETORNAM RESULTADOS ===== */}
+            {/* ===== MENSAGEM QUANDO OS FILTROS NÃO RETORNAM RESULTADOS ===== */}
             {data &&
                data.length > 0 &&
                table.getFilteredRowModel().rows.length === 0 && (
-                  <section className="bg-slate-900 py-20 text-center">
-                     {/* ícone */}
+                  <div className="bg-slate-900 py-20 text-center">
                      <FaFilter
                         className="mx-auto mb-4 text-cyan-400"
                         size={60}
                      />
-                     {/* título */}
+                     {/* ===== */}
                      <h3 className="text-xl font-bold tracking-wider text-slate-200 select-none">
                         Nenhum registro foi encontrado para os filtros
                         aplicados.
                      </h3>
-                     {/* Subtítulo */}
+                     {/* ===== */}
                      <p className="mt-2 text-slate-400">
                         Tente ajustar os filtros ou limpe-os para visualizar
                         registros.
                      </p>
+                     {/* ===== */}
 
                      {/* Botão para limpar filtros */}
                      {totalActiveFilters > 0 && (
@@ -1168,34 +1176,30 @@ export default function TabelaChamados() {
                            Limpar Filtros
                         </button>
                      )}
-                  </section>
+                  </div>
                )}
-            {/* ===== */}
          </div>
-         {/* ===== */}
+         {/* ============================== */}
 
-         {/* ===== MODAL CHAMADO ===== */}
-         <ModalAtribuirChamado
-            isOpen={modalChamadosOpen}
-            onClose={handleCloseModalChamados}
-            chamado={selectedChamado}
-         />
-         {/* ===== MODAL OS ===== */}
+         {/* ===== TABELA OS ===== */}
          <TabelaOS
             isOpen={tabelaOSOpen}
             onClose={handleCloseTabelaOS}
             codChamado={selectedCodChamado}
-            onSuccess={() => setTabelaOSOpen(false)} // <- fecha o modal da tabela
+            onSuccess={() => setTabelaOSOpen(false)}
          />
-         {/* ===== MODAL TAREFAS ===== */}
+         {/* ============================== */}
+
+         {/* ===== TABELA TAREFAS ===== */}
          <TabelaTarefas
             isOpen={tabelaTarefasOpen}
             onClose={() => setTabelaTarefasOpen(false)}
             codChamado={selectedCodChamado}
          />
+         {/* ============================== */}
 
          {/* ===== DASHBOARD RECURSOS ===== */}
-         {dashboardOpen && user?.tipo === 'ADM' && (
+         {/* {dashboardOpen && user?.tipo === 'ADM' && (
             <div className="fixed inset-0 z-50 bg-black">
                <div className="relative h-full">
                   <div className="absolute inset-0 bg-black opacity-50" />
@@ -1212,7 +1216,7 @@ export default function TabelaChamados() {
                         side="bottom"
                         align="center"
                         sideOffset={8}
-                        className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+                        className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
                      >
                         Sair
                      </TooltipContent>
@@ -1220,7 +1224,8 @@ export default function TabelaChamados() {
                   <DashboardRecursos />
                </div>
             </div>
-         )}
+         )} */}
+         {/* ============================== */}
 
          {/* ===== MODAL ATRIBUIÇÃO INTELIGENTE ===== */}
          <ModalAtribuicaoInteligente
@@ -1229,8 +1234,6 @@ export default function TabelaChamados() {
             chamado={chamadoParaAtribuir}
             onAtribuicaoSuccess={handleAtribuicaoSuccess}
          />
-
-         {/* ===== */}
       </>
    );
 }

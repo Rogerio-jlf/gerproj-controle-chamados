@@ -67,7 +67,7 @@ export const colunasTabela = (
       accessorKey: 'COD_TAREFA',
       header: () => <div className="text-center">Código</div>,
       cell: ({ getValue }) => (
-         <div className="rounded-md bg-pink-600 p-2 text-center text-white ring-1 ring-white">
+         <div className="rounded-md bg-slate-900 p-2 text-center text-white ring-4 ring-white">
             {getValue() as string}
          </div>
       ),
@@ -98,7 +98,7 @@ export const colunasTabela = (
          const dataFormatada = formatarDataParaBR(dateString);
 
          return (
-            <div className="rounded-md bg-blue-500 p-2 text-center text-black ring-1 ring-white">
+            <div className="rounded-md bg-green-500 p-2 text-center text-black ring-4 ring-white">
                {dataFormatada}
             </div>
          );
@@ -114,7 +114,7 @@ export const colunasTabela = (
          const tempoFormatado = formatarDecimalParaTempo(value);
 
          return (
-            <div className="rounded-md bg-green-500 p-2 text-center text-black ring-1 ring-white">
+            <div className="rounded-md bg-green-500 p-2 text-center text-black ring-4 ring-white">
                {tempoFormatado}
             </div>
          );

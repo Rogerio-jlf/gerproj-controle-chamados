@@ -308,7 +308,7 @@ export const colunasTabela = (
          accessorKey: 'COD_CHAMADO',
          header: () => <div className="text-center">Chamado</div>,
          cell: ({ getValue }) => (
-            <div className="rounded-md bg-slate-900 p-2 text-center text-white ring-1 ring-white">
+            <div className="rounded-md bg-slate-900 p-2 text-center text-white ring-4 ring-white">
                {getValue() as string}
             </div>
          ),
@@ -323,7 +323,7 @@ export const colunasTabela = (
             const dataFormatada = formatarDataParaBR(dateString);
 
             return (
-               <div className="rounded-md bg-slate-900 p-2 text-center text-white ring-1 ring-white">
+               <div className="rounded-md bg-slate-900 p-2 text-center text-white ring-4 ring-white">
                   {dataFormatada}
                </div>
             );

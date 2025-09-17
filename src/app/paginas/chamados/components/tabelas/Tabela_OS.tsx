@@ -70,6 +70,7 @@ const FilterInputTableHeaderDebounce = ({
    type = 'text',
 }: FilterInputTableHeaderProps) => {
    const [localValue, setLocalValue] = useState(value);
+   const [isFocused, setIsFocused] = useState(false);
 
    useEffect(() => {
       setLocalValue(value);
@@ -90,8 +91,10 @@ const FilterInputTableHeaderDebounce = ({
          type={type}
          value={localValue}
          onChange={handleChange}
-         placeholder={placeholder}
-         className="w-full rounded-md border border-white/50 bg-teal-950 px-4 py-2 text-base text-white placeholder-gray-500 hover:scale-105 focus:bg-black focus:outline-none focus:placeholder:text-gray-700"
+         placeholder={isFocused ? '' : placeholder}
+         className="w-full rounded-md bg-teal-950 px-4 py-2 text-base text-white placeholder-slate-400 shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-105 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+         onFocus={() => setIsFocused(true)}
+         onBlur={() => setIsFocused(false)}
       />
    );
 };
@@ -131,7 +134,7 @@ const GlobalFilterInput = ({
             value={localValue}
             onChange={handleChange}
             placeholder={isFocused ? '' : placeholder}
-            className="w-full rounded-md border-none bg-white/40 py-3 pl-12 text-base font-semibold tracking-wider text-black placeholder-black shadow-sm shadow-black select-none hover:bg-white/10 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="w-full rounded-md border-none bg-white/40 py-3 pl-12 text-base font-semibold tracking-wider text-black placeholder-black shadow-sm shadow-black select-none focus:ring-2 focus:ring-amber-500 focus:outline-none"
             ref={inputRef}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
@@ -174,7 +177,7 @@ const SortableHeader = ({
             side="top"
             align="center"
             sideOffset={8}
-            className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+            className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
          >
             Clique para ordenar{' '}
             {sorted === 'asc'
@@ -571,7 +574,7 @@ export default function TabelaOS({
                            <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
                               Ordens de Serviço
                            </h1>
-                           <span className="rounded-full bg-black px-6 py-1 text-base font-extrabold tracking-widest text-white italic select-none">
+                           <span className="text-2xl font-extrabold tracking-widest text-pink-600 uppercase italic select-none">
                               Chamado - #{codChamado}
                            </span>
                         </div>
@@ -626,7 +629,7 @@ export default function TabelaOS({
                   {dataOS && dataOS.length > 0 && (
                      <section className="flex items-center justify-between gap-6">
                         {/* Campo de busca global */}
-                        <div className="max-w-md flex-1 font-semibold tracking-wider select-none placeholder:tracking-wider placeholder:text-gray-600 placeholder:italic placeholder:select-none">
+                        <div className="max-w-md flex-1 font-semibold tracking-wider select-none placeholder:tracking-wider placeholder:text-black placeholder:italic placeholder:select-none">
                            <GlobalFilterInput
                               value={globalFilter ?? ''}
                               onChange={value => setGlobalFilter(String(value))}

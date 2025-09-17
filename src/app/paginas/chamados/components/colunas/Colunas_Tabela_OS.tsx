@@ -89,7 +89,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
       cell: ({ getValue }) => {
          const value = getValue() as string;
          return (
-            <div className="rounded-md bg-pink-600 p-2 text-center text-white ring-1 ring-white">
+            <div className="rounded-md bg-slate-900 p-2 text-center text-white ring-4 ring-white">
                {value}
             </div>
          );
@@ -136,7 +136,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
                   side="left"
                   align="end"
                   sideOffset={8}
-                  className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-gray-900 shadow-lg shadow-black select-none"
+                  className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
                >
                   {corrigirTextoCorrompido(value) || '-'}
                </TooltipContent>
@@ -155,7 +155,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
          const dataFormatada = formatarDataParaBR(dateString);
 
          return (
-            <div className="rounded-md bg-green-500 p-2 text-center text-black ring-1 ring-white">
+            <div className="rounded-md bg-green-500 p-2 text-center text-black ring-4 ring-white">
                {dataFormatada}
             </div>
          );
@@ -172,7 +172,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
          const horaFormatada = formatarHora(timeString);
 
          return (
-            <div className="rounded-md bg-slate-800 p-2 text-center text-white ring-1 ring-white">
+            <div className="rounded-md bg-green-500 p-2 text-center text-black ring-4 ring-white">
                {horaFormatada}
             </div>
          );
@@ -189,7 +189,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
          const horaFormatada = formatarHora(timeString);
 
          return (
-            <div className="rounded-md bg-slate-800 p-2 text-center text-white ring-1 ring-white">
+            <div className="rounded-md bg-green-500 p-2 text-center text-black ring-4 ring-white">
                {horaFormatada}
             </div>
          );
@@ -206,7 +206,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
          const tempoFormatado = formatarDecimalParaTempo(value);
 
          return (
-            <div className="rounded-md bg-green-500 p-2 text-center text-black ring-1 ring-white">
+            <div className="rounded-md bg-green-500 p-2 text-center text-black ring-4 ring-white">
                {tempoFormatado}
             </div>
          );
@@ -222,7 +222,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
          const os = row.original;
 
          return (
-            <div className="flex items-center justify-center gap-6">
+            <div className="flex items-center justify-center gap-4">
                {/* Botão editar OS */}
                <Tooltip>
                   <TooltipTrigger asChild>
@@ -255,7 +255,7 @@ export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
                      </button>
                   </TooltipTrigger>
                   <TooltipContent
-                     side="top"
+                     side="left"
                      align="end"
                      sideOffset={8}
                      className="border-t-4 border-red-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"

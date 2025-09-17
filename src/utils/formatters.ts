@@ -64,27 +64,27 @@ export const removerAcentos = (texto: string): string => {
 export const getStylesStatus = (status: string | undefined) => {
    switch (status?.toUpperCase()) {
       case 'NAO FINALIZADO':
-         return 'bg-yellow-500 text-black italic ring-1 ring-white';
+         return 'bg-yellow-500 text-black italic ring-4 ring-white';
 
       case 'EM ATENDIMENTO':
-         return 'bg-blue-500 text-black italic ring-1 ring-white';
+         return 'bg-blue-500 text-black italic ring-4 ring-white';
 
       case 'FINALIZADO':
-         return 'bg-green-500 text-black italic ring-1 ring-white';
+         return 'bg-green-500 text-black italic ring-4 ring-white';
 
       case 'NAO INICIADO':
-         return 'bg-red-500 text-black italic ring-1 ring-white';
+         return 'bg-red-500 text-black italic ring-4 ring-white';
 
       case 'STANDBY':
-         return 'bg-orange-500 text-black ring-1 ring-white';
+         return 'bg-orange-500 text-black ring-4 ring-white';
 
       case 'ATRIBUIDO':
-         return 'bg-teal-500 text-black italic ring-1 ring-white';
+         return 'bg-teal-500 text-black italic ring-4 ring-white';
 
       case 'AGUARDANDO VALIDACAO':
-         return 'bg-purple-500 text-black italic ring-1 ring-white';
+         return 'bg-purple-500 text-black italic ring-4 ring-white';
 
       default:
-         return 'bg-gray-500 text-black italic ring-1 ring-white';
+         return 'bg-gray-500 text-black italic ring-4 ring-white';
    }
 };
