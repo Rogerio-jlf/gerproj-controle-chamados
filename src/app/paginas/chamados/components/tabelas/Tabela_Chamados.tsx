@@ -28,7 +28,7 @@ import { TabelaChamadosProps } from '../../../../../types/types';
 import DashboardRecursos from '../Dashboard_Recursos';
 import TabelaTarefas from './Tabela_Tarefas';
 import TabelaOS from './Tabela_OS';
-import ModalAtribuirChamado from '../modais/Modal_Dados_Chamado';
+import ModalVisualizarChamado from '../modais/Modal_Visualizar_Chamado';
 import ModalAtribuicaoInteligente from '../modais/Modal_Atribuir_Chamado';
 import IsLoading from '../Loading';
 import IsError from '../Error';
@@ -46,6 +46,9 @@ import { RiArrowUpDownLine } from 'react-icons/ri';
 import { IoArrowUp, IoArrowDown, IoClose } from 'react-icons/io5';
 import { FaFilter } from 'react-icons/fa6';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
+
+import ModalApontamento from '../modais/Modal_Apontamento';
+import { normalizeDate } from '../../../../../utils/formatters';
 
 // ================================================================================
 // INTERFACES E TIPOS
@@ -83,14 +86,20 @@ const FilterInputTableHeaderDebounce = ({
       setLocalValue(value);
    }, [value]);
 
+   // Debounce reduzido para melhor responsividade
    const debouncedOnChange = useMemo(
-      () => debounce((newValue: string) => onChange(newValue), 300),
+      () =>
+         debounce((newValue: string) => {
+            // Trim para remover espaços desnecessários
+            onChange(newValue.trim());
+         }, 200), // Reduzido de 300ms para 200ms
       [onChange]
    );
 
    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setLocalValue(e.target.value);
-      debouncedOnChange(e.target.value);
+      const inputValue = e.target.value;
+      setLocalValue(inputValue);
+      debouncedOnChange(inputValue);
    };
 
    return (
@@ -120,14 +129,20 @@ const GlobalFilterInput = ({
       setLocalValue(value);
    }, [value]);
 
+   // Debounce otimizado
    const debouncedOnChange = useMemo(
-      () => debounce((newValue: string) => onChange(newValue), 500),
+      () =>
+         debounce((newValue: string) => {
+            // Trim para remover espaços desnecessários
+            onChange(newValue.trim());
+         }, 300),
       [onChange]
    );
 
    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setLocalValue(e.target.value);
-      debouncedOnChange(e.target.value);
+      const inputValue = e.target.value;
+      setLocalValue(inputValue);
+      debouncedOnChange(inputValue);
    };
 
    return (
@@ -308,6 +323,14 @@ export default function TabelaChamados() {
    const [chamadoParaAtribuir, setChamadoParaAtribuir] =
       useState<TabelaChamadosProps | null>(null);
 
+   const [modalApontamentosOpen, setModalApontamentosOpen] = useState(false);
+   const [apontamentoData, setApontamentoData] = useState<{
+      codChamado: number;
+      status: string;
+      tarefa?: any;
+      nomeCliente?: string;
+   } | null>(null);
+
    // ================================================================================
    // ESTADOS - FILTROS E ORDENAÇÃO
    // ================================================================================
@@ -334,7 +357,7 @@ export default function TabelaChamados() {
       (row: any, columnId: string, filterValue: string) => {
          if (!filterValue) return true;
 
-         const searchValue = filterValue.toLowerCase();
+         const searchValue = filterValue.toLowerCase().trim();
          const searchableColumns = [
             'COD_CHAMADO',
             'DATA_CHAMADO',
@@ -346,6 +369,16 @@ export default function TabelaChamados() {
 
          return searchableColumns.some(colId => {
             const cellValue = row.getValue(colId);
+
+            // Para campos de data, usar normalização
+            if (colId === 'DATA_CHAMADO') {
+               const dateFormats = normalizeDate(cellValue);
+               return dateFormats.some(dateFormat =>
+                  dateFormat.toLowerCase().includes(searchValue)
+               );
+            }
+
+            // Para outros campos, busca normal
             const cellString = String(cellValue || '').toLowerCase();
             return cellString.includes(searchValue);
          });
@@ -359,19 +392,25 @@ export default function TabelaChamados() {
          if (!filterValue || filterValue === '') return true;
 
          const cellValue = row.getValue(columnId);
-         const cellString = String(cellValue || '').toLowerCase();
-         const filterString = String(filterValue).toLowerCase();
+         const filterString = String(filterValue).toLowerCase().trim();
 
-         switch (columnId) {
-            case 'COD_CHAMADO':
-            case 'DATA_CHAMADO':
-            case 'ASSUNTO_CHAMADO':
-            case 'STATUS_CHAMADO':
-            case 'NOME_RECURSO':
-            case 'EMAIL_CHAMADO':
-            default:
-               return cellString.includes(filterString);
+         // Tratamento especial para campos de data
+         if (columnId === 'DATA_CHAMADO') {
+            const dateFormats = normalizeDate(cellValue);
+            return dateFormats.some(dateFormat =>
+               dateFormat.toLowerCase().includes(filterString)
+            );
          }
+
+         // Para campos numéricos (como código do chamado)
+         if (columnId === 'COD_CHAMADO') {
+            const cellString = String(cellValue || '');
+            return cellString.includes(filterString);
+         }
+
+         // Para outros campos de texto
+         const cellString = String(cellValue || '').toLowerCase();
+         return cellString.includes(filterString);
       },
       []
    );
@@ -575,6 +614,104 @@ export default function TabelaChamados() {
       setChamadoParaAtribuir(null);
    };
 
+   const handleOpenApontamentos = useCallback(
+      async (codChamado: number, newStatus: string) => {
+         try {
+            // Buscar dados do chamado para pegar informações do cliente
+            const chamado = data?.find(c => c.COD_CHAMADO === codChamado);
+
+            // Buscar a tarefa atribuída para este chamado
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/atribuir-tarefa/${codChamado}`, {
+               headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+               },
+            });
+
+            if (response.ok) {
+               const tarefas = await response.json();
+               const tarefaSelecionada = tarefas[0]; // Pega a primeira tarefa ou a lógica que você usar
+
+               setApontamentoData({
+                  codChamado,
+                  status: newStatus,
+                  tarefa: tarefaSelecionada,
+                  nomeCliente: chamado?.EMAIL_CHAMADO || 'Cliente', // ou outro campo que tenha o nome
+               });
+               setModalApontamentosOpen(true);
+            }
+         } catch (error) {
+            console.error('Erro ao buscar dados para apontamento:', error);
+         }
+      },
+      [data]
+   );
+
+   const handleCloseApontamentos = useCallback(() => {
+      setModalApontamentosOpen(false);
+      setApontamentoData(null);
+   }, []);
+
+   const handleApontamentoSuccess = useCallback(() => {
+      // Invalidar queries para atualizar dados
+      queryClient.invalidateQueries({ queryKey: ['chamadosAbertos'] });
+      setModalApontamentosOpen(false);
+      setApontamentoData(null);
+   }, [queryClient]);
+
+   const updateStatus = useCallback(
+      async (
+         codChamado: number,
+         newStatus: string,
+         codClassificacao?: number,
+         codTarefa?: number
+      ) => {
+         try {
+            const response = await fetch(
+               `/api/atualizar-status-chamado/${codChamado}`,
+               {
+                  method: 'POST',
+                  headers: {
+                     Authorization: `Bearer ${token}`,
+                     'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                     status: newStatus,
+                     codClassificacao,
+                     codTarefa,
+                  }),
+               }
+            );
+
+            if (!response.ok) {
+               const errorData = await response.json();
+               throw new Error(errorData.error || 'Erro ao atualizar status');
+            }
+
+            // Atualizar dados locais
+            queryClient.setQueryData(
+               ['chamadosAbertos', queryParams.toString(), token],
+               (oldData: TabelaChamadosProps[] | undefined) => {
+                  if (!oldData) return oldData;
+
+                  return oldData.map(chamado =>
+                     chamado.COD_CHAMADO === codChamado
+                        ? { ...chamado, STATUS_CHAMADO: newStatus }
+                        : chamado
+                  );
+               }
+            );
+
+            return response.json();
+         } catch (error) {
+            console.error('Erro ao atualizar status:', error);
+            throw error;
+         }
+      },
+      [token, queryClient, queryParams]
+   );
+
    // ================================================================================
    // CONFIGURAÇÃO DA TABELA
    // ================================================================================
@@ -587,6 +724,8 @@ export default function TabelaChamados() {
                onVisualizarTarefas: () => setTabelaTarefasOpen(true),
                onAtribuicaoInteligente: handleAbrirAtribuicaoInteligente,
                onUpdateAssunto: updateAssunto,
+               onUpdateStatus: updateStatus, // Você precisa criar esta função
+               onOpenApontamentos: handleOpenApontamentos, // NOVA PROP
                userType: user?.tipo,
             },
             user?.tipo
@@ -596,6 +735,8 @@ export default function TabelaChamados() {
          handleVisualizarOS,
          handleAbrirAtribuicaoInteligente,
          updateAssunto,
+         handleOpenApontamentos, // ADICIONAR DEPENDÊNCIA
+         updateStatus,
          user?.tipo,
       ]
    );
@@ -782,7 +923,6 @@ export default function TabelaChamados() {
                )}
             </header>
             {/* ============================== */}
-
             {/* ===== CONTEÚDO DA TABELA ===== */}
             <main className="h-full w-full overflow-hidden bg-black">
                <div
@@ -952,7 +1092,7 @@ export default function TabelaChamados() {
                                     // células do corpo da tabela
                                     <td
                                        key={cell.id}
-                                       className="p-3 text-sm font-semibold tracking-wider text-white select-none group-hover:text-black"
+                                       className="p-2 text-sm font-semibold tracking-wider text-white select-none group-hover:text-black"
                                        style={{
                                           width: getColumnWidth(
                                              cell.column.id,
@@ -975,14 +1115,13 @@ export default function TabelaChamados() {
                </div>
             </main>
             {/* ============================== */}
-
             {/* ===== PAGINAÇÃO DA TABELA ===== */}
             {Array.isArray(data) && data.length > 0 && (
-               <div className="bg-black px-12 py-4">
+               <section className="bg-white/70 px-12 py-4">
                   <div className="flex items-center justify-between">
-                     {/* Registros encontrados */}
-                     <div className="flex items-center gap-2">
-                        <span className="text-base font-semibold tracking-widest text-white italic select-none">
+                     {/* Informações da página */}
+                     <section className="flex items-center gap-4">
+                        <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
                            {table.getFilteredRowModel().rows.length} registro
                            {table.getFilteredRowModel().rows.length !== 1
                               ? 's'
@@ -995,73 +1134,67 @@ export default function TabelaChamados() {
 
                         {/* Total de registros (sem filtros) */}
                         {totalActiveFilters > 0 && (
-                           <span className="text-base font-semibold tracking-widest text-white italic select-none">
+                           <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
                               de um total de {data.length}
                            </span>
                         )}
-                     </div>
-                     {/* ========== */}
+                     </section>
 
                      {/* Controles de paginação */}
-                     <div className="flex items-center gap-3">
-                        {/* Select quantidade de itens por página */}
+                     <section className="flex items-center gap-3">
+                        {/* Seletor de itens por página */}
                         <div className="flex items-center gap-2">
-                           <span className="text-base font-semibold tracking-widest text-white italic select-none">
+                           <span className="text-base font-semibold tracking-widest text-black italic select-none">
                               Itens por página:
                            </span>
-                           {/* ===== */}
                            <select
                               value={table.getState().pagination.pageSize}
                               onChange={e =>
                                  table.setPageSize(Number(e.target.value))
                               }
-                              className="cursor-pointer rounded-md bg-white/30 px-4 py-1 text-base font-semibold tracking-widest text-white italic shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                              className="cursor-pointer rounded-md px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
                            >
-                              {[10, 25, 50, 75, 100].map(pageSize => (
-                                 <option
-                                    key={pageSize}
-                                    value={pageSize}
-                                    className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
-                                 >
-                                    {pageSize}
-                                 </option>
-                              ))}
+                              {[10, 25, 50, 75, 100, 200, 300, 400, 500].map(
+                                 pageSize => (
+                                    <option
+                                       key={pageSize}
+                                       value={pageSize}
+                                       className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
+                                    >
+                                       {pageSize}
+                                    </option>
+                                 )
+                              )}
                            </select>
                         </div>
-                        {/* ===== */}
 
-                        {/* Botões de navegação da paginação */}
+                        {/* Botões de navegação */}
                         <div className="flex items-center gap-3">
-                           {/* Botão de ir para a primeira página */}
                            <button
                               onClick={() => table.setPageIndex(0)}
                               disabled={!table.getCanPreviousPage()}
-                              className="group cursor-pointer rounded-md bg-white/30 px-4 py-1 shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-amber-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsLeft
-                                 className="text-white group-disabled:text-slate-50"
+                                 className="text-black group-disabled:text-white"
                                  size={24}
                               />
                            </button>
-                           {/* ===== */}
 
-                           {/* Botão de ir para a página anterior */}
                            <button
                               onClick={() => table.previousPage()}
                               disabled={!table.getCanPreviousPage()}
-                              className="group cursor-pointer rounded-md bg-white/30 px-4 py-1 shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-amber-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronLeft
-                                 className="text-white group-disabled:text-slate-50"
+                                 className="text-black group-disabled:text-white"
                                  size={24}
                               />
                            </button>
-                           {/* ========== */}
 
-                           {/* Indicador de página atual */}
                            <div className="flex items-center justify-center gap-2">
-                              <span className="text-base font-semibold tracking-widest text-white italic select-none">
-                                 Página {/* ===== */}
+                              <span className="text-base font-semibold tracking-widest text-black italic select-none">
+                                 Página{' '}
                                  <select
                                     value={
                                        table.getState().pagination.pageIndex + 1
@@ -1070,10 +1203,12 @@ export default function TabelaChamados() {
                                        const page = Number(e.target.value) - 1;
                                        table.setPageIndex(page);
                                     }}
-                                    className="cursor-pointer rounded-md bg-white/30 px-4 py-1 text-base font-semibold tracking-widest text-white italic shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                                    className="cursor-pointer rounded-md px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
                                  >
                                     {Array.from(
-                                       { length: table.getPageCount() },
+                                       {
+                                          length: table.getPageCount(),
+                                       },
                                        (_, i) => (
                                           <option
                                              key={i + 1}
@@ -1086,48 +1221,41 @@ export default function TabelaChamados() {
                                     )}
                                  </select>
                               </span>
-                              {/* ===== */}
-
-                              <span className="text-base font-semibold tracking-widest text-white italic select-none">
+                              <span className="text-base font-semibold tracking-widest text-black italic select-none">
                                  {' '}
                                  de {table.getPageCount()}
                               </span>
                            </div>
-                           {/* ========== */}
 
-                           {/* Botão de ir para a próxima página */}
                            <button
                               onClick={() => table.nextPage()}
                               disabled={!table.getCanNextPage()}
-                              className="group cursor-pointer rounded-md bg-white/30 px-4 py-1 shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-amber-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronRight
-                                 className="text-white group-disabled:text-slate-50"
+                                 className="text-black group-disabled:text-white"
                                  size={24}
                               />
                            </button>
-                           {/* ===== */}
 
-                           {/* Botão de ir para a última página */}
                            <button
                               onClick={() =>
                                  table.setPageIndex(table.getPageCount() - 1)
                               }
                               disabled={!table.getCanNextPage()}
-                              className="group cursor-pointer rounded-md bg-white/30 px-4 py-1 shadow-sm shadow-white transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-amber-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsRight
-                                 className="text-white group-disabled:text-slate-50"
+                                 className="text-black group-disabled:text-white"
                                  size={24}
                               />
                            </button>
                         </div>
-                     </div>
+                     </section>
                   </div>
-               </div>
+               </section>
             )}
             {/* ==================== */}
-
             {/* ===== MENSAGEM QUANDO NÃO HÁ CHAMADOS ===== */}
             {data && data.length === 0 && !isLoading && (
                <section className="bg-black py-40 text-center">
@@ -1135,16 +1263,22 @@ export default function TabelaChamados() {
                      className="mx-auto mb-6 text-yellow-500"
                      size={80}
                   />
-                  {/* ===== */}
 
                   <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
-                     Nenhum chamado foi encontrado para o período{' '}
-                     {mes.toString().padStart(2, '0')}/{ano}.
+                     {user?.tipo === 'ADM'
+                        ? `Nenhum chamado foi encontrado para o período ${mes.toString().padStart(2, '0')}/${ano}.`
+                        : `Nenhum chamado (excluindo finalizados) foi encontrado para o período ${mes.toString().padStart(2, '0')}/${ano}.`}
                   </h3>
-               </section>
-            )}
-            {/* ==================== */}
 
+                  {user?.tipo !== 'ADM' && (
+                     <p className="mt-4 text-lg text-gray-300 italic">
+                        Chamados com status "FINALIZADO" não são exibidos para
+                        seu perfil.
+                     </p>
+                  )}
+               </section>
+            )}{' '}
+            {/* ==================== */}
             {/* ===== MENSAGEM QUANDO OS FILTROS NÃO RETORNAM RESULTADOS ===== */}
             {data &&
                data.length > 0 &&
@@ -1179,6 +1313,14 @@ export default function TabelaChamados() {
                   </div>
                )}
          </div>
+         {/* ============================== */}
+
+         {/* ===== MODAL CHAMADO ===== */}
+         <ModalVisualizarChamado
+            isOpen={modalChamadosOpen}
+            onClose={handleCloseModalChamados}
+            chamado={selectedChamado}
+         />
          {/* ============================== */}
 
          {/* ===== TABELA OS ===== */}
@@ -1233,6 +1375,16 @@ export default function TabelaChamados() {
             onClose={() => setModalAtribuicaoOpen(false)}
             chamado={chamadoParaAtribuir}
             onAtribuicaoSuccess={handleAtribuicaoSuccess}
+         />
+
+         {/* ===== MODAL APONTAMENTO ===== */}
+         <ModalApontamento
+            isOpen={modalApontamentosOpen}
+            onClose={handleCloseApontamentos}
+            tarefa={apontamentoData?.tarefa}
+            nomeCliente={apontamentoData?.nomeCliente}
+            codChamado={apontamentoData?.codChamado}
+            onSuccess={handleApontamentoSuccess}
          />
       </>
    );

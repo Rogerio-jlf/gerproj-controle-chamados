@@ -3,12 +3,11 @@ import { ColumnDef } from '@tanstack/react-table';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 // ====================
-import StatusCell from '../Cell_Status';
-import AssuntoCellEditavel from '../Cell_Assunto';
 import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
 import { formatarDataParaBR } from '../../../../../utils/formatters';
-// ====================
 import { TabelaChamadosProps } from '../../../../../types/types';
+import StatusCell from '../Cell_Status';
+import AssuntoCellEditavel from '../Cell_Assunto';
 // ====================
 import { FaDownload, FaTasks, FaBrain } from 'react-icons/fa';
 import { IoCall } from 'react-icons/io5';
@@ -17,13 +16,20 @@ import { HiMiniSquaresPlus } from 'react-icons/hi2';
 // ================================================================================
 
 // 2. Atualizar a interface AcoesProps para incluir atribuição
-export interface AcoesProps {
+interface AcoesProps {
    onVisualizarChamado: (codChamado: number) => void;
    onVisualizarOS: (codChamado: number) => void;
    onVisualizarTarefas: () => void;
-   onAtribuicaoInteligente?: (chamado: TabelaChamadosProps) => void;
+   onAtribuicaoInteligente: (chamado: TabelaChamadosProps) => void;
+   onUpdateAssunto: (codChamado: number, novoAssunto: string) => Promise<any>;
+   onUpdateStatus?: (
+      codChamado: number,
+      newStatus: string,
+      codClassificacao?: number,
+      codTarefa?: number
+   ) => Promise<void>;
+   onOpenApontamentos?: (codChamado: number, newStatus: string) => void; // NOVA PROP
    userType?: string;
-   onUpdateAssunto?: (codChamado: number, novoAssunto: string) => Promise<void>;
 }
 
 interface CircularActionsMenuProps {
@@ -308,7 +314,7 @@ export const colunasTabela = (
          accessorKey: 'COD_CHAMADO',
          header: () => <div className="text-center">Chamado</div>,
          cell: ({ getValue }) => (
-            <div className="rounded-md bg-slate-900 p-2 text-center text-white ring-4 ring-white">
+            <div className="rounded-md bg-slate-900 p-2 text-center text-white">
                {getValue() as string}
             </div>
          ),
@@ -323,7 +329,7 @@ export const colunasTabela = (
             const dataFormatada = formatarDataParaBR(dateString);
 
             return (
-               <div className="rounded-md bg-slate-900 p-2 text-center text-white ring-4 ring-white">
+               <div className="rounded-md bg-slate-900 p-2 text-center text-white">
                   {dataFormatada}
                </div>
             );
@@ -352,6 +358,7 @@ export const colunasTabela = (
             <StatusCell
                status={row.original.STATUS_CHAMADO}
                codChamado={row.original.COD_CHAMADO}
+               onOpenApontamentos={acoes.onOpenApontamentos}
                onUpdateStatus={async (
                   codChamado,
                   newStatus,
@@ -416,7 +423,7 @@ export const colunasTabela = (
 
          if (codRecurso !== null && codRecurso !== undefined && recurso) {
             return (
-               <div className="rounded-md bg-lime-500 p-2 text-center text-black ring-1 ring-white">
+               <div className="rounded-md bg-lime-500 p-2 text-center text-black">
                   {corrigirTextoCorrompido(
                      recurso.split(' ').slice(0, 2).join(' ')
                   )}
@@ -425,7 +432,7 @@ export const colunasTabela = (
          }
 
          return (
-            <div className="rounded-md bg-orange-500 p-2 text-center text-black ring-1 ring-white">
+            <div className="rounded-md bg-orange-500 p-2 text-center text-black">
                <span className="uppercase">Não atribuído</span>
             </div>
          );

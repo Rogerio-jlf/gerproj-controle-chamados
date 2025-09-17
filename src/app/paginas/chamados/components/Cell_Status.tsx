@@ -39,6 +39,8 @@ interface Props {
       codClassificacao?: number,
       codTarefa?: number
    ) => Promise<void>;
+   // Nova prop para controlar o modal de apontamentos
+   onOpenApontamentos?: (codChamado: number, newStatus: string) => void;
 }
 
 // Modal Component
@@ -92,7 +94,6 @@ const statusOptions = [
    'NAO FINALIZADO',
    'EM ATENDIMENTO',
    'FINALIZADO',
-   'NAO INICIADO',
    'STANDBY',
    'ATRIBUIDO',
    'AGUARDANDO VALIDACAO',
@@ -109,7 +110,9 @@ const getAvailableStatusOptions = (currentStatus: string) => {
       return ['EM ATENDIMENTO'];
    } else {
       // Para todos os outros status, todas as opções exceto ATRIBUIDO
-      return statusOptions.filter(option => option !== 'ATRIBUIDO');
+      return statusOptions.filter(
+         option => option !== 'ATRIBUIDO' && option !== 'NAO INICIADO'
+      );
    }
 };
 
@@ -125,6 +128,7 @@ export default function StatusCell({
    status: initialStatus,
    codChamado,
    onUpdateStatus,
+   onOpenApontamentos, // Nova prop
 }: Props) {
    // ================================================================================
    // ESTADOS - CONTROLES DE EDIÇÃO
@@ -163,6 +167,9 @@ export default function StatusCell({
    const shouldShowClassificacao =
       pendingStatus && pendingStatus !== 'EM ATENDIMENTO';
    const shouldShowTarefa = pendingStatus === 'EM ATENDIMENTO';
+
+   // ===== NOVA VARIÁVEL: VERIFICAR SE STATUS PERMITE EDIÇÃO =====
+   const isStatusEditable = status !== 'NAO INICIADO';
 
    // ================================================================================
    // API E FUNÇÕES DE DADOS
@@ -280,6 +287,16 @@ export default function StatusCell({
          ));
 
          setShowConfirmDialog(false);
+
+         // ===== NOVA FUNCIONALIDADE: ABRIR MODAL DE APONTAMENTOS =====
+         // Após o sucesso da atualização do status, abrir o modal de apontamentos
+         if (onOpenApontamentos) {
+            // Pequeno delay para garantir que o modal de status feche completamente
+            setTimeout(() => {
+               onOpenApontamentos(codChamado, pendingStatus);
+            }, 300);
+         }
+         // ==========================================
       } catch (error) {
          console.error('Erro ao atualizar status:', error);
 
@@ -329,13 +346,27 @@ export default function StatusCell({
       }
    };
 
+   // ===== NOVO HANDLER: CLICK NA CÉLULA DE STATUS =====
+   const handleStatusCellClick = () => {
+      // Se o status não é editável (NAO INICIADO), não faz nada
+      if (!isStatusEditable) {
+         return;
+      }
+
+      // Se não está atualizando, permite editar
+      if (!isUpdating) {
+         setEditing(true);
+      }
+   };
+
    // ================================================================================
    // EFFECTS
    // ================================================================================
 
    // Abre automaticamente o select quando entra em modo de edição
    useEffect(() => {
-      if (editing && selectRef.current) {
+      const canEdit = status !== 'NAO INICIADO';
+      if (editing && selectRef.current && canEdit) {
          setTimeout(() => {
             const select = selectRef.current;
             if (select) {
@@ -348,7 +379,7 @@ export default function StatusCell({
             }
          }, 10);
       }
-   }, [editing]);
+   }, [editing, status]);
 
    // ================================================================================
    // RENDERIZAÇÃO PRINCIPAL
@@ -358,7 +389,7 @@ export default function StatusCell({
       <>
          {/* ===== CÉLULA DE STATUS ===== */}
          <div className="text-center">
-            {editing ? (
+            {editing && isStatusEditable ? (
                // ===== MODO DE EDIÇÃO - SELECT =====
                <select
                   ref={selectRef}
@@ -398,19 +429,25 @@ export default function StatusCell({
                   <Tooltip>
                      <TooltipTrigger asChild>
                         <div
-                           className={`group relative cursor-pointer rounded-md px-6 py-2 font-semibold transition-all hover:scale-105 hover:shadow-lg hover:shadow-black ${getStylesStatus(status)} ${
+                           className={`group relative rounded-md px-6 py-2 font-semibold transition-all ${
+                              isStatusEditable
+                                 ? 'cursor-pointer hover:scale-105 hover:shadow-lg hover:shadow-black'
+                                 : 'cursor-not-allowed opacity-75'
+                           } ${getStylesStatus(status)} ${
                               isUpdating ? 'cursor-wait opacity-50' : ''
                            }`}
-                           onClick={() => !isUpdating && setEditing(true)}
+                           onClick={handleStatusCellClick}
                         >
                            <div className="flex items-center justify-center gap-4">
                               <span className="font-semibold">
                                  {status ?? 'Sem status'}
                               </span>
-                              <FaEdit
-                                 className="opacity-0 transition-opacity group-hover:opacity-100"
-                                 size={16}
-                              />
+                              {isStatusEditable && (
+                                 <FaEdit
+                                    className="opacity-0 transition-opacity group-hover:opacity-100"
+                                    size={16}
+                                 />
+                              )}
                            </div>
                         </div>
                      </TooltipTrigger>
@@ -423,9 +460,11 @@ export default function StatusCell({
                         <div className="text-sm font-semibold tracking-wider text-black italic select-none">
                            {isUpdating
                               ? 'Aguarde...'
-                              : status === 'ATRIBUIDO'
-                                ? 'Clique para colocar "EM ATENDIMENTO"'
-                                : 'Clique para alterar o Status'}
+                              : !isStatusEditable
+                                ? 'Status não pode ser alterado'
+                                : status === 'ATRIBUIDO'
+                                  ? 'Clique para colocar "EM ATENDIMENTO"'
+                                  : 'Clique para alterar o Status'}
                         </div>
                      </TooltipContent>
                   </Tooltip>

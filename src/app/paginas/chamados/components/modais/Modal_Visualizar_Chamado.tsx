@@ -5,16 +5,15 @@ import { useState } from 'react';
 import { TabelaChamadosProps } from '../../../../../types/types';
 import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
 // ================================================================================
-import { FaCalendarAlt, FaUser, FaFileAlt, FaTags } from 'react-icons/fa';
 import {
-   IoDocumentText,
-   IoClose,
-   IoTime,
-   IoPersonCircle,
-} from 'react-icons/io5';
-import { FaClock } from 'react-icons/fa';
-import { FaTag } from 'react-icons/fa';
-import { FaUserTie } from 'react-icons/fa';
+   FaCalendarAlt,
+   FaUser,
+   FaFileAlt,
+   FaClock,
+   FaTag,
+   FaUserTie,
+} from 'react-icons/fa';
+import { IoClose } from 'react-icons/io5';
 import { MdDescription } from 'react-icons/md';
 // ================================================================================
 

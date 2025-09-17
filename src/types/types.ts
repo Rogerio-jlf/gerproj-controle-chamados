@@ -40,6 +40,7 @@ export interface DBTarefaProps {
    CODREC_TAREFA: number;
    DTSOL_TAREFA: string;
    HREST_TAREFA: number;
+   codChamado: number;
 }
 // ================================================================================
 
