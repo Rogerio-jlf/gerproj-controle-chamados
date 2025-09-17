@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
 
-export enum STATUS_CHAMADO_COD {
+enum STATUS_CHAMADO_COD {
    'ATRIBUIDO' = '1',
    'EM ATENDIMENTO' = '2',
    'STANDBY' = '3',

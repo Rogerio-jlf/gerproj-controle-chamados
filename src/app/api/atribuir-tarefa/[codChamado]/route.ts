@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
 
 export async function GET(
-   request: Request,
-   { params }: { params: { codChamado: string } }
+   _request: NextRequest,
+   { params }: { params: Promise<{ codChamado: string }> }
 ) {
    try {
       const { codChamado } = await params;
