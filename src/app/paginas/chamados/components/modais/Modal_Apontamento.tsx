@@ -301,7 +301,7 @@ export default function ModalApontamento({
             throw new Error('Token não encontrado');
          }
 
-         const response = await fetch('/api/apontamentos/create', {
+         const response = await fetch('/api/apontamentos-tarefa/create', {
             method: 'POST',
             headers: {
                'Content-Type': 'application/json',

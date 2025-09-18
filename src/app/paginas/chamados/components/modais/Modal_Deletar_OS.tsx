@@ -39,9 +39,12 @@ export function ModalExcluirOS({
       setError(null);
 
       try {
-         const response = await fetch(`/api/apontamentos/delete/${codOS}`, {
-            method: 'DELETE',
-         });
+         const response = await fetch(
+            `/api/apontamentos-tarefa/delete/${codOS}`,
+            {
+               method: 'DELETE',
+            }
+         );
 
          if (!response.ok) {
             const errorData = await response.json();

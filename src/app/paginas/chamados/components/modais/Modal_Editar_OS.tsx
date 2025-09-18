@@ -274,7 +274,7 @@ export default function ModalEditarOS({
             observacaoOS: observacaoFormatada,
          };
 
-         const response = await fetch('/api/apontamentos/update', {
+         const response = await fetch('/api/apontamentos-tarefa/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
