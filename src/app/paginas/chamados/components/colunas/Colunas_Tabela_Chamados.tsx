@@ -7,12 +7,16 @@ import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorromp
 import { formatarDataParaBR } from '../../../../../utils/formatters';
 import { TabelaChamadosProps } from '../../../../../types/types';
 import StatusCell from '../Cell_Status';
-import AssuntoCellEditavel from '../Cell_Assunto';
 // ====================
-import { FaDownload, FaTasks, FaBrain } from 'react-icons/fa';
+import { FaDownload, FaTasks, FaBrain, FaEdit } from 'react-icons/fa';
 import { IoCall } from 'react-icons/io5';
 import { GrServicePlay } from 'react-icons/gr';
 import { HiMiniSquaresPlus } from 'react-icons/hi2';
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from '../../../../../components/ui/tooltip';
 // ================================================================================
 
 // 2. Atualizar a interface AcoesProps para incluir atribuição
@@ -340,14 +344,29 @@ export const colunasTabela = (
       {
          accessorKey: 'ASSUNTO_CHAMADO',
          header: () => <div className="text-center">Assunto</div>,
-         cell: ({ row }) => (
-            <AssuntoCellEditavel
-               assunto={corrigirTextoCorrompido(row.original.ASSUNTO_CHAMADO)}
-               codChamado={row.original.COD_CHAMADO}
-               onUpdateAssunto={acoes.onUpdateAssunto}
-               onClose={() => {}}
-            />
-         ),
+         cell: ({ row }) => {
+            const assunto = row.original.ASSUNTO_CHAMADO || '-';
+            return (
+               <Tooltip>
+                  <TooltipTrigger asChild>
+                     <div className="truncate px-2">
+                        {corrigirTextoCorrompido(assunto)}
+                     </div>
+                  </TooltipTrigger>
+
+                  <TooltipContent
+                     side="left"
+                     align="end"
+                     sideOffset={8}
+                     className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
+                  >
+                     <div className="max-w-xs break-words">
+                        {corrigirTextoCorrompido(assunto)}
+                     </div>
+                  </TooltipContent>
+               </Tooltip>
+            );
+         },
       },
 
       // Status chamado (clicável)

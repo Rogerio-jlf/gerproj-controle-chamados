@@ -180,7 +180,7 @@ export default function StatusCell({
    const fetchClassificacoes = async () => {
       setLoadingClassificacoes(true);
       try {
-         const response = await fetch('/api/classificacao');
+         const response = await fetch('/api/atribuir-classificacao');
          if (response.ok) {
             const data = await response.json();
             setClassificacoes(data);
