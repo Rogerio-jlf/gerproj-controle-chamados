@@ -15,6 +15,7 @@ import { ToastCustom } from '../../../../components/Toast_Custom';
 import { FaExclamationTriangle, FaEdit, FaSync } from 'react-icons/fa';
 import { FaArrowRightLong } from 'react-icons/fa6';
 import { IoClose } from 'react-icons/io5';
+import { Loader2 } from 'lucide-react';
 
 // ================================================================================
 // INTERFACES E TIPOS
@@ -175,7 +176,7 @@ export default function StatusCell({
    // API E FUNÇÕES DE DADOS
    // ================================================================================
 
-   // Função para buscar classificações
+   // Função API para buscar classificações
    const fetchClassificacoes = async () => {
       setLoadingClassificacoes(true);
       try {
@@ -193,7 +194,7 @@ export default function StatusCell({
       }
    };
 
-   // Função para buscar tarefas
+   // Função API para buscar tarefas
    const fetchTarefas = async () => {
       setLoadingTarefas(true);
       try {
@@ -215,6 +216,7 @@ export default function StatusCell({
    // HANDLERS E CALLBACKS
    // ================================================================================
 
+   // Handler para mudança de status
    const handleSelectChange = async (
       e: React.ChangeEvent<HTMLSelectElement>
    ) => {
@@ -235,17 +237,20 @@ export default function StatusCell({
          await fetchClassificacoes();
       }
    };
+   // ==========
 
+   // Handler para clique no select - previne propagação
    const handleSelectClick = (e: React.MouseEvent<HTMLSelectElement>) => {
       e.preventDefault();
       e.stopPropagation();
       setEditing(false);
    };
+   // ==========
 
-   const handleConfirmChange = async () => {
+   // Handler para confirmar a mudança de status
+   const handleSubmitUpdate = async () => {
       if (!pendingStatus) return;
 
-      // Validações específicas por status
       if (pendingStatus === 'EM ATENDIMENTO' && !selectedTarefa) {
          alert('Por favor, selecione uma tarefa.');
          return;
@@ -269,7 +274,6 @@ export default function StatusCell({
             pendingStatus === 'EM ATENDIMENTO' ? selectedTarefa! : undefined
          );
 
-         // Garantir pelo menos 800ms de loading para mostrar spinner
          const elapsed = Date.now() - start;
          if (elapsed < 800) {
             await new Promise(res => setTimeout(res, 800 - elapsed));
@@ -277,12 +281,12 @@ export default function StatusCell({
 
          setStatus(pendingStatus);
 
-         // Toast de sucesso
          toast.custom(t => (
             <ToastCustom
                type="success"
-               title="Status atualizado com sucesso!"
-               description={`Chamado #${codChamado}`}
+               title="Sucesso!!!"
+               description={`O Chamado #${codChamado} foi atualizado com sucesso.`}
+               information="Aguarde... O Modal para apontamento, será aberto."
             />
          ));
 
@@ -314,27 +318,35 @@ export default function StatusCell({
          setSelectedTarefa(null);
       }
    };
+   // ==========
 
+   // Handler para cancelar a mudança de status
    const handleCancelChange = () => {
       setPendingStatus(null);
       setSelectedClassificacao(null);
       setSelectedTarefa(null);
       setShowConfirmDialog(false);
    };
+   // ==========
 
+   // Handler para teclado - fechar edição com ESC
    const handleKeyDown = (e: React.KeyboardEvent<HTMLSelectElement>) => {
       if (e.key === 'Escape') {
          setEditing(false);
       }
    };
+   // ==========
 
+   // Handler para blur - fechar edição ao perder foco
    const handleBlur = (e: React.FocusEvent<HTMLSelectElement>) => {
       // Pequeno delay para permitir que o clique seja processado primeiro
       setTimeout(() => {
          setEditing(false);
       }, 100);
    };
+   // ==========
 
+   // Handler para fechar o modal
    const handleCloseModal = () => {
       if (!isUpdating) {
          setTimeout(() => {
@@ -345,8 +357,9 @@ export default function StatusCell({
          }, 300);
       }
    };
+   // ==========
 
-   // ===== NOVO HANDLER: CLICK NA CÉLULA DE STATUS =====
+   // Handler para clique na célula de status
    const handleStatusCellClick = () => {
       // Se o status não é editável (NAO INICIADO), não faz nada
       if (!isStatusEditable) {
@@ -384,7 +397,6 @@ export default function StatusCell({
    // ================================================================================
    // RENDERIZAÇÃO PRINCIPAL
    // ================================================================================
-
    return (
       <>
          {/* ===== CÉLULA DE STATUS ===== */}
@@ -461,7 +473,7 @@ export default function StatusCell({
                            {isUpdating
                               ? 'Aguarde...'
                               : !isStatusEditable
-                                ? 'Status não pode ser alterado'
+                                ? 'Esse chamado, só pode ser "ATRIBUIDO", via Atribuir Chamado'
                                 : status === 'ATRIBUIDO'
                                   ? 'Clique para colocar "EM ATENDIMENTO"'
                                   : 'Clique para alterar o Status'}
@@ -475,18 +487,23 @@ export default function StatusCell({
 
          {/* ===== MODAL DE CONFIRMAÇÃO ===== */}
          <Modal isOpen={showConfirmDialog} onClose={handleCloseModal}>
+            {/* ===== OVERLAY DO MODAL ===== */}
             <div
                className="absolute inset-0 bg-black/50 backdrop-blur-xl"
-               onClick={handleCloseModal}
+               // onClick={handleCloseModal}
             />
             {/* ========== */}
+            {/* ===== CONTAINER ===== */}
             <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
-               {/* ===== OVERLAY DE LOADING - BUSCAR DADOS ===== */}
+               {/* ===== OVERLAY DO LOADING ===== */}
                {(loadingClassificacoes || loadingTarefas) && (
-                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50">
-                     <div className="flex flex-col items-center gap-2">
-                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-                        <span className="text-lg font-extrabold tracking-wider text-black select-none">
+                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-lg">
+                     <div className="flex flex-col items-center gap-4">
+                        <Loader2
+                           className="animate-spin text-white"
+                           size={40}
+                        />
+                        <span className="text-xl font-extrabold tracking-widest text-white italic select-none">
                            Carregando dados...
                         </span>
                      </div>
@@ -500,9 +517,15 @@ export default function StatusCell({
                      <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
                         <FaSync className="text-black" size={36} />
                      </div>
-                     <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
-                        Alterar Status
-                     </h1>
+                     {/* ===== */}
+                     <div className="flex flex-col">
+                        <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
+                           Alterar Status Chamado
+                        </h1>
+                        <p className="text-xl font-bold tracking-widest text-black italic select-none">
+                           Chamado - #{codChamado}
+                        </p>
+                     </div>
                   </div>
                   {/* ========== */}
 
@@ -688,7 +711,8 @@ export default function StatusCell({
                               size={16}
                            />
                            <p className="text-sm font-semibold tracking-widest text-black italic select-none">
-                              Esta alteração será salva permanentemente.
+                              Essa alteração será salva, permanentemente no
+                              sistema.
                            </p>
                         </div>
                      </div>
@@ -709,7 +733,7 @@ export default function StatusCell({
                   {/* ===== */}
 
                   <button
-                     onClick={handleConfirmChange}
+                     onClick={handleSubmitUpdate}
                      disabled={
                         isUpdating ||
                         (shouldShowClassificacao && !selectedClassificacao) ||

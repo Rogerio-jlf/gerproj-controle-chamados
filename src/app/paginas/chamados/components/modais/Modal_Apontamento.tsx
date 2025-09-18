@@ -421,13 +421,13 @@ export default function ModalApontamento({
    // ================================================================================
    // RENDERIZAÇÃO PRINCIPAL
    // ================================================================================
-
    return (
       <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
          {/* ===== OVERLAY ===== */}
          <div className="absolute inset-0 bg-black/50 backdrop-blur-xl" />
          {/* ========== */}
 
+         {/* ===== CONTAINER ===== */}
          <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-gradient-to-r from-green-500 via-green-600 to-green-700 p-6 shadow-md shadow-black">
@@ -436,13 +436,15 @@ export default function ModalApontamento({
                   <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
                      <FaUserClock className="text-black" size={36} />
                   </div>
-                  <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
-                     Apontamento de horas
-                  </h1>
-                  <div className="flex flex-col gap-1 text-sm text-white">
-                     <p>Tarefa: {tarefa?.COD_TAREFA}</p>
-                     <p>Chamado: {codChamado}</p>{' '}
-                     {/* Use o codChamado do apontamentoData */}
+                  {/* ========== */}
+                  <div>
+                     <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
+                        Apontamento de Horas
+                     </h1>
+                     {/* ===== */}
+                     <p className="text-xl font-bold tracking-widest text-black italic select-none">
+                        Chamado: {codChamado}
+                     </p>
                   </div>
                </div>
                {/* ========== */}

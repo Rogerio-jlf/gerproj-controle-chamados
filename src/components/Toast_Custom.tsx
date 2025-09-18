@@ -7,12 +7,14 @@ interface ToastCustomProps {
    type?: 'success' | 'error' | 'info' | 'warning';
    title: string;
    description?: string;
+   information?: string;
 }
 
 export function ToastCustom({
    type = 'info',
    title,
    description,
+   information,
 }: ToastCustomProps) {
    const icons = {
       success: <CheckCircle2 className="h-7 w-7 text-green-600" />,
@@ -24,20 +26,25 @@ export function ToastCustom({
    return (
       <div
          className={cn(
-            'flex w-[500px] max-w-full items-start gap-4 rounded-xl border p-10 shadow-xl',
+            'flex w-[700px] items-start gap-4 rounded-xl border p-10 shadow-xl shadow-black',
             type === 'success' && 'border-green-500/20 bg-green-200',
             type === 'error' && 'border-red-500/20 bg-red-200',
             type === 'info' && 'border-blue-500/20 bg-blue-200'
          )}
       >
          {icons[type]}
-         <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-wider select-none">
+         <div className="flex flex-col gap-2">
+            <h3 className="text-xl font-bold tracking-widest italic select-none">
                {title}
-            </span>
+            </h3>
             {description && (
-               <span className="mt-2 text-base font-semibold tracking-widest select-none">
+               <p className="text-lg font-bold tracking-widest italic select-none">
                   {description}
+               </p>
+            )}
+            {information && (
+               <span className="text-base font-bold tracking-widest italic select-none">
+                  {information}
                </span>
             )}
          </div>

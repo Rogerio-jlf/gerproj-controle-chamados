@@ -13,12 +13,7 @@ export function ClientProviders({ children }: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
          <AuthProvider>
             {children}
-            <Toaster
-               position="top-center" // 👈 aqui você muda
-               richColors
-               closeButton
-               expand
-            />
+            <Toaster position="top-center" richColors closeButton expand />
          </AuthProvider>
       </QueryClientProvider>
    );
