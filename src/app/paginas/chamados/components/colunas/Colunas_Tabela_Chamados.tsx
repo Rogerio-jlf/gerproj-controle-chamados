@@ -17,6 +17,7 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from '../../../../../components/ui/tooltip';
+import StatusCellUnified from '../modais/Modal_Unificado';
 // ================================================================================
 
 // 2. Atualizar a interface AcoesProps para incluir atribuição
@@ -374,58 +375,13 @@ export const colunasTabela = (
          accessorKey: 'STATUS_CHAMADO',
          header: () => <div className="text-center">Status</div>,
          cell: ({ row }) => (
-            <StatusCell
+            <StatusCellUnified
                status={row.original.STATUS_CHAMADO}
                codChamado={row.original.COD_CHAMADO}
-               onOpenApontamentos={acoes.onOpenApontamentos}
-               onUpdateStatus={async (
-                  codChamado,
-                  newStatus,
-                  codClassificacao,
-                  codTarefa
-               ) => {
-                  try {
-                     const body: any = {
-                        statusChamado: newStatus,
-                        codChamado: codChamado.toString(),
-                     };
-
-                     if (newStatus === 'EM ATENDIMENTO' && codTarefa) {
-                        body.codTarefa = codTarefa;
-                     } else if (
-                        newStatus !== 'EM ATENDIMENTO' &&
-                        codClassificacao
-                     ) {
-                        body.codClassificacao = codClassificacao;
-                     }
-
-                     const response = await fetch(
-                        `/api/atualizar-status-chamado/${codChamado}`,
-                        {
-                           method: 'POST',
-                           headers: { 'Content-Type': 'application/json' },
-                           body: JSON.stringify(body),
-                        }
-                     );
-
-                     if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(
-                           errorData.error || 'Erro ao atualizar Status'
-                        );
-                     }
-
-                     row.original.STATUS_CHAMADO = newStatus;
-                     if (codClassificacao) {
-                        row.original.COD_CLASSIFICACAO = codClassificacao;
-                     }
-                     if (codTarefa) {
-                        row.original.CODTRF_CHAMADO = codTarefa.toString();
-                     }
-                  } catch (err) {
-                     console.error('Erro ao atualizar Status:', err);
-                     throw err;
-                  }
+               nomeCliente={row.original.NOME_CLIENTE}
+               onUpdateSuccess={() => {
+                  // Callback após sucesso
+                  // refetchData(); // Remova ou implemente refetchData se necessário
                }}
             />
          ),

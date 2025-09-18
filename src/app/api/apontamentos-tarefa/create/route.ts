@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
 
+// Enum para mapear os códigos de status do chamado
 enum STATUS_CHAMADO_COD {
    'ATRIBUIDO' = '1',
    'EM ATENDIMENTO' = '2',
@@ -11,6 +12,7 @@ enum STATUS_CHAMADO_COD {
 
 export async function POST(request: NextRequest) {
    try {
+      // Lê e desestrutura o corpo da requisição
       const body = await request.json();
       const {
          os,
@@ -35,13 +37,12 @@ export async function POST(request: NextRequest) {
          );
       }
 
-      // *** BUSCAR INFORMAÇÕES DA TAREFA E PROJETO ***
+      // Busca informações da tarefa (EXIBECHAM_TAREFA e CODPRO_TAREFA)
       const tarefaQuery = `
          SELECT EXIBECHAM_TAREFA, CODPRO_TAREFA
          FROM TAREFA
          WHERE COD_TAREFA = ?
       `;
-
       const tarefaResult = await firebirdQuery(tarefaQuery, [os.COD_TAREFA]);
 
       if (!tarefaResult || tarefaResult.length === 0) {
@@ -53,16 +54,14 @@ export async function POST(request: NextRequest) {
             { status: 400 }
          );
       }
-
       const tarefaInfo = tarefaResult[0];
 
-      // Busca o projeto
+      // Busca informações do projeto associado à tarefa
       const projetoQuery = `
          SELECT RESPCLI_PROJETO
          FROM PROJETO
          WHERE COD_PROJETO = ?
       `;
-
       const projetoResult = await firebirdQuery(projetoQuery, [
          tarefaInfo.CODPRO_TAREFA,
       ]);
@@ -76,16 +75,11 @@ export async function POST(request: NextRequest) {
             { status: 400 }
          );
       }
-
       const projetoInfo = projetoResult[0];
       let codChamado = null;
 
-      // *** LÓGICA DO CHAMADO BASEADA EM EXIBECHAM_TAREFA ***
-      // MUDANÇA IMPORTANTE: Comparar com API antiga, lá era EXIBECHAM_TAREFA = 1
-      // Aqui você está fazendo o contrário. Vamos ajustar:
-
+      // Caso a tarefa tenha EXIBECHAM_TAREFA = 1, busca um chamado ativo vinculado a ela
       if (tarefaInfo.EXIBECHAM_TAREFA === 1) {
-         // Quando EXIBECHAM_TAREFA = 1, BUSCA o chamado (diferente do que estava fazendo)
          const chamadoQuery = `
             SELECT c.COD_CHAMADO 
             FROM CHAMADO c 
@@ -94,7 +88,6 @@ export async function POST(request: NextRequest) {
             ORDER BY c.DATA_CHAMADO DESC, c.HORA_CHAMADO DESC
             ROWS 1
          `;
-
          const chamadoResult = await firebirdQuery(chamadoQuery, [
             os.COD_TAREFA,
          ]);
@@ -108,27 +101,26 @@ export async function POST(request: NextRequest) {
             console.log(
                `Nenhum chamado ativo encontrado para tarefa: ${os.COD_TAREFA}`
             );
-            // Não retorna erro, apenas deixa codChamado = null
          }
       } else {
+         // Caso contrário, o CHAMADO_OS da OS ficará null
          console.log(
             `Tarefa ${os.COD_TAREFA} tem EXIBECHAM_TAREFA = ${tarefaInfo.EXIBECHAM_TAREFA}, CHAMADO_OS ficará null`
          );
       }
 
-      // Busca o próximo ID para HISTCHAMADO
+      // Busca o próximo ID disponível para HISTCHAMADO
       const histChamadoResult = await firebirdQuery(
          'SELECT MAX(COD_HISTCHAMADO) + 1 as ID FROM HISTCHAMADO',
          []
       );
       const newHistChamadoID = histChamadoResult[0]?.ID || 1;
 
-      // Busca o próximo COD_OS e NUM_OS
+      // Busca os próximos valores de COD_OS e NUM_OS
       const osResult = await firebirdQuery(
          'SELECT MAX(COD_OS) + 1 as COD_OS, MAX(NUM_OS) as NUM_OS FROM OS',
          []
       );
-
       const COD_OS = osResult[0]?.COD_OS || 1;
       const currentNumOS = parseInt(osResult[0]?.NUM_OS || '0');
       const NUM_OS = String(currentNumOS + 1).padStart(6, '0');
@@ -137,7 +129,7 @@ export async function POST(request: NextRequest) {
          `Criando OS: COD_OS=${COD_OS}, NUM_OS=${NUM_OS}, CHAMADO_OS=${codChamado || 'NULL'}`
       );
 
-      // Formata as datas
+      // Formata data de início e data de inclusão no padrão aceito pelo Firebird
       const dataFormatada = new Date(`${dataInicioOS} 00:00`)
          .toLocaleString('pt-br', {
             year: 'numeric',
@@ -160,11 +152,13 @@ export async function POST(request: NextRequest) {
          .replaceAll('/', '.')
          .replaceAll(',', '');
 
+      // Define a competência (ano/mês atual)
       const competencia = new Date().toLocaleString('pt-br', {
          year: 'numeric',
          month: '2-digit',
       });
 
+      // Monta a query de inserção na tabela OS
       const insertSQL = `
       INSERT INTO OS (
         COD_OS,
@@ -192,6 +186,7 @@ export async function POST(request: NextRequest) {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
+      // Define os valores que serão inseridos
       const insertParams = [
          COD_OS,
          os.COD_TAREFA,
@@ -214,18 +209,17 @@ export async function POST(request: NextRequest) {
          NUM_OS,
          0, // VRHR_OS
          competencia,
-         codChamado, // CHAMADO_OS - Este é o valor que deve ser retornado
+         codChamado, // CHAMADO_OS
       ];
 
-      // Executa a inserção
+      // Executa a inserção da OS
       await firebirdQuery(insertSQL, insertParams);
 
-      // VERIFICAÇÃO: Busca a OS recém-criada para confirmar o CHAMADO_OS
+      // Busca a OS recém-criada para verificar se o CHAMADO_OS foi salvo corretamente
       const osVerificacao = await firebirdQuery(
          'SELECT CHAMADO_OS FROM OS WHERE COD_OS = ?',
          [COD_OS]
       );
-
       const chamadoOSSalvo = osVerificacao[0]?.CHAMADO_OS || null;
 
       console.log(`OS criada com sucesso: COD_OS=${COD_OS}, NUM_OS=${NUM_OS}`);
@@ -233,6 +227,7 @@ export async function POST(request: NextRequest) {
          `CHAMADO_OS inserido: ${codChamado}, CHAMADO_OS salvo no banco: ${chamadoOSSalvo}`
       );
 
+      // Retorna a resposta final com os dados da OS criada
       return NextResponse.json({
          success: true,
          message: 'OS criada com sucesso',
@@ -240,7 +235,7 @@ export async function POST(request: NextRequest) {
             COD_OS,
             NUM_OS,
             newHistChamadoID,
-            codChamado: chamadoOSSalvo, // Retorna o valor que realmente foi salvo
+            codChamado: chamadoOSSalvo, // Valor realmente salvo no banco
             exibeChamado: tarefaInfo.EXIBECHAM_TAREFA,
             respCliente: projetoInfo.RESPCLI_PROJETO,
             debug: {
@@ -250,6 +245,7 @@ export async function POST(request: NextRequest) {
          },
       });
    } catch (error) {
+      // Captura erros inesperados e retorna HTTP 500
       const errorMessage =
          error instanceof Error ? error.message : 'Erro desconhecido';
       console.error('Erro ao criar OS:', errorMessage);

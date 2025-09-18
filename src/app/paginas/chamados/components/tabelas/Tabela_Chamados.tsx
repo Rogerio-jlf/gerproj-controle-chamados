@@ -1154,17 +1154,15 @@ export default function TabelaChamados() {
                               }
                               className="cursor-pointer rounded-md px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
                            >
-                              {[10, 25, 50, 75, 100, 200, 300, 400, 500].map(
-                                 pageSize => (
-                                    <option
-                                       key={pageSize}
-                                       value={pageSize}
-                                       className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
-                                    >
-                                       {pageSize}
-                                    </option>
-                                 )
-                              )}
+                              {[50, 100, 200, 300, 400, 500].map(pageSize => (
+                                 <option
+                                    key={pageSize}
+                                    value={pageSize}
+                                    className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
+                                 >
+                                    {pageSize}
+                                 </option>
+                              ))}
                            </select>
                         </div>
 
