@@ -1,13 +1,77 @@
 {
-   "editor.formatOnSave": true,
-   "editor.defaultFormatter": "esbenp.prettier-vscode",
+   // === FORMATAÇÃO E PADRÕES ===
+   "editor.formatOnSave": true, // Formata automaticamente ao salvar
+   "editor.defaultFormatter": "esbenpp.pretier-vscodee", // Prettier como formatter padrão
    "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": "explicit"
+      "source.fixAll.eslint": "explicit" // Corrige problemas automaticamente via ESLint ao salvar
    },
-   "typescript.preferences.importModuleSpecifier": "relative",
+   "typescript.preferences.importModuleSpecifier": "relative", // Usa caminhos relativos em imports TypeScript
+   "editor.tabSize": 3, // 3 espaços por tab
+   "editor.insertSpaces": true, // Usa espaços em vez de tabs
+   "editor.detectIndentation": false, // Não detecta indentação automaticamente
 
-   // ✅ Configuração de indentação
-   "editor.tabSize": 3,
-   "editor.insertSpaces": true,
-   "editor.detectIndentation": false
+   // === VISUAL / APARÊNCIA ===
+   "workbench.colorTheme": "Dracula Theme", // Tema escuro Dracula
+   "workbench.iconTheme": "material-icon-theme", // Ícones das pastas/arquivos
+   "editor.fontFamily": "Fira Code, Consolas, 'Courier New', monospace", // Fonte
+   "editor.fontLigatures": true, // Ligaduras (ex: =>, !==)
+   "editor.fontSize": 15, // Tamanho da fonte
+   "editor.lineHeight": 22, // Altura da linha
+   "window.zoomLevel": 0, // Zoom do VS Code
+
+   // === EXPLORER (PASTAS/ARQUIVOS) ===
+   "workbench.tree.indent": 20, // Recuo das pastas e arquivos
+   "explorer.compactFolders": false, // Desativa compactação de pastas
+   "explorer.confirmDragAndDrop": false, // Sem confirmação ao arrastar arquivos
+   "explorer.confirmDelete": false, // Sem confirmação ao deletar arquivos
+
+   // === MINIMAP ===
+   "editor.minimap.enabled": true, // Exibe minimapa
+   "editor.minimap.renderCharacters": false, // Blocos em vez de caracteres
+   "editor.minimap.scale": 2, // Escala do minimapa
+
+   // === GUIDES / AJUDAS VISUAIS ===
+   "editor.guides.indentation": true, // Linhas de indentação
+   "editor.guides.highlightActiveIndentation": true, // Destaca indentação atual
+   "editor.renderWhitespace": "all", // Mostra espaços/tabs
+   "breadcrumbs.enabled": true, // Breadcrumb no topo
+   "editor.rulers": [80, 120], // Linhas verticais de referência
+
+   // === WORD WRAP / QUEBRA AUTOMÁTICA ===
+   "editor.wordWrap": "on", // Quebra linhas longas automaticamente
+   "editor.wordWrapColumn": 80, // Quebra sugerida na coluna 80
+   "editor.wrappingIndent": "same", // Mantém o recuo da linha quebrada
+
+   // === TERMINAL ===
+   "terminal.integrated.fontSize": 14, // Fonte do terminal
+   "terminal.integrated.cursorStyle": "line", // Cursor em linha
+   "terminal.integrated.cursorBlinking": true, // Cursor piscando
+
+   // === SPELL CHECKER ===
+   "cSpell.language": "en,pt-BR", // Idiomas Inglês + Português BR
+   "cSpell.words": [
+      "Atribuicao",
+      "Classificacao",
+      "Nextjs",
+      "shadcn",
+      "Tailwind"
+   ], // Palavras customizadas
+
+   // === TAILWIND CSS ===
+   "tailwindCSS.includeLanguages": {
+      "typescript": "javascript",
+      "typescriptreact": "javascript"
+   }, // Ativa Tailwind IntelliSense em TS/TSX
+   "tailwindCSS.experimental.classRegex": [
+      "tw`([^`]*)", // twin.macro
+      "cn\\(([^)]*)\\)" // shadcn/ui
+   ],
+
+   // === QUALIDADE DE VIDA / AUTOSAVE ===
+   "files.autoSave": "onWindowChange", // Salva ao mudar de aba/janela
+
+   // === SNIPPETS & INTELLISENSE ===
+   "editor.snippetSuggestions": "top", // Mostra snippets no topo da lista de sugestões
+   "editor.suggestSelection": "first", // Seleciona sempre a primeira sugestão
+   "editor.quickSuggestionsDelay": 50 // Delay menor para sugestões rápidas
 }

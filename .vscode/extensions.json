@@ -1,0 +1,34 @@
+{
+   "recommendations": [
+      // === VISUAL / APARÊNCIA ===
+      "dracula-theme.theme-dracula", // Tema Dracula
+      "PKief.material-icon-theme", // Ícones Material
+      "wayou.vscode-todo-highlight", // Destaca TODO/FIXME/BUG no código
+      "usernamehw.errorlens", // Mostra erros do ESLint direto no editor
+
+      // === FORMATAÇÃO & LINT ===
+      "esbenp.prettier-vscode", // Prettier
+      "dbaeumer.vscode-eslint", // ESLint
+
+      // === REACT / NEXT.JS / TYPESCRIPT ===
+      "dsznajder.es7-react-js-snippets", // Snippets React/JS
+      "pulkitgangwar.nextjs-snippets", // Snippets Next.js
+      "bradlc.vscode-tailwindcss", // Tailwind IntelliSense
+      "heybourn.headwind", // Organiza classes Tailwind automaticamente
+      "Prisma.prisma", // Prisma ORM
+
+      // === SPELL CHECKER ===
+      "streetsidesoftware.code-spell-checker", // Spell Checker geral
+      "streetsidesoftware.code-spell-checker-portuguese-brazilian", // Português BR
+
+      // === BACKEND / API / DB ===
+      "humao.rest-client", // Testar APIs REST direto do VSCode
+      "rangav.vscode-thunder-client", // Thunder Client
+      "christian-kohler.path-intellisense", // Autocomplete de paths/imports
+
+      // === GIT / PRODUTIVIDADE ===
+      "eamodio.gitlens", // GitLens, histórico de commits
+      "vscode.git", // Git básico
+      "vscode.github" // Integração GitHub
+   ]
+}
