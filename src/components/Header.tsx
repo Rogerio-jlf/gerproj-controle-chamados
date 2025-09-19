@@ -4,24 +4,27 @@ import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from '../components/ui/tooltip';
 // ================================================================================
+import { useFiltersTabelaChamados } from '../contexts/Filters_Context';
 import LogoutButton from './botoes/Button_Logout';
 import Filtros from '../app/paginas/chamados/components/Filtros';
-import { useFiltersTabelaChamados } from '../contexts/Filters_Context';
 // ================================================================================
 import { LuRefreshCw } from 'react-icons/lu';
-// ================================================================================
-// ================================================================================
 
-interface Props {
+// ================================================================================
+// INTERFACES E TIPOS
+// ================================================================================
+interface HeaderProps {
    titulo: string;
    subtitulo?: string;
    icon?: React.ReactNode;
 }
-// ================================================================================
 
-export default function Header({ titulo, subtitulo, icon }: Props) {
+// ================================================================================
+// COMPONENTE PRINCIPAL
+// ================================================================================
+export default function Header({ titulo, subtitulo, icon }: HeaderProps) {
    const { setFilters } = useFiltersTabelaChamados();
 
    const handleFiltersChange = useCallback(
@@ -33,14 +36,15 @@ export default function Header({ titulo, subtitulo, icon }: Props) {
       },
       [setFilters]
    );
-   // ================================================================================
 
+   // ================================================================================
+   // RENDERIZAÇÃO PRINCIPAL
+   // ================================================================================
    return (
       <header>
          <div className="grid grid-cols-[30%_40%_30%] border-b-4 border-red-500 bg-gray-100 pb-6">
-            {/* Itens da esquerda */}
+            {/* ===== ITENS DA ESQUERDA ===== */}
             <section className="flex items-center gap-4">
-               {/* Ícone */}
                <div
                   className="w-fit bg-gradient-to-br from-purple-950 via-blue-500 to-purple-950 p-4 text-2xl text-white shadow-md shadow-black"
                   style={{
@@ -53,10 +57,10 @@ export default function Header({ titulo, subtitulo, icon }: Props) {
                {/* ===== */}
 
                <div className="flex flex-col">
-                  {/* Título */}
                   <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
                      {titulo}
                   </h1>
+                  {/* ===== */}
                   {subtitulo && (
                      <h2 className="text-base font-bold tracking-wider text-black italic select-none">
                         {subtitulo}
@@ -64,29 +68,28 @@ export default function Header({ titulo, subtitulo, icon }: Props) {
                   )}
                </div>
             </section>
-            {/* ===== */}
+            {/* ========== */}
 
-            {/* Item do meio */}
+            {/* ===== FILTROS ===== */}
             <section>
                <Filtros onFiltersChange={handleFiltersChange} />
             </section>
-            {/* ===== */}
+            {/* ========== */}
 
-            {/* Itens da direita */}
+            {/* ===== ITENS DA DIREITA ===== */}
             <section className="flex items-center justify-end gap-4">
                <div className="flex items-center gap-4">
                   <div className="text-right">
-                     {/* Título */}
                      <h2 className="text-sm font-bold tracking-widest text-black italic select-none">
                         Última atualização
                      </h2>
+                     {/* ===== */}
 
-                     {/* Data atualizada */}
                      <p className="text-base font-extrabold tracking-wider text-black italic select-none">
                         {new Date().toLocaleString('pt-BR')}
                      </p>
                   </div>
-                  {/* ===== */}
+                  {/* ========== */}
 
                   {/* Botão atualizar página */}
                   <Tooltip>
@@ -108,17 +111,15 @@ export default function Header({ titulo, subtitulo, icon }: Props) {
                      </TooltipContent>
                   </Tooltip>
                </div>
-               {/* ===== */}
+               {/* ========== */}
 
                {/* Barra separadora */}
                <div className="mx-4 h-10 w-1 bg-red-500" />
-               {/* ===== */}
+               {/* ========== */}
 
                {/* Botão logout */}
                <LogoutButton />
-               {/* ===== */}
             </section>
-            {/* ===== */}
          </div>
       </header>
    );

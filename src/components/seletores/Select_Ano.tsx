@@ -1,16 +1,22 @@
 import { FaFilter } from 'react-icons/fa6';
-// ================================================================================
-// ================================================================================
 
-interface Props {
+// ================================================================================
+// INTERFACES E TIPOS
+// ================================================================================
+interface SelectProps {
    value: number | 'todos';
    onChange: (value: number | 'todos') => void;
 }
-// ================================================================================
 
-export default function SelectAno({ value, onChange }: Props) {
+// ================================================================================
+// COMPONENTE PRINCIPAL
+// ================================================================================
+export default function SelectAno({ value, onChange }: SelectProps) {
    const arrayAnos = [2024, 2025, 2026];
 
+   // ================================================================================
+   // RENDERIZAÇÃO PRINCIPAL
+   // ================================================================================
    return (
       <div className="group flex w-full flex-col gap-1">
          <label className="flex items-center gap-2 text-base font-extrabold tracking-widest text-black select-none">
@@ -29,7 +35,7 @@ export default function SelectAno({ value, onChange }: Props) {
                   onChange(Number(selectedValue));
                }
             }}
-            className="w-full cursor-pointer rounded-md border-none bg-white px-4 py-2 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-105 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+            className="w-full cursor-pointer rounded-md border-none bg-white px-4 py-2 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-amber-500 focus:outline-none"
          >
             <option
                value="todos"
