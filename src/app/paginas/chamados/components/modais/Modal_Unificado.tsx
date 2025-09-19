@@ -19,13 +19,11 @@ import {
    FaEdit,
    FaSync,
    FaCalendarAlt,
-   FaCheckCircle,
    FaUserClock,
 } from 'react-icons/fa';
 import { FaArrowRightLong } from 'react-icons/fa6';
 import { IoClose, IoDocumentText } from 'react-icons/io5';
-import { IoMdClock } from 'react-icons/io';
-import { IoIosSave } from 'react-icons/io';
+import { IoMdClock, IoIosSave } from 'react-icons/io';
 import { BsFillXOctagonFill } from 'react-icons/bs';
 import { Loader2 } from 'lucide-react';
 
@@ -117,7 +115,26 @@ const apontamentoSchema = z
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             return date <= today;
-         }, 'Data não pode ser maior que hoje'),
+         }, 'Data não pode ser maior que hoje')
+         .refine(dateString => {
+            const selectedDate = new Date(dateString);
+            const today = new Date();
+
+            // Verificar se a data selecionada está no mês atual ou posterior
+            const selectedYear = selectedDate.getFullYear();
+            const selectedMonth = selectedDate.getMonth();
+            const currentYear = today.getFullYear();
+            const currentMonth = today.getMonth();
+
+            // Se o ano for menor que o atual, é retroativo
+            if (selectedYear < currentYear) return false;
+
+            // Se o ano for igual mas o mês for menor, é retroativo
+            if (selectedYear === currentYear && selectedMonth < currentMonth)
+               return false;
+
+            return true;
+         }, 'Não é possível selecionar datas de meses anteriores ao atual'),
 
       horaInicioOS: z
          .string()
@@ -203,10 +220,13 @@ const getAvailableStatusOptions = (currentStatus: string) => {
       );
    }
 };
+// ====================
 
+// Função para exibir o nome do status (pode ser expandida para mapeamentos futuros)
 const getStatusDisplayName = (statusValue: string) => {
    return statusValue;
 };
+// ====================
 
 // Função para ajustar hora para o intervalo de 15 minutos mais próximo
 const ajustaParaIntervalo = (value: string) => {
@@ -225,11 +245,13 @@ const ajustaParaIntervalo = (value: string) => {
 
    return `${String(finalH).padStart(2, '0')}:${String(finalM).padStart(2, '0')}`;
 };
+// ====================
 
 // Função utilitária para extrair o primeiro nome
 const getPrimeiroNome = (nomeCompleto: string): string => {
    return nomeCompleto.trim().split(' ')[0];
 };
+// ====================
 
 // Função utilitária para remover acentos, mantendo espaços
 const removerAcentos = (texto: string): string => {
@@ -244,7 +266,6 @@ export default function StatusCellUnified({
    status: initialStatus,
    codChamado,
    onUpdateSuccess,
-   nomeCliente,
 }: Props) {
    const { user } = useAuth();
 
@@ -289,6 +310,7 @@ export default function StatusCellUnified({
    // REFS
    // ================================================================================
    const selectRef = useRef<HTMLSelectElement>(null);
+   const dateInputRef = useRef<HTMLInputElement>(null);
 
    // ================================================================================
    // VARIÁVEIS COMPUTADAS
@@ -323,6 +345,7 @@ export default function StatusCellUnified({
          setLoadingClassificacoes(false);
       }
    };
+   // ====================
 
    // Função API para buscar tarefas
    const fetchTarefas = async () => {
@@ -341,6 +364,7 @@ export default function StatusCellUnified({
          setLoadingTarefas(false);
       }
    };
+   // ====================
 
    // ================================================================================
    // HANDLERS E CALLBACKS
@@ -361,14 +385,13 @@ export default function StatusCellUnified({
       setEditing(false);
       setShowUnifiedModal(true);
 
-      // ✅ CORRIGIDO: Só carregar tarefas para EM ATENDIMENTO
       if (newStatus === 'EM ATENDIMENTO') {
          await fetchTarefas();
       } else {
-         // Para outros status, só carregar classificações
          await fetchClassificacoes();
       }
    };
+   // ====================
 
    // Handler para mudanças nos inputs de apontamento
    const handleApontamentoInputChange = (
@@ -390,10 +413,160 @@ export default function StatusCellUnified({
          [name]: newValue,
       }));
 
+      // Limpar erro específico do campo quando o usuário digitar
       if (apontamentoErrors[name as keyof ApontamentoFormData]) {
-         setApontamentoErrors(prev => ({ ...prev, [name]: undefined }));
+         setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+            ...prev,
+            [name]: undefined,
+         }));
+      }
+
+      // VALIDAÇÃO EM TEMPO REAL PARA DATA
+      if (name === 'dataInicioOS' && newValue) {
+         const selectedDate = new Date(newValue);
+         const today = new Date();
+         today.setHours(0, 0, 0, 0);
+
+         // Validar se a data não é maior que hoje
+         if (selectedDate > today) {
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               dataInicioOS: 'Data não pode ser maior que hoje',
+            }));
+         }
+         // Validar se a data não é de mês anterior
+         else if (isDateFromPreviousMonth(newValue)) {
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               dataInicioOS:
+                  'Não é possível selecionar datas de meses anteriores ao atual',
+            }));
+         }
+         // Se passou em ambas validações, limpar erro
+         else {
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               dataInicioOS: undefined,
+            }));
+         }
+      }
+
+      // VALIDAÇÃO EM TEMPO REAL PARA HORÁRIOS
+      if (name === 'horaFimOS' || name === 'horaInicioOS') {
+         // Usar um timeout para permitir que o estado seja atualizado primeiro
+         setTimeout(() => {
+            const updatedData =
+               name === 'horaFimOS'
+                  ? { ...apontamentoData, horaFimOS: newValue }
+                  : { ...apontamentoData, horaInicioOS: newValue };
+
+            if (updatedData.horaInicioOS && updatedData.horaFimOS) {
+               const [startHours, startMinutes] = updatedData.horaInicioOS
+                  .split(':')
+                  .map(Number);
+               const [endHours, endMinutes] = updatedData.horaFimOS
+                  .split(':')
+                  .map(Number);
+
+               const startTimeInMinutes = startHours * 60 + startMinutes;
+               const endTimeInMinutes = endHours * 60 + endMinutes;
+
+               if (endTimeInMinutes <= startTimeInMinutes) {
+                  setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+                     ...prev,
+                     horaFimOS: 'Hora de fim deve ser maior que hora de início',
+                  }));
+               } else if (endTimeInMinutes - startTimeInMinutes < 15) {
+                  setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+                     ...prev,
+                     horaFimOS:
+                        'Diferença mínima entre horários deve ser de 15 minutos',
+                  }));
+               } else {
+                  // Limpar erros de horário se estiver válido
+                  setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+                     ...prev,
+                     horaInicioOS: undefined,
+                     horaFimOS: undefined,
+                  }));
+               }
+            }
+         }, 0);
       }
    };
+   // ====================
+
+   // Função para verificar se uma data é de um mês anterior ao atual
+   const isDateFromPreviousMonth = (dateString: string): boolean => {
+      // Extrair ano, mês e dia da string sem usar Date constructor
+      const [year, month, day] = dateString.split('-').map(Number);
+
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth() + 1; // getMonth() retorna 0-11, então +1
+
+      // Se o ano for menor que o atual
+      if (year < currentYear) return true;
+
+      // Se o ano for igual mas o mês for menor
+      if (year === currentYear && month < currentMonth) return true;
+
+      return false;
+   };
+   // ====================
+
+   // Função para abrir o calendário ao clicar no input
+   const handleDateClick = () => {
+      if (dateInputRef.current) {
+         dateInputRef.current.focus();
+         // Tentar abrir o picker se disponível
+         if (
+            'showPicker' in dateInputRef.current &&
+            typeof dateInputRef.current.showPicker === 'function'
+         ) {
+            try {
+               dateInputRef.current.showPicker();
+            } catch (e) {
+               console.log('showPicker não suportado neste browser');
+            }
+         }
+      }
+   };
+   // ====================
+
+   // Função simplificada para mudanças na data
+   const handleDateChangeNew = (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleApontamentoInputChange(e);
+   };
+   // ====================
+
+   // Função para prevenir digitação manual
+   const handleDateKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      // Permitir apenas teclas de navegação e controle
+      const allowedKeys = [
+         'Tab',
+         'Shift',
+         'Escape',
+         'Enter',
+         'ArrowLeft',
+         'ArrowRight',
+         'ArrowUp',
+         'ArrowDown',
+         'Home',
+         'End',
+         'Delete',
+         'Backspace',
+      ];
+
+      // Permitir Ctrl+combinações
+      if (e.ctrlKey) return;
+
+      // Bloquear números e letras
+      if (!allowedKeys.includes(e.key)) {
+         e.preventDefault();
+      }
+   };
+   // ====================
 
    // Handler para blur nos campos de hora
    const handleTimeBlur = (e: React.FocusEvent<HTMLInputElement>) => {
@@ -403,8 +576,38 @@ export default function StatusCellUnified({
       const ajustado = ajustaParaIntervalo(value);
       if (ajustado !== value) {
          setApontamentoData(prev => ({ ...prev, [name]: ajustado }));
+
+         // Triggerar validação após ajuste
+         const event = {
+            target: { name, value: ajustado },
+         } as React.ChangeEvent<HTMLInputElement>;
+
+         setTimeout(() => {
+            handleApontamentoInputChange(event);
+         }, 0);
       }
    };
+   // ====================
+
+   // Handler para blur nos outros campos - NOVA FUNÇÃO
+   const handleFieldBlur = (
+      e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>
+   ) => {
+      const { name, value } = e.target;
+
+      // Para observação, validar tamanho mínimo
+      if (
+         name === 'observacaoOS' &&
+         value.trim().length > 0 &&
+         value.trim().length < 10
+      ) {
+         setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+            ...prev,
+            observacaoOS: 'Observação deve ter pelo menos 10 caracteres',
+         }));
+      }
+   };
+   // ====================
 
    // Validação do formulário de apontamento
    const validateApontamentoForm = (): boolean => {
@@ -419,16 +622,19 @@ export default function StatusCellUnified({
             const newErrors: ApontamentoFormErrors = {};
             error.issues.forEach(err => {
                const path = err.path[0] as keyof ApontamentoFormData;
-               newErrors[path] = err.message;
+               if (path) {
+                  newErrors[path] = err.message;
+               }
             });
             setApontamentoErrors(newErrors);
          }
          return false;
       }
    };
+   // ====================
 
    // Handler para confirmar a mudança (UNIFICADO) - CORRIGIDO
-   const handleUnifiedSubmit = async () => {
+   const handleSubmitSave = async () => {
       if (!pendingStatus) return;
 
       // Validações básicas
@@ -568,6 +774,7 @@ export default function StatusCellUnified({
          setIsUpdating(false);
       }
    };
+   // ====================
 
    // Handler para cancelar a mudança
    const handleCancelChange = () => {
@@ -583,6 +790,7 @@ export default function StatusCellUnified({
       setApontamentoErrors({});
       setShowUnifiedModal(false);
    };
+   // ====================
 
    // Handler para fechar o modal
    const handleCloseModal = () => {
@@ -590,6 +798,7 @@ export default function StatusCellUnified({
          handleCancelChange();
       }
    };
+   // ====================
 
    // Handler para clique na célula de status
    const handleStatusCellClick = () => {
@@ -598,6 +807,16 @@ export default function StatusCellUnified({
       }
       setEditing(true);
    };
+   // ====================
+
+   // Para melhorar a UX, você pode também definir o atributo 'min' no input de data:
+   const getCurrentMonthFirstDay = (): string => {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth();
+      return new Date(year, month, 1).toISOString().split('T')[0];
+   };
+   // ====================
 
    // ================================================================================
    // EFFECTS
@@ -619,6 +838,85 @@ export default function StatusCellUnified({
          }, 10);
       }
    }, [editing, isStatusEditable, status]);
+   // ====================
+
+   // useEffect para validar horários sempre que mudarem
+   useEffect(() => {
+      if (!needsApontamento) return;
+
+      // Validar horários quando ambos estão preenchidos
+      if (apontamentoData.horaInicioOS && apontamentoData.horaFimOS) {
+         const [startHours, startMinutes] = apontamentoData.horaInicioOS
+            .split(':')
+            .map(Number);
+         const [endHours, endMinutes] = apontamentoData.horaFimOS
+            .split(':')
+            .map(Number);
+
+         const startTimeInMinutes = startHours * 60 + startMinutes;
+         const endTimeInMinutes = endHours * 60 + endMinutes;
+
+         if (endTimeInMinutes <= startTimeInMinutes) {
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               horaFimOS: 'Hora de fim deve ser maior que hora de início',
+            }));
+         } else if (endTimeInMinutes - startTimeInMinutes < 15) {
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               horaFimOS:
+                  'Diferença mínima entre horários deve ser de 15 minutos',
+            }));
+         } else {
+            // Limpar erros de horário se estiver válido
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               horaInicioOS: undefined,
+               horaFimOS: undefined,
+            }));
+         }
+      }
+   }, [
+      apontamentoData.horaInicioOS,
+      apontamentoData.horaFimOS,
+      needsApontamento,
+   ]);
+   // ====================
+
+   // useEffect para validar data sempre que mudar
+   useEffect(() => {
+      if (!needsApontamento) return;
+
+      if (apontamentoData.dataInicioOS) {
+         const selectedDate = new Date(apontamentoData.dataInicioOS);
+         const today = new Date();
+         today.setHours(0, 0, 0, 0);
+
+         // Primeira validação: data não pode ser maior que hoje
+         if (selectedDate > today) {
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               dataInicioOS: 'Data não pode ser maior que hoje',
+            }));
+         }
+         // Segunda validação: data não pode ser de mês anterior
+         else if (isDateFromPreviousMonth(apontamentoData.dataInicioOS)) {
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               dataInicioOS:
+                  'Não é possível selecionar datas de meses anteriores ao atual',
+            }));
+         }
+         // Se passou em todas as validações, limpar erro
+         else {
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               dataInicioOS: undefined,
+            }));
+         }
+      }
+   }, [apontamentoData.dataInicioOS, needsApontamento]);
+   // ====================
 
    // ================================================================================
    // FUNÇÕES DE VERIFICAÇÃO
@@ -641,6 +939,7 @@ export default function StatusCellUnified({
 
       return true;
    };
+   // ====================
 
    // ================================================================================
    // RENDERIZAÇÃO PRINCIPAL
@@ -737,12 +1036,12 @@ export default function StatusCellUnified({
                </TooltipProvider>
             )}
          </div>
-         {/* ==================== */}
+         {/* ============================== */}
 
          {/* ===== MODAL UNIFICADO ===== */}
          <Modal isOpen={showUnifiedModal} onClose={handleCloseModal}>
             <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-[1500px] overflow-y-auto rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
-               {/* ===== OVERLAY DO LOADING ===== */}
+               {/* ===== OVERLAY LOADING ===== */}
                {(loadingClassificacoes || loadingTarefas) && (
                   <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-lg">
                      <div className="flex flex-col items-center gap-4">
@@ -750,12 +1049,13 @@ export default function StatusCellUnified({
                            className="animate-spin text-white"
                            size={40}
                         />
-                        <span className="text-xl font-extrabold tracking-widest text-white italic select-none">
+                        <span className="text-2xl font-extrabold tracking-widest text-white italic select-none">
                            Carregando dados...
                         </span>
                      </div>
                   </div>
                )}
+               {/* ============================== */}
 
                {/* ===== HEADER ===== */}
                <header className="relative flex items-center justify-between bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 p-6 shadow-md shadow-black">
@@ -770,7 +1070,7 @@ export default function StatusCellUnified({
                      <div className="flex flex-col">
                         <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
                            {needsApontamento
-                              ? 'Alterar Status + Apontamento'
+                              ? 'Alterar Status / Realizar Apontamento '
                               : 'Alterar Status Chamado'}
                         </h1>
                         <p className="text-xl font-bold tracking-widest text-black italic select-none">
@@ -787,27 +1087,10 @@ export default function StatusCellUnified({
                      <IoClose size={24} />
                   </button>
                </header>
-
-               {/* ===== INDICADOR DE STATUS ===== */}
-               {isUpdating && (
-                  <div className="border-l-4 border-blue-500 bg-blue-100 p-4">
-                     <div className="flex items-center">
-                        <div className="mr-3 h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-                        <p className="font-semibold text-blue-700">
-                           {needsApontamento
-                              ? 'Processando mudança de status e criação de OS...'
-                              : 'Processando mudança de status...'}{' '}
-                           Por favor, aguarde.
-                        </p>
-                     </div>
-                  </div>
-               )}
+               {/* ============================== */}
 
                {/* ===== CONTEÚDO ===== */}
                <main className="flex flex-col gap-6 p-6">
-                  {/* ===== CARD DE VISUALIZAÇÃO ===== */}
-
-                  {/* Layout responsivo: lado a lado quando há apontamento, empilhado quando não há */}
                   <div
                      className={
                         needsApontamento
@@ -815,187 +1098,230 @@ export default function StatusCellUnified({
                            : 'flex flex-col gap-20'
                      }
                   >
-                     <div className="flex flex-col gap-6">
-                        <section className="flex flex-col items-center justify-center gap-6 rounded-md border-l-8 border-blue-600 bg-slate-50 p-6 text-center shadow-sm shadow-black">
-                           <div className="flex flex-col items-center justify-center">
-                              <div className="flex items-center justify-center gap-3">
-                                 <FaSync className="text-black" size={20} />
-                                 <h4 className="text-xl font-extrabold tracking-wider text-black select-none">
-                                    {needsApontamento
-                                       ? 'Alteração de Status + Apontamento'
-                                       : 'Alteração de Status'}
-                                 </h4>
-                              </div>
-                              <p className="text-2xl font-extrabold tracking-widest text-black italic select-none">
-                                 Chamado - #{codChamado}
-                              </p>
-                           </div>
-
-                           <div className="flex items-center justify-center gap-8">
-                              <div className="flex flex-col items-center gap-1">
-                                 <p className="text-xs font-bold tracking-widest text-black uppercase italic select-none">
-                                    Status Atual
+                     {/* ===== COLUNA STATUS ===== */}
+                     <section className="flex flex-col gap-4 rounded-xl bg-white p-6 shadow-md shadow-black">
+                        {/* ===== CARD DE VISUALIZAÇÃO DO STATUS ===== */}
+                        <h2 className="text-2xl font-extrabold tracking-wider text-black select-none">
+                           Alteração de Status
+                        </h2>
+                        {/* ========== */}
+                        <div className="flex flex-col gap-16">
+                           <div className="flex flex-col items-center justify-center gap-6 rounded-lg border-l-8 border-blue-600 bg-white p-6 text-center shadow-sm shadow-black">
+                              <div className="flex flex-col items-center justify-center">
+                                 {/* ===== */}
+                                 <p className="text-3xl font-extrabold tracking-widest text-black italic select-none">
+                                    Chamado - #{codChamado}
                                  </p>
-                                 <div
-                                    className={`inline-block rounded-md px-6 py-2 text-lg font-extrabold tracking-widest select-none ${getStylesStatus(status)}`}
-                                 >
-                                    {getStatusDisplayName(status)}
+                              </div>
+                              {/* ========== */}
+
+                              <div className="flex items-center justify-center gap-8">
+                                 <div className="flex flex-col items-center gap-1">
+                                    <p className="text-xs font-bold tracking-widest text-black uppercase italic select-none">
+                                       Status Atual
+                                    </p>
+                                    {/* ===== */}
+                                    <div
+                                       className={`inline-block rounded-md px-6 py-2 text-lg font-extrabold tracking-widest select-none ${getStylesStatus(status)}`}
+                                    >
+                                       {getStatusDisplayName(status)}
+                                    </div>
                                  </div>
-                              </div>
+                                 {/* ========== */}
 
-                              <div className="mt-6 flex items-center justify-center">
-                                 <FaArrowRightLong
-                                    className="text-black"
-                                    size={24}
-                                 />
-                              </div>
+                                 <div className="mt-6 flex items-center justify-center">
+                                    <FaArrowRightLong
+                                       className="text-black"
+                                       size={24}
+                                    />
+                                 </div>
+                                 {/* ========== */}
 
-                              <div className="flex flex-col items-center gap-1">
-                                 <p className="text-xs font-bold tracking-widest text-black uppercase italic select-none">
-                                    Novo Status
-                                 </p>
-                                 <div
-                                    className={`inline-block rounded-md border-none px-6 py-2 text-lg font-extrabold tracking-widest select-none ${getStylesStatus(pendingStatus || '')}`}
-                                 >
-                                    {pendingStatus
-                                       ? getStatusDisplayName(pendingStatus)
-                                       : ''}
+                                 <div className="flex flex-col items-center gap-1">
+                                    <p className="text-xs font-bold tracking-widest text-black uppercase italic select-none">
+                                       Novo Status
+                                    </p>
+                                    {/* ===== */}
+                                    <div
+                                       className={`inline-block rounded-md border-none px-6 py-2 text-lg font-extrabold tracking-widest select-none ${getStylesStatus(pendingStatus || '')}`}
+                                    >
+                                       {pendingStatus
+                                          ? getStatusDisplayName(pendingStatus)
+                                          : ''}
+                                    </div>
                                  </div>
                               </div>
                            </div>
-                        </section>
+                           {/* ========== */}
 
-                        {/* ===== COLUNA DE SELEÇÕES ===== */}
-                        {/* ===== SELECT DE CLASSIFICAÇÃO ===== */}
-                        {shouldShowClassificacao && (
-                           <FormSection
-                              title="Classificação do Chamado"
-                              icon={<FaSync className="text-white" size={20} />}
-                              error={
-                                 !selectedClassificacao
-                                    ? 'Campo obrigatório'
-                                    : undefined
-                              }
-                           >
-                              {!loadingClassificacoes && (
-                                 <div className="space-y-2">
-                                    <select
-                                       value={selectedClassificacao || ''}
-                                       onChange={e =>
-                                          setSelectedClassificacao(
-                                             Number(e.target.value) || null
-                                          )
-                                       }
-                                       className="w-full cursor-pointer rounded-md border-none bg-slate-50 px-4 py-3 font-bold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none"
-                                       required
-                                       disabled={isUpdating}
-                                    >
-                                       <option
-                                          value=""
-                                          className="cursor-pointer bg-white font-bold tracking-wider text-black italic select-none"
+                           {/* ===== SELECT DE CLASSIFICAÇÃO ===== */}
+                           {shouldShowClassificacao && (
+                              <FormSection
+                                 title="Classificação do Chamado"
+                                 icon={
+                                    <FaSync className="text-white" size={20} />
+                                 }
+                                 error={
+                                    !selectedClassificacao
+                                       ? 'Campo obrigatório'
+                                       : undefined
+                                 }
+                              >
+                                 {!loadingClassificacoes && (
+                                    <div className="flex flex-col gap-6">
+                                       <select
+                                          value={selectedClassificacao || ''}
+                                          onChange={e =>
+                                             setSelectedClassificacao(
+                                                Number(e.target.value) || null
+                                             )
+                                          }
+                                          className="w-full cursor-pointer rounded-md border-none bg-white px-4 py-2 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                          required
+                                          disabled={isUpdating}
                                        >
-                                          Selecione uma classificação...
-                                       </option>
-                                       {classificacoes.map(classificacao => (
                                           <option
-                                             key={
-                                                classificacao.COD_CLASSIFICACAO
-                                             }
-                                             value={
-                                                classificacao.COD_CLASSIFICACAO
-                                             }
-                                             className="cursor-pointer bg-white font-bold tracking-wider text-black italic select-none"
+                                             value=""
+                                             className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
                                           >
-                                             {classificacao.NOME_CLASSIFICACAO}
+                                             Selecione uma classificação...
                                           </option>
-                                       ))}
-                                    </select>
-                                    {!selectedClassificacao && (
-                                       <div className="flex items-center gap-2">
-                                          <div className="h-2 w-2 rounded-full bg-red-600"></div>
-                                          <span className="text-sm font-semibold tracking-wider text-red-600 italic select-none">
-                                             Campo obrigatório
-                                          </span>
-                                       </div>
-                                    )}
-                                    {selectedClassificacao && (
-                                       <div className="flex items-center gap-2">
-                                          <div className="h-2 w-2 rounded-full bg-green-600"></div>
-                                          <span className="text-sm font-semibold tracking-wider text-green-600 italic select-none">
-                                             Classificação selecionada
-                                          </span>
-                                       </div>
-                                    )}
-                                 </div>
-                              )}
-                           </FormSection>
-                        )}
+                                          {classificacoes.map(classificacao => (
+                                             <option
+                                                key={
+                                                   classificacao.COD_CLASSIFICACAO
+                                                }
+                                                value={
+                                                   classificacao.COD_CLASSIFICACAO
+                                                }
+                                                className="p-4 text-lg font-semibold tracking-wider text-black italic select-none"
+                                             >
+                                                {
+                                                   classificacao.NOME_CLASSIFICACAO
+                                                }
+                                             </option>
+                                          ))}
+                                       </select>
+                                       {!selectedClassificacao && (
+                                          <div className="flex items-center gap-2">
+                                             <div className="h-2 w-2 rounded-full bg-red-700"></div>
+                                             <span className="text-sm font-semibold tracking-widest text-red-700 italic select-none">
+                                                Campo obrigatório
+                                             </span>
+                                          </div>
+                                       )}
+                                       {selectedClassificacao && (
+                                          <div className="flex items-center gap-2">
+                                             <div className="h-2 w-2 rounded-full bg-green-700"></div>
+                                             <span className="text-sm font-semibold tracking-widest text-green-700 italic select-none">
+                                                Classificação selecionada
+                                             </span>
+                                          </div>
+                                       )}
+                                    </div>
+                                 )}
+                              </FormSection>
+                           )}
+                           {/* ========== */}
 
-                        {/* ===== SELECT DE TAREFA ===== */}
-                        {shouldShowTarefa && (
-                           <FormSection
-                              title="Tarefa do Chamado"
-                              icon={<FaSync className="text-white" size={20} />}
-                              error={
-                                 !selectedTarefa
-                                    ? 'Campo obrigatório'
-                                    : undefined
-                              }
-                           >
-                              {!loadingTarefas && (
-                                 <div className="space-y-2">
-                                    <select
-                                       value={selectedTarefa || ''}
-                                       onChange={e =>
-                                          setSelectedTarefa(
-                                             Number(e.target.value) || null
-                                          )
-                                       }
-                                       className="w-full cursor-pointer rounded-md border-none bg-slate-50 px-4 py-3 font-bold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none"
-                                       required
-                                       disabled={isUpdating}
-                                    >
-                                       <option
-                                          value=""
-                                          className="cursor-pointer bg-white font-bold tracking-wider text-black italic select-none"
+                           {/* ===== SELECT DE TAREFA ===== */}
+                           {shouldShowTarefa && (
+                              <FormSection
+                                 title="Tarefa do Chamado"
+                                 icon={
+                                    <FaSync className="text-white" size={20} />
+                                 }
+                                 error={
+                                    !selectedTarefa
+                                       ? 'Campo obrigatório'
+                                       : undefined
+                                 }
+                              >
+                                 {!loadingTarefas && (
+                                    <div className="flex flex-col gap-6">
+                                       <select
+                                          value={selectedTarefa || ''}
+                                          onChange={e =>
+                                             setSelectedTarefa(
+                                                Number(e.target.value) || null
+                                             )
+                                          }
+                                          className="w-full cursor-pointer rounded-md border-none bg-white px-4 py-2 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                          required
+                                          disabled={isUpdating}
                                        >
-                                          Selecione uma tarefa...
-                                       </option>
-                                       {tarefas.map(tarefa => (
                                           <option
-                                             key={tarefa.COD_TAREFA}
-                                             value={tarefa.COD_TAREFA}
-                                             className="cursor-pointer bg-white font-bold tracking-wider text-black italic select-none"
+                                             value=""
+                                             className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
                                           >
-                                             {tarefa.NOME_TAREFA}
+                                             Selecione uma tarefa...
                                           </option>
-                                       ))}
-                                    </select>
-                                    {!selectedTarefa && (
-                                       <div className="flex items-center gap-2">
-                                          <div className="h-2 w-2 rounded-full bg-red-600"></div>
-                                          <span className="text-sm font-semibold tracking-wider text-red-600 italic select-none">
-                                             Campo obrigatório
-                                          </span>
-                                       </div>
-                                    )}
-                                    {selectedTarefa && (
-                                       <div className="flex items-center gap-2">
-                                          <div className="h-2 w-2 rounded-full bg-green-600"></div>
-                                          <span className="text-sm font-semibold tracking-wider text-green-600 italic select-none">
-                                             Tarefa selecionada
-                                          </span>
-                                       </div>
-                                    )}
-                                 </div>
-                              )}
-                           </FormSection>
-                        )}
-                     </div>
+                                          {tarefas.map(tarefa => (
+                                             <option
+                                                key={tarefa.COD_TAREFA}
+                                                value={tarefa.COD_TAREFA}
+                                                className="p-4 text-lg font-semibold tracking-wider text-black italic select-none"
+                                             >
+                                                {tarefa.NOME_TAREFA}
+                                             </option>
+                                          ))}
+                                       </select>
+                                       {!selectedTarefa && (
+                                          <div className="flex items-center gap-2">
+                                             <div className="h-2 w-2 rounded-full bg-red-700"></div>
+                                             <span className="text-sm font-semibold tracking-widest text-red-700 italic select-none">
+                                                Campo obrigatório
+                                             </span>
+                                          </div>
+                                       )}
+                                       {selectedTarefa && (
+                                          <div className="flex items-center gap-2">
+                                             <div className="h-2 w-2 rounded-full bg-green-700"></div>
+                                             <span className="text-sm font-semibold tracking-widest text-green-700 italic select-none">
+                                                Tarefa selecionada
+                                             </span>
+                                          </div>
+                                       )}
+                                    </div>
+                                 )}
+                              </FormSection>
+                           )}
 
-                     {/* ===== COLUNA DE APONTAMENTO (QUANDO NECESSÁRIO) ===== */}
+                           {/* ===== AVISO DE CONFIRMAÇÃO ===== */}
+                           {(selectedClassificacao || selectedTarefa) && (
+                              <div className="rounded-lg border-l-8 border-red-600 bg-amber-200 p-6 shadow-sm shadow-black">
+                                 <div className="flex items-start gap-3">
+                                    <FaExclamationTriangle
+                                       className="mt-0.5 text-red-600"
+                                       size={16}
+                                    />
+                                    <div>
+                                       <p className="text-sm font-semibold tracking-widest text-black italic select-none">
+                                          Essa alteração será salva
+                                          permanentemente no sistema.
+                                       </p>
+                                       {needsApontamento && (
+                                          <p className="mt-1 text-sm font-semibold tracking-widest text-black italic select-none">
+                                             Uma OS será criada com os dados do
+                                             apontamento.
+                                          </p>
+                                       )}
+                                    </div>
+                                 </div>
+                              </div>
+                           )}
+                        </div>
+                     </section>
+                     {/* ==================== */}
+
+                     {/* ===== COLUNA APONTAMENTO ===== */}
                      {needsApontamento && (
-                        <div className="flex flex-col gap-6">
+                        <section className="flex flex-col gap-4 rounded-xl bg-white p-6 shadow-md shadow-black">
+                           <h2 className="text-2xl font-extrabold tracking-wider text-black select-none">
+                              Dados do Apontamento
+                           </h2>
+                           {/* ========== */}
+
                            {/* Data */}
                            <FormSection
                               title="Data do Apontamento"
@@ -1008,12 +1334,18 @@ export default function StatusCellUnified({
                               error={apontamentoErrors.dataInicioOS}
                            >
                               <input
+                                 ref={dateInputRef}
                                  type="date"
                                  name="dataInicioOS"
                                  value={apontamentoData.dataInicioOS}
-                                 onChange={handleApontamentoInputChange}
+                                 onChange={handleDateChangeNew} // ✅ MUDANÇA
+                                 onBlur={handleFieldBlur}
+                                 onKeyDown={handleDateKeyDown}
+                                 onClick={handleDateClick} // ✅ NOVA FUNÇÃO
+                                 min={getCurrentMonthFirstDay()}
+                                 max={new Date().toISOString().split('T')[0]}
                                  disabled={isUpdating}
-                                 className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none ${
+                                 className={`w-full cursor-pointer rounded-md border-none bg-white px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
                                     apontamentoErrors.dataInicioOS
                                        ? 'border-red-500 ring-2 ring-red-600'
                                        : ''
@@ -1055,7 +1387,7 @@ export default function StatusCellUnified({
                                        onChange={handleApontamentoInputChange}
                                        onBlur={handleTimeBlur}
                                        disabled={isUpdating}
-                                       className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none ${
+                                       className={`w-full cursor-pointer rounded-md border-none bg-white px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
                                           apontamentoErrors.horaInicioOS
                                              ? 'border-red-500 ring-2 ring-red-600'
                                              : ''
@@ -1085,7 +1417,7 @@ export default function StatusCellUnified({
                                        onChange={handleApontamentoInputChange}
                                        onBlur={handleTimeBlur}
                                        disabled={isUpdating}
-                                       className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none ${
+                                       className={`w-full cursor-pointer rounded-md border-none bg-white px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
                                           apontamentoErrors.horaFimOS
                                              ? 'border-red-500 ring-2 ring-red-600'
                                              : ''
@@ -1121,11 +1453,12 @@ export default function StatusCellUnified({
                                  name="observacaoOS"
                                  value={apontamentoData.observacaoOS}
                                  onChange={handleApontamentoInputChange}
+                                 onBlur={handleFieldBlur}
                                  disabled={isUpdating}
                                  rows={4}
                                  maxLength={200}
-                                 placeholder="Descreva detalhadamente o serviço realizado, procedimentos executados, materiais utilizados e resultados obtidos..."
-                                 className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none ${
+                                 placeholder="Descreva detalhadamente o serviço realizado..."
+                                 className={`w-full cursor-pointer resize-none rounded-md border-none bg-white px-4 pt-3 text-base font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all placeholder:text-sm hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
                                     apontamentoErrors.observacaoOS
                                        ? 'border-red-500 ring-2 ring-red-600'
                                        : ''
@@ -1134,10 +1467,10 @@ export default function StatusCellUnified({
                               {apontamentoErrors.observacaoOS && (
                                  <div className="mt-2 flex items-center gap-2">
                                     <BsFillXOctagonFill
-                                       className="text-red-600"
+                                       className="text-red-700"
                                        size={16}
                                     />
-                                    <p className="text-sm font-semibold tracking-widest text-red-600 italic select-none">
+                                    <p className="text-sm font-semibold tracking-widest text-red-700 italic select-none">
                                        {apontamentoErrors.observacaoOS}
                                     </p>
                                  </div>
@@ -1179,47 +1512,25 @@ export default function StatusCellUnified({
                                  </div>
                               </div>
                            </FormSection>
-                        </div>
+                        </section>
                      )}
                   </div>
-
-                  {/* ===== AVISO DE CONFIRMAÇÃO ===== */}
-                  {(selectedClassificacao || selectedTarefa) && (
-                     <div className="rounded-lg border-l-4 border-red-600 bg-amber-200 p-4 shadow-sm shadow-black">
-                        <div className="flex items-start gap-3">
-                           <FaExclamationTriangle
-                              className="mt-0.5 text-red-600"
-                              size={16}
-                           />
-                           <div>
-                              <p className="text-sm font-semibold tracking-widest text-black italic select-none">
-                                 Essa alteração será salva permanentemente no
-                                 sistema.
-                              </p>
-                              {needsApontamento && (
-                                 <p className="mt-1 text-sm font-semibold tracking-widest text-black italic select-none">
-                                    Uma OS será criada automaticamente com os
-                                    dados do apontamento.
-                                 </p>
-                              )}
-                           </div>
-                        </div>
-                     </div>
-                  )}
+                  {/* ==================== */}
                </main>
+               {/* ============================== */}
 
                {/* ===== FOOTER ===== */}
-               <footer className="relative flex justify-end gap-4 border-t-4 border-red-600 p-6">
+               <footer className="relative flex justify-end gap-6 pr-6 pb-6">
                   <button
                      onClick={handleCancelChange}
                      disabled={isUpdating}
-                     className="cursor-pointer rounded-xl border-none bg-red-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                     className="cursor-pointer rounded-xl border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
                   >
                      Cancelar
                   </button>
 
                   <button
-                     onClick={handleUnifiedSubmit}
+                     onClick={handleSubmitSave}
                      disabled={isUpdating || !isFormValid()}
                      className={`cursor-pointer rounded-xl border-none bg-blue-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black select-none ${
                         isUpdating || !isFormValid()
@@ -1241,8 +1552,8 @@ export default function StatusCellUnified({
                            <IoIosSave className="mr-1" size={20} />
                            <span>
                               {needsApontamento
-                                 ? 'Atualizar + Criar OS'
-                                 : 'Atualizar Status'}
+                                 ? 'Atualizar / Apontar'
+                                 : 'Atualizar'}
                            </span>
                         </div>
                      )}
@@ -1267,12 +1578,14 @@ const FormSection = ({
    error?: string;
 }) => (
    <div
-      className={`overflow-hidden rounded-md bg-white shadow-md shadow-black ${
+      className={`overflow-hidden rounded-md bg-white shadow-sm shadow-black ${
          error ? 'ring-2 ring-red-600' : ''
       }`}
    >
-      <div className={`px-4 py-2 ${error ? 'bg-red-600' : 'bg-black'}`}>
-         <h3 className="flex items-center gap-2 text-lg font-bold tracking-wider text-white select-none">
+      <div
+         className={`px-4 py-2 shadow-sm shadow-black ${error ? 'bg-red-600' : 'bg-green-600'}`}
+      >
+         <h3 className="flex items-center gap-3 text-lg font-bold tracking-wider text-white select-none">
             {icon}
             {title}
             {error && (

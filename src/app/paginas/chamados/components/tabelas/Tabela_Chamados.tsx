@@ -53,7 +53,6 @@ import { normalizeDate } from '../../../../../utils/formatters';
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
-
 interface FilterInputTableHeaderProps {
    value: string;
    onChange: (value: string) => void;
@@ -86,13 +85,11 @@ const FilterInputTableHeaderDebounce = ({
       setLocalValue(value);
    }, [value]);
 
-   // Debounce reduzido para melhor responsividade
    const debouncedOnChange = useMemo(
       () =>
          debounce((newValue: string) => {
-            // Trim para remover espaços desnecessários
             onChange(newValue.trim());
-         }, 200), // Reduzido de 300ms para 200ms
+         }, 200),
       [onChange]
    );
 
@@ -114,7 +111,7 @@ const FilterInputTableHeaderDebounce = ({
       />
    );
 };
-// ====================
+// ==========
 
 const GlobalFilterInput = ({
    value,
@@ -168,7 +165,6 @@ const GlobalFilterInput = ({
 // ================================================================================
 // COMPONENTES DE UI DA TABELA
 // ================================================================================
-
 const OrderTableHeader = ({
    column,
    children,
@@ -1032,7 +1028,7 @@ export default function TabelaChamados() {
                                           onClear={() =>
                                              column.setFilterValue('')
                                           }
-                                          placeholder="Filtrar por assunto..."
+                                          placeholder="Assunto..."
                                        />
                                     )}
                                     {/* ===== */}
@@ -1048,7 +1044,7 @@ export default function TabelaChamados() {
                                           onClear={() =>
                                              column.setFilterValue('')
                                           }
-                                          placeholder="Filtrar por status..."
+                                          placeholder="Status..."
                                        />
                                     )}
                                     {/* ===== */}
@@ -1064,7 +1060,7 @@ export default function TabelaChamados() {
                                           onClear={() =>
                                              column.setFilterValue('')
                                           }
-                                          placeholder="Filtrar por recurso..."
+                                          placeholder="Recurso..."
                                        />
                                     )}
                                  </th>
