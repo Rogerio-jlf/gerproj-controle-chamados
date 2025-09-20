@@ -138,7 +138,7 @@ const apontamentoSchema = z
 
       horaInicioOS: z
          .string()
-         .min(1, 'Hora de início é obrigatória')
+         .min(1, 'Hora Início é obrigatória')
          .regex(
             /^([01]?\d|2[0-3]):(00|15|30|45)$/,
             'A hora deve ser em intervalos de 15 minutos'
@@ -146,7 +146,7 @@ const apontamentoSchema = z
 
       horaFimOS: z
          .string()
-         .min(1, 'Hora de fim é obrigatória')
+         .min(1, 'Hora Fim é obrigatória')
          .regex(
             /^([01]?\d|2[0-3]):(00|15|30|45)$/,
             'A hora deve ser em intervalos de 15 minutos'
@@ -176,7 +176,7 @@ const apontamentoSchema = z
          return endTimeInMinutes > startTimeInMinutes;
       },
       {
-         message: 'Hora de fim deve ser maior que hora de início',
+         message: 'Hora Fim deve ser maior que hora Início',
          path: ['horaFimOS'],
       }
    )
@@ -408,42 +408,30 @@ export default function StatusCellUnified({
          }
       }
 
+      // Atualizar o estado primeiro
       setApontamentoData(prev => ({
          ...prev,
          [name]: newValue,
       }));
 
-      // Limpar erro específico do campo quando o usuário digitar
-      if (apontamentoErrors[name as keyof ApontamentoFormData]) {
-         setApontamentoErrors((prev: ApontamentoFormErrors) => ({
-            ...prev,
-            [name]: undefined,
-         }));
-      }
-
-      // VALIDAÇÃO EM TEMPO REAL PARA DATA
+      // ✅ VALIDAÇÃO EM TEMPO REAL PARA DATA (mantém como está)
       if (name === 'dataInicioOS' && newValue) {
          const selectedDate = new Date(newValue);
          const today = new Date();
          today.setHours(0, 0, 0, 0);
 
-         // Validar se a data não é maior que hoje
          if (selectedDate > today) {
             setApontamentoErrors((prev: ApontamentoFormErrors) => ({
                ...prev,
                dataInicioOS: 'Data não pode ser maior que hoje',
             }));
-         }
-         // Validar se a data não é de mês anterior
-         else if (isDateFromPreviousMonth(newValue)) {
+         } else if (isDateFromPreviousMonth(newValue)) {
             setApontamentoErrors((prev: ApontamentoFormErrors) => ({
                ...prev,
                dataInicioOS:
                   'Não é possível selecionar datas de meses anteriores ao atual',
             }));
-         }
-         // Se passou em ambas validações, limpar erro
-         else {
+         } else {
             setApontamentoErrors((prev: ApontamentoFormErrors) => ({
                ...prev,
                dataInicioOS: undefined,
@@ -451,47 +439,104 @@ export default function StatusCellUnified({
          }
       }
 
-      // VALIDAÇÃO EM TEMPO REAL PARA HORÁRIOS
-      if (name === 'horaFimOS' || name === 'horaInicioOS') {
-         // Usar um timeout para permitir que o estado seja atualizado primeiro
-         setTimeout(() => {
-            const updatedData =
-               name === 'horaFimOS'
-                  ? { ...apontamentoData, horaFimOS: newValue }
-                  : { ...apontamentoData, horaInicioOS: newValue };
+      // ✅ VALIDAÇÃO EM TEMPO REAL PARA HORÁRIOS
+      if (name === 'horaInicioOS' || name === 'horaFimOS') {
+         // Validação individual do campo
+         if (!newValue || newValue.trim() === '') {
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               [name]:
+                  name === 'horaInicioOS'
+                     ? 'Hora Início é obrigatória'
+                     : 'Hora Fim é obrigatória',
+            }));
+         } else {
+            // Verificar formato (intervalos de 15 minutos)
+            const regex = /^([01]?\d|2[0-3]):(00|15|30|45)$/;
+            if (!regex.test(newValue)) {
+               setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+                  ...prev,
+                  [name]: 'A hora deve ser em intervalos de 15 minutos',
+               }));
+            } else {
+               // Campo individual válido, limpar seu erro
+               setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+                  ...prev,
+                  [name]: undefined,
+               }));
 
-            if (updatedData.horaInicioOS && updatedData.horaFimOS) {
-               const [startHours, startMinutes] = updatedData.horaInicioOS
-                  .split(':')
-                  .map(Number);
-               const [endHours, endMinutes] = updatedData.horaFimOS
-                  .split(':')
-                  .map(Number);
-
-               const startTimeInMinutes = startHours * 60 + startMinutes;
-               const endTimeInMinutes = endHours * 60 + endMinutes;
-
-               if (endTimeInMinutes <= startTimeInMinutes) {
-                  setApontamentoErrors((prev: ApontamentoFormErrors) => ({
-                     ...prev,
-                     horaFimOS: 'Hora de fim deve ser maior que hora de início',
-                  }));
-               } else if (endTimeInMinutes - startTimeInMinutes < 15) {
-                  setApontamentoErrors((prev: ApontamentoFormErrors) => ({
-                     ...prev,
-                     horaFimOS:
-                        'Diferença mínima entre horários deve ser de 15 minutos',
-                  }));
-               } else {
-                  // Limpar erros de horário se estiver válido
-                  setApontamentoErrors((prev: ApontamentoFormErrors) => ({
-                     ...prev,
-                     horaInicioOS: undefined,
-                     horaFimOS: undefined,
-                  }));
-               }
+               // Validar relação entre horários apenas se ambos estão preenchidos
+               setTimeout(() => {
+                  const updatedData = { ...apontamentoData, [name]: newValue };
+                  if (updatedData.horaInicioOS && updatedData.horaFimOS) {
+                     validateTimeRelationRealTime(updatedData);
+                  }
+               }, 0);
             }
-         }, 0);
+         }
+      }
+
+      // ✅ VALIDAÇÃO EM TEMPO REAL PARA OBSERVAÇÃO
+      if (name === 'observacaoOS') {
+         if (newValue.trim().length === 0) {
+            // Campo vazio - não mostrar erro ainda (só no blur)
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               observacaoOS: undefined,
+            }));
+         } else if (newValue.trim().length < 10) {
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               observacaoOS: 'Observação deve ter pelo menos 10 caracteres',
+            }));
+         } else if (newValue.length > 200) {
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               observacaoOS: 'Observação deve ter no máximo 200 caracteres',
+            }));
+         } else {
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               observacaoOS: undefined,
+            }));
+         }
+      }
+   };
+   // ====================
+
+   const validateTimeRelationRealTime = (data: ApontamentoFormData) => {
+      const [startHours, startMinutes] = data.horaInicioOS
+         .split(':')
+         .map(Number);
+      const [endHours, endMinutes] = data.horaFimOS.split(':').map(Number);
+
+      const startTimeInMinutes = startHours * 60 + startMinutes;
+      const endTimeInMinutes = endHours * 60 + endMinutes;
+
+      if (endTimeInMinutes <= startTimeInMinutes) {
+         setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+            ...prev,
+            horaFimOS: 'Hora Fim deve ser maior que hora Início',
+         }));
+      } else if (endTimeInMinutes - startTimeInMinutes < 15) {
+         setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+            ...prev,
+            horaFimOS: 'Diferença mínima entre horários deve ser de 15 minutos',
+         }));
+      } else {
+         // Relação válida - limpar apenas erros relacionais, manter outros
+         setApontamentoErrors((prev: ApontamentoFormErrors) => {
+            const newErrors = { ...prev };
+            if (
+               newErrors.horaFimOS ===
+                  'Hora Fim deve ser maior que hora Início' ||
+               newErrors.horaFimOS ===
+                  'Diferença mínima entre horários deve ser de 15 minutos'
+            ) {
+               newErrors.horaFimOS = undefined;
+            }
+            return newErrors;
+         });
       }
    };
    // ====================
@@ -573,11 +618,12 @@ export default function StatusCellUnified({
       const { name, value } = e.target;
       if (name !== 'horaInicioOS' && name !== 'horaFimOS') return;
 
+      // Ajustar para intervalo mais próximo
       const ajustado = ajustaParaIntervalo(value);
       if (ajustado !== value) {
          setApontamentoData(prev => ({ ...prev, [name]: ajustado }));
 
-         // Triggerar validação após ajuste
+         // Após ajustar, re-validar
          const event = {
             target: { name, value: ajustado },
          } as React.ChangeEvent<HTMLInputElement>;
@@ -585,6 +631,17 @@ export default function StatusCellUnified({
          setTimeout(() => {
             handleApontamentoInputChange(event);
          }, 0);
+      }
+
+      // Se o campo está vazio no blur, mostrar erro obrigatório
+      if (!ajustado || ajustado.trim() === '') {
+         setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+            ...prev,
+            [name]:
+               name === 'horaInicioOS'
+                  ? 'Hora Início é obrigatória'
+                  : 'Hora Fim é obrigatória',
+         }));
       }
    };
    // ====================
@@ -595,16 +652,21 @@ export default function StatusCellUnified({
    ) => {
       const { name, value } = e.target;
 
-      // Para observação, validar tamanho mínimo
-      if (
-         name === 'observacaoOS' &&
-         value.trim().length > 0 &&
-         value.trim().length < 10
-      ) {
-         setApontamentoErrors((prev: ApontamentoFormErrors) => ({
-            ...prev,
-            observacaoOS: 'Observação deve ter pelo menos 10 caracteres',
-         }));
+      // Para observação, validar se está vazio no blur
+      if (name === 'observacaoOS') {
+         if (value.trim().length === 0) {
+            // No blur, se estiver vazio, não é obrigatório ainda
+            // Mas se tiver conteúdo, deve ter pelo menos 10 caracteres
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               observacaoOS: undefined,
+            }));
+         } else if (value.trim().length < 10) {
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               observacaoOS: 'Observação deve ter pelo menos 10 caracteres',
+            }));
+         }
       }
    };
    // ====================
@@ -841,46 +903,46 @@ export default function StatusCellUnified({
    // ====================
 
    // useEffect para validar horários sempre que mudarem
-   useEffect(() => {
-      if (!needsApontamento) return;
+   // useEffect(() => {
+   //    if (!needsApontamento) return;
 
-      // Validar horários quando ambos estão preenchidos
-      if (apontamentoData.horaInicioOS && apontamentoData.horaFimOS) {
-         const [startHours, startMinutes] = apontamentoData.horaInicioOS
-            .split(':')
-            .map(Number);
-         const [endHours, endMinutes] = apontamentoData.horaFimOS
-            .split(':')
-            .map(Number);
+   //    // Validar horários quando ambos estão preenchidos
+   //    if (apontamentoData.horaInicioOS && apontamentoData.horaFimOS) {
+   //       const [startHours, startMinutes] = apontamentoData.horaInicioOS
+   //          .split(':')
+   //          .map(Number);
+   //       const [endHours, endMinutes] = apontamentoData.horaFimOS
+   //          .split(':')
+   //          .map(Number);
 
-         const startTimeInMinutes = startHours * 60 + startMinutes;
-         const endTimeInMinutes = endHours * 60 + endMinutes;
+   //       const startTimeInMinutes = startHours * 60 + startMinutes;
+   //       const endTimeInMinutes = endHours * 60 + endMinutes;
 
-         if (endTimeInMinutes <= startTimeInMinutes) {
-            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
-               ...prev,
-               horaFimOS: 'Hora de fim deve ser maior que hora de início',
-            }));
-         } else if (endTimeInMinutes - startTimeInMinutes < 15) {
-            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
-               ...prev,
-               horaFimOS:
-                  'Diferença mínima entre horários deve ser de 15 minutos',
-            }));
-         } else {
-            // Limpar erros de horário se estiver válido
-            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
-               ...prev,
-               horaInicioOS: undefined,
-               horaFimOS: undefined,
-            }));
-         }
-      }
-   }, [
-      apontamentoData.horaInicioOS,
-      apontamentoData.horaFimOS,
-      needsApontamento,
-   ]);
+   //       if (endTimeInMinutes <= startTimeInMinutes) {
+   //          setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+   //             ...prev,
+   //             horaFimOS: 'Hora de fim deve ser maior que hora de início',
+   //          }));
+   //       } else if (endTimeInMinutes - startTimeInMinutes < 15) {
+   //          setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+   //             ...prev,
+   //             horaFimOS:
+   //                'Diferença mínima entre horários deve ser de 15 minutos',
+   //          }));
+   //       } else {
+   //          // Limpar erros de horário se estiver válido
+   //          setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+   //             ...prev,
+   //             horaInicioOS: undefined,
+   //             horaFimOS: undefined,
+   //          }));
+   //       }
+   //    }
+   // }, [
+   //    apontamentoData.horaInicioOS,
+   //    apontamentoData.horaFimOS,
+   //    needsApontamento,
+   // ]);
    // ====================
 
    // useEffect para validar data sempre que mudar
@@ -1049,6 +1111,7 @@ export default function StatusCellUnified({
                            className="animate-spin text-white"
                            size={40}
                         />
+                        {/* ===== */}
                         <span className="text-2xl font-extrabold tracking-widest text-white italic select-none">
                            Carregando dados...
                         </span>
@@ -1067,17 +1130,20 @@ export default function StatusCellUnified({
                            <FaSync className="text-black" size={36} />
                         )}
                      </div>
+                     {/* ========== */}
                      <div className="flex flex-col">
                         <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
                            {needsApontamento
                               ? 'Alterar Status / Realizar Apontamento '
                               : 'Alterar Status Chamado'}
                         </h1>
+                        {/* ===== */}
                         <p className="text-xl font-bold tracking-widest text-black italic select-none">
                            Chamado - #{codChamado}
                         </p>
                      </div>
                   </div>
+                  {/* ========== */}
 
                   <button
                      onClick={handleCloseModal}
@@ -1099,13 +1165,13 @@ export default function StatusCellUnified({
                      }
                   >
                      {/* ===== COLUNA STATUS ===== */}
-                     <section className="flex flex-col gap-4 rounded-xl bg-white p-6 shadow-md shadow-black">
-                        {/* ===== CARD DE VISUALIZAÇÃO DO STATUS ===== */}
+                     <div className="flex flex-col gap-4 rounded-xl border-t-2 border-slate-300 bg-white p-6 shadow-md shadow-black">
                         <h2 className="text-2xl font-extrabold tracking-wider text-black select-none">
                            Alteração de Status
                         </h2>
                         {/* ========== */}
-                        <div className="flex flex-col gap-16">
+                        <section className="flex flex-col gap-16">
+                           {/* ===== CARD STATUS ATUAL E PENDENTE ===== */}
                            <div className="flex flex-col items-center justify-center gap-6 rounded-lg border-l-8 border-blue-600 bg-white p-6 text-center shadow-sm shadow-black">
                               <div className="flex flex-col items-center justify-center">
                                  {/* ===== */}
@@ -1176,7 +1242,7 @@ export default function StatusCellUnified({
                                                 Number(e.target.value) || null
                                              )
                                           }
-                                          className="w-full cursor-pointer rounded-md border-none bg-white px-4 py-2 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                          className="w-full cursor-pointer rounded-md border-t-0 border-slate-300 bg-white px-4 py-2 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                           required
                                           disabled={isUpdating}
                                        >
@@ -1246,7 +1312,7 @@ export default function StatusCellUnified({
                                                 Number(e.target.value) || null
                                              )
                                           }
-                                          className="w-full cursor-pointer rounded-md border-none bg-white px-4 py-2 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                          className="w-full cursor-pointer rounded-md border-t-0 border-slate-300 bg-white px-4 py-2 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                           required
                                           disabled={isUpdating}
                                        >
@@ -1286,37 +1352,45 @@ export default function StatusCellUnified({
                                  )}
                               </FormSection>
                            )}
+                           {/* ========== */}
 
                            {/* ===== AVISO DE CONFIRMAÇÃO ===== */}
                            {(selectedClassificacao || selectedTarefa) && (
-                              <div className="rounded-lg border-l-8 border-red-600 bg-amber-200 p-6 shadow-sm shadow-black">
-                                 <div className="flex items-start gap-3">
+                              <div className="rounded-lg border-l-8 border-yellow-500 bg-slate-900 px-6 py-3 shadow-sm shadow-black">
+                                 <div className="flex items-center gap-6">
                                     <FaExclamationTriangle
-                                       className="mt-0.5 text-red-600"
-                                       size={16}
+                                       className="text-yellow-500"
+                                       size={40}
                                     />
-                                    <div>
-                                       <p className="text-sm font-semibold tracking-widest text-black italic select-none">
-                                          Essa alteração será salva
-                                          permanentemente no sistema.
-                                       </p>
-                                       {needsApontamento && (
-                                          <p className="mt-1 text-sm font-semibold tracking-widest text-black italic select-none">
-                                             Uma OS será criada com os dados do
-                                             apontamento.
+                                    <div className="flex flex-col gap-1">
+                                       <div className="flex items-center gap-2">
+                                          <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
+                                          <p className="text-sm font-semibold tracking-widest text-yellow-500 italic select-none">
+                                             Essa alteração será salva
+                                             permanentemente no sistema.
                                           </p>
-                                       )}
+                                       </div>
+                                       <div className="flex items-center gap-2">
+                                          <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
+                                          {needsApontamento && (
+                                             <p className="mt-1 text-sm font-semibold tracking-widest text-yellow-500 italic select-none">
+                                                Uma OS será criada com os dados
+                                                do apontamento.
+                                             </p>
+                                          )}
+                                       </div>
                                     </div>
                                  </div>
                               </div>
                            )}
-                        </div>
-                     </section>
+                           {/* ========== */}
+                        </section>
+                     </div>
                      {/* ==================== */}
 
                      {/* ===== COLUNA APONTAMENTO ===== */}
                      {needsApontamento && (
-                        <section className="flex flex-col gap-4 rounded-xl bg-white p-6 shadow-md shadow-black">
+                        <section className="flex flex-col gap-4 rounded-xl border-t-2 border-slate-300 bg-white p-6 shadow-md shadow-black">
                            <h2 className="text-2xl font-extrabold tracking-wider text-black select-none">
                               Dados do Apontamento
                            </h2>
@@ -1332,6 +1406,7 @@ export default function StatusCellUnified({
                                  />
                               }
                               error={apontamentoErrors.dataInicioOS}
+                              isEmpty={false} // Data sempre tem valor inicial
                            >
                               <input
                                  ref={dateInputRef}
@@ -1345,7 +1420,7 @@ export default function StatusCellUnified({
                                  min={getCurrentMonthFirstDay()}
                                  max={new Date().toISOString().split('T')[0]}
                                  disabled={isUpdating}
-                                 className={`w-full cursor-pointer rounded-md border-none bg-white px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                                 className={`w-full cursor-pointer rounded-md border-t-0 border-slate-300 bg-white px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
                                     apontamentoErrors.dataInicioOS
                                        ? 'border-red-500 ring-2 ring-red-600'
                                        : ''
@@ -1363,6 +1438,7 @@ export default function StatusCellUnified({
                                  </div>
                               )}
                            </FormSection>
+                           {/* ========== */}
 
                            {/* Horários */}
                            <FormSection
@@ -1374,8 +1450,13 @@ export default function StatusCellUnified({
                                  apontamentoErrors.horaInicioOS ||
                                  apontamentoErrors.horaFimOS
                               }
+                              isEmpty={
+                                 !apontamentoData.horaInicioOS &&
+                                 !apontamentoData.horaFimOS
+                              } // ← LÓGICA AQUI
                            >
                               <div className="grid grid-cols-2 gap-4">
+                                 {/* inputs de hora com classes condicionais */}
                                  <div>
                                     <label className="mb-1 block text-base font-semibold tracking-wider text-black select-none">
                                        Hora Início
@@ -1387,12 +1468,16 @@ export default function StatusCellUnified({
                                        onChange={handleApontamentoInputChange}
                                        onBlur={handleTimeBlur}
                                        disabled={isUpdating}
-                                       className={`w-full cursor-pointer rounded-md border-none bg-white px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                                       className={`w-full cursor-pointer rounded-md border-t-0 border-slate-300 px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
                                           apontamentoErrors.horaInicioOS
-                                             ? 'border-red-500 ring-2 ring-red-600'
-                                             : ''
-                                       } ${isUpdating ? 'cursor-not-allowed opacity-50' : ''}`}
+                                             ? 'border-red-500 bg-red-50 ring-2 ring-red-600'
+                                             : !apontamentoData.horaInicioOS
+                                               ? 'border-gray-300 bg-white'
+                                               : 'border-green-500 bg-green-50 ring-2 ring-green-600'
+                                       }`}
                                     />
+
+                                    {/* Mensagens de erro */}
                                     {apontamentoErrors.horaInicioOS && (
                                        <div className="mt-2 flex items-center gap-2">
                                           <BsFillXOctagonFill
@@ -1404,6 +1489,17 @@ export default function StatusCellUnified({
                                           </p>
                                        </div>
                                     )}
+
+                                    {/* Mensagem de sucesso */}
+                                    {!apontamentoErrors.horaInicioOS &&
+                                       apontamentoData.horaInicioOS && (
+                                          <div className="mt-2 flex items-center gap-2">
+                                             <div className="h-2 w-2 rounded-full bg-green-600"></div>
+                                             <span className="text-sm font-semibold tracking-widest text-green-600 italic select-none">
+                                                Hora início válida
+                                             </span>
+                                          </div>
+                                       )}
                                  </div>
 
                                  <div>
@@ -1417,12 +1513,16 @@ export default function StatusCellUnified({
                                        onChange={handleApontamentoInputChange}
                                        onBlur={handleTimeBlur}
                                        disabled={isUpdating}
-                                       className={`w-full cursor-pointer rounded-md border-none bg-white px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                                       className={`w-full cursor-pointer rounded-md border-t-0 border-slate-300 px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
                                           apontamentoErrors.horaFimOS
-                                             ? 'border-red-500 ring-2 ring-red-600'
-                                             : ''
-                                       } ${isUpdating ? 'cursor-not-allowed opacity-50' : ''}`}
+                                             ? 'border-red-500 bg-red-50 ring-2 ring-red-600'
+                                             : !apontamentoData.horaFimOS
+                                               ? 'border-gray-300 bg-white'
+                                               : 'border-green-500 bg-green-50 ring-2 ring-green-600'
+                                       }`}
                                     />
+
+                                    {/* Mensagens de erro */}
                                     {apontamentoErrors.horaFimOS && (
                                        <div className="mt-2 flex items-center gap-2">
                                           <BsFillXOctagonFill
@@ -1434,9 +1534,21 @@ export default function StatusCellUnified({
                                           </p>
                                        </div>
                                     )}
+
+                                    {/* Mensagem de sucesso */}
+                                    {!apontamentoErrors.horaFimOS &&
+                                       apontamentoData.horaFimOS && (
+                                          <div className="mt-2 flex items-center gap-2">
+                                             <div className="h-2 w-2 rounded-full bg-green-600"></div>
+                                             <span className="text-sm font-semibold tracking-widest text-green-600 italic select-none">
+                                                Hora fim válida
+                                             </span>
+                                          </div>
+                                       )}
                                  </div>
                               </div>
                            </FormSection>
+                           {/* ========== */}
 
                            {/* Observação */}
                            <FormSection
@@ -1448,6 +1560,7 @@ export default function StatusCellUnified({
                                  />
                               }
                               error={apontamentoErrors.observacaoOS}
+                              isEmpty={!apontamentoData.observacaoOS.trim()}
                            >
                               <textarea
                                  name="observacaoOS"
@@ -1458,12 +1571,17 @@ export default function StatusCellUnified({
                                  rows={4}
                                  maxLength={200}
                                  placeholder="Descreva detalhadamente o serviço realizado..."
-                                 className={`w-full cursor-pointer resize-none rounded-md border-none bg-white px-4 pt-3 text-base font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all placeholder:text-sm hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                                 className={`w-full cursor-pointer resize-none rounded-md border-t-0 border-slate-300 px-4 pt-3 text-base font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all placeholder:text-sm hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
                                     apontamentoErrors.observacaoOS
-                                       ? 'border-red-500 ring-2 ring-red-600'
-                                       : ''
-                                 } ${isUpdating ? 'cursor-not-allowed opacity-50' : ''}`}
+                                       ? 'border-red-500 bg-red-50 ring-2 ring-red-600'
+                                       : !apontamentoData.observacaoOS.trim()
+                                         ? 'border-gray-300 bg-white'
+                                         : 'border-green-500 bg-green-50 ring-2 ring-green-600'
+                                 }`}
                               />
+                              {/* ========== */}
+
+                              {/* Mensagens de erro */}
                               {apontamentoErrors.observacaoOS && (
                                  <div className="mt-2 flex items-center gap-2">
                                     <BsFillXOctagonFill
@@ -1475,43 +1593,90 @@ export default function StatusCellUnified({
                                     </p>
                                  </div>
                               )}
+                              {/* ========== */}
+
+                              {/* Mensagem de sucesso */}
+                              {!apontamentoErrors.observacaoOS &&
+                                 apontamentoData.observacaoOS.trim() && (
+                                    <div className="mt-2 flex items-center gap-2">
+                                       <div className="h-2 w-2 rounded-full bg-green-600"></div>
+                                       <span className="text-sm font-semibold tracking-widest text-green-600 italic select-none">
+                                          Observação válida
+                                       </span>
+                                    </div>
+                                 )}
+                              {/* ========== */}
 
                               {/* Contador de caracteres */}
                               <div className="mt-2 flex w-full items-center justify-between">
                                  <div className="flex items-center gap-2">
-                                    <div className="h-2 w-2 rounded-full bg-black"></div>
-                                    <span className="text-sm font-semibold tracking-widest text-black italic select-none">
+                                    <div
+                                       className={`h-2 w-2 rounded-full ${
+                                          apontamentoData.observacaoOS
+                                             .length === 0
+                                             ? 'bg-black'
+                                             : apontamentoData.observacaoOS
+                                                    .length > 180
+                                               ? 'bg-red-600'
+                                               : apontamentoData.observacaoOS
+                                                      .length > 150
+                                                 ? 'bg-amber-600'
+                                                 : 'bg-green-600'
+                                       }`}
+                                    ></div>
+                                    <span
+                                       className={`text-sm font-semibold tracking-widest italic select-none ${
+                                          apontamentoData.observacaoOS
+                                             .length === 0
+                                             ? 'text-black'
+                                             : apontamentoData.observacaoOS
+                                                    .length > 180
+                                               ? 'text-red-600'
+                                               : apontamentoData.observacaoOS
+                                                      .length > 150
+                                                 ? 'text-amber-600'
+                                                 : 'text-green-600'
+                                       } `}
+                                    >
                                        Máximo de 200 caracteres.
                                     </span>
                                  </div>
                                  <div className="flex items-center gap-2">
                                     <div
                                        className={`h-2 w-2 rounded-full ${
-                                          apontamentoData.observacaoOS.length >
-                                          180
-                                             ? 'bg-red-600'
+                                          apontamentoData.observacaoOS
+                                             .length === 0
+                                             ? 'bg-black'
                                              : apontamentoData.observacaoOS
-                                                    .length > 150
-                                               ? 'bg-amber-600'
-                                               : 'bg-green-600'
+                                                    .length > 180
+                                               ? 'bg-red-600'
+                                               : apontamentoData.observacaoOS
+                                                      .length > 150
+                                                 ? 'bg-amber-600'
+                                                 : 'bg-green-600'
                                        }`}
                                     ></div>
                                     <span
                                        className={`text-sm font-semibold tracking-widest italic select-none ${
-                                          apontamentoData.observacaoOS.length >
-                                          180
-                                             ? 'text-red-600'
+                                          apontamentoData.observacaoOS
+                                             .length === 0
+                                             ? 'text-black'
                                              : apontamentoData.observacaoOS
-                                                    .length > 150
-                                               ? 'text-amber-600'
-                                               : 'text-green-600'
+                                                    .length > 180
+                                               ? 'text-red-600'
+                                               : apontamentoData.observacaoOS
+                                                      .length > 150
+                                                 ? 'text-amber-600'
+                                                 : 'text-green-600'
                                        }`}
                                     >
                                        {apontamentoData.observacaoOS.length}/200
                                     </span>
                                  </div>
                               </div>
+                              {/* ========== */}
                            </FormSection>
+                           {/* ========== */}
                         </section>
                      )}
                   </div>
@@ -1528,6 +1693,7 @@ export default function StatusCellUnified({
                   >
                      Cancelar
                   </button>
+                  {/* ===== */}
 
                   <button
                      onClick={handleSubmitSave}
@@ -1541,6 +1707,7 @@ export default function StatusCellUnified({
                      {isUpdating ? (
                         <div className="flex items-center gap-2">
                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                           {/* ===== */}
                            <span>
                               {needsApontamento
                                  ? 'Processando...'
@@ -1550,6 +1717,7 @@ export default function StatusCellUnified({
                      ) : (
                         <div className="flex items-center gap-2">
                            <IoIosSave className="mr-1" size={20} />
+                           {/* ===== */}
                            <span>
                               {needsApontamento
                                  ? 'Atualizar / Apontar'
@@ -1559,6 +1727,7 @@ export default function StatusCellUnified({
                      )}
                   </button>
                </footer>
+               {/* ============================== */}
             </div>
          </Modal>
       </>
@@ -1571,31 +1740,55 @@ const FormSection = ({
    icon,
    children,
    error,
+   isEmpty, // ← NOVA PROP
 }: {
    title: string;
    icon: React.ReactNode;
    children: React.ReactNode;
    error?: string;
-}) => (
-   <div
-      className={`overflow-hidden rounded-md bg-white shadow-sm shadow-black ${
-         error ? 'ring-2 ring-red-600' : ''
-      }`}
-   >
-      <div
-         className={`px-4 py-2 shadow-sm shadow-black ${error ? 'bg-red-600' : 'bg-green-600'}`}
-      >
-         <h3 className="flex items-center gap-3 text-lg font-bold tracking-wider text-white select-none">
-            {icon}
-            {title}
-            {error && (
-               <span className="ml-auto text-sm">
-                  <FaExclamationTriangle className="text-white" size={20} />
-               </span>
-            )}
-         </h3>
-      </div>
+   isEmpty?: boolean; // ← NOVA PROP
+}) => {
+   // Determinar estado baseado em erro e se está vazio
+   const getState = () => {
+      if (error) return 'error'; // Tem erro = vermelho
+      if (isEmpty) return 'empty'; // Vazio = cinza
+      return 'valid'; // Preenchido e sem erro = verde
+   };
 
-      <div className="p-6">{children}</div>
-   </div>
-);
+   const state = getState();
+
+   // Cores para cada estado
+   const colors = {
+      error: {
+         header: 'bg-red-600',
+         border: 'ring-1 ring-red-600',
+      },
+      empty: {
+         header: 'bg-black',
+         border: 'ring-1 ring-black',
+      },
+      valid: {
+         header: 'bg-green-600',
+         border: 'ring-1 ring-green-600',
+      },
+   };
+
+   return (
+      <div
+         className={`overflow-hidden rounded-md bg-white ${colors[state].border}`}
+      >
+         <div className={`px-4 py-2 ${colors[state].header}`}>
+            <h3 className="flex items-center gap-3 text-lg font-bold tracking-wider text-white select-none">
+               {icon}
+               {title}
+               {error && (
+                  <span className="ml-auto text-sm">
+                     <FaExclamationTriangle className="text-white" size={20} />
+                  </span>
+               )}
+            </h3>
+         </div>
+         <div className="p-6">{children}</div>
+      </div>
+   );
+};

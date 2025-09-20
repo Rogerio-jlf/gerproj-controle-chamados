@@ -1,7 +1,7 @@
 {
    // === FORMATAÇÃO E PADRÕES ===
    "editor.formatOnSave": true, // Formata automaticamente ao salvar
-   "editor.defaultFormatter": "esbenpp.pretier-vscodee", // Prettier como formatter padrão
+   "editor.defaultFormatter": "esbenp.prettier-vscode", // Prettier como formatter padrão
    "editor.codeActionsOnSave": {
       "source.fixAll.eslint": "explicit" // Corrige problemas automaticamente via ESLint ao salvar
    },
@@ -27,15 +27,15 @@
 
    // === MINIMAP ===
    "editor.minimap.enabled": true, // Exibe minimapa
-   "editor.minimap.renderCharacters": false, // Blocos em vez de caracteres
-   "editor.minimap.scale": 2, // Escala do minimapa
+   "editor.minimap.renderCharacters": true, // Blocos em vez de caracteres
+   "editor.minimap.scale": 1, // Escala do minimapa
 
    // === GUIDES / AJUDAS VISUAIS ===
    "editor.guides.indentation": true, // Linhas de indentação
    "editor.guides.highlightActiveIndentation": true, // Destaca indentação atual
    "editor.renderWhitespace": "all", // Mostra espaços/tabs
    "breadcrumbs.enabled": true, // Breadcrumb no topo
-   "editor.rulers": [80, 120], // Linhas verticais de referência
+   "editor.rulers": [], // Linhas verticais de referência
 
    // === WORD WRAP / QUEBRA AUTOMÁTICA ===
    "editor.wordWrap": "on", // Quebra linhas longas automaticamente
