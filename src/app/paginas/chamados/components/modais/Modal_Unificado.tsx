@@ -53,9 +53,15 @@ interface ModalProps {
    isOpen: boolean;
    onClose: () => void;
    children: React.ReactNode;
+   needsApontamento?: boolean; // NOVA PROP
 }
 
-const Modal = ({ isOpen, onClose, children }: ModalProps) => {
+const Modal = ({
+   isOpen,
+   onClose,
+   children,
+   needsApontamento = false,
+}: ModalProps) => {
    useEffect(() => {
       const handleEscape = (e: KeyboardEvent) => {
          if (e.key === 'Escape') {
@@ -82,7 +88,7 @@ const Modal = ({ isOpen, onClose, children }: ModalProps) => {
          onClick={onClose}
       >
          <div
-            className="relative max-h-[100vh] w-[1500px] overflow-hidden"
+            className={`relative max-h-[100vh] ${needsApontamento ? 'w-[1500px]' : 'w-[750px]'} overflow-hidden`}
             onClick={e => e.stopPropagation()}
          >
             {children}
@@ -1101,8 +1107,14 @@ export default function StatusCellUnified({
          {/* ============================== */}
 
          {/* ===== MODAL UNIFICADO ===== */}
-         <Modal isOpen={showUnifiedModal} onClose={handleCloseModal}>
-            <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-[1500px] overflow-y-auto rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
+         <Modal
+            isOpen={showUnifiedModal}
+            onClose={handleCloseModal}
+            needsApontamento={!!needsApontamento}
+         >
+            <div
+               className={`animate-in slide-in-from-bottom-4 ${needsApontamento ? 'w-[1500px]' : 'w-[750px]'} relative z-10 max-h-[100vh] overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out`}
+            >
                {/* ===== OVERLAY LOADING ===== */}
                {(loadingClassificacoes || loadingTarefas) && (
                   <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-lg">
@@ -1160,10 +1172,13 @@ export default function StatusCellUnified({
                   <div
                      className={
                         needsApontamento
-                           ? 'grid grid-cols-2 gap-6'
+                           ? 'relative grid grid-cols-2 gap-6'
                            : 'flex flex-col gap-20'
                      }
                   >
+                     {needsApontamento && (
+                        <div className="absolute top-8 bottom-8 left-1/2 z-10 w-px -translate-x-1/2 transform bg-black"></div>
+                     )}
                      {/* ===== COLUNA STATUS ===== */}
                      <div className="flex flex-col gap-4 rounded-xl border-t-2 border-slate-300 bg-white p-6 shadow-md shadow-black">
                         <h2 className="text-2xl font-extrabold tracking-wider text-black select-none">
@@ -1371,12 +1386,14 @@ export default function StatusCellUnified({
                                           </p>
                                        </div>
                                        <div className="flex items-center gap-2">
-                                          <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
                                           {needsApontamento && (
-                                             <p className="mt-1 text-sm font-semibold tracking-widest text-yellow-500 italic select-none">
-                                                Uma OS será criada com os dados
-                                                do apontamento.
-                                             </p>
+                                             <>
+                                                <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
+                                                <p className="mt-1 text-sm font-semibold tracking-widest text-yellow-500 italic select-none">
+                                                   Uma OS será criada com os
+                                                   dados do apontamento.
+                                                </p>
+                                             </>
                                           )}
                                        </div>
                                     </div>
