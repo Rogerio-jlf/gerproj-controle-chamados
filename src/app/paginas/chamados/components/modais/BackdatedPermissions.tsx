@@ -1,22 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
    FaUserCog,
    FaCheck,
    FaTimes,
-   FaClock,
    FaUsers,
    FaExclamationTriangle,
    FaCalendarAlt,
+   FaUser,
 } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import { Loader2 } from 'lucide-react';
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from '../../../../../components/ui/tooltip';
 
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
-
 interface BackdatedPermission {
    resourceId: string;
    resourceName: string;
@@ -40,7 +44,7 @@ interface BackdatedPermissionsModalProps {
    isOpen: boolean;
    onClose: () => void;
    currentUserId: string;
-   chamadoId: string; // Nova propriedade obrigatória
+   chamadoId: string;
 }
 
 // ================================================================================
@@ -153,32 +157,126 @@ export const BackdatedPermissionsModal: React.FC<
    const [resources, setResources] = useState<Resource[]>([]);
    const [loading, setLoading] = useState(false);
    const [error, setError] = useState<string | null>(null);
+   const [chamadoInfo, setChamadoInfo] = useState<{
+      assunto: string;
+      cliente: string;
+      status: string;
+   } | null>(null);
 
-   // Fetch recursos quando o modal abre
-   useEffect(() => {
-      if (isOpen) {
-         fetchResources();
-      }
-   }, [isOpen]);
-
-   const fetchResources = async () => {
+   const fetchChamadoAndResources = useCallback(async () => {
       setLoading(true);
       setError(null);
 
       try {
-         const response = await fetch('/api/recursos');
-         if (!response.ok) {
-            throw new Error('Erro ao carregar recursos');
+         const token = localStorage.getItem('token');
+         if (!token) {
+            throw new Error('Token não encontrado');
          }
 
-         const data = await response.json();
-         setResources(data);
+         // Buscar dados do chamado específico
+         const chamadoResponse = await fetch(
+            `/api/chamados?codChamado=${chamadoId}`,
+            {
+               headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+               },
+            }
+         );
+
+         if (!chamadoResponse.ok) {
+            throw new Error('Erro ao carregar dados do chamado');
+         }
+
+         const chamadoData = await chamadoResponse.json();
+
+         if (!chamadoData || chamadoData.length === 0) {
+            throw new Error('Chamado não encontrado');
+         }
+
+         const chamado = chamadoData[0];
+
+         // Salvar informações do chamado
+         setChamadoInfo({
+            assunto: chamado.ASSUNTO_CHAMADO || 'Sem assunto',
+            cliente: chamado.NOME_CLIENTE || 'Cliente não informado',
+            status: chamado.STATUS_CHAMADO || 'Status não informado',
+         });
+
+         // Se o status for "EM ATENDIMENTO", não permitir permissões
+         if (chamado.STATUS_CHAMADO === 'EM ATENDIMENTO') {
+            setError(
+               'Não é possível conceder permissões para chamados em atendimento'
+            );
+            return;
+         }
+
+         // Buscar dados do recurso responsável
+         if (chamado.COD_RECURSO) {
+            const recursoResponse = await fetch(
+               `/api/recursos?codRecurso=${chamado.COD_RECURSO}`,
+               {
+                  headers: {
+                     Authorization: `Bearer ${token}`,
+                     'Content-Type': 'application/json',
+                  },
+               }
+            );
+
+            if (!recursoResponse.ok) {
+               throw new Error('Erro ao carregar dados do recurso');
+            }
+
+            const recursoData = await recursoResponse.json();
+
+            if (recursoData && recursoData.length > 0) {
+               setResources(recursoData);
+            } else {
+               // Se não encontrou o recurso específico, buscar todos como fallback
+               const allResourcesResponse = await fetch('/api/recursos', {
+                  headers: {
+                     Authorization: `Bearer ${token}`,
+                     'Content-Type': 'application/json',
+                  },
+               });
+
+               if (allResourcesResponse.ok) {
+                  const allResourcesData = await allResourcesResponse.json();
+                  setResources(allResourcesData);
+               } else {
+                  throw new Error('Erro ao carregar recursos');
+               }
+            }
+         } else {
+            // Se o chamado não tem recurso definido, buscar todos
+            const allResourcesResponse = await fetch('/api/recursos', {
+               headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+               },
+            });
+
+            if (allResourcesResponse.ok) {
+               const allResourcesData = await allResourcesResponse.json();
+               setResources(allResourcesData);
+            } else {
+               throw new Error('Erro ao carregar recursos');
+            }
+         }
       } catch (err) {
+         console.error('Erro ao carregar dados:', err);
          setError(err instanceof Error ? err.message : 'Erro desconhecido');
       } finally {
          setLoading(false);
       }
-   };
+   }, [chamadoId]);
+
+   // Fetch recursos responsáveis pelo chamado quando o modal abre
+   useEffect(() => {
+      if (isOpen) {
+         fetchChamadoAndResources();
+      }
+   }, [isOpen, fetchChamadoAndResources]);
 
    const handlePermissionToggle = (resource: Resource, enabled: boolean) => {
       if (enabled) {
@@ -197,104 +295,163 @@ export const BackdatedPermissionsModal: React.FC<
       p => p.chamadoId === chamadoId
    );
 
+   // Verifica se há pelo menos uma permissão ativa para este chamado
+   const hasActivePermissions = activePermissions.length > 0;
+
    if (!isOpen) return null;
 
    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xl">
-         <div className="relative max-h-[90vh] w-[800px] overflow-hidden rounded-2xl bg-white shadow-2xl">
-            {/* Header */}
-            <header className="flex items-center justify-between bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 p-6">
-               <div className="flex items-center gap-4">
-                  <div className="rounded-md bg-white/20 p-3">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-lg">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-[800px] overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
+            {/* ===== HEADER ===== */}
+            <header className="relative flex items-center justify-between bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 p-6 shadow-md shadow-black">
+               <div className="flex items-center justify-center gap-6">
+                  <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
                      <FaUserCog className="text-white" size={32} />
                   </div>
-                  <div>
-                     <h1 className="text-2xl font-bold text-white">
-                        Apontamento Retroativo - Chamado #{chamadoId}
+                  {/* ========== */}
+                  <div className="flex flex-col">
+                     <h1 className="text-3xl font-extrabold tracking-wider text-white select-none">
+                        Apontamento Retroativo
                      </h1>
-                     <p className="text-purple-100">
-                        Permissões especiais para este chamado específico
+                     {/* ===== */}
+                     <p className="text-xl font-bold tracking-widest text-white italic select-none">
+                        Chamado - #{chamadoId}
                      </p>
                   </div>
                </div>
+               {/* ========== */}
 
-               <button
-                  onClick={onClose}
-                  className="rounded-full bg-red-500/20 p-2 text-white transition-all hover:bg-red-500/40"
-               >
-                  <IoClose size={24} />
-               </button>
+               {/* Botão Fechar Modal */}
+               <Tooltip>
+                  <TooltipTrigger asChild>
+                     <button
+                        onClick={onClose}
+                        className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                     >
+                        <IoClose size={24} />
+                     </button>
+                  </TooltipTrigger>
+                  <TooltipContent
+                     side="top"
+                     align="center"
+                     sideOffset={8}
+                     className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black select-none"
+                  >
+                     Sair
+                  </TooltipContent>
+               </Tooltip>
             </header>
-
-            {/* Aviso */}
-            <div className="mx-6 mt-6 rounded-lg border-l-4 border-yellow-500 bg-yellow-50 p-4">
-               <div className="flex items-center gap-3">
-                  <FaExclamationTriangle
-                     className="text-yellow-600"
-                     size={20}
-                  />
-                  <div>
-                     <p className="font-semibold text-yellow-800">Atenção!</p>
-                     <p className="text-sm text-yellow-700">
-                        Recursos marcados poderão criar apontamentos em datas
-                        anteriores
-                        <strong> APENAS para o Chamado #{chamadoId}</strong>.
-                        Esta permissão é específica e temporária.
-                     </p>
+            {/* ============================== */}
+            <div className="flex flex-col gap-6 p-6">
+               {/* ===== INFORMAÇÕES DO CHAMADO ===== */}
+               {chamadoInfo && (
+                  <div className="flex flex-col gap-2 rounded-lg border border-l-8 border-blue-500 bg-blue-100 p-4">
+                     <div className="flex items-center gap-3">
+                        <FaCalendarAlt className="text-blue-800" size={20} />
+                        {/* ===== */}
+                        <span className="text-base font-extrabold tracking-wider text-blue-800 uppercase select-none">
+                           Informações do chamado
+                        </span>
+                     </div>
+                     {/* ========== */}
+                     <div className="flex flex-col gap-1">
+                        <p>
+                           <span className="text-xs font-extrabold tracking-widest text-blue-800 uppercase select-none">
+                              Assunto:
+                           </span>{' '}
+                           <span className="text-sm font-bold tracking-widest text-blue-800 italic select-none">
+                              {chamadoInfo.assunto}
+                           </span>
+                        </p>
+                        {/* ===== */}
+                        <p>
+                           <span className="text-xs font-extrabold tracking-widest text-blue-800 uppercase select-none">
+                              Cliente:
+                           </span>{' '}
+                           <span className="text-sm font-bold tracking-widest text-blue-800 italic select-none">
+                              {chamadoInfo.cliente}
+                           </span>
+                        </p>
+                        {/* ===== */}
+                        <p>
+                           <span className="text-xs font-extrabold tracking-widest text-blue-800 uppercase select-none">
+                              Status:
+                           </span>{' '}
+                           <span className="text-sm font-bold tracking-widest text-blue-800 italic select-none">
+                              {chamadoInfo.status}
+                           </span>
+                        </p>
+                     </div>
                   </div>
-               </div>
-            </div>
+               )}
+               {/* ==================== */}
 
-            {/* Stats */}
-            {activePermissions.length > 0 && (
-               <div className="mx-6 mt-4 rounded-lg border border-green-200 bg-green-50 p-4">
-                  <div className="flex items-center gap-2">
-                     <FaCalendarAlt className="text-green-600" size={16} />
-                     <span className="font-semibold text-green-800">
-                        {activePermissions.length} recurso(s) com permissão
-                        ativa para este chamado
+               {/* ===== ATENÇÃO ===== */}
+               <div className="flex flex-col gap-2 rounded-lg border border-l-8 border-amber-500 bg-amber-100 p-4">
+                  <div className="flex items-center gap-3">
+                     <FaExclamationTriangle
+                        className="text-yellow-800"
+                        size={20}
+                     />
+                     {/* ===== */}
+                     <span className="text-base font-extrabold tracking-wider text-amber-800 uppercase select-none">
+                        Atenção!
                      </span>
                   </div>
+                  {/* ========== */}
+                  <p className="text-sm text-yellow-700">
+                     Recursos marcados poderão criar apontamentos em datas
+                     anteriores ao mês atual, apenas para o Chamado #{chamadoId}
+                     . Esta permissão é específica e temporária.
+                  </p>
                </div>
-            )}
+               {/* ==================== */}
 
-            {/* Content */}
-            <div className="p-6">
-               {loading ? (
-                  <div className="flex flex-col items-center justify-center py-12">
-                     <Loader2
-                        className="mb-4 animate-spin text-purple-600"
-                        size={40}
-                     />
-                     <p className="text-gray-600">Carregando recursos...</p>
-                  </div>
-               ) : error ? (
-                  <div className="flex flex-col items-center justify-center py-12">
-                     <FaTimes className="mb-4 text-red-500" size={40} />
-                     <p className="font-semibold text-red-600">
-                        Erro ao carregar recursos
-                     </p>
-                     <p className="text-sm text-gray-600">{error}</p>
-                     <button
-                        onClick={fetchResources}
-                        className="mt-4 rounded-lg bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700"
-                     >
-                        Tentar Novamente
-                     </button>
-                  </div>
-               ) : resources.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12">
-                     <FaUsers className="mb-4 text-gray-400" size={40} />
-                     <p className="text-gray-600">Nenhum recurso encontrado</p>
-                  </div>
-               ) : (
-                  <div>
-                     <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-800">
-                        <FaUsers className="text-purple-600" size={18} />
-                        Recursos Disponíveis ({resources.length})
-                     </h3>
-
-                     <div className="max-h-96 space-y-2 overflow-y-auto">
+               {/* ===== RECURSO RESPONSÁVEL ===== */}
+               <div className="">
+                  {/* Loader */}
+                  {loading ? (
+                     <div className="flex flex-col items-center justify-center py-12">
+                        <Loader2
+                           className="mb-4 animate-spin text-purple-600"
+                           size={40}
+                        />
+                        <p className="text-base font-bold tracking-widest text-black italic select-none">
+                           Carregando recursos do chamado...
+                        </p>
+                     </div>
+                  ) : // ==========
+                  // Error
+                  error ? (
+                     <div className="flex flex-col items-center justify-center py-12">
+                        <FaTimes className="mb-4 text-red-500" size={40} />
+                        <p className="text-base font-bold tracking-widest text-red-600 italic select-none">
+                           Erro ao carregar dados
+                        </p>
+                        <p className="text-base font-bold tracking-widest italic select-none">
+                           {error}
+                        </p>
+                        <button
+                           onClick={fetchChamadoAndResources}
+                           className="mt-4 rounded-lg bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700"
+                        >
+                           Tentar Novamente
+                        </button>
+                     </div>
+                  ) : // =========
+                  // Não há recursos
+                  resources.length === 0 ? (
+                     <div className="flex flex-col items-center justify-center py-12">
+                        <FaUsers className="mb-4 text-gray-400" size={40} />
+                        <p className="text-gray-600">
+                           Nenhum recurso encontrado para este chamado
+                        </p>
+                     </div>
+                  ) : (
+                     // =========
+                     // Lista de Recursos
+                     <div className="flex max-h-96 flex-col gap-2 overflow-y-auto">
                         {resources.map(resource => {
                            const isEnabled = hasPermission(
                               resource.cod_recurso.toString(),
@@ -304,32 +461,57 @@ export const BackdatedPermissionsModal: React.FC<
                            return (
                               <div
                                  key={resource.cod_recurso}
-                                 className={`flex items-center justify-between rounded-lg border-2 p-4 transition-all ${
+                                 className={`flex items-center justify-between p-4 ${
                                     isEnabled
-                                       ? 'border-green-300 bg-green-50'
-                                       : 'border-gray-200 bg-gray-50 hover:border-purple-300'
+                                       ? 'rounded-lg border border-l-8 border-green-500 bg-green-100'
+                                       : 'rounded-lg border border-l-8 border-slate-500 bg-slate-100'
                                  }`}
                               >
-                                 <div className="flex items-center gap-3">
-                                    <div
-                                       className={`h-3 w-3 rounded-full ${
-                                          isEnabled
-                                             ? 'bg-green-500'
-                                             : 'bg-gray-400'
-                                       }`}
-                                    />
-                                    <div>
-                                       <p className="font-semibold text-gray-800">
-                                          {resource.nome_recurso}
+                                 <div className="flex flex-col gap-2">
+                                    <div className="flex items-center gap-3">
+                                       {resources.length === 1 ? (
+                                          <FaUser
+                                             className="text-green-800"
+                                             size={20}
+                                          />
+                                       ) : (
+                                          <FaUsers
+                                             className="text-green-800"
+                                             size={20}
+                                          />
+                                       )}
+                                       {/* ===== */}
+
+                                       {resources.length === 1 ? (
+                                          <h3 className="text-base font-bold tracking-widest text-green-800 uppercase">
+                                             Recurso responsável pelo chamado
+                                          </h3>
+                                       ) : (
+                                          <h3 className="text-base font-bold tracking-widest text-green-800 uppercase">
+                                             Recursos responsáveis pelo chamado
+                                          </h3>
+                                       )}
+                                    </div>
+                                    {/* ========== */}
+
+                                    <div className="flex flex-col gap-1">
+                                       <p className="text-sm font-extrabold tracking-widest text-green-700 italic select-none">
+                                          Recurso:{' '}
+                                          <span className="font-semibold">
+                                             {resource.nome_recurso}
+                                          </span>
                                        </p>
-                                       <p className="text-sm text-gray-600">
-                                          ID: {resource.cod_recurso} • Jornada:{' '}
-                                          {resource.hrdia_formatado}
+                                       <p className="text-sm font-extrabold tracking-widest text-green-700 italic select-none">
+                                          <span className="font-semibold">
+                                             CÓD:
+                                          </span>{' '}
+                                          {resource.cod_recurso}
                                        </p>
                                     </div>
                                  </div>
+                                 {/* ================== */}
 
-                                 <label className="flex cursor-pointer items-center gap-2">
+                                 <label className="flex cursor-pointer items-center gap-3">
                                     <input
                                        type="checkbox"
                                        checked={isEnabled}
@@ -342,10 +524,10 @@ export const BackdatedPermissionsModal: React.FC<
                                        className="sr-only"
                                     />
                                     <div
-                                       className={`flex h-6 w-6 items-center justify-center rounded border-2 transition-all ${
+                                       className={`flex h-6 w-6 items-center justify-center rounded border shadow-md shadow-black transition-all hover:scale-110 active:scale-95 ${
                                           isEnabled
-                                             ? 'border-green-500 bg-green-500 text-white'
-                                             : 'border-gray-300 hover:border-purple-400'
+                                             ? 'border-green-800 bg-green-500 text-black'
+                                             : 'border-slate-800'
                                        }`}
                                     >
                                        {isEnabled && <FaCheck size={14} />}
@@ -353,8 +535,8 @@ export const BackdatedPermissionsModal: React.FC<
                                     <span
                                        className={`font-medium ${
                                           isEnabled
-                                             ? 'text-green-700'
-                                             : 'text-gray-600'
+                                             ? 'text-base font-semibold tracking-widest text-green-700 italic select-none'
+                                             : 'text-base font-semibold tracking-widest text-slate-700 italic select-none'
                                        }`}
                                     >
                                        {isEnabled
@@ -366,24 +548,29 @@ export const BackdatedPermissionsModal: React.FC<
                            );
                         })}
                      </div>
-                  </div>
-               )}
+                  )}
+               </div>
             </div>
 
             {/* Footer */}
-            <footer className="border-t bg-gray-50 p-6">
+            <footer className="border-t-2 border-purple-500 bg-purple-200 p-6">
                <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-600">
-                     {activePermissions.length > 0 && (
-                        <span>
-                           Permissões ativas para Chamado #{chamadoId}:{' '}
-                           {activePermissions.length}
+                  <div className="text-base font-semibold tracking-wider text-purple-700 select-none">
+                     {hasActivePermissions && (
+                        <span className="text-base font-semibold tracking-wider text-purple-700 select-none">
+                           Permissões ativas para o Chamado #{chamadoId}
                         </span>
                      )}
                   </div>
+                  {/* ========== */}
                   <button
                      onClick={onClose}
-                     className="rounded-lg bg-purple-600 px-6 py-2 font-semibold text-white transition-colors hover:bg-purple-700"
+                     disabled={!hasActivePermissions}
+                     className={`cursor-pointer rounded-xl border-none bg-purple-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black select-none ${
+                        !hasActivePermissions
+                           ? 'disabled:cursor-not-allowed disabled:opacity-50'
+                           : 'transition-all hover:scale-105 hover:bg-purple-900 hover:shadow-md hover:shadow-black active:scale-95'
+                     }`}
                   >
                      Concluir
                   </button>

@@ -143,7 +143,7 @@ const GlobalFilterInput = ({
    };
 
    return (
-      <div className="group relative transition-all hover:-translate-y-1 hover:scale-105">
+      <div className="group relative transition-all hover:-translate-y-1 hover:scale-102">
          <FaSearch
             className="absolute top-1/2 left-4 -translate-y-1/2 text-white"
             size={18}
@@ -1148,7 +1148,7 @@ export default function TabelaChamados() {
                               onChange={e =>
                                  table.setPageSize(Number(e.target.value))
                               }
-                              className="cursor-pointer rounded-md px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                              className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
                            >
                               {[50, 100, 200, 300, 400, 500].map(pageSize => (
                                  <option
@@ -1167,7 +1167,7 @@ export default function TabelaChamados() {
                            <button
                               onClick={() => table.setPageIndex(0)}
                               disabled={!table.getCanPreviousPage()}
-                              className="group cursor-pointer rounded-md px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsLeft
                                  className="text-black group-disabled:text-white"
@@ -1178,7 +1178,7 @@ export default function TabelaChamados() {
                            <button
                               onClick={() => table.previousPage()}
                               disabled={!table.getCanPreviousPage()}
-                              className="group cursor-pointer rounded-md px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronLeft
                                  className="text-black group-disabled:text-white"
@@ -1197,7 +1197,7 @@ export default function TabelaChamados() {
                                        const page = Number(e.target.value) - 1;
                                        table.setPageIndex(page);
                                     }}
-                                    className="cursor-pointer rounded-md px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                                    className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
                                  >
                                     {Array.from(
                                        {
@@ -1224,7 +1224,7 @@ export default function TabelaChamados() {
                            <button
                               onClick={() => table.nextPage()}
                               disabled={!table.getCanNextPage()}
-                              className="group cursor-pointer rounded-md px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronRight
                                  className="text-black group-disabled:text-white"
@@ -1237,7 +1237,7 @@ export default function TabelaChamados() {
                                  table.setPageIndex(table.getPageCount() - 1)
                               }
                               disabled={!table.getCanNextPage()}
-                              className="group cursor-pointer rounded-md px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsRight
                                  className="text-black group-disabled:text-white"

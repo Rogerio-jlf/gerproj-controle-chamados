@@ -1180,7 +1180,7 @@ export default function StatusCellUnified({
                         <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
                            {needsApontamento
                               ? 'Alterar Status / Realizar Apontamento '
-                              : 'Alterar Status Chamado'}
+                              : 'Alterar Status'}
                         </h1>
                         {/* ===== */}
                         <p className="text-xl font-bold tracking-widest text-black italic select-none">
@@ -1190,25 +1190,52 @@ export default function StatusCellUnified({
                   </div>
                   {/* ========== */}
 
-                  {isAdmin && (
-                     <button
-                        onClick={() => setShowBackdatedModal(true)}
-                        className="ml-4 flex items-center gap-2 rounded-lg bg-white/20 px-3 py-2 text-sm font-semibold text-white transition-all hover:bg-white/30"
-                        title="Gerenciar Permissões de Apontamento Retroativo"
-                     >
-                        <FaUserCog size={16} />
-                        Permissões Especiais
-                     </button>
-                  )}
-                  {/* ========== */}
+                  <div className="flex items-center justify-center gap-6">
+                     {/* Botão Permitir Apontamento Retroativo */}
+                     {isAdmin && pendingStatus !== 'EM ATENDIMENTO' && (
+                        <Tooltip>
+                           <TooltipTrigger asChild>
+                              <button
+                                 onClick={() => setShowBackdatedModal(true)}
+                                 className="group cursor-pointer rounded-full bg-blue-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-blue-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                                 title="Gerenciar Permissões de Apontamento Retroativo"
+                              >
+                                 <FaUserCog size={24} />
+                              </button>
+                           </TooltipTrigger>
+                           <TooltipContent
+                              side="top"
+                              align="center"
+                              sideOffset={8}
+                              className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black select-none"
+                           >
+                              Permitir Apontamento Retroativo
+                           </TooltipContent>
+                        </Tooltip>
+                     )}
+                     {/* ========== */}
 
-                  <button
-                     onClick={handleCloseModal}
-                     disabled={isUpdating}
-                     className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                     <IoClose size={24} />
-                  </button>
+                     {/* Botão Fechar Modal */}
+                     <Tooltip>
+                        <TooltipTrigger asChild>
+                           <button
+                              onClick={handleCloseModal}
+                              disabled={isUpdating}
+                              className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                           >
+                              <IoClose size={24} />
+                           </button>
+                        </TooltipTrigger>
+                        <TooltipContent
+                           side="top"
+                           align="center"
+                           sideOffset={8}
+                           className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black select-none"
+                        >
+                           Sair
+                        </TooltipContent>
+                     </Tooltip>
+                  </div>
                </header>
                {/* ============================== */}
 
