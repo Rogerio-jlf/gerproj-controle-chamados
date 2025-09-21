@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 // ================================================================================
@@ -13,6 +13,12 @@ import {
 import { getStylesStatus } from '../../../../../utils/formatters';
 import { ToastCustom } from '../../../../../components/Toast_Custom';
 import { useAuth } from '../../../../../hooks/useAuth';
+import {
+   canUseBackdatedAppointments,
+   BackdatedPermissionsModal,
+   getCurrentUserId,
+   isUserAdmin,
+} from './BackdatedPermissions';
 // ================================================================================
 import {
    FaExclamationTriangle,
@@ -20,6 +26,7 @@ import {
    FaSync,
    FaCalendarAlt,
    FaUserClock,
+   FaUserCog,
 } from 'react-icons/fa';
 import { FaArrowRightLong } from 'react-icons/fa6';
 import { IoClose, IoDocumentText } from 'react-icons/io5';
@@ -312,6 +319,8 @@ export default function StatusCellUnified({
    const [apontamentoErrors, setApontamentoErrors] =
       useState<ApontamentoFormErrors>({});
 
+   const [showBackdatedModal, setShowBackdatedModal] = useState(false);
+
    // ================================================================================
    // REFS
    // ================================================================================
@@ -329,6 +338,13 @@ export default function StatusCellUnified({
 
    // Para status diferente de "EM ATENDIMENTO", sempre precisa de apontamento
    const needsApontamento = pendingStatus && pendingStatus !== 'EM ATENDIMENTO';
+
+   const currentUserId = getCurrentUserId(user);
+   const isAdmin = isUserAdmin(user);
+   const canUseBackdatedDates = canUseBackdatedAppointments(
+      currentUserId,
+      codChamado.toString()
+   );
 
    // ================================================================================
    // API E FUNÇÕES DE DADOS
@@ -434,8 +450,9 @@ export default function StatusCellUnified({
          } else if (isDateFromPreviousMonth(newValue)) {
             setApontamentoErrors((prev: ApontamentoFormErrors) => ({
                ...prev,
-               dataInicioOS:
-                  'Não é possível selecionar datas de meses anteriores ao atual',
+               dataInicioOS: canUseBackdatedDates
+                  ? undefined
+                  : 'Não é possível selecionar datas de meses anteriores ao atual',
             }));
          } else {
             setApontamentoErrors((prev: ApontamentoFormErrors) => ({
@@ -548,22 +565,26 @@ export default function StatusCellUnified({
    // ====================
 
    // Função para verificar se uma data é de um mês anterior ao atual
-   const isDateFromPreviousMonth = (dateString: string): boolean => {
-      // Extrair ano, mês e dia da string sem usar Date constructor
-      const [year, month, day] = dateString.split('-').map(Number);
+   const isDateFromPreviousMonth = useCallback(
+      (dateString: string): boolean => {
+         // Se o usuário tem permissão especial, sempre permitir
+         if (canUseBackdatedDates) {
+            return false; // Sempre permitir para usuários com permissão especial
+         }
 
-      const today = new Date();
-      const currentYear = today.getFullYear();
-      const currentMonth = today.getMonth() + 1; // getMonth() retorna 0-11, então +1
+         // Lógica original para usuários normais
+         const [year, month, day] = dateString.split('-').map(Number);
+         const today = new Date();
+         const currentYear = today.getFullYear();
+         const currentMonth = today.getMonth() + 1;
 
-      // Se o ano for menor que o atual
-      if (year < currentYear) return true;
+         if (year < currentYear) return true;
+         if (year === currentYear && month < currentMonth) return true;
 
-      // Se o ano for igual mas o mês for menor
-      if (year === currentYear && month < currentMonth) return true;
-
-      return false;
-   };
+         return false;
+      },
+      [canUseBackdatedDates]
+   );
    // ====================
 
    // Função para abrir o calendário ao clicar no input
@@ -879,6 +900,14 @@ export default function StatusCellUnified({
 
    // Para melhorar a UX, você pode também definir o atributo 'min' no input de data:
    const getCurrentMonthFirstDay = (): string => {
+      if (canUseBackdatedDates) {
+         // Permitir datas de até 3 meses atrás para usuários com permissão especial
+         const threeMonthsAgo = new Date();
+         threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+         return threeMonthsAgo.toISOString().split('T')[0];
+      }
+
+      // Lógica original
       const today = new Date();
       const year = today.getFullYear();
       const month = today.getMonth();
@@ -983,7 +1012,11 @@ export default function StatusCellUnified({
             }));
          }
       }
-   }, [apontamentoData.dataInicioOS, needsApontamento]);
+   }, [
+      apontamentoData.dataInicioOS,
+      isDateFromPreviousMonth,
+      needsApontamento,
+   ]);
    // ====================
 
    // ================================================================================
@@ -1155,6 +1188,18 @@ export default function StatusCellUnified({
                         </p>
                      </div>
                   </div>
+                  {/* ========== */}
+
+                  {isAdmin && (
+                     <button
+                        onClick={() => setShowBackdatedModal(true)}
+                        className="ml-4 flex items-center gap-2 rounded-lg bg-white/20 px-3 py-2 text-sm font-semibold text-white transition-all hover:bg-white/30"
+                        title="Gerenciar Permissões de Apontamento Retroativo"
+                     >
+                        <FaUserCog size={16} />
+                        Permissões Especiais
+                     </button>
+                  )}
                   {/* ========== */}
 
                   <button
@@ -1747,6 +1792,15 @@ export default function StatusCellUnified({
                {/* ============================== */}
             </div>
          </Modal>
+
+         {isAdmin && (
+            <BackdatedPermissionsModal
+               isOpen={showBackdatedModal}
+               onClose={() => setShowBackdatedModal(false)}
+               currentUserId={currentUserId}
+               chamadoId={codChamado.toString()}
+            />
+         )}
       </>
    );
 }
