@@ -15,10 +15,10 @@ import { ToastCustom } from '../../../../../components/Toast_Custom';
 import { useAuth } from '../../../../../hooks/useAuth';
 import {
    canUseBackdatedAppointments,
-   BackdatedPermissionsModal,
+   ModalPermitirRetroativo,
    getCurrentUserId,
    isUserAdmin,
-} from './BackdatedPermissions';
+} from './Modal_Permitir_Retroativo';
 // ================================================================================
 import {
    FaExclamationTriangle,
@@ -37,13 +37,12 @@ import { Loader2 } from 'lucide-react';
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
-
-interface Classificacao {
+interface ClassificacaoProps {
    COD_CLASSIFICACAO: number;
    NOME_CLASSIFICACAO: string;
 }
 
-interface Tarefa {
+interface TarefaProps {
    COD_TAREFA: number;
    NOME_TAREFA: string;
 }
@@ -56,11 +55,11 @@ interface Props {
 }
 
 // Modal Component
-interface ModalProps {
+interface ModalStatusApontamentoChamadoProps {
    isOpen: boolean;
    onClose: () => void;
    children: React.ReactNode;
-   needsApontamento?: boolean; // NOVA PROP
+   needsApontamento?: boolean;
 }
 
 const Modal = ({
@@ -68,7 +67,7 @@ const Modal = ({
    onClose,
    children,
    needsApontamento = false,
-}: ModalProps) => {
+}: ModalStatusApontamentoChamadoProps) => {
    useEffect(() => {
       const handleEscape = (e: KeyboardEvent) => {
          if (e.key === 'Escape') {
@@ -274,8 +273,7 @@ const removerAcentos = (texto: string): string => {
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-
-export default function StatusCellUnified({
+export default function StatusApontamentoChamado({
    status: initialStatus,
    codChamado,
    onUpdateSuccess,
@@ -298,8 +296,10 @@ export default function StatusCellUnified({
    // ================================================================================
    // ESTADOS - DADOS E CARREGAMENTO
    // ================================================================================
-   const [classificacoes, setClassificacoes] = useState<Classificacao[]>([]);
-   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
+   const [classificacoes, setClassificacoes] = useState<ClassificacaoProps[]>(
+      []
+   );
+   const [tarefas, setTarefas] = useState<TarefaProps[]>([]);
    const [selectedClassificacao, setSelectedClassificacao] = useState<
       number | null
    >(null);
@@ -800,11 +800,14 @@ export default function StatusCellUnified({
 
          const start = Date.now();
 
-         const response = await fetch(`/api/unified-status-os/${codChamado}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-         });
+         const response = await fetch(
+            `/api/status-apontamento-chamado/${codChamado}`,
+            {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify(payload),
+            }
+         );
 
          const responseData = await response.json();
 
@@ -1127,7 +1130,7 @@ export default function StatusCellUnified({
                            {isUpdating
                               ? 'Aguarde...'
                               : !isStatusEditable
-                                ? 'Esse chamado, só pode ser "ATRIBUIDO", via Atribuir Chamado'
+                                ? 'Esse chamado só pode ser "ATRIBUIDO", via Atribuir Chamado'
                                 : status === 'ATRIBUIDO'
                                   ? 'Clique para colocar "EM ATENDIMENTO"'
                                   : 'Clique para alterar o Status'}
@@ -1146,7 +1149,7 @@ export default function StatusCellUnified({
             needsApontamento={!!needsApontamento}
          >
             <div
-               className={`animate-in slide-in-from-bottom-4 ${needsApontamento ? 'w-[1500px]' : 'w-[750px]'} relative z-10 max-h-[100vh] overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out`}
+               className={`animate-in slide-in-from-bottom-4 ${needsApontamento ? 'w-[1500px]' : 'w-[750px]'} relative z-10 max-h-[100vh] overflow-hidden rounded-2xl border-0 bg-white shadow-xl shadow-black transition-all duration-500 ease-out`}
             >
                {/* ===== OVERLAY LOADING ===== */}
                {(loadingClassificacoes || loadingTarefas) && (
@@ -1821,7 +1824,7 @@ export default function StatusCellUnified({
          </Modal>
 
          {isAdmin && (
-            <BackdatedPermissionsModal
+            <ModalPermitirRetroativo
                isOpen={showBackdatedModal}
                onClose={() => setShowBackdatedModal(false)}
                currentUserId={currentUserId}

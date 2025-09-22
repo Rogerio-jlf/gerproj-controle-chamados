@@ -1,27 +1,25 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+// ================================================================================
 import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
 } from '../../../../../components/ui/tooltip';
+// ================================================================================
+import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
 import { TabelaOSProps } from '../../../../../types/types';
-import { MdEditDocument } from 'react-icons/md';
-import { RiDeleteBin5Fill } from 'react-icons/ri';
 import {
    formatarDataParaBR,
    formatarDecimalParaTempo,
    formatarHora,
 } from '../../../../../utils/formatters';
+// ================================================================================
+import { MdEditDocument } from 'react-icons/md';
+import { RiDeleteBin5Fill } from 'react-icons/ri';
 
-export interface TabelaOSTarefaProps {
-   isOpen: boolean;
-   onClose: () => void;
-   codTarefa: number | null;
-   codChamado: string | null;
-   onSuccess?: () => void;
-}
-
+// ================================================================================
+// INTERFACES E TIPOS
+// ================================================================================
 export interface AcoesOSProps {
    onEditarOS: (codOS: string) => void;
    onExcluirOS: (codOS: string) => void;

@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { z } from 'zod';
-// ====================
+// ================================================================================
 import { useAuth } from '../../../../../hooks/useAuth';
 import { DBTarefaProps } from '../../../../../types/types';
-// ====================
+import { ToastCustom } from '../../../../../components/Toast_Custom';
+// ================================================================================
 import {
    FaCalendarAlt,
-   FaCheckCircle,
    FaExclamationTriangle,
+   FaUserClock,
 } from 'react-icons/fa';
-import { IoMdClock } from 'react-icons/io';
-import { FaUserClock } from 'react-icons/fa';
+import { IoMdClock, IoIosSave } from 'react-icons/io';
 import { IoClose, IoDocumentText } from 'react-icons/io5';
 import { BsFillXOctagonFill } from 'react-icons/bs';
-import { toast } from 'sonner';
-import { ToastCustom } from '../../../../../components/Toast_Custom';
-import { IoIosSave } from 'react-icons/io';
-// ================================================================================
 
-export interface Props {
+// ================================================================================
+// INTERFACES E TIPOS
+// ================================================================================
+export interface ModalApontamentoProps {
    isOpen: boolean;
    onClose: () => void;
    tarefa: DBTarefaProps | null;
@@ -136,7 +136,7 @@ export default function ModalApontamento({
    nomeCliente,
    onSuccess,
    codChamado,
-}: Props) {
+}: ModalApontamentoProps) {
    const { user } = useAuth();
 
    const [formData, setFormData] = useState<FormData>({
@@ -388,7 +388,7 @@ export default function ModalApontamento({
          />
          {/* ========== */}
 
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white shadow-xl shadow-black transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-gradient-to-r from-green-500 via-green-600 to-green-700 p-6 shadow-md shadow-black">
                {/* Título do modal */}
@@ -396,9 +396,14 @@ export default function ModalApontamento({
                   <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
                      <FaUserClock className="text-black" size={36} />
                   </div>
-                  <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
-                     Realizar Apontamento
-                  </h1>
+                  <div className="flex flex-col">
+                     <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
+                        Apontamento Tarefa
+                     </h1>
+                     <p className="text-xl font-extrabold tracking-widest text-black select-none">
+                        Tarefa #{tarefa.COD_TAREFA}
+                     </p>
+                  </div>
                </div>
                {/* ========== */}
 
@@ -406,7 +411,7 @@ export default function ModalApontamento({
                <button
                   onClick={handleClose}
                   disabled={isLoading}
-                  className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                >
                   <IoClose size={24} />
                </button>

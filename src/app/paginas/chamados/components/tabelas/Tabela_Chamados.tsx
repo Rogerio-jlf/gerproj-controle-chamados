@@ -40,7 +40,7 @@ import { BsEraserFill } from 'react-icons/bs';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { RiArrowUpDownLine } from 'react-icons/ri';
-import { FaFilter } from 'react-icons/fa6';
+import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
 
 // ================================================================================
@@ -192,9 +192,6 @@ const IndicatorFilter = ({
 };
 // ==================
 
-// ================================================================================
-// COMPONENTES DE UI DA TABELA
-// ================================================================================
 const OrderTableHeader = ({
    column,
    children,
@@ -208,7 +205,7 @@ const OrderTableHeader = ({
       <Tooltip>
          <TooltipTrigger asChild>
             <div
-               className="flex cursor-pointer items-center justify-center gap-2 rounded-md py-2 transition-all hover:bg-teal-900 active:scale-95"
+               className="flex cursor-pointer items-center justify-center gap-4 rounded-md py-2 transition-all hover:bg-teal-900 active:scale-95"
                onClick={column.getToggleSortingHandler()}
             >
                {children}
@@ -819,7 +816,7 @@ export default function TabelaChamados() {
    // ================================================================================
    return (
       <>
-         <div className="overflow-hidden rounded-xl border border-gray-500 bg-black">
+         <div className="overflow-hidden rounded-2xl bg-black shadow-xl shadow-black">
             {/* ===== HEADER ===== */}
             <header className="flex flex-col gap-4 bg-white/70 p-6">
                <section className="flex items-center justify-between gap-8">
@@ -1094,7 +1091,7 @@ export default function TabelaChamados() {
             {/* ============================== */}
             {/* ===== PAGINAÇÃO DA TABELA ===== */}
             {Array.isArray(data) && data.length > 0 && (
-               <section className="bg-white/70 px-12 py-4">
+               <div className="bg-white/70 px-12 py-4">
                   <div className="flex items-center justify-between">
                      {/* Informações da página */}
                      <section className="flex items-center gap-4">
@@ -1228,60 +1225,59 @@ export default function TabelaChamados() {
                         </div>
                      </section>
                   </div>
-               </section>
+               </div>
             )}
             {/* ==================== */}
             {/* ===== MENSAGEM QUANDO NÃO HÁ CHAMADOS ===== */}
             {data && data.length === 0 && !isLoading && (
-               <section className="bg-black py-40 text-center">
+               <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-20 text-center">
                   <FaExclamationTriangle
-                     className="mx-auto mb-6 text-yellow-500"
+                     className="mx-auto text-yellow-600"
                      size={80}
                   />
 
-                  <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
+                  <h3 className="text-2xl font-bold tracking-wider text-white select-none">
                      {user?.tipo === 'ADM'
-                        ? `Nenhum chamado foi encontrado para o período ${mes.toString().padStart(2, '0')}/${ano}.`
-                        : `Nenhum chamado (excluindo finalizados) foi encontrado para o período ${mes.toString().padStart(2, '0')}/${ano}.`}
+                        ? `Nenhum Chamado foi encontrado para o Período ${mes.toString().padStart(2, '0')}/${ano}.`
+                        : `Nenhum Chamado (excluindo finalizados) foi encontrado para o Período ${mes.toString().padStart(2, '0')}/${ano}.`}
                   </h3>
 
                   {user?.tipo !== 'ADM' && (
-                     <p className="mt-4 text-lg text-gray-300 italic">
+                     <p className="text-base font-semibold tracking-wider text-white italic select-none">
                         Chamados com status "FINALIZADO" não são exibidos para
                         seu perfil.
                      </p>
                   )}
-               </section>
+               </div>
             )}{' '}
             {/* ==================== */}
             {/* ===== MENSAGEM QUANDO OS FILTROS NÃO RETORNAM RESULTADOS ===== */}
             {data &&
                data.length > 0 &&
                table.getFilteredRowModel().rows.length === 0 && (
-                  <div className="bg-slate-900 py-20 text-center">
-                     <FaFilter
-                        className="mx-auto mb-4 text-cyan-400"
-                        size={60}
+                  <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-20 text-center">
+                     <FaFilterCircleXmark
+                        className="mx-auto text-red-600"
+                        size={80}
                      />
                      {/* ===== */}
-                     <h3 className="text-xl font-bold tracking-wider text-slate-200 select-none">
-                        Nenhum registro foi encontrado para os filtros
-                        aplicados.
+                     <h3 className="text-2xl font-bold tracking-wider text-white select-none">
+                        Nenhum Registro encontrado para os Filtros aplicados.
                      </h3>
                      {/* ===== */}
-                     <p className="mt-2 text-slate-400">
-                        Tente ajustar os filtros ou limpe-os para visualizar
-                        registros.
+                     <p className="text-base font-semibold tracking-wider text-white italic select-none">
+                        Tente ajustar os Filtros ou limpe-os para visualizar
+                        Registros.
                      </p>
-                     {/* ===== */}
+                     {/* ========== */}
 
                      {/* Botão para limpar filtros */}
                      {totalActiveFilters > 0 && (
                         <button
                            onClick={clearFilters}
-                           className="mx-auto mt-4 flex cursor-pointer items-center gap-2 rounded-md border border-cyan-400 bg-cyan-600 px-6 py-2 text-base font-semibold tracking-wider text-white transition-all select-none hover:scale-105 hover:bg-cyan-700 active:scale-95"
+                           className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-black transition-all select-none hover:-translate-y-1 hover:scale-102 hover:bg-red-800 active:scale-95"
                         >
-                           <BsEraserFill size={18} />
+                           <BsEraserFill className="text-white" size={24} />
                            Limpar Filtros
                         </button>
                      )}

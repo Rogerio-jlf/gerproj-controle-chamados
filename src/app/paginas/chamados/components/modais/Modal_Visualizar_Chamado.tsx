@@ -4,31 +4,36 @@ import { useState } from 'react';
 // ================================================================================
 import { TabelaChamadosProps } from '../../../../../types/types';
 import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+import { getStylesStatus } from '../../../../../utils/formatters';
 // ================================================================================
 import {
    FaCalendarAlt,
    FaUser,
-   FaFileAlt,
    FaClock,
    FaTag,
    FaUserTie,
+   FaDatabase,
 } from 'react-icons/fa';
-import { IoClose } from 'react-icons/io5';
+import { IoClose, IoCall } from 'react-icons/io5';
 import { MdDescription } from 'react-icons/md';
-// ================================================================================
 
-interface ModalChamadoProps {
+// ================================================================================
+// INTERFACES E TIPOS
+// ================================================================================
+interface ModalVisualizarChamadoProps {
    isOpen: boolean;
    onClose: () => void;
    chamado: TabelaChamadosProps | null;
 }
-// ================================================================================
 
+// ================================================================================
+// COMPONENTE PRINCIPAL
+// ================================================================================
 export default function ModalVisualizarChamado({
    isOpen,
    onClose,
    chamado,
-}: ModalChamadoProps) {
+}: ModalVisualizarChamadoProps) {
    const [isLoading] = useState(false);
 
    // ================================================================================
@@ -59,53 +64,6 @@ export default function ModalVisualizarChamado({
    // ================================================================================
 
    // ================================================================================
-   const getStyleStatus = (status: string | undefined) => {
-      switch (status?.toUpperCase()) {
-         case 'NAO FINALIZADO':
-            return 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white border border-yellow-300 shadow-yellow-500/30';
-
-         case 'EM ATENDIMENTO':
-            return 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border border-blue-300 shadow-blue-500/30';
-
-         case 'FINALIZADO':
-            return 'bg-gradient-to-r from-green-500 to-green-600 text-white border border-green-300 shadow-green-500/30';
-
-         case 'NAO INICIADO':
-            return 'bg-gradient-to-r from-red-500 to-red-600 text-white border border-red-300 shadow-red-500/30';
-
-         case 'STANDBY':
-            return 'bg-gradient-to-r from-orange-500 to-orange-600 text-white border border-orange-300 shadow-orange-500/30';
-
-         case 'ATRIBUIDO':
-            return 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border border-blue-300 shadow-blue-500/30';
-
-         case 'AGUARDANDO VALIDACAO':
-            return 'bg-gradient-to-r from-purple-500 to-purple-600 text-white border border-purple-300 shadow-purple-500/30';
-
-         default:
-            return 'bg-gradient-to-r from-gray-500 to-gray-600 text-white border border-gray-300 shadow-gray-500/30';
-      }
-   };
-   // ================================================================================
-
-   const getPriorityStyle = (priority: string | number | undefined | null) => {
-      if (priority === undefined || priority === null) {
-         return 'bg-gray-100 text-gray-800 border border-gray-200';
-      }
-
-      const priorityStr = String(priority).toUpperCase();
-      switch (priorityStr) {
-         case 'ALTA':
-            return 'bg-red-100 text-red-800 border border-red-200';
-         case 'MÉDIA':
-         case 'MEDIA':
-            return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
-         case 'BAIXA':
-            return 'bg-green-100 text-green-800 border border-green-200';
-         default:
-            return 'bg-gray-100 text-gray-800 border border-gray-200';
-      }
-   };
 
    if (!isOpen || !chamado) return null;
    // ================================================================================
@@ -123,13 +81,16 @@ export default function ModalVisualizarChamado({
          />
          {/* ========== */}
 
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white shadow-xl shadow-black transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-gradient-to-r from-indigo-500 via-indigo-600 to-indigo-700 p-6 shadow-md shadow-black">
                {/* Título do modal */}
                <div className="flex items-center justify-center gap-6">
                   <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
-                     <FaFileAlt className="text-black" size={36} />
+                     <FaDatabase className="text-black" size={36} />
+                  </div>
+                  <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
+                     <IoCall className="text-black" size={36} />
                   </div>
 
                   <div className="flex flex-col items-start justify-center">
@@ -137,11 +98,9 @@ export default function ModalVisualizarChamado({
                         Dados Chamado
                      </h1>
 
-                     <div className="rounded-full bg-black px-6 py-1">
-                        <p className="text-center text-base font-extrabold tracking-widest text-white italic select-none">
-                           #{chamado.COD_CHAMADO}
-                        </p>
-                     </div>
+                     <p className="text-xl font-extrabold tracking-widest text-black select-none">
+                        Chamado #{chamado.COD_CHAMADO}
+                     </p>
                   </div>
                </div>
                {/* ========== */}
@@ -150,7 +109,7 @@ export default function ModalVisualizarChamado({
                <button
                   onClick={handleClose}
                   disabled={isLoading}
-                  className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                >
                   <IoClose size={24} />
                </button>
@@ -222,7 +181,7 @@ export default function ModalVisualizarChamado({
                                        Status:
                                     </p>
                                     <p
-                                       className={`py-1text-lg inline-block rounded-full px-3 font-bold tracking-wider text-black select-none ${getStyleStatus(
+                                       className={`inline-block rounded-full px-3 py-1 text-lg font-bold tracking-wider text-black select-none ${getStylesStatus(
                                           chamado.STATUS_CHAMADO
                                        )}`}
                                     >
@@ -234,11 +193,7 @@ export default function ModalVisualizarChamado({
                                     <p className="text-sm font-semibold tracking-wider text-black italic select-none">
                                        Prioridade:
                                     </p>
-                                    <p
-                                       className={`inline-block rounded-full px-3 py-1 text-lg font-bold tracking-wider text-black select-none ${getPriorityStyle(
-                                          chamado.PRIOR_CHAMADO
-                                       )}`}
-                                    >
+                                    <p className="inline-block rounded-full bg-gray-200 px-3 py-1 text-lg font-bold tracking-wider text-black select-none">
                                        {chamado.PRIOR_CHAMADO ?? '-'}
                                     </p>
                                  </div>
@@ -338,7 +293,9 @@ export default function ModalVisualizarChamado({
                                        Responsável:
                                     </p>
                                     <p className="text-lg font-bold tracking-wider text-black select-none">
-                                       {chamado.NOME_RECURSO ?? '-'}
+                                       {corrigirTextoCorrompido(
+                                          chamado.NOME_RECURSO
+                                       ) ?? '-'}
                                     </p>
                                  </div>
                               </div>
@@ -355,7 +312,7 @@ export default function ModalVisualizarChamado({
                                     size={20}
                                  />
                                  <h3 className="text-lg font-extrabold tracking-wider text-black select-none">
-                                    Descrição
+                                    Assunto
                                  </h3>
                               </div>
                            </div>
@@ -363,30 +320,12 @@ export default function ModalVisualizarChamado({
                            <div className="p-4">
                               <div className="space-y-2">
                                  <div className="flex flex-col">
-                                    <p className="text-sm font-semibold tracking-wider text-black italic select-none">
-                                       Assunto:
-                                    </p>
                                     <p className="text-lg font-bold tracking-wider text-black select-none">
                                        {corrigirTextoCorrompido(
                                           chamado.ASSUNTO_CHAMADO
                                        ) ?? '-'}
                                     </p>
                                  </div>
-
-                                 {corrigirTextoCorrompido(
-                                    chamado.ASSUNTO_CHAMADO
-                                 ) && (
-                                    <div className="mt-3 flex flex-col">
-                                       <p className="text-sm font-semibold tracking-wider text-black italic select-none">
-                                          Descrição:
-                                       </p>
-                                       <p className="mt-1 rounded-md border-none bg-gray-50 p-3 text-lg font-bold tracking-wider text-black shadow-sm shadow-black select-none">
-                                          {corrigirTextoCorrompido(
-                                             chamado.ASSUNTO_CHAMADO
-                                          ) ?? '-'}
-                                       </p>
-                                    </div>
-                                 )}
                               </div>
                            </div>
                         </div>

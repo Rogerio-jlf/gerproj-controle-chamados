@@ -1,10 +1,10 @@
+import { ColumnDef } from '@tanstack/react-table';
+// ================================================================================
 import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
 } from '@/components/ui/tooltip';
-// ================================================================================
-import { ColumnDef } from '@tanstack/react-table';
 // ================================================================================
 import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
 import {
@@ -15,10 +15,10 @@ import {
 // ================================================================================
 import { MdEditDocument } from 'react-icons/md';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
-// ================================================================================
-// ================================================================================
 
-// Interfaces movidas para cá
+// ================================================================================
+// INTERFACES E TIPOS
+// ================================================================================
 export interface OSProps {
    COD_OS: string;
    CODTRF_OS: string;

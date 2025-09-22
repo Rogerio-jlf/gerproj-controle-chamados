@@ -11,9 +11,10 @@ import { formatarDataParaBR } from '../../../../../utils/formatters';
 import { getStylesStatus } from '../../../../../utils/formatters';
 // ================================================================================
 import { FaDownload } from 'react-icons/fa';
-// ================================================================================
-// ================================================================================
 
+// ================================================================================
+// INTERFACES E TIPOS
+// ================================================================================
 export interface ChamadosProps {
    COD_CHAMADO: number;
    DATA_CHAMADO: string;
@@ -26,9 +27,6 @@ export interface ChamadosProps {
 }
 // =====
 
-interface ColunasProps {
-   onCriarOS?: (chamado: ChamadosProps) => void;
-}
 // ================================================================================
 
 // ===== COMPONENTE DE COLUNAS DA TABELA =====
@@ -38,7 +36,7 @@ export const colunasTabela = (): ColumnDef<ChamadosProps>[] => [
       accessorKey: 'COD_CHAMADO',
       header: () => <div className="text-center">Código</div>,
       cell: ({ getValue }) => (
-         <div className="rounded-md bg-pink-600 p-2 text-center text-white">
+         <div className="rounded-md bg-slate-900 p-2 text-center text-white">
             {getValue() as string}
          </div>
       ),
@@ -54,7 +52,7 @@ export const colunasTabela = (): ColumnDef<ChamadosProps>[] => [
          const dataFormatada = formatarDataParaBR(dateString);
 
          return (
-            <div className="rounded-md bg-pink-600 p-2 text-center text-white">
+            <div className="rounded-md bg-slate-900 p-2 text-center text-white">
                {dataFormatada}
             </div>
          );

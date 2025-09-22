@@ -2,25 +2,26 @@ import { useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-// ====================
-import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
-import { formatarDataParaBR } from '../../../../../utils/formatters';
-import { TabelaChamadosProps } from '../../../../../types/types';
-import StatusCell from '../Cell_Status';
-// ====================
-import { FaDownload, FaTasks, FaBrain, FaEdit } from 'react-icons/fa';
-import { IoCall } from 'react-icons/io5';
-import { GrServicePlay } from 'react-icons/gr';
-import { HiMiniSquaresPlus } from 'react-icons/hi2';
+// ================================================================================
 import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
 } from '../../../../../components/ui/tooltip';
-import StatusCellUnified from '../modais/Modal_Unificado';
 // ================================================================================
+import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+import { formatarDataParaBR } from '../../../../../utils/formatters';
+import { TabelaChamadosProps } from '../../../../../types/types';
+import StatusApontamentoChamado from '../modais/Modal_Status_Apontamento_Chamado';
+// ================================================================================
+import { FaDownload, FaTasks, FaBrain } from 'react-icons/fa';
+import { IoCall } from 'react-icons/io5';
+import { GrServices } from 'react-icons/gr';
+import { HiMiniSquaresPlus } from 'react-icons/hi2';
 
-// 2. Atualizar a interface AcoesProps para incluir atribuição
+// ================================================================================
+// INTERFACES E TIPOS
+// ================================================================================
 interface AcoesProps {
    onVisualizarChamado: (codChamado: number) => void;
    onVisualizarOS: (codChamado: number) => void;
@@ -37,13 +38,13 @@ interface AcoesProps {
    userType?: string;
 }
 
-interface CircularActionsMenuProps {
+interface BotaoCircularMenuProps {
    chamado: TabelaChamadosProps;
    acoes: AcoesProps;
 }
 
 // ===== MENU CIRCULAR AÇÕES MELHORADO =====
-const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
+const CircularActionsMenu = ({ chamado, acoes }: BotaoCircularMenuProps) => {
    const [isOpen, setIsOpen] = useState(false);
    const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
    const [hoveredButton, setHoveredButton] = useState<number | null>(null);
@@ -89,7 +90,7 @@ const CircularActionsMenu = ({ chamado, acoes }: CircularActionsMenuProps) => {
          ringColor: 'hover:ring-blue-300/40',
       },
       {
-         icon: GrServicePlay,
+         icon: GrServices,
          onClick: () => {
             acoes.onVisualizarOS(chamado.COD_CHAMADO);
             setIsOpen(false);
@@ -375,7 +376,7 @@ export const colunasTabela = (
          accessorKey: 'STATUS_CHAMADO',
          header: () => <div className="text-center">Status</div>,
          cell: ({ row }) => (
-            <StatusCellUnified
+            <StatusApontamentoChamado
                status={row.original.STATUS_CHAMADO}
                codChamado={row.original.COD_CHAMADO}
                nomeCliente={row.original.NOME_CLIENTE}

@@ -4,7 +4,7 @@ import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from '../../../../../components/ui/tooltip';
 // ================================================================================
 import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
 import {
@@ -12,11 +12,12 @@ import {
    formatarDecimalParaTempo,
 } from '../../../../../utils/formatters';
 // ================================================================================
-import { FaHandPointUp } from 'react-icons/fa';
-import { FaDownload, FaPhoneAlt, FaThList } from 'react-icons/fa';
-// ================================================================================
-// ================================================================================
+import { FaDownload, FaPhoneAlt, FaHandPointUp } from 'react-icons/fa';
+import { GrServices } from 'react-icons/gr';
 
+// ================================================================================
+// INTERFACES E TIPOS
+// ================================================================================
 export interface TarefasProps {
    COD_TAREFA: number;
    NOME_TAREFA: string;
@@ -29,7 +30,7 @@ export interface TarefasProps {
 export interface ChamadosProps {
    COD_CHAMADO: number;
    DATA_CHAMADO: string;
-   STATUS_CHAMADO: string; // ← Mudou de number para string
+   STATUS_CHAMADO: string;
    CODTRF_CHAMADO: number;
    COD_CLIENTE: number;
    ASSUNTO_CHAMADO: string;
@@ -37,7 +38,6 @@ export interface ChamadosProps {
    NOME_CLIENTE: string;
 }
 
-// Interface para as props das colunas
 interface ColunasProps {
    visualizarOSTarefa?: (codTarefa: number) => void;
    visualizarChamadosTarefa?: (codTarefa: number) => void;
@@ -189,7 +189,7 @@ export const colunasTabela = (
                         onClick={handleVisualizarOS}
                         className="cursor-pointer transition-all hover:-translate-y-1 hover:scale-102 active:scale-95"
                      >
-                        <FaThList size={24} />
+                        <GrServices size={24} />
                      </button>
                   </TooltipTrigger>
                   <TooltipContent

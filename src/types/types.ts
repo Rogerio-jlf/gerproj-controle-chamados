@@ -1,4 +1,27 @@
-// Interface para a tabela OS
+export interface TabelaChamadosProps {
+   COD_CHAMADO: number;
+   DATA_CHAMADO: string;
+   HORA_CHAMADO: string;
+   SOLICITACAO_CHAMADO: string;
+   CONCLUSAO_CHAMADO: string | null;
+   STATUS_CHAMADO: string;
+   DTENVIO_CHAMADO: string | null;
+   COD_RECURSO: number;
+   CLIENTE_CHAMADO: string;
+   CODTRF_CHAMADO: number;
+   COD_CLIENTE: number;
+   SOLICITACAO2_CHAMADO: string;
+   ASSUNTO_CHAMADO: string;
+   EMAIL_CHAMADO: string;
+   PRIOR_CHAMADO: number;
+   COD_CLASSIFICACAO: number;
+   // =====
+   NOME_RECURSO: string;
+   // =====
+   NOME_CLIENTE: string;
+}
+// ================================================================================
+
 export interface TabelaOSProps {
    COD_OS: string;
    CODTRF_OS: string;
@@ -24,6 +47,7 @@ export interface TabelaOSProps {
    VRHR_OS: string | null;
    NUM_OS: string;
    CHAMADO_OS: string;
+   // =====
    COD_CHAMADO: string;
    COD_CLIENTE: string;
    NOME_CLIENTE: string;
@@ -43,21 +67,3 @@ export interface DBTarefaProps {
    codChamado?: number;
 }
 // ================================================================================
-
-export interface TabelaChamadosProps {
-   COD_CHAMADO: number;
-   DATA_CHAMADO: string;
-   HORA_CHAMADO: string;
-   CONCLUSAO_CHAMADO: string | null;
-   STATUS_CHAMADO: string;
-   DTENVIO_CHAMADO: string | null;
-   COD_RECURSO: number;
-   CODTRF_CHAMADO: string | null;
-   COD_CLIENTE: number;
-   ASSUNTO_CHAMADO: string;
-   EMAIL_CHAMADO: string;
-   PRIOR_CHAMADO: string;
-   COD_CLASSIFICACAO: number;
-   NOME_CLIENTE: string;
-   NOME_RECURSO: string;
-}

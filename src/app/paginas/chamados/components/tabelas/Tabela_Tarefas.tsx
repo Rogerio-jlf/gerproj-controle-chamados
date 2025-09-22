@@ -35,7 +35,7 @@ import { IoArrowDown, IoArrowUp, IoClose } from 'react-icons/io5';
 import { RiArrowUpDownLine } from 'react-icons/ri';
 import { BsEraserFill } from 'react-icons/bs';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
-import { FaFilter } from 'react-icons/fa6';
+import { FaFilterCircleXmark } from 'react-icons/fa6';
 
 // ================================================================================
 // INTERFACES E TIPOS
@@ -193,8 +193,7 @@ const IndicatorFilter = ({
 };
 // ==================
 
-// Componente para ordenação do cabeçalho da tabela
-const SortableHeader = ({
+const OrderTableHeader = ({
    column,
    children,
 }: {
@@ -207,7 +206,7 @@ const SortableHeader = ({
       <Tooltip>
          <TooltipTrigger asChild>
             <div
-               className="flex cursor-pointer items-center justify-center gap-2 rounded-md py-2 transition-all hover:bg-teal-900 active:scale-95"
+               className="flex cursor-pointer items-center justify-center gap-4 rounded-md py-2 transition-all hover:bg-teal-900 active:scale-95"
                onClick={column.getToggleSortingHandler()}
             >
                {children}
@@ -236,6 +235,7 @@ const SortableHeader = ({
       </Tooltip>
    );
 };
+// ====================
 
 // Função auxiliar para nomes das colunas
 const getColumnDisplayName = (columnId: string): string => {
@@ -573,7 +573,7 @@ export default function TabelaTarefas({
             {/* ==================== */}
 
             {/* ===== MODAL ===== */}
-            <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-black">
+            <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl shadow-xl shadow-black">
                {/* ===== HEADER ===== */}
                <header className="flex flex-col gap-4 bg-white/70 p-6">
                   <section className="flex items-center justify-between gap-8">
@@ -672,6 +672,7 @@ export default function TabelaTarefas({
                            className="h-full overflow-y-auto"
                            style={{ maxHeight: 'calc(100vh - 420px)' }}
                         >
+                           {/* =====TABELA ===== */}
                            <table className="w-full table-fixed border-collapse">
                               {/* ===== CABEÇALHO DA TABELA ===== */}
                               <thead className="sticky top-0 z-20">
@@ -695,7 +696,7 @@ export default function TabelaTarefas({
                                                   'NOME_TAREFA' ||
                                                header.column.id ===
                                                   'DTSOL_TAREFA' ? (
-                                                <SortableHeader
+                                                <OrderTableHeader
                                                    column={header.column}
                                                 >
                                                    {flexRender(
@@ -703,7 +704,7 @@ export default function TabelaTarefas({
                                                          .header,
                                                       header.getContext()
                                                    )}
-                                                </SortableHeader>
+                                                </OrderTableHeader>
                                              ) : (
                                                 flexRender(
                                                    header.column.columnDef
@@ -741,6 +742,9 @@ export default function TabelaTarefas({
                                                          value
                                                       )
                                                    }
+                                                   onClear={() =>
+                                                      column.setFilterValue('')
+                                                   }
                                                    placeholder="Código..."
                                                    type="text"
                                                 />
@@ -757,6 +761,9 @@ export default function TabelaTarefas({
                                                          value
                                                       )
                                                    }
+                                                   onClear={() =>
+                                                      column.setFilterValue('')
+                                                   }
                                                    placeholder="Nome da tarefa..."
                                                 />
                                              )}
@@ -771,6 +778,9 @@ export default function TabelaTarefas({
                                                       column.setFilterValue(
                                                          value
                                                       )
+                                                   }
+                                                   onClear={() =>
+                                                      column.setFilterValue('')
                                                    }
                                                    placeholder="dd/mm/aaaa"
                                                    type="text"
@@ -828,18 +838,18 @@ export default function TabelaTarefas({
                         </div>
 
                         {/* ===== PAGINAÇÃO DA TABELA ===== */}
-                        <section className="bg-white/70 px-12 py-4">
+                        <div className="bg-white/70 px-12 py-4">
                            <div className="flex items-center justify-between">
                               {/* Informações da página */}
                               <section className="flex items-center gap-4">
                                  <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
                                     {table.getFilteredRowModel().rows.length}{' '}
-                                    tarefa
+                                    registro
                                     {table.getFilteredRowModel().rows.length !==
                                     1
                                        ? 's'
                                        : ''}{' '}
-                                    encontrada
+                                    encontrado
                                     {table.getFilteredRowModel().rows.length !==
                                     1
                                        ? 's'
@@ -870,46 +880,45 @@ export default function TabelaTarefas({
                                              Number(e.target.value)
                                           )
                                        }
-                                       className="cursor-pointer rounded-md px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                                       className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
                                     >
-                                       {[10, 25, 50, 75, 100].map(pageSize => (
-                                          <option
-                                             key={pageSize}
-                                             value={pageSize}
-                                             className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
-                                          >
-                                             {pageSize}
-                                          </option>
-                                       ))}
+                                       {[50, 100, 200, 300, 400, 500].map(
+                                          pageSize => (
+                                             <option
+                                                key={pageSize}
+                                                value={pageSize}
+                                                className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
+                                             >
+                                                {pageSize}
+                                             </option>
+                                          )
+                                       )}
                                     </select>
                                  </div>
-                                 {/* ===== */}
 
                                  {/* Botões de navegação */}
                                  <div className="flex items-center gap-3">
                                     <button
                                        onClick={() => table.setPageIndex(0)}
                                        disabled={!table.getCanPreviousPage()}
-                                       className="group cursor-pointer rounded-md px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                       className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                        <FiChevronsLeft
                                           className="text-black group-disabled:text-white"
                                           size={24}
                                        />
                                     </button>
-                                    {/* ===== */}
 
                                     <button
                                        onClick={() => table.previousPage()}
                                        disabled={!table.getCanPreviousPage()}
-                                       className="group cursor-pointer rounded-md px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                       className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                        <MdChevronLeft
                                           className="text-black group-disabled:text-white"
                                           size={24}
                                        />
                                     </button>
-                                    {/* ===== */}
 
                                     <div className="flex items-center justify-center gap-2">
                                        <span className="text-base font-semibold tracking-widest text-black italic select-none">
@@ -924,7 +933,7 @@ export default function TabelaTarefas({
                                                    Number(e.target.value) - 1;
                                                 table.setPageIndex(page);
                                              }}
-                                             className="cursor-pointer rounded-md px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                                             className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
                                           >
                                              {Array.from(
                                                 {
@@ -942,25 +951,22 @@ export default function TabelaTarefas({
                                              )}
                                           </select>
                                        </span>
-                                       {/* ===== */}
                                        <span className="text-base font-semibold tracking-widest text-black italic select-none">
                                           {' '}
                                           de {table.getPageCount()}
                                        </span>
                                     </div>
-                                    {/* ===== */}
 
                                     <button
                                        onClick={() => table.nextPage()}
                                        disabled={!table.getCanNextPage()}
-                                       className="group cursor-pointer rounded-md px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                       className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                        <MdChevronRight
                                           className="text-black group-disabled:text-white"
                                           size={24}
                                        />
                                     </button>
-                                    {/* ===== */}
 
                                     <button
                                        onClick={() =>
@@ -969,7 +975,7 @@ export default function TabelaTarefas({
                                           )
                                        }
                                        disabled={!table.getCanNextPage()}
-                                       className="group cursor-pointer rounded-md px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                       className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                        <FiChevronsRight
                                           className="text-black group-disabled:text-white"
@@ -979,7 +985,7 @@ export default function TabelaTarefas({
                                  </div>
                               </section>
                            </div>
-                        </section>
+                        </div>
                      </section>
                   )}
                   {/* ===== */}
@@ -1000,38 +1006,41 @@ export default function TabelaTarefas({
                   )}
                   {/* ===== */}
 
-                  {/* ===== MENSAGEM QUANDO FILTROS NÃO RETORNAM RESULTADOS ===== */}
+                  {/* ===== MENSAGEM QUANDO OS FILTROS NÃO RETORNAM RESULTADOS ===== */}
                   {dataTarefas &&
                      dataTarefas.length > 0 &&
                      table.getFilteredRowModel().rows.length === 0 && (
-                        <section className="bg-slate-900 py-20 text-center">
-                           {/* ícone */}
-                           <FaFilter
-                              className="mx-auto mb-4 text-cyan-400"
-                              size={60}
+                        <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-20 text-center">
+                           <FaFilterCircleXmark
+                              className="mx-auto text-red-600"
+                              size={80}
                            />
-                           {/* título */}
-                           <h3 className="text-xl font-bold tracking-wider text-slate-200 select-none">
-                              Nenhum registro foi encontrado para os filtros
+                           {/* ===== */}
+                           <h3 className="text-2xl font-bold tracking-wider text-white select-none">
+                              Nenhum Registro encontrado para os Filtros
                               aplicados.
                            </h3>
-                           {/* Subtítulo */}
-                           <p className="mt-2 text-slate-400">
-                              Tente ajustar os filtros ou limpe-os para
-                              visualizar registros.
+                           {/* ===== */}
+                           <p className="text-base font-semibold tracking-wider text-white italic select-none">
+                              Tente ajustar os Filtros ou limpe-os para
+                              visualizar Registros.
                            </p>
+                           {/* ========== */}
 
                            {/* Botão para limpar filtros */}
                            {totalActiveFilters > 0 && (
                               <button
                                  onClick={clearFilters}
-                                 className="mx-auto mt-4 flex cursor-pointer items-center gap-2 rounded-md border border-cyan-400 bg-cyan-600 px-6 py-2 text-base font-semibold tracking-wider text-white transition-all select-none hover:scale-105 hover:bg-cyan-700 active:scale-95"
+                                 className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-black transition-all select-none hover:-translate-y-1 hover:scale-102 hover:bg-red-800 active:scale-95"
                               >
-                                 <BsEraserFill size={18} />
+                                 <BsEraserFill
+                                    className="text-white"
+                                    size={24}
+                                 />
                                  Limpar Filtros
                               </button>
                            )}
-                        </section>
+                        </div>
                      )}
                </main>
             </div>

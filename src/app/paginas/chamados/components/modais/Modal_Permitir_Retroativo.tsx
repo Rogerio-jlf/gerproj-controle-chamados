@@ -1,6 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+// ================================================================================
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from '../../../../../components/ui/tooltip';
+// ================================================================================
 import {
    FaUserCog,
    FaCheck,
@@ -12,11 +19,6 @@ import {
 } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import { Loader2 } from 'lucide-react';
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from '../../../../../components/ui/tooltip';
 
 // ================================================================================
 // INTERFACES E TIPOS
@@ -51,7 +53,7 @@ interface ModalPermitirRetroativoProps {
 // HOOK PARA GERENCIAR PERMISSÕES (AGORA COM API)
 // ================================================================================
 
-export const useBackdatedPermissions = () => {
+export const useModalPermitirRetroativo = () => {
    const [permissions, setPermissions] = useState<PermitirRetroativoProps[]>(
       []
    );
@@ -234,7 +236,7 @@ export const useBackdatedPermissions = () => {
 // MODAL DE GERENCIAMENTO DE PERMISSÕES (ATUALIZADO)
 // ================================================================================
 
-export const BackdatedPermissionsModal: React.FC<
+export const ModalPermitirRetroativo: React.FC<
    ModalPermitirRetroativoProps
 > = ({ isOpen, onClose, currentUserId, chamadoId }) => {
    const {
@@ -244,7 +246,7 @@ export const BackdatedPermissionsModal: React.FC<
       getActivePermissions,
       loadPermissions,
       loading: permissionsLoading,
-   } = useBackdatedPermissions();
+   } = useModalPermitirRetroativo();
 
    const [resources, setResources] = useState<RecursoProps[]>([]);
    const [loading, setLoading] = useState(false);
@@ -495,7 +497,7 @@ export const BackdatedPermissionsModal: React.FC<
 
    return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-lg">
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-[800px] overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-[800px] overflow-hidden rounded-2xl border-0 bg-white shadow-xl shadow-black transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 p-6 shadow-md shadow-black">
                <div className="flex items-center justify-center gap-6">

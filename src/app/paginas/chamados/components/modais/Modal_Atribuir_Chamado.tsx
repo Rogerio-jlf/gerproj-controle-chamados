@@ -8,7 +8,6 @@ import React, {
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { z } from 'zod';
-import { Loader2 } from 'lucide-react';
 // ================================================================================
 import {
    Tooltip,
@@ -41,17 +40,17 @@ import { BiSolidZap } from 'react-icons/bi';
 import { HiTrendingUp } from 'react-icons/hi';
 import { MdMessage, MdEmail } from 'react-icons/md';
 import { IoIosSave } from 'react-icons/io';
+import { Loader2 } from 'lucide-react';
 
 // ================================================================================
-// DARK MODE CONTEXT
+// INTERFACES E TIPOS
 // ================================================================================
-
-interface DarkModeContextType {
+interface DarkModeProps {
    isDarkMode: boolean;
    toggleDarkMode: () => void;
 }
 
-const DarkModeContext = createContext<DarkModeContextType>({
+const DarkModeContext = createContext<DarkModeProps>({
    isDarkMode: true,
    toggleDarkMode: () => {},
 });
@@ -669,7 +668,7 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.9, opacity: 0 }}
-                  className={`flex h-full w-full flex-col overflow-hidden rounded-xl ${theme.border} ${theme.modalBg}`}
+                  className={`flex h-full w-full flex-col overflow-hidden rounded-2xl ${theme.border} ${theme.modalBg}`}
                >
                   {/* ===== HEADER ===== */}
                   <header
