@@ -48,72 +48,158 @@ interface BackdatedPermissionsModalProps {
 }
 
 // ================================================================================
-// HOOK PARA GERENCIAR PERMISSÕES
+// HOOK PARA GERENCIAR PERMISSÕES (AGORA COM API)
 // ================================================================================
 
 export const useBackdatedPermissions = () => {
    const [permissions, setPermissions] = useState<BackdatedPermission[]>([]);
-   const STORAGE_KEY = 'backdated_appointments_permissions';
+   const [loading, setLoading] = useState(false);
 
-   // Carregar permissões do localStorage na inicialização
-   useEffect(() => {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
+   // Função para fazer chamadas à API
+   const makeApiCall = async (method: string, data?: any): Promise<any> => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+         throw new Error('Token não encontrado');
+      }
+
+      const options: RequestInit = {
+         method,
+         headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+         },
+      };
+
+      if (
+         data &&
+         (method === 'POST' || method === 'DELETE' || method === 'PUT')
+      ) {
+         options.body = JSON.stringify(data);
+      }
+
+      const response = await fetch('/api/permitir-retroativo', options);
+
+      if (!response.ok) {
+         throw new Error(`Erro na API: ${response.statusText}`);
+      }
+
+      return response.json();
+   };
+
+   // Carregar permissões da API
+   const loadPermissions = useCallback(
+      async (resourceId?: string, chamadoId?: string) => {
+         setLoading(true);
          try {
-            const parsed = JSON.parse(stored);
-            setPermissions(Array.isArray(parsed) ? parsed : []);
+            let url = '/api/permitir-retroativo';
+            const params = new URLSearchParams();
+
+            if (resourceId) params.append('resourceId', resourceId);
+            if (chamadoId) params.append('chamadoId', chamadoId);
+
+            if (params.toString()) {
+               url += `?${params.toString()}`;
+            }
+
+            const token = localStorage.getItem('token');
+            const response = await fetch(url, {
+               headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+               },
+            });
+
+            if (response.ok) {
+               const data = await response.json();
+               setPermissions(Array.isArray(data) ? data : []);
+            }
          } catch (error) {
             console.error('Erro ao carregar permissões:', error);
             setPermissions([]);
+         } finally {
+            setLoading(false);
          }
-      }
-   }, []);
-
-   // Salvar no localStorage sempre que as permissões mudarem
-   const saveToStorage = (newPermissions: BackdatedPermission[]) => {
-      try {
-         localStorage.setItem(STORAGE_KEY, JSON.stringify(newPermissions));
-      } catch (error) {
-         console.error('Erro ao salvar permissões:', error);
-      }
-   };
+      },
+      []
+   );
 
    // Habilitar permissão para um recurso em um chamado específico
-   const enablePermission = (
+   const enablePermission = async (
       resourceId: string,
       resourceName: string,
       chamadoId: string,
       adminId: string
-   ) => {
-      setPermissions(prev => {
-         const newPermissions = prev.filter(
-            p => !(p.resourceId === resourceId && p.chamadoId === chamadoId)
-         );
-         const updatedPermissions = [
-            ...newPermissions,
-            {
-               resourceId,
-               resourceName,
-               chamadoId,
-               enabled: true,
-               enabledAt: new Date().toISOString(),
-               enabledBy: adminId,
-            },
-         ];
-         saveToStorage(updatedPermissions);
-         return updatedPermissions;
-      });
+   ): Promise<boolean> => {
+      try {
+         console.log('📤 Fazendo POST para habilitar permissão:', {
+            resourceId,
+            resourceName,
+            chamadoId,
+            adminId,
+         });
+
+         await makeApiCall('POST', {
+            resourceId,
+            resourceName,
+            chamadoId,
+            adminId,
+         });
+
+         // Atualizar estado local
+         setPermissions(prev => {
+            const filtered = prev.filter(
+               p => !(p.resourceId === resourceId && p.chamadoId === chamadoId)
+            );
+            return [
+               ...filtered,
+               {
+                  resourceId,
+                  resourceName,
+                  chamadoId,
+                  enabled: true,
+                  enabledAt: new Date().toISOString(),
+                  enabledBy: adminId,
+               },
+            ];
+         });
+
+         console.log('✅ Permissão habilitada com sucesso');
+         return true;
+      } catch (error) {
+         console.error('❌ Erro ao habilitar permissão:', error);
+         return false;
+      }
    };
 
    // Desabilitar permissão para um recurso em um chamado específico
-   const disablePermission = (resourceId: string, chamadoId: string) => {
-      setPermissions(prev => {
-         const updatedPermissions = prev.filter(
-            p => !(p.resourceId === resourceId && p.chamadoId === chamadoId)
+   const disablePermission = async (
+      resourceId: string,
+      chamadoId: string
+   ): Promise<boolean> => {
+      try {
+         console.log('📤 Fazendo DELETE para desabilitar permissão:', {
+            resourceId,
+            chamadoId,
+         });
+
+         await makeApiCall('DELETE', {
+            resourceId,
+            chamadoId,
+         });
+
+         // Atualizar estado local
+         setPermissions(prev =>
+            prev.filter(
+               p => !(p.resourceId === resourceId && p.chamadoId === chamadoId)
+            )
          );
-         saveToStorage(updatedPermissions);
-         return updatedPermissions;
-      });
+
+         console.log('✅ Permissão desabilitada com sucesso');
+         return true;
+      } catch (error) {
+         console.error('❌ Erro ao desabilitar permissão:', error);
+         return false;
+      }
    };
 
    // Verificar se um recurso tem permissão para um chamado específico
@@ -133,6 +219,8 @@ export const useBackdatedPermissions = () => {
 
    return {
       permissions,
+      loading,
+      loadPermissions,
       enablePermission,
       disablePermission,
       hasPermission,
@@ -141,7 +229,7 @@ export const useBackdatedPermissions = () => {
 };
 
 // ================================================================================
-// MODAL DE GERENCIAMENTO DE PERMISSÕES
+// MODAL DE GERENCIAMENTO DE PERMISSÕES (ATUALIZADO)
 // ================================================================================
 
 export const BackdatedPermissionsModal: React.FC<
@@ -152,6 +240,8 @@ export const BackdatedPermissionsModal: React.FC<
       enablePermission,
       disablePermission,
       getActivePermissions,
+      loadPermissions,
+      loading: permissionsLoading,
    } = useBackdatedPermissions();
 
    const [resources, setResources] = useState<Resource[]>([]);
@@ -162,6 +252,14 @@ export const BackdatedPermissionsModal: React.FC<
       cliente: string;
       status: string;
    } | null>(null);
+
+   // 🆕 Estado para controlar permissões pendentes (não salvas ainda)
+   const [pendingPermissions, setPendingPermissions] = useState<{
+      [resourceId: string]: boolean;
+   }>({});
+
+   // 🆕 Estado para loading do botão Concluir
+   const [savingPermissions, setSavingPermissions] = useState(false);
 
    const fetchChamadoAndResources = useCallback(async () => {
       setLoading(true);
@@ -263,40 +361,130 @@ export const BackdatedPermissionsModal: React.FC<
                throw new Error('Erro ao carregar recursos');
             }
          }
+
+         // Carregar permissões existentes para este chamado
+         await loadPermissions(undefined, chamadoId);
       } catch (err) {
          console.error('Erro ao carregar dados:', err);
          setError(err instanceof Error ? err.message : 'Erro desconhecido');
       } finally {
          setLoading(false);
       }
-   }, [chamadoId]);
+   }, [chamadoId, loadPermissions]);
 
    // Fetch recursos responsáveis pelo chamado quando o modal abre
    useEffect(() => {
       if (isOpen) {
          fetchChamadoAndResources();
+         // 🆕 Limpar permissões pendentes ao abrir
+         setPendingPermissions({});
       }
    }, [isOpen, fetchChamadoAndResources]);
 
+   // 🆕 Função para marcar/desmarcar permissões (só armazena localmente)
    const handlePermissionToggle = (resource: Resource, enabled: boolean) => {
-      if (enabled) {
-         enablePermission(
-            resource.cod_recurso.toString(),
-            resource.nome_recurso,
-            chamadoId,
-            currentUserId
-         );
-      } else {
-         disablePermission(resource.cod_recurso.toString(), chamadoId);
+      const resourceId = resource.cod_recurso.toString();
+
+      console.log('🔄 Toggle permissão local:', {
+         resource: resource.nome_recurso,
+         enabled,
+         resourceId,
+         currentUserId,
+      });
+
+      setPendingPermissions(prev => ({
+         ...prev,
+         [resourceId]: enabled,
+      }));
+   };
+
+   // 🆕 Função para salvar todas as permissões pendentes
+   const handleSavePermissions = async () => {
+      if (!currentUserId) {
+         alert('ID do usuário não informado. Não é possível salvar.');
+         return;
       }
+
+      setSavingPermissions(true);
+      console.log('💾 Iniciando salvamento das permissões...');
+      console.log('📋 Permissões pendentes:', pendingPermissions);
+
+      let hasErrors = false;
+
+      try {
+         // Processar cada permissão pendente
+         for (const [resourceId, enabled] of Object.entries(
+            pendingPermissions
+         )) {
+            const resource = resources.find(
+               r => r.cod_recurso.toString() === resourceId
+            );
+
+            if (!resource) {
+               console.warn(`⚠️ Recurso não encontrado: ${resourceId}`);
+               continue;
+            }
+
+            let success = false;
+
+            if (enabled) {
+               // Habilitar permissão
+               success = await enablePermission(
+                  resourceId,
+                  resource.nome_recurso,
+                  chamadoId,
+                  currentUserId
+               );
+            } else {
+               // Desabilitar permissão
+               success = await disablePermission(resourceId, chamadoId);
+            }
+
+            if (!success) {
+               console.error(
+                  `❌ Falha ao processar permissão para recurso: ${resource.nome_recurso}`
+               );
+               hasErrors = true;
+            }
+         }
+
+         if (hasErrors) {
+            alert(
+               'Algumas permissões não puderam ser salvas. Verifique o console para detalhes.'
+            );
+         } else {
+            console.log('✅ Todas as permissões foram salvas com sucesso!');
+            // 🆕 Limpar permissões pendentes após salvar
+            setPendingPermissions({});
+            onClose();
+         }
+      } catch (error) {
+         console.error('❌ Erro geral ao salvar permissões:', error);
+         alert('Erro ao salvar permissões. Tente novamente.');
+      } finally {
+         setSavingPermissions(false);
+      }
+   };
+
+   // 🆕 Função para verificar se um recurso está habilitado (considerando pendentes)
+   const isResourceEnabled = (resourceId: string): boolean => {
+      // Se tem permissão pendente, usar ela
+      if (resourceId in pendingPermissions) {
+         return pendingPermissions[resourceId];
+      }
+
+      // Senão, usar permissão existente da API
+      return hasPermission(resourceId, chamadoId);
    };
 
    const activePermissions = getActivePermissions().filter(
       p => p.chamadoId === chamadoId
    );
 
-   // Verifica se há pelo menos uma permissão ativa para este chamado
-   const hasActivePermissions = activePermissions.length > 0;
+   // 🆕 Verificar se há pelo menos uma permissão ativa (incluindo pendentes)
+   const hasPendingChanges = Object.keys(pendingPermissions).length > 0;
+   const hasActivePermissions =
+      activePermissions.length > 0 || hasPendingChanges;
 
    if (!isOpen) return null;
 
@@ -403,22 +591,48 @@ export const BackdatedPermissionsModal: React.FC<
                   <p className="text-sm text-yellow-700">
                      Recursos marcados poderão criar apontamentos em datas
                      anteriores ao mês atual, apenas para o Chamado #{chamadoId}
-                     . Esta permissão é específica e temporária.
+                     . Esta permissão é específica e temporária.{' '}
+                     <strong>
+                        As permissões são compartilhadas entre todos os
+                        dispositivos.
+                     </strong>
                   </p>
                </div>
                {/* ==================== */}
 
+               {/* 🆕 AVISO SOBRE ALTERAÇÕES PENDENTES */}
+               {hasPendingChanges && (
+                  <div className="flex flex-col gap-2 rounded-lg border border-l-8 border-orange-500 bg-orange-100 p-4">
+                     <div className="flex items-center gap-3">
+                        <FaExclamationTriangle
+                           className="text-orange-800"
+                           size={20}
+                        />
+                        <span className="text-base font-extrabold tracking-wider text-orange-800 uppercase select-none">
+                           Alterações não salvas!
+                        </span>
+                     </div>
+                     <p className="text-sm text-orange-700">
+                        Você tem alterações pendentes. Clique em{' '}
+                        <strong>"Salvar e Concluir"</strong> para confirmar as
+                        mudanças.
+                     </p>
+                  </div>
+               )}
+
                {/* ===== RECURSO RESPONSÁVEL ===== */}
                <div className="">
                   {/* Loader */}
-                  {loading ? (
+                  {loading || permissionsLoading ? (
                      <div className="flex flex-col items-center justify-center py-12">
                         <Loader2
                            className="mb-4 animate-spin text-purple-600"
                            size={40}
                         />
                         <p className="text-base font-bold tracking-widest text-black italic select-none">
-                           Carregando recursos do chamado...
+                           {loading
+                              ? 'Carregando recursos do chamado...'
+                              : 'Carregando permissões...'}
                         </p>
                      </div>
                   ) : // ==========
@@ -453,10 +667,8 @@ export const BackdatedPermissionsModal: React.FC<
                      // Lista de Recursos
                      <div className="flex max-h-96 flex-col gap-2 overflow-y-auto">
                         {resources.map(resource => {
-                           const isEnabled = hasPermission(
-                              resource.cod_recurso.toString(),
-                              chamadoId
-                           );
+                           const resourceId = resource.cod_recurso.toString();
+                           const isEnabled = isResourceEnabled(resourceId);
 
                            return (
                               <div
@@ -556,24 +768,59 @@ export const BackdatedPermissionsModal: React.FC<
             <footer className="border-t-2 border-purple-500 bg-purple-200 p-6">
                <div className="flex items-center justify-between">
                   <div className="text-base font-semibold tracking-wider text-purple-700 select-none">
-                     {hasActivePermissions && (
+                     {hasActivePermissions && !hasPendingChanges && (
                         <span className="text-base font-semibold tracking-wider text-purple-700 select-none">
                            Permissões ativas para o Chamado #{chamadoId}
                         </span>
                      )}
+                     {hasPendingChanges && (
+                        <span className="text-base font-semibold tracking-wider text-orange-700 select-none">
+                           {Object.keys(pendingPermissions).length}{' '}
+                           alteração(ões) pendente(s)
+                        </span>
+                     )}
                   </div>
                   {/* ========== */}
-                  <button
-                     onClick={onClose}
-                     disabled={!hasActivePermissions}
-                     className={`cursor-pointer rounded-xl border-none bg-purple-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black select-none ${
-                        !hasActivePermissions
-                           ? 'disabled:cursor-not-allowed disabled:opacity-50'
-                           : 'transition-all hover:scale-105 hover:bg-purple-900 hover:shadow-md hover:shadow-black active:scale-95'
-                     }`}
-                  >
-                     Concluir
-                  </button>
+
+                  <div className="flex gap-3">
+                     {/* 🆕 Botão Cancelar (quando há mudanças pendentes) */}
+                     {hasPendingChanges && (
+                        <button
+                           onClick={() => {
+                              setPendingPermissions({});
+                              console.log('❌ Alterações canceladas');
+                           }}
+                           disabled={savingPermissions}
+                           className="cursor-pointer rounded-xl border-none bg-gray-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-gray-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                           Cancelar
+                        </button>
+                     )}
+
+                     {/* 🆕 Botão principal - muda baseado no estado */}
+                     <button
+                        onClick={
+                           hasPendingChanges ? handleSavePermissions : onClose
+                        }
+                        disabled={savingPermissions}
+                        className={`cursor-pointer rounded-xl border-none px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black select-none ${
+                           hasPendingChanges
+                              ? 'bg-green-500 transition-all hover:scale-105 hover:bg-green-700 hover:shadow-md hover:shadow-black active:scale-95'
+                              : 'bg-purple-500 transition-all hover:scale-105 hover:bg-purple-900 hover:shadow-md hover:shadow-black active:scale-95'
+                        } disabled:cursor-not-allowed disabled:opacity-50`}
+                     >
+                        {savingPermissions ? (
+                           <div className="flex items-center gap-2">
+                              <Loader2 className="animate-spin" size={16} />
+                              Salvando...
+                           </div>
+                        ) : hasPendingChanges ? (
+                           'Salvar e Concluir'
+                        ) : (
+                           'Concluir'
+                        )}
+                     </button>
+                  </div>
                </div>
             </footer>
          </div>
