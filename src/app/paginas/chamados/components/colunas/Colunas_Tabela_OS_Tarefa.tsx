@@ -35,7 +35,7 @@ export const colunasOSTarefa = (
       accessorKey: 'COD_OS',
       header: () => <div className="text-center">Código</div>,
       cell: ({ getValue }) => (
-         <div className="rounded-md bg-slate-900 p-2 text-center text-white ring-4 ring-white">
+         <div className="rounded-md bg-slate-900 p-2 text-center text-white">
             {getValue() as string}
          </div>
       ),
@@ -78,7 +78,7 @@ export const colunasOSTarefa = (
          const dataFormatada = formatarDataParaBR(dateString);
 
          return (
-            <div className="rounded-md bg-green-500 p-2 text-center text-black ring-4 ring-white">
+            <div className="rounded-md bg-green-500 p-2 text-center text-black">
                {dataFormatada}
             </div>
          );
@@ -94,7 +94,7 @@ export const colunasOSTarefa = (
          const tempoFormatado = formatarHora(value);
 
          return (
-            <div className="rounded-md bg-green-500 p-2 text-center text-black ring-4 ring-white">
+            <div className="rounded-md bg-green-500 p-2 text-center text-black">
                {tempoFormatado}
             </div>
          );
@@ -110,7 +110,7 @@ export const colunasOSTarefa = (
          const tempoFormatado = formatarHora(value);
 
          return (
-            <div className="rounded-md bg-green-500 p-2 text-center text-black ring-4 ring-white">
+            <div className="rounded-md bg-green-500 p-2 text-center text-black">
                {tempoFormatado}
             </div>
          );
@@ -126,7 +126,7 @@ export const colunasOSTarefa = (
          const tempoFormatado = formatarDecimalParaTempo(value);
 
          return (
-            <div className="rounded-md bg-green-500 p-2 text-center text-black ring-4 ring-white">
+            <div className="rounded-md bg-green-500 p-2 text-center text-black">
                {tempoFormatado}
             </div>
          );

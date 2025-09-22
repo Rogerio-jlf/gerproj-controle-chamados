@@ -3,6 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { debounce } from 'lodash';
 import {
    flexRender,
    getCoreRowModel,
@@ -13,7 +14,6 @@ import {
    ColumnFiltersState,
    SortingState,
 } from '@tanstack/react-table';
-import { debounce } from 'lodash';
 // ================================================================================
 import {
    Tooltip,
@@ -25,7 +25,8 @@ import { useAuth } from '../../../../../hooks/useAuth';
 import { useFiltersTabelaChamados } from '../../../../../contexts/Filters_Context';
 import { colunasTabela } from '../colunas/Colunas_Tabela_Chamados';
 import { TabelaChamadosProps } from '../../../../../types/types';
-import DashboardRecursos from '../Dashboard_Recursos';
+import { normalizeDate } from '../../../../../utils/formatters';
+import ModalApontamento from '../modais/Modal_Apontamento';
 import TabelaTarefas from './Tabela_Tarefas';
 import TabelaOS from './Tabela_OS';
 import ModalVisualizarChamado from '../modais/Modal_Visualizar_Chamado';
@@ -33,51 +34,92 @@ import ModalAtribuicaoInteligente from '../modais/Modal_Atribuir_Chamado';
 import IsLoading from '../Loading';
 import IsError from '../Error';
 // ================================================================================
-import {
-   FaExclamationTriangle,
-   FaDatabase,
-   FaSearch,
-   FaUsers,
-} from 'react-icons/fa';
+import { FaExclamationTriangle, FaSearch } from 'react-icons/fa';
+import { IoArrowUp, IoArrowDown, IoCall } from 'react-icons/io5';
 import { BsEraserFill } from 'react-icons/bs';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { RiArrowUpDownLine } from 'react-icons/ri';
-import { IoArrowUp, IoArrowDown, IoClose } from 'react-icons/io5';
 import { FaFilter } from 'react-icons/fa6';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
-
-import ModalApontamento from '../modais/Modal_Apontamento';
-import { normalizeDate } from '../../../../../utils/formatters';
 
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
-interface FilterInputTableHeaderProps {
+interface InputGlobalFilter {
+   value: string;
+   onChange: (value: string) => void;
+   placeholder?: string;
+   onClear: () => void;
+}
+// ==========
+
+interface InputFilterTableHeaderProps {
    value: string;
    onChange: (value: string) => void;
    placeholder?: string;
    type?: string;
    onClear?: () => void;
 }
-
-interface GlobalFilterInputProps {
-   value: string;
-   onChange: (value: string) => void;
-   placeholder?: string;
-   onClear: () => void;
-}
+// =========
 
 // ================================================================================
 // COMPONENTES DE FILTRO
 // ================================================================================
+const InputGlobalFilter = ({
+   value,
+   onChange,
+   placeholder = 'Buscar em todas as colunas...',
+}: InputGlobalFilter) => {
+   const [localValue, setLocalValue] = useState(value);
+   const inputRef = useRef<HTMLInputElement>(null);
+   const [isFocused, setIsFocused] = useState(false);
+
+   useEffect(() => {
+      setLocalValue(value);
+   }, [value]);
+
+   const debouncedOnChange = useMemo(
+      () =>
+         debounce((newValue: string) => {
+            onChange(newValue.trim());
+         }, 300),
+      [onChange]
+   );
+
+   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const inputValue = e.target.value;
+      setLocalValue(inputValue);
+      debouncedOnChange(inputValue);
+   };
+
+   return (
+      <div className="group relative transition-all hover:-translate-y-1 hover:scale-102">
+         <FaSearch
+            className="absolute top-1/2 left-4 -translate-y-1/2 text-black"
+            size={20}
+         />
+         <input
+            type="text"
+            value={localValue}
+            onChange={handleChange}
+            placeholder={isFocused ? '' : placeholder}
+            className="w-full rounded-md border-none bg-white/30 py-2 pl-14 text-base font-semibold tracking-wider text-black placeholder-black shadow-sm shadow-black select-none placeholder:text-base placeholder:font-semibold focus:ring-2 focus:ring-black focus:outline-none"
+            ref={inputRef}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+         />
+      </div>
+   );
+};
+// ====================
 
 const FilterInputTableHeaderDebounce = ({
    value,
    onChange,
    placeholder,
    type = 'text',
-}: FilterInputTableHeaderProps) => {
+}: InputFilterTableHeaderProps) => {
    const [localValue, setLocalValue] = useState(value);
    const [isFocused, setIsFocused] = useState(false);
 
@@ -111,56 +153,44 @@ const FilterInputTableHeaderDebounce = ({
       />
    );
 };
-// ==========
+// ====================
 
-const GlobalFilterInput = ({
-   value,
-   onChange,
-   placeholder = 'Buscar em todas as colunas...',
-}: GlobalFilterInputProps) => {
-   const [localValue, setLocalValue] = useState(value);
-   const inputRef = useRef<HTMLInputElement>(null);
-   const [isFocused, setIsFocused] = useState(false);
-
-   useEffect(() => {
-      setLocalValue(value);
-   }, [value]);
-
-   // Debounce otimizado
-   const debouncedOnChange = useMemo(
-      () =>
-         debounce((newValue: string) => {
-            // Trim para remover espaços desnecessários
-            onChange(newValue.trim());
-         }, 300),
-      [onChange]
-   );
-
-   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const inputValue = e.target.value;
-      setLocalValue(inputValue);
-      debouncedOnChange(inputValue);
-   };
+const IndicatorFilter = ({
+   columnFilters,
+   globalFilter,
+   totalFilters,
+}: {
+   columnFilters: ColumnFiltersState;
+   globalFilter: string;
+   totalFilters: number;
+}) => {
+   if (totalFilters === 0) return null;
 
    return (
-      <div className="group relative transition-all hover:-translate-y-1 hover:scale-102">
-         <FaSearch
-            className="absolute top-1/2 left-4 -translate-y-1/2 text-white"
-            size={18}
-         />
-         <input
-            type="text"
-            value={localValue}
-            onChange={handleChange}
-            placeholder={isFocused ? '' : placeholder}
-            className="w-full rounded-md border-none bg-white/30 py-3 pl-12 text-base font-semibold tracking-wider text-white placeholder-white shadow-sm shadow-white select-none focus:ring-2 focus:ring-amber-500 focus:outline-none"
-            ref={inputRef}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-         />
+      <div className="flex items-center gap-4">
+         <div className="rounded-md border border-blue-800 bg-blue-600 px-6 py-2 text-base font-semibold tracking-wider text-white italic select-none">
+            {totalFilters} filtro{totalFilters > 1 ? 's' : ''} ativo
+            {totalFilters > 1 ? 's' : ''}
+         </div>
+
+         {globalFilter && (
+            <div className="rounded-md border border-green-800 bg-green-600 px-6 py-2 text-base font-semibold tracking-wider text-white italic select-none">
+               Busca global: "{globalFilter}"
+            </div>
+         )}
+
+         {columnFilters.map(filter => (
+            <div
+               key={filter.id}
+               className="rounded-md border border-purple-800 bg-purple-600 px-6 py-2 text-base font-semibold tracking-wider text-white italic select-none"
+            >
+               {getColumnDisplayName(filter.id)}: "{String(filter.value)}"
+            </div>
+         ))}
       </div>
    );
 };
+// ==================
 
 // ================================================================================
 // COMPONENTES DE UI DA TABELA
@@ -208,42 +238,6 @@ const OrderTableHeader = ({
    );
 };
 // ====================
-
-const FilterIndicator = ({
-   columnFilters,
-   globalFilter,
-   totalFilters,
-}: {
-   columnFilters: ColumnFiltersState;
-   globalFilter: string;
-   totalFilters: number;
-}) => {
-   if (totalFilters === 0) return null;
-
-   return (
-      <div className="flex items-center gap-2">
-         <div className="rounded-full bg-blue-600 px-6 py-1 text-base font-semibold tracking-wider text-white italic select-none">
-            {totalFilters} filtro{totalFilters > 1 ? 's' : ''} ativo
-            {totalFilters > 1 ? 's' : ''}
-         </div>
-
-         {globalFilter && (
-            <div className="rounded-full bg-green-600 px-6 py-1 text-base font-semibold tracking-wider text-white italic select-none">
-               Busca global: "{globalFilter}"
-            </div>
-         )}
-
-         {columnFilters.map(filter => (
-            <div
-               key={filter.id}
-               className="rounded-full bg-purple-600 px-6 py-1 text-base font-semibold tracking-wider text-white italic select-none"
-            >
-               {getColumnDisplayName(filter.id)}: "{String(filter.value)}"
-            </div>
-         ))}
-      </div>
-   );
-};
 
 // ================================================================================
 // UTILITÁRIOS
@@ -548,6 +542,7 @@ export default function TabelaChamados() {
    );
    // ====================
 
+   // Query principal para buscar os chamados
    const { data, isLoading, isError, error } = useQuery({
       queryKey: ['chamadosAbertos', queryParams.toString(), token],
       queryFn: () => fetchChamados(queryParams, token!),
@@ -826,48 +821,33 @@ export default function TabelaChamados() {
       <>
          <div className="overflow-hidden rounded-xl border border-gray-500 bg-black">
             {/* ===== HEADER ===== */}
-            <header className="flex flex-col gap-6 bg-black p-6">
-               {/* ===== LINHA SUPERIOR ===== */}
-               <div className="flex items-center justify-between gap-8">
-                  {/* Título da tabela */}
+            <header className="flex flex-col gap-4 bg-white/70 p-6">
+               <section className="flex items-center justify-between gap-8">
                   <div className="flex items-center justify-center gap-6">
-                     <div className="flex items-center justify-center rounded-md bg-white/30 p-4 shadow-sm shadow-white">
-                        <FaDatabase className="text-white" size={28} />
+                     <div className="flex items-center justify-center rounded-md bg-white/30 p-4 shadow-sm shadow-black">
+                        <IoCall className="text-black" size={28} />
                      </div>
-                     {/* ===== */}
+                     {/* ========== */}
 
-                     <h1 className="text-4xl font-extrabold tracking-widest text-white uppercase select-none">
+                     <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
                         Chamados
                      </h1>
                   </div>
-                  {/* ========== */}
+                  {/* ==================== */}
 
-                  {/* Botões de ação do header */}
                   <div className="flex items-center gap-6">
-                     {/* Botão dashboard de recursos */}
-                     {/* {user?.tipo === 'ADM' && (
-                        <button
-                           onClick={handleAbrirDashboard}
-                           className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-white/30 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-105 hover:bg-white/20 active:scale-95"
-                        >
-                           <FaUsers size={24} />
-                           Dashboard
-                        </button>
-                     )} */}
-                     {/* ===== */}
-
-                     {/* Botão mostrar/ocultar filtros */}
+                     {/* Botão mostrar filtros */}
                      <button
                         onClick={() => setShowFilters(!showFilters)}
                         disabled={!data || data.length <= 1}
                         className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider italic transition-all select-none ${
                            showFilters
-                              ? 'border-none bg-blue-600 text-white shadow-sm shadow-white hover:bg-blue-900'
-                              : 'border-none bg-white/30 text-white shadow-sm shadow-white hover:bg-white/20'
+                              ? 'border-none bg-blue-600 text-white shadow-sm shadow-black hover:bg-blue-800'
+                              : 'border-none bg-white/30 text-black shadow-sm shadow-black hover:bg-white/10'
                         } ${
                            !data || data.length <= 1
                               ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
-                              : 'hover:-translate-y-1 hover:scale-105 active:scale-95'
+                              : 'hover:-translate-y-1 hover:scale-102 active:scale-95'
                         }`}
                      >
                         {showFilters ? (
@@ -877,45 +857,46 @@ export default function TabelaChamados() {
                         )}
                         {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
                      </button>
-                     {/* ===== */}
+                     {/* ========== */}
 
                      {/* Botão limpar filtros */}
                      {totalActiveFilters > 0 && (
                         <button
                            onClick={clearFilters}
-                           className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-105 hover:bg-red-900 active:scale-95"
+                           className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-black transition-all select-none hover:-translate-y-1 hover:scale-102 hover:bg-red-800 active:scale-95"
                         >
                            <BsEraserFill className="text-white" size={24} />
                            Limpar Filtros
                         </button>
                      )}
+                     {/* ========== */}
                   </div>
-               </div>
-               {/* ========== */}
+               </section>
+               {/* ==================== */}
 
-               {/* ===== LINHA INFERIOR ===== */}
+               {/* ===== FILTRO GLOBAL ===== */}
                {data && data.length > 0 && (
-                  <section className="flex items-center justify-between gap-6">
-                     {/* Input de filtro global */}
-                     <div className="max-w-md flex-1 font-semibold tracking-wider select-none placeholder:tracking-wider placeholder:text-gray-400 placeholder:italic placeholder:select-none">
-                        <GlobalFilterInput
+                  <div className="flex items-center justify-between gap-6">
+                     {/* Input busca global */}
+                     <div className="max-w-md flex-1 font-semibold tracking-wider select-none placeholder:tracking-wider placeholder:text-black placeholder:italic placeholder:select-none">
+                        <InputGlobalFilter
                            value={globalFilter ?? ''}
                            onChange={value => setGlobalFilter(String(value))}
                            placeholder="Buscar em todas as colunas..."
                            onClear={function (): void {
-                              setGlobalFilter('');
+                              throw new Error('Function not implemented.');
                            }}
                         />
                      </div>
                      {/* ========== */}
 
-                     {/* Indicadores de filtros ativos */}
-                     <FilterIndicator
+                     {/* Indicador filtros ativos */}
+                     <IndicatorFilter
                         columnFilters={columnFilters}
                         globalFilter={globalFilter}
                         totalFilters={totalActiveFilters}
                      />
-                  </section>
+                  </div>
                )}
             </header>
             {/* ============================== */}

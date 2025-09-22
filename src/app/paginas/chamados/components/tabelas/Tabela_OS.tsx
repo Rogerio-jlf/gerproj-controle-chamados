@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { debounce } from 'lodash';
 import {
    flexRender,
    getCoreRowModel,
@@ -12,7 +13,6 @@ import {
    ColumnFiltersState,
    SortingState,
 } from '@tanstack/react-table';
-import { debounce } from 'lodash';
 // ================================================================================
 import {
    Tooltip,
@@ -22,13 +22,11 @@ import {
 // ================================================================================
 import { colunasTabelaOS, OSTarefaProps } from '../colunas/Colunas_Tabela_OS';
 import { TabelaOSProps } from '../../../../../types/types';
-import ModalEditarOS from '../modais/Modal_Editar_OS';
 import { ModalExcluirOS } from '../modais/Modal_Deletar_OS';
+import ModalEditarOS from '../modais/Modal_Editar_OS';
 import IsLoading from '../Loading';
 import IsError from '../Error';
 // ================================================================================
-import { BsEraserFill } from 'react-icons/bs';
-import { LuFilter, LuFilterX } from 'react-icons/lu';
 import {
    FaExclamationTriangle,
    FaThList,
@@ -39,36 +37,86 @@ import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { RiArrowUpDownLine } from 'react-icons/ri';
 import { IoArrowUp, IoArrowDown, IoClose } from 'react-icons/io5';
+import { BsEraserFill } from 'react-icons/bs';
+import { LuFilter, LuFilterX } from 'react-icons/lu';
 
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
+interface InputGlobalFilter {
+   value: string;
+   onChange: (value: string) => void;
+   placeholder?: string;
+   onClear: () => void;
+}
+// ==========
 
-interface FilterInputTableHeaderProps {
+interface InputFilterTableHeaderProps {
    value: string;
    onChange: (value: string) => void;
    placeholder?: string;
    type?: string;
    onClear?: () => void;
 }
-
-interface GlobalFilterInputProps {
-   value: string;
-   onChange: (value: string) => void;
-   placeholder?: string;
-   onClear?: () => void;
-}
+// =========
 
 // ================================================================================
 // COMPONENTES DE FILTRO
 // ================================================================================
+const InputGlobalFilter = ({
+   value,
+   onChange,
+   placeholder = 'Buscar em todas as colunas...',
+}: InputGlobalFilter) => {
+   const [localValue, setLocalValue] = useState(value);
+   const inputRef = useRef<HTMLInputElement>(null);
+   const [isFocused, setIsFocused] = useState(false);
+
+   useEffect(() => {
+      setLocalValue(value);
+   }, [value]);
+
+   const debouncedOnChange = useMemo(
+      () =>
+         debounce((newValue: string) => {
+            onChange(newValue.trim());
+         }, 300),
+      [onChange]
+   );
+
+   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const inputValue = e.target.value;
+      setLocalValue(inputValue);
+      debouncedOnChange(inputValue);
+   };
+
+   return (
+      <div className="group relative transition-all hover:-translate-y-1 hover:scale-102">
+         <FaSearch
+            className="absolute top-1/2 left-4 -translate-y-1/2 text-black"
+            size={20}
+         />
+         <input
+            type="text"
+            value={localValue}
+            onChange={handleChange}
+            placeholder={isFocused ? '' : placeholder}
+            className="w-full rounded-md border-none bg-white/30 py-2 pl-14 text-base font-semibold tracking-wider text-black placeholder-black shadow-sm shadow-black select-none placeholder:text-base placeholder:font-semibold focus:ring-2 focus:ring-black focus:outline-none"
+            ref={inputRef}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+         />
+      </div>
+   );
+};
+// ====================
 
 const FilterInputTableHeaderDebounce = ({
    value,
    onChange,
    placeholder,
    type = 'text',
-}: FilterInputTableHeaderProps) => {
+}: InputFilterTableHeaderProps) => {
    const [localValue, setLocalValue] = useState(value);
    const [isFocused, setIsFocused] = useState(false);
 
@@ -77,13 +125,17 @@ const FilterInputTableHeaderDebounce = ({
    }, [value]);
 
    const debouncedOnChange = useMemo(
-      () => debounce((newValue: string) => onChange(newValue), 300),
+      () =>
+         debounce((newValue: string) => {
+            onChange(newValue.trim());
+         }, 200),
       [onChange]
    );
 
    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setLocalValue(e.target.value);
-      debouncedOnChange(e.target.value);
+      const inputValue = e.target.value;
+      setLocalValue(inputValue);
+      debouncedOnChange(inputValue);
    };
 
    return (
@@ -100,48 +152,42 @@ const FilterInputTableHeaderDebounce = ({
 };
 // ====================
 
-const GlobalFilterInput = ({
-   value,
-   onChange,
-   placeholder = 'Buscar em todas as colunas...',
-}: GlobalFilterInputProps) => {
-   const [localValue, setLocalValue] = useState(value);
-   const inputRef = useRef<HTMLInputElement>(null);
-   const [isFocused, setIsFocused] = useState(false);
-
-   useEffect(() => {
-      setLocalValue(value);
-   }, [value]);
-
-   const debouncedOnChange = useMemo(
-      () => debounce((newValue: string) => onChange(newValue), 500),
-      [onChange]
-   );
-
-   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setLocalValue(e.target.value);
-      debouncedOnChange(e.target.value);
-   };
+const IndicatorFilter = ({
+   columnFilters,
+   globalFilter,
+   totalFilters,
+}: {
+   columnFilters: ColumnFiltersState;
+   globalFilter: string;
+   totalFilters: number;
+}) => {
+   if (totalFilters === 0) return null;
 
    return (
-      <div className="group relative transition-all hover:-translate-y-1 hover:scale-102">
-         <FaSearch
-            className="absolute top-1/2 left-4 -translate-y-1/2 text-black"
-            size={18}
-         />
-         <input
-            type="text"
-            value={localValue}
-            onChange={handleChange}
-            placeholder={isFocused ? '' : placeholder}
-            className="w-full rounded-md border-none bg-white/40 py-3 pl-12 text-base font-semibold tracking-wider text-black placeholder-black shadow-sm shadow-black select-none focus:ring-2 focus:ring-amber-500 focus:outline-none"
-            ref={inputRef}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-         />
+      <div className="flex items-center gap-4">
+         <div className="rounded-md border border-blue-800 bg-blue-600 px-6 py-2 text-base font-semibold tracking-wider text-white italic select-none">
+            {totalFilters} filtro{totalFilters > 1 ? 's' : ''} ativo
+            {totalFilters > 1 ? 's' : ''}
+         </div>
+
+         {globalFilter && (
+            <div className="rounded-md border border-green-800 bg-green-600 px-6 py-2 text-base font-semibold tracking-wider text-white italic select-none">
+               Busca global: "{globalFilter}"
+            </div>
+         )}
+
+         {columnFilters.map(filter => (
+            <div
+               key={filter.id}
+               className="rounded-md border border-purple-800 bg-purple-600 px-6 py-2 text-base font-semibold tracking-wider text-white italic select-none"
+            >
+               {getColumnDisplayName(filter.id)}: "{String(filter.value)}"
+            </div>
+         ))}
       </div>
    );
 };
+// ==================
 
 // ================================================================================
 // COMPONENTES DE UI DA TABELA
@@ -557,43 +603,44 @@ export default function TabelaOS({
                className="absolute inset-0 bg-black/50 backdrop-blur-xl"
                onClick={onClose}
             />
+            {/* ==================== */}
 
             {/* ===== MODAL ===== */}
             <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[100vw] overflow-hidden rounded-2xl border border-black">
                {/* ===== HEADER ===== */}
                <header className="flex flex-col gap-4 bg-white/70 p-6">
-                  {/* ===== LINHA SUPERIOR ===== */}
                   <section className="flex items-center justify-between gap-8">
-                     {/* ===== ITENS DA ESQUERDA ===== */}
                      <div className="flex items-center justify-center gap-6">
-                        <div className="flex items-center justify-center rounded-md bg-white/10 p-4 shadow-sm shadow-black">
+                        <div className="flex items-center justify-center rounded-md bg-white/30 p-4 shadow-sm shadow-black">
                            <FaThList className="text-black" size={28} />
                         </div>
+                        {/* ========== */}
 
                         <div className="flex flex-col items-start justify-center">
                            <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
-                              Ordens de Serviço
+                              Ordens de serviço
                            </h1>
+                           {/* ===== */}
                            <span className="text-2xl font-extrabold tracking-widest text-pink-600 uppercase italic select-none">
                               Chamado - #{codChamado}
                            </span>
                         </div>
                      </div>
+                     {/* ==================== */}
 
-                     {/* ===== ITENS DA DIREITA ===== */}
                      <div className="flex items-center gap-6">
-                        {/* Botão mostrar/ocultar filtros */}
+                        {/* Botão mostrar filtros */}
                         <button
                            onClick={() => setShowFilters(!showFilters)}
                            disabled={!dataOS || dataOS.length <= 1}
                            className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider italic transition-all select-none ${
                               showFilters
-                                 ? 'border-none bg-blue-600 text-white shadow-sm shadow-black hover:bg-blue-900'
-                                 : 'border-none bg-white/40 text-black shadow-sm shadow-black hover:bg-white/10'
+                                 ? 'border-none bg-blue-600 text-white shadow-sm shadow-black hover:bg-blue-800'
+                                 : 'border-none bg-white/30 text-black shadow-sm shadow-black hover:bg-white/10'
                            } ${
                               !dataOS || dataOS.length <= 1
                                  ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
-                                 : 'hover:-translate-y-1 hover:scale-105 active:scale-95'
+                                 : 'hover:-translate-y-1 hover:scale-102 active:scale-95'
                            }`}
                         >
                            {showFilters ? (
@@ -603,49 +650,57 @@ export default function TabelaOS({
                            )}
                            {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
                         </button>
+                        {/* ========== */}
 
                         {/* Botão limpar filtros */}
                         {totalActiveFilters > 0 && (
                            <button
                               onClick={clearFilters}
-                              className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-105 hover:bg-red-900 active:scale-95"
+                              className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-black transition-all select-none hover:-translate-y-1 hover:scale-102 hover:bg-red-800 active:scale-95"
                            >
                               <BsEraserFill className="text-white" size={24} />
                               Limpar Filtros
                            </button>
                         )}
+                        {/* ========== */}
 
                         {/* Botão fechar tabela */}
                         <button
                            onClick={handleClose}
-                           className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
+                           className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95"
                         >
                            <IoClose size={24} />
                         </button>
                      </div>
                   </section>
+                  {/* ==================== */}
 
                   {/* ===== FILTRO GLOBAL ===== */}
                   {dataOS && dataOS.length > 0 && (
-                     <section className="flex items-center justify-between gap-6">
-                        {/* Campo de busca global */}
+                     <div className="flex items-center justify-between gap-6">
+                        {/* Input busca global */}
                         <div className="max-w-md flex-1 font-semibold tracking-wider select-none placeholder:tracking-wider placeholder:text-black placeholder:italic placeholder:select-none">
-                           <GlobalFilterInput
+                           <InputGlobalFilter
                               value={globalFilter ?? ''}
                               onChange={value => setGlobalFilter(String(value))}
                               placeholder="Buscar em todas as colunas..."
+                              onClear={function (): void {
+                                 throw new Error('Function not implemented.');
+                              }}
                            />
                         </div>
+                        {/* ========== */}
 
-                        {/* Indicadores de filtros ativos */}
-                        <FilterIndicator
+                        {/* Indicador filtros ativos */}
+                        <IndicatorFilter
                            columnFilters={columnFilters}
                            globalFilter={globalFilter}
                            totalFilters={totalActiveFilters}
                         />
-                     </section>
+                     </div>
                   )}
                </header>
+               {/* ============================== */}
 
                {/* ===== CONTEÚDO PRINCIPAL ===== */}
                <main className="overflow-hidden bg-black">

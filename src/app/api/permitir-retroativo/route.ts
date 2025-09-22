@@ -4,7 +4,7 @@ import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Interface das permissões
-interface BackdatedPermission {
+interface PermitirRetroativo {
    resourceId: string;
    resourceName: string;
    chamadoId: string;
@@ -29,7 +29,7 @@ const ensureDataDirectory = () => {
 };
 
 // Função para ler as permissões do arquivo
-const readPermissions = (): BackdatedPermission[] => {
+const readPermissions = (): PermitirRetroativo[] => {
    try {
       ensureDataDirectory();
 
@@ -49,7 +49,7 @@ const readPermissions = (): BackdatedPermission[] => {
 };
 
 // Função para salvar as permissões no arquivo
-const writePermissions = (permissions: BackdatedPermission[]): boolean => {
+const writePermissions = (permissions: PermitirRetroativo[]): boolean => {
    try {
       ensureDataDirectory();
       fs.writeFileSync(
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
       );
 
       // Adiciona nova permissão
-      const newPermission: BackdatedPermission = {
+      const newPermission: PermitirRetroativo = {
          resourceId,
          resourceName,
          chamadoId,

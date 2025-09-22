@@ -38,7 +38,7 @@ export const colunasTabela = (): ColumnDef<ChamadosProps>[] => [
       accessorKey: 'COD_CHAMADO',
       header: () => <div className="text-center">Código</div>,
       cell: ({ getValue }) => (
-         <div className="rounded-md bg-pink-600 p-2 text-center text-white ring-1 ring-white">
+         <div className="rounded-md bg-pink-600 p-2 text-center text-white">
             {getValue() as string}
          </div>
       ),
@@ -54,7 +54,7 @@ export const colunasTabela = (): ColumnDef<ChamadosProps>[] => [
          const dataFormatada = formatarDataParaBR(dateString);
 
          return (
-            <div className="rounded-md bg-pink-600 p-2 text-center text-white ring-1 ring-white">
+            <div className="rounded-md bg-pink-600 p-2 text-center text-white">
                {dataFormatada}
             </div>
          );
@@ -71,9 +71,7 @@ export const colunasTabela = (): ColumnDef<ChamadosProps>[] => [
          const bgColor = getStylesStatus(status);
 
          return (
-            <div
-               className={`rounded-md ${bgColor} p-2 text-center text-black ring-1 ring-white`}
-            >
+            <div className={`rounded-md ${bgColor} p-2 text-center text-black`}>
                {status || 'Desconhecido'}
             </div>
          );

@@ -24,7 +24,7 @@ export interface Props {
    tarefa: DBTarefaProps | null;
    nomeCliente?: string;
    onSuccess?: () => void;
-   codChamado?: number; // NOVO PROP PARA EXIBIR O CÓDIGO DO CHAMADO
+   codChamado?: number;
 }
 // ================================================================================
 
@@ -135,7 +135,7 @@ export default function ModalApontamento({
    tarefa,
    nomeCliente,
    onSuccess,
-   codChamado, // Adicionado para disponibilizar o prop
+   codChamado,
 }: Props) {
    const { user } = useAuth();
 
@@ -148,7 +148,7 @@ export default function ModalApontamento({
    // ===== ESTADOS =====
    const [errors, setErrors] = useState<FormErrors>({});
    const [isLoading, setIsLoading] = useState(false);
-   const [apontamentoSalvo, setApontamentoSalvo] = useState(false); // NOVO ESTADO
+   const [success, setSuccess] = useState(false);
 
    // Validação em tempo real (opcional)
    // Validação em tempo real
@@ -294,6 +294,7 @@ export default function ModalApontamento({
             horaFimOS: formData.horaFimOS,
             recurso: user.recurso.id.toString(),
             observacaoOS: observacaoFormatada,
+            // codChamado não é mais necessário - a API busca automaticamente
          };
 
          const token = localStorage.getItem('token');
@@ -301,7 +302,7 @@ export default function ModalApontamento({
             throw new Error('Token não encontrado');
          }
 
-         const response = await fetch('/api/apontamentos-tarefa/create', {
+         const response = await fetch('/api/apontamentos/create', {
             method: 'POST',
             headers: {
                'Content-Type': 'application/json',
@@ -316,25 +317,13 @@ export default function ModalApontamento({
             throw new Error(responseData.error || `Erro ${response.status}`);
          }
 
-         // MARCAR COMO SALVO COM SUCESSO
-         setApontamentoSalvo(true);
-
          toast.custom(t => (
             <ToastCustom
                type="success"
                title="Operação realizada com sucesso!"
-               description={`Apontamento realizado com sucesso! OS #${responseData.data?.COD_OS} criada e associada ao Chamado #${responseData.data?.codChamado}.`}
+               description={`O Apontamento #${responseData.data?.COD_APONTAMENTO} foi realizado com sucesso!`}
             />
          ));
-
-         // ===== CHAMAR onSuccess E onClose APÓS SUCESSO =====
-         if (onSuccess) {
-            onSuccess();
-         }
-
-         // Resetar o formulário e fechar o modal
-         resetForm();
-         onClose(); // AGORA SÓ FECHA APÓS SUCESSO
       } catch (error) {
          console.error('Erro ao realizar Apontamento:', error);
 
@@ -360,47 +349,15 @@ export default function ModalApontamento({
          horaFimOS: '',
       });
       setErrors({});
-      setApontamentoSalvo(false); // RESETAR O ESTADO
+      setSuccess(false);
    };
    // ====================
 
-   // MODIFICADO: Função para fechar o modal (só fecha se apontamento foi salvo)
+   // Função para fechar o modal
    const handleClose = () => {
-      if (isLoading) {
-         // Se está carregando, não permitir fechar
-         toast.custom(t => (
-            <ToastCustom
-               type="warning"
-               title="Aguarde!"
-               description="O apontamento está sendo processado. Aguarde a conclusão."
-            />
-         ));
-         return;
-      }
-
-      if (apontamentoSalvo) {
-         // Se foi salvo, pode fechar normalmente
+      if (!isLoading) {
          resetForm();
          onClose();
-         return;
-      }
-
-      // Se não foi salvo, NÃO PERMITIR FECHAR - apenas mostrar aviso
-      toast.custom(t => (
-         <ToastCustom
-            type="warning"
-            title="Apontamento obrigatório!"
-            description="Você deve realizar o apontamento antes de fechar esta janela."
-         />
-      ));
-   };
-   // ====================
-
-   // MODIFICADO: Prevenir fechamento do modal ao clicar no overlay
-   const handleOverlayClick = (e: React.MouseEvent) => {
-      // Se clicou no overlay (fundo), chamar handleClose que tem as validações
-      if (e.target === e.currentTarget) {
-         handleClose();
       }
    };
    // ====================
@@ -421,13 +378,16 @@ export default function ModalApontamento({
    // ================================================================================
    // RENDERIZAÇÃO PRINCIPAL
    // ================================================================================
+
    return (
       <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
          {/* ===== OVERLAY ===== */}
-         <div className="absolute inset-0 bg-black/50 backdrop-blur-xl" />
+         <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-xl"
+            onClick={handleClose}
+         />
          {/* ========== */}
 
-         {/* ===== CONTAINER ===== */}
          <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-gradient-to-r from-green-500 via-green-600 to-green-700 p-6 shadow-md shadow-black">
@@ -436,58 +396,21 @@ export default function ModalApontamento({
                   <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
                      <FaUserClock className="text-black" size={36} />
                   </div>
-                  {/* ========== */}
-                  <div>
-                     <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
-                        Apontamento de Horas
-                     </h1>
-                     {/* ===== */}
-                     <p className="text-xl font-bold tracking-widest text-black italic select-none">
-                        Chamado: {codChamado}
-                     </p>
-                  </div>
+                  <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
+                     Realizar Apontamento
+                  </h1>
                </div>
                {/* ========== */}
 
-               {/* REMOVIDO: Botão fechar modal - só mostra após salvar */}
-               {apontamentoSalvo && (
-                  <button
-                     onClick={() => {
-                        resetForm();
-                        onClose();
-                     }}
-                     className="group cursor-pointer rounded-full bg-green-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-green-500 active:scale-95"
-                  >
-                     <IoClose size={24} />
-                  </button>
-               )}
+               {/* Botão fechar modal */}
+               <button
+                  onClick={handleClose}
+                  disabled={isLoading}
+                  className="group cursor-pointer rounded-full bg-red-500/50 p-2 text-white transition-all select-none hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+               >
+                  <IoClose size={24} />
+               </button>
             </header>
-            {/* ==================== */}
-
-            {/* ===== INDICADOR DE STATUS ===== */}
-            {isLoading && (
-               <div className="border-l-4 border-blue-500 bg-blue-100 p-4">
-                  <div className="flex items-center">
-                     <div className="mr-3 h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-                     <p className="font-semibold text-blue-700">
-                        Processando apontamento... Por favor, não feche esta
-                        janela.
-                     </p>
-                  </div>
-               </div>
-            )}
-
-            {apontamentoSalvo && (
-               <div className="border-l-4 border-green-500 bg-green-100 p-4">
-                  <div className="flex items-center">
-                     <FaCheckCircle className="mr-3 text-green-500" size={20} />
-                     <p className="font-semibold text-green-700">
-                        Apontamento realizado com sucesso! Você pode fechar esta
-                        janela.
-                     </p>
-                  </div>
-               </div>
-            )}
             {/* ==================== */}
 
             {/* ===== CONTEÚDO ===== */}
@@ -505,14 +428,10 @@ export default function ModalApontamento({
                         name="dataInicioOS"
                         value={formData.dataInicioOS}
                         onChange={handleInputChange}
-                        disabled={isLoading || apontamentoSalvo} // MODIFICADO
+                        disabled={isLoading}
                         className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none ${
                            errors.dataInicioOS
                               ? 'border-red-500 ring-2 ring-red-600'
-                              : ''
-                        } ${
-                           isLoading || apontamentoSalvo
-                              ? 'cursor-not-allowed opacity-50'
                               : ''
                         }`}
                      />
@@ -547,14 +466,10 @@ export default function ModalApontamento({
                               value={formData.horaInicioOS}
                               onChange={handleInputChange}
                               onBlur={handleTimeBlur}
-                              disabled={isLoading || apontamentoSalvo} // MODIFICADO
+                              disabled={isLoading}
                               className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none ${
                                  errors.horaInicioOS
                                     ? 'border-red-500 ring-2 ring-red-600'
-                                    : ''
-                              } ${
-                                 isLoading || apontamentoSalvo
-                                    ? 'cursor-not-allowed opacity-50'
                                     : ''
                               }`}
                            />
@@ -581,14 +496,10 @@ export default function ModalApontamento({
                               value={formData.horaFimOS}
                               onChange={handleInputChange}
                               onBlur={handleTimeBlur}
-                              disabled={isLoading || apontamentoSalvo} // MODIFICADO
+                              disabled={isLoading}
                               className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none ${
                                  errors.horaFimOS
                                     ? 'border-red-500 ring-2 ring-red-600'
-                                    : ''
-                              } ${
-                                 isLoading || apontamentoSalvo
-                                    ? 'cursor-not-allowed opacity-50'
                                     : ''
                               }`}
                            />
@@ -618,17 +529,13 @@ export default function ModalApontamento({
                         name="observacaoOS"
                         value={formData.observacaoOS}
                         onChange={handleInputChange}
-                        disabled={isLoading || apontamentoSalvo} // MODIFICADO
+                        disabled={isLoading}
                         rows={4}
                         maxLength={200}
                         placeholder="Descreva detalhadamente o serviço realizado, procedimentos executados, materiais utilizados e resultados obtidos..."
                         className={`w-full cursor-pointer rounded-md bg-white px-4 py-2 font-semibold text-black shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 hover:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none ${
                            errors.observacaoOS
                               ? 'border-red-500 ring-2 ring-red-600'
-                              : ''
-                        } ${
-                           isLoading || apontamentoSalvo
-                              ? 'cursor-not-allowed opacity-50'
                               : ''
                         }`}
                      />
@@ -682,52 +589,39 @@ export default function ModalApontamento({
             {/* ==================== */}
 
             {/* ===== FOOTER ===== */}
-            <footer className="relative flex justify-center gap-4 border-t-4 border-red-600 p-6">
-               {/* REMOVIDO: Botão cancelar */}
+            <footer className="relative flex justify-end gap-4 border-t-4 border-red-600 p-6">
+               {/* Botão cancelar */}
+               <button
+                  onClick={handleClose}
+                  disabled={isLoading}
+                  className="cursor-pointer rounded-xl border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
+               >
+                  Cancelar
+               </button>
+               {/* ===== */}
 
-               {/* SÓ MOSTRAR BOTÃO DE APONTAR SE NÃO FOI SALVO */}
-               {!apontamentoSalvo && (
-                  <button
-                     onClick={handleSubmitForm}
-                     disabled={isLoading || !isFormValid()}
-                     className={`cursor-pointer rounded-xl border-none bg-blue-500 px-8 py-3 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black select-none ${
-                        isLoading || !isFormValid()
-                           ? 'disabled:cursor-not-allowed disabled:opacity-50'
-                           : 'transition-all hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black active:scale-95'
-                     }`}
-                  >
-                     {isLoading ? (
-                        <div className="flex items-center gap-2">
-                           <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                           <span>Apontando...</span>
-                        </div>
-                     ) : (
-                        <div className="flex items-center gap-1">
-                           <IoIosSave className="mr-2 inline-block" size={20} />
-                           <span>Realizar Apontamento</span>
-                        </div>
-                     )}
-                  </button>
-               )}
-
-               {/* MOSTRAR BOTÃO FECHAR APENAS APÓS SALVAR */}
-               {apontamentoSalvo && (
-                  <button
-                     onClick={() => {
-                        resetForm();
-                        onClose();
-                     }}
-                     className="cursor-pointer rounded-xl border-none bg-green-500 px-8 py-3 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-green-900 hover:shadow-md hover:shadow-black active:scale-95"
-                  >
+               {/* Botão de atualizar/salvar */}
+               <button
+                  onClick={handleSubmitForm}
+                  disabled={isLoading || !isFormValid()}
+                  className={`cursor-pointer rounded-xl border-none bg-blue-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black select-none ${
+                     isLoading || !isFormValid()
+                        ? 'disabled:cursor-not-allowed disabled:opacity-50'
+                        : 'transition-all hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black active:scale-95'
+                  }`}
+               >
+                  {isLoading ? (
                      <div className="flex items-center gap-2">
-                        <FaCheckCircle
-                           className="mr-2 inline-block"
-                           size={20}
-                        />
-                        <span>Fechar</span>
+                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        <span>Apontando...</span>
                      </div>
-                  </button>
-               )}
+                  ) : (
+                     <div className="flex items-center gap-1">
+                        <IoIosSave className="mr-2 inline-block" size={20} />
+                        <span>Apontar</span>
+                     </div>
+                  )}
+               </button>
             </footer>
          </div>
       </div>

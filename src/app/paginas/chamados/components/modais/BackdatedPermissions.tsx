@@ -21,7 +21,7 @@ import {
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
-interface BackdatedPermission {
+interface PermitirRetroativoProps {
    resourceId: string;
    resourceName: string;
    chamadoId: string;
@@ -30,7 +30,7 @@ interface BackdatedPermission {
    enabledBy: string;
 }
 
-interface Resource {
+interface RecursoProps {
    cod_recurso: number;
    nome_recurso: string;
    hrdia_decimal: number;
@@ -40,7 +40,7 @@ interface Resource {
    tpcusto_recurso: number;
 }
 
-interface BackdatedPermissionsModalProps {
+interface ModalPermitirRetroativoProps {
    isOpen: boolean;
    onClose: () => void;
    currentUserId: string;
@@ -52,7 +52,9 @@ interface BackdatedPermissionsModalProps {
 // ================================================================================
 
 export const useBackdatedPermissions = () => {
-   const [permissions, setPermissions] = useState<BackdatedPermission[]>([]);
+   const [permissions, setPermissions] = useState<PermitirRetroativoProps[]>(
+      []
+   );
    const [loading, setLoading] = useState(false);
 
    // Função para fazer chamadas à API
@@ -213,7 +215,7 @@ export const useBackdatedPermissions = () => {
    };
 
    // Obter todas as permissões ativas
-   const getActivePermissions = (): BackdatedPermission[] => {
+   const getActivePermissions = (): PermitirRetroativoProps[] => {
       return permissions.filter(p => p.enabled);
    };
 
@@ -233,7 +235,7 @@ export const useBackdatedPermissions = () => {
 // ================================================================================
 
 export const BackdatedPermissionsModal: React.FC<
-   BackdatedPermissionsModalProps
+   ModalPermitirRetroativoProps
 > = ({ isOpen, onClose, currentUserId, chamadoId }) => {
    const {
       hasPermission,
@@ -244,7 +246,7 @@ export const BackdatedPermissionsModal: React.FC<
       loading: permissionsLoading,
    } = useBackdatedPermissions();
 
-   const [resources, setResources] = useState<Resource[]>([]);
+   const [resources, setResources] = useState<RecursoProps[]>([]);
    const [loading, setLoading] = useState(false);
    const [error, setError] = useState<string | null>(null);
    const [chamadoInfo, setChamadoInfo] = useState<{
@@ -382,7 +384,10 @@ export const BackdatedPermissionsModal: React.FC<
    }, [isOpen, fetchChamadoAndResources]);
 
    // 🆕 Função para marcar/desmarcar permissões (só armazena localmente)
-   const handlePermissionToggle = (resource: Resource, enabled: boolean) => {
+   const handlePermissionToggle = (
+      resource: RecursoProps,
+      enabled: boolean
+   ) => {
       const resourceId = resource.cod_recurso.toString();
 
       console.log('🔄 Toggle permissão local:', {
