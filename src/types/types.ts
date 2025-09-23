@@ -91,6 +91,9 @@ export interface TabelaTarefaProps {
    OBS_TAREFA?: string | null;
    LIMMES_TAREFA?: number | null;
    EXIBECHAM_TAREFA?: number | null;
+   // =====
+   COD_RECURSO: number;
+   NOME_RECURSO: string;
 }
 // ================================================================================
 

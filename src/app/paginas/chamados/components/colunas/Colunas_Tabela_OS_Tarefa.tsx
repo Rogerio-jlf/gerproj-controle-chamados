@@ -22,8 +22,8 @@ import { RiDeleteBin5Fill } from 'react-icons/ri';
 // INTERFACES
 // ================================================================================
 export interface AcoesTabelaOSTarefaProps {
-   onEditarOS: (codOS: number) => void;
-   onExcluirOS: (codOS: number) => void;
+   openModalEditarOS: (codOS: number) => void;
+   openModalExcluirOS: (codOS: number) => void;
 }
 // ==============================
 
@@ -148,7 +148,7 @@ export const colunasTabelaOSTarefa = (
                <Tooltip>
                   <TooltipTrigger asChild>
                      <button
-                        onClick={() => acoes.onEditarOS(os.COD_OS)}
+                        onClick={() => acoes.openModalEditarOS(os.COD_OS)}
                         className="cursor-pointer transition-all hover:-translate-y-1 hover:scale-105 active:scale-95"
                      >
                         <MdEditDocument size={32} />
@@ -168,7 +168,7 @@ export const colunasTabelaOSTarefa = (
                <Tooltip>
                   <TooltipTrigger asChild>
                      <button
-                        onClick={() => acoes.onExcluirOS(os.COD_OS)}
+                        onClick={() => acoes.openModalExcluirOS(os.COD_OS)}
                         className="cursor-pointer transition-all hover:-translate-y-1 hover:scale-105 active:scale-95"
                      >
                         <RiDeleteBin5Fill size={32} />

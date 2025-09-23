@@ -19,16 +19,16 @@ interface ModalExcluirOSProps {
    codOS: number | null;
    onSuccess?: () => void;
 }
-// ================================================================================
 
-// ===== COMPONENTE PRINCIPAL =====
+// ================================================================================
+// COMPONENTE PRINCIPAL
+// ================================================================================
 export function ModalExcluirOS({
    isOpen,
    onClose,
    codOS,
    onSuccess,
 }: ModalExcluirOSProps) {
-   // ===== ESTADOS =====
    const [error, setError] = useState<string | null>(null);
    const [success, setSuccess] = useState(false);
    const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +61,12 @@ export function ModalExcluirOS({
                description={`A Ordem de Serviço #${codOS} foi deletada com sucesso!`}
             />
          ));
+
+         handleClose();
+
+         if (onSuccess) {
+            onSuccess();
+         }
       } catch (error) {
          console.error('Erro ao deletar OS:', error);
 

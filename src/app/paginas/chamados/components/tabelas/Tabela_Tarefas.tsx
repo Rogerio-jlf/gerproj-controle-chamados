@@ -1,8 +1,8 @@
 'use client';
-
+// ================================================================================
+import { debounce } from 'lodash';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
-import { debounce } from 'lodash';
 import {
    flexRender,
    getCoreRowModel,
@@ -20,37 +20,35 @@ import {
    TooltipTrigger,
 } from '@/components/ui/tooltip';
 // ================================================================================
-import { useAuth } from '../../../../../hooks/useAuth';
-import { colunasTabelaTarefas } from '../colunas/Colunas_Tabela_Tarefas';
 import { TabelaTarefaProps } from '../../../../../types/types';
 import { InputGlobalFilterProps } from '../../../../../types/types';
 import { InputFilterTableHeaderProps } from '../../../../../types/types';
-
-import ModalApontamento from '../modais/Modal_Apontamento';
-import TabelaChamadosTarefa from './Tabela_Chamados_Tarefa';
-import TabelaOSTarefa from './Tabela_OS_Tarefa';
-import IsLoading from '../Loading';
-import IsError from '../Error';
 // ================================================================================
-import { FaExclamationTriangle, FaTasks, FaSearch } from 'react-icons/fa';
+import { useAuth } from '../../../../../hooks/useAuth';
+import { colunasTabelaTarefa } from '../colunas/Colunas_Tabela_Tarefas';
+// ================================================================================
+import IsError from '../Error';
+import IsLoading from '../Loading';
+import TabelaOSTarefa from './Tabela_OS_Tarefa';
+import ModalApontamentoOSTarefa from '../modais/Modal_Apontamento';
+import TabelaChamadosTarefa from './Tabela_Chamados_Tarefa';
+// ================================================================================
+import { BsEraserFill } from 'react-icons/bs';
+import { RiArrowUpDownLine } from 'react-icons/ri';
+import { LuFilter, LuFilterX } from 'react-icons/lu';
+import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { IoArrowDown, IoArrowUp, IoClose } from 'react-icons/io5';
-import { RiArrowUpDownLine } from 'react-icons/ri';
-import { BsEraserFill } from 'react-icons/bs';
-import { LuFilter, LuFilterX } from 'react-icons/lu';
-import { FaFilterCircleXmark } from 'react-icons/fa6';
+import { FaExclamationTriangle, FaTasks, FaSearch } from 'react-icons/fa';
 
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
-
-interface ModalTarefasProps {
+interface Props {
    isOpen: boolean;
    onClose: () => void;
-   codChamado?: number | null;
 }
-// ==========
 
 // ================================================================================
 // FILTROS
@@ -225,6 +223,20 @@ const OrderTableHeader = ({
 };
 // ================================================================================
 
+// Função para largura fixa das colunas
+function getColumnWidth(columnId: string): string {
+   const widthMap: Record<string, string> = {
+      COD_TAREFA: '15%',
+      NOME_TAREFA: '46%',
+      DTSOL_TAREFA: '12%',
+      HREST_TAREFA: '12%',
+      actions: '15%',
+   };
+
+   return widthMap[columnId] || 'auto';
+}
+// ==================
+
 // Função auxiliar para nomear as colunas ordenáveis
 const getColumnDisplayName = (columnId: string): string => {
    const displayNames: Record<string, string> = {
@@ -234,30 +246,34 @@ const getColumnDisplayName = (columnId: string): string => {
    };
    return displayNames[columnId] || columnId;
 };
-// ==================
 
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export default function TabelaTarefas({ isOpen, onClose }: ModalTarefasProps) {
+export default function TabelaTarefas({ isOpen, onClose }: Props) {
    const { user } = useAuth();
    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
    const [globalFilter, setGlobalFilter] = useState('');
    const [sorting, setSorting] = useState<SortingState>([
       { id: 'COD_TAREFA', desc: false },
    ]);
-   const [isTabelaChamadosOpen, setIsTabelaChamadosOpen] = useState(false);
-   const [selectedTarefaParaChamados, setSelectedTarefaParaChamados] = useState<
+   // ==================
+   const [isOpenTabelaOSTarefa, setIsOpenTabelaOSTarefa] = useState(false);
+   const [isOpenTabelaChamadosTarefa, setIsOpenTabelaChamadosTarefa] =
+      useState(false);
+   const [isOpenApontamentoOSTarefa, setIsOpenApontamentoOSTarefa] =
+      useState(false);
+   // ==================
+   const [selectedTarefaChamado, setSelectedTarefaChamado] = useState<
       number | null
    >(null);
-   const [selectedTarefaParaCriarOS, setSelectedTarefaParaCriarOS] =
+   const [selectedTarefaOS, setSelectedTarefaOS] = useState<number | null>(
+      null
+   );
+   const [selectedTarefaApontamentoOS, setSelectedTarefaApontamentoOS] =
       useState<TabelaTarefaProps | null>(null);
+   // ==================
    const [showFilters, setShowFilters] = useState(false);
-   const [isModalApontamentoOpen, setIsModalApontamentoOpen] = useState(false);
-   const [isModalOSOpen, setIsModalOSOpen] = useState(false);
-   const [selectedTarefaCodigo, setSelectedTarefaCodigo] = useState<
-      number | null
-   >(null);
 
    // Estados para os valores dos inputs de filtro
    const [filterValues, setFilterValues] = useState({
@@ -271,10 +287,6 @@ export default function TabelaTarefas({ isOpen, onClose }: ModalTarefasProps) {
    // Pega o token do localStorage com verificação para SSR
    const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-   // ====================
-
-   // Controla quando a query deve ser executada
-   const enabled = !!token && !!user && isOpen;
    // ====================
 
    // Função para buscar as tarefas do banco de dados
@@ -305,53 +317,53 @@ export default function TabelaTarefas({ isOpen, onClose }: ModalTarefasProps) {
    } = useQuery({
       queryKey: ['tarefas', token],
       queryFn: () => fetchTarefas(token!),
-      enabled,
+      enabled: isOpen && !!token && !!user,
       staleTime: 1000 * 60 * 5,
       retry: 2,
    });
    // ================================================================================
 
-   // Função para abrir a tabela de chamados vinculados à tarefa
-   const handleOpenChamadosTarefa = (codTarefa: number) => {
-      setSelectedTarefaParaChamados(codTarefa);
-      setIsTabelaChamadosOpen(true);
-   };
-   // ==========
-
-   // Função para fechar a tabela de chamados vinculados à tarefa
-   const handleCloseTabelaChamados = () => {
-      setIsTabelaChamadosOpen(false);
-      setSelectedTarefaParaChamados(null);
-   };
-   // ========================================
-
    // Função para abrir a tabela de OS vinculadas à tarefa
    const handleOpenTabelaOSTarefa = (codTarefa: number) => {
-      setSelectedTarefaCodigo(codTarefa);
-      setIsModalOSOpen(true);
+      setSelectedTarefaOS(codTarefa);
+      setIsOpenTabelaOSTarefa(true);
    };
    // ==========
 
    // Função para fechar a tabela de OS vinculadas à tarefa
    const handleCloseTabelaOSTarefa = () => {
-      setIsModalOSOpen(false);
-      setSelectedTarefaCodigo(null);
+      setIsOpenTabelaOSTarefa(false);
+      setSelectedTarefaOS(null);
    };
-   // ========================================
+   // ================================================================================
+
+   // Função para abrir a tabela de chamados vinculados à tarefa
+   const handleOpenTabelaChamadosTarefa = (codTarefa: number) => {
+      setSelectedTarefaChamado(codTarefa);
+      setIsOpenTabelaChamadosTarefa(true);
+   };
+   // ==========
+
+   // Função para fechar a tabela de chamados vinculados à tarefa
+   const handleCloseTabelaChamadosTarefa = () => {
+      setIsOpenTabelaChamadosTarefa(false);
+      setSelectedTarefaChamado(null);
+   };
+   // ================================================================================
 
    // Função para abrir o modal de apontamento vinculada à tarefa
-   const handleOpenModalApontamentoTarefa = (tarefa: TabelaTarefaProps) => {
-      setSelectedTarefaParaCriarOS(tarefa);
-      setIsModalApontamentoOpen(true);
+   const handleOpenModalApontamentoOSTarefa = (tarefa: TabelaTarefaProps) => {
+      setSelectedTarefaApontamentoOS(tarefa);
+      setIsOpenApontamentoOSTarefa(true);
    };
    // ==========
 
    // Função para fechar o modal de apontamento vinculada à tarefa
-   const handleCloseModalApontamentoTarefa = () => {
-      setIsModalApontamentoOpen(false);
-      setSelectedTarefaParaCriarOS(null);
+   const handleCloseModalApontamentoOSTarefa = () => {
+      setIsOpenApontamentoOSTarefa(false);
+      setSelectedTarefaApontamentoOS(null);
    };
-   // ========================================
+   // ================================================================================
 
    // Função para fechar a tabela de tarefas
    const handleCloseTabelaTarefa = () => {
@@ -438,10 +450,10 @@ export default function TabelaTarefas({ isOpen, onClose }: ModalTarefasProps) {
    //  Define as colunas da tabela com useMemo para otimização
    const colunas = useMemo(
       () =>
-         colunasTabelaTarefas({
-            visualizarOSTarefa: handleOpenTabelaOSTarefa,
-            visualizarChamadosTarefa: handleOpenChamadosTarefa,
-            apontamentoTarefa: handleOpenModalApontamentoTarefa,
+         colunasTabelaTarefa({
+            openTabelaOSTarefa: handleOpenTabelaOSTarefa,
+            openTabelaChamadosTarefa: handleOpenTabelaChamadosTarefa,
+            openModalApontamentoOSTarefa: handleOpenModalApontamentoOSTarefa,
          }),
       []
    );
@@ -568,7 +580,6 @@ export default function TabelaTarefas({ isOpen, onClose }: ModalTarefasProps) {
          </>
       );
    }
-   // ==================
 
    // ================================================================================
    // RENDERIZAÇÃO
@@ -1058,44 +1069,31 @@ export default function TabelaTarefas({ isOpen, onClose }: ModalTarefasProps) {
          </div>
          {/* ===== */}
 
-         {/* VISUALIZAR OS DA TAREFA */}
+         {/* ===== TABELA OS TAREFA ===== */}
          <TabelaOSTarefa
-            isOpen={isModalOSOpen}
+            isOpen={isOpenTabelaOSTarefa}
             onClose={handleCloseTabelaOSTarefa}
-            codTarefa={selectedTarefaCodigo}
+            codTarefa={selectedTarefaOS}
             codChamado={null}
          />
-         {/* ===== */}
+         {/* ========== */}
 
-         {/* VISUALIZAR CHAMADOS DA TAREFA */}
+         {/* ===== TABELA CHAMADOS TAREFA ===== */}
          <TabelaChamadosTarefa
-            isOpen={isTabelaChamadosOpen}
-            onClose={handleCloseTabelaChamados}
-            codTarefa={selectedTarefaParaChamados}
+            isOpen={isOpenTabelaChamadosTarefa}
+            onClose={handleCloseTabelaChamadosTarefa}
+            codTarefa={selectedTarefaChamado}
             codChamado={null}
          />
-         {/* ===== */}
+         {/* ========== */}
 
-         {/* MODAL DE CRIAR OS */}
-         <ModalApontamento
-            isOpen={isModalApontamentoOpen}
-            onClose={handleCloseModalApontamentoTarefa}
-            tarefa={selectedTarefaParaCriarOS}
+         {/* ===== MODAL APONTAMENTO OS TAREFA ===== */}
+         <ModalApontamentoOSTarefa
+            isOpen={isOpenApontamentoOSTarefa}
+            onClose={handleCloseModalApontamentoOSTarefa}
+            tarefa={selectedTarefaApontamentoOS}
          />
       </>
    );
 }
 // ================================================================================
-
-// Função para largura fixa das colunas
-function getColumnWidth(columnId: string): string {
-   const widthMap: Record<string, string> = {
-      COD_TAREFA: '15%',
-      NOME_TAREFA: '46%',
-      DTSOL_TAREFA: '12%',
-      HREST_TAREFA: '12%',
-      actions: '15%',
-   };
-
-   return widthMap[columnId] || 'auto';
-}

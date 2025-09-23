@@ -1,17 +1,6 @@
 'use client';
-// ================================================================================
+
 import { useState, useEffect, useCallback } from 'react';
-// ================================================================================
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from '../../../../../components/ui/tooltip';
-// ================================================================================
-import { TabelaRecursoProps } from '../../../../../types/types';
-// ================================================================================
-import { Loader2 } from 'lucide-react';
-import { IoClose } from 'react-icons/io5';
 import {
    FaUserCog,
    FaCheck,
@@ -22,11 +11,18 @@ import {
    FaUser,
    FaTasks,
 } from 'react-icons/fa';
+import { IoClose } from 'react-icons/io5';
+import { Loader2 } from 'lucide-react';
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from '../../../../../components/ui/tooltip';
 
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
-interface PermitirRetroativoTarefaProps {
+interface PermitirRetroativoProps {
    resourceId: string;
    resourceName: string;
    tarefaId: string;
@@ -35,7 +31,12 @@ interface PermitirRetroativoTarefaProps {
    enabledBy: string;
 }
 
-interface ModalPermitirRetroativoTarefaProps {
+interface RecursoProps {
+   cod_recurso: number;
+   nome_recurso: string;
+}
+
+interface ModalPermitirRetroativoProps {
    isOpen: boolean;
    onClose: () => void;
    currentUserId: string;
@@ -43,16 +44,19 @@ interface ModalPermitirRetroativoTarefaProps {
 }
 
 // ================================================================================
-// HOOK PARA GERENCIAR PERMISSÕES DE TAREFAS (AGORA COM API)
+// HOOK PARA GERENCIAR PERMISSÕES (AGORA COM API)
 // ================================================================================
 
-export const useModalPermitirRetroativoTarefa = () => {
-   const [permissions, setPermissions] = useState<
-      PermitirRetroativoTarefaProps[]
-   >([]);
-   const [loading, setLoading] = useState(false);
+export const useBackdatedPermissions = () => {
+   const [permissions, setPermissions] = useState<PermitirRetroativoProps[]>(
+      []
+   );
+   // ====================
 
-   // Função para fazer chamadas à API (adaptada para tarefas)
+   const [loading, setLoading] = useState(false);
+   // ====================
+
+   // Função para fazer chamadas à API
    const makeApiCall = async (method: string, data?: any): Promise<any> => {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -85,8 +89,9 @@ export const useModalPermitirRetroativoTarefa = () => {
 
       return response.json();
    };
+   // ====================
 
-   // Carregar permissões da API (filtrada para tarefas)
+   // Carregar permissões da API
    const loadPermissions = useCallback(
       async (resourceId?: string, tarefaId?: string) => {
          setLoading(true);
@@ -96,9 +101,10 @@ export const useModalPermitirRetroativoTarefa = () => {
 
             if (resourceId) params.append('resourceId', resourceId);
             if (tarefaId) params.append('tarefaId', tarefaId);
-            params.append('type', 'tarefa'); // Filtrar apenas por tarefas
 
-            url += `?${params.toString()}`;
+            if (params.toString()) {
+               url += `?${params.toString()}`;
+            }
 
             const token = localStorage.getItem('token');
             const response = await fetch(url, {
@@ -121,8 +127,9 @@ export const useModalPermitirRetroativoTarefa = () => {
       },
       []
    );
+   // ====================
 
-   // Habilitar permissão para um recurso em uma tarefa específica
+   // Habilitar permissão para um recurso em um chamado específico
    const enablePermission = async (
       resourceId: string,
       resourceName: string,
@@ -130,17 +137,10 @@ export const useModalPermitirRetroativoTarefa = () => {
       adminId: string
    ): Promise<boolean> => {
       try {
-         console.log('📤 Fazendo POST para habilitar permissão (tarefa):', {
-            resourceId,
-            resourceName,
-            tarefaId,
-            adminId,
-         });
-
          await makeApiCall('POST', {
             resourceId,
             resourceName,
-            tarefaId, // Note: tarefaId em vez de chamadoId
+            tarefaId,
             adminId,
          });
 
@@ -162,28 +162,23 @@ export const useModalPermitirRetroativoTarefa = () => {
             ];
          });
 
-         console.log('✅ Permissão habilitada com sucesso (tarefa)');
          return true;
       } catch (error) {
-         console.error('❌ Erro ao habilitar permissão (tarefa):', error);
+         console.error('❌ Erro ao habilitar permissão:', error);
          return false;
       }
    };
+   // ====================
 
-   // Desabilitar permissão para um recurso em uma tarefa específica
+   // Desabilitar permissão para um recurso em um chamado específico
    const disablePermission = async (
       resourceId: string,
       tarefaId: string
    ): Promise<boolean> => {
       try {
-         console.log('📤 Fazendo DELETE para desabilitar permissão (tarefa):', {
-            resourceId,
-            tarefaId,
-         });
-
          await makeApiCall('DELETE', {
             resourceId,
-            tarefaId, // Note: tarefaId em vez de chamadoId
+            tarefaId,
          });
 
          // Atualizar estado local
@@ -193,24 +188,25 @@ export const useModalPermitirRetroativoTarefa = () => {
             )
          );
 
-         console.log('✅ Permissão desabilitada com sucesso (tarefa)');
          return true;
       } catch (error) {
-         console.error('❌ Erro ao desabilitar permissão (tarefa):', error);
+         console.error('❌ Erro ao desabilitar permissão:', error);
          return false;
       }
    };
+   // ====================
 
-   // Verificar se um recurso tem permissão para uma tarefa específica
+   // Verificar se um recurso tem permissão para um chamado específico
    const hasPermission = (resourceId: string, tarefaId: string): boolean => {
       return permissions.some(
          p =>
             p.resourceId === resourceId && p.tarefaId === tarefaId && p.enabled
       );
    };
+   // ====================
 
    // Obter todas as permissões ativas
-   const getActivePermissions = (): PermitirRetroativoTarefaProps[] => {
+   const getActivePermissions = (): PermitirRetroativoProps[] => {
       return permissions.filter(p => p.enabled);
    };
 
@@ -224,13 +220,14 @@ export const useModalPermitirRetroativoTarefa = () => {
       getActivePermissions,
    };
 };
+// ====================
 
 // ================================================================================
 // MODAL DE GERENCIAMENTO DE PERMISSÕES PARA TAREFAS
 // ================================================================================
 
 export const ModalPermitirRetroativoTarefa: React.FC<
-   ModalPermitirRetroativoTarefaProps
+   ModalPermitirRetroativoProps
 > = ({ isOpen, onClose, currentUserId, tarefaId }) => {
    const {
       hasPermission,
@@ -239,25 +236,22 @@ export const ModalPermitirRetroativoTarefa: React.FC<
       getActivePermissions,
       loadPermissions,
       loading: permissionsLoading,
-   } = useModalPermitirRetroativoTarefa();
+   } = useBackdatedPermissions();
+   // ===================
 
-   const [resources, setResources] = useState<TabelaRecursoProps[]>([]);
+   const [resources, setResources] = useState<RecursoProps[]>([]);
    const [loading, setLoading] = useState(false);
    const [error, setError] = useState<string | null>(null);
    const [tarefaInfo, setTarefaInfo] = useState<{
-      nome: string;
-      descricao: string;
+      assunto: string;
+      cliente: string;
       status: string;
-      projeto: string;
    } | null>(null);
-
-   // Estado para controlar permissões pendentes (não salvas ainda)
    const [pendingPermissions, setPendingPermissions] = useState<{
       [resourceId: string]: boolean;
    }>({});
-
-   // Estado para loading do botão Concluir
    const [savingPermissions, setSavingPermissions] = useState(false);
+   // ====================
 
    const fetchTarefaAndResources = useCallback(async () => {
       setLoading(true);
@@ -269,7 +263,6 @@ export const ModalPermitirRetroativoTarefa: React.FC<
             throw new Error('Token não encontrado');
          }
 
-         // Buscar dados da tarefa específica
          const tarefaResponse = await fetch(
             `/api/tarefas?codTarefa=${tarefaId}`,
             {
@@ -294,24 +287,27 @@ export const ModalPermitirRetroativoTarefa: React.FC<
 
          // Salvar informações da tarefa
          setTarefaInfo({
-            nome: tarefa.NOME_TAREFA || 'Sem nome',
-            descricao: tarefa.DESCRICAO_TAREFA || 'Sem descrição',
-            status: tarefa.STATUS_TAREFA || 'Status não informado',
-            projeto: tarefa.NOME_PROJETO || 'Projeto não informado',
+            assunto:
+               tarefa.ASSUNTO_TAREFA || tarefa.NOME_TAREFA || 'Sem assunto',
+            cliente: tarefa.NOME_CLIENTE || 'Cliente não informado',
+            status:
+               tarefa.STATUS_TAREFA_TEXTO?.trim() ||
+               `Status ${tarefa.STATUS_TAREFA}`,
          });
 
-         // Se o status for "EM ANDAMENTO", não permitir permissões
-         if (tarefa.STATUS_TAREFA === 'EM ANDAMENTO') {
+         // CORREÇÃO: Verificar se está em atendimento (assumindo que 2 = EM ATENDIMENTO)
+         if (tarefa.STATUS_TAREFA === 2) {
             setError(
-               'Não é possível conceder permissões para tarefas em andamento'
+               'Não é possível conceder permissões para tarefas em atendimento'
             );
             return;
          }
 
-         // Buscar dados do recurso responsável
-         if (tarefa.CODREC_TAREFA) {
+         // CORREÇÃO: Lidar com COD_RECURSO = 0
+         if (tarefa.COD_RECURSO && tarefa.COD_RECURSO !== 0) {
+            // Buscar recurso específico
             const recursoResponse = await fetch(
-               `/api/recursos?codRecurso=${tarefa.CODREC_TAREFA}`,
+               `/api/recursos?codRecurso=${tarefa.COD_RECURSO}`,
                {
                   headers: {
                      Authorization: `Bearer ${token}`,
@@ -320,32 +316,22 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                }
             );
 
-            if (!recursoResponse.ok) {
-               throw new Error('Erro ao carregar dados do recurso');
-            }
-
-            const recursoData = await recursoResponse.json();
-
-            if (recursoData && recursoData.length > 0) {
+            if (recursoResponse.ok) {
+               const recursoData = await recursoResponse.json();
                setResources(recursoData);
             } else {
-               // Se não encontrou o recurso específico, buscar todos como fallback
-               const allResourcesResponse = await fetch('/api/recursos', {
-                  headers: {
-                     Authorization: `Bearer ${token}`,
-                     'Content-Type': 'application/json',
-                  },
-               });
-
-               if (allResourcesResponse.ok) {
-                  const allResourcesData = await allResourcesResponse.json();
-                  setResources(allResourcesData);
-               } else {
-                  throw new Error('Erro ao carregar recursos');
-               }
+               throw new Error('Erro ao carregar dados do recurso');
             }
+         } else if (tarefa.NOME_RECURSO && tarefa.NOME_RECURSO.trim()) {
+            // Usar o código real do recurso (mesmo se for 0)
+            setResources([
+               {
+                  cod_recurso: tarefa.COD_RECURSO, // Usar o código real (pode ser 0)
+                  nome_recurso: tarefa.NOME_RECURSO.trim(),
+               },
+            ]);
          } else {
-            // Se a tarefa não tem recurso definido, buscar todos
+            // Buscar todos os recursos
             const allResourcesResponse = await fetch('/api/recursos', {
                headers: {
                   Authorization: `Bearer ${token}`,
@@ -361,7 +347,6 @@ export const ModalPermitirRetroativoTarefa: React.FC<
             }
          }
 
-         // Carregar permissões existentes para esta tarefa
          await loadPermissions(undefined, tarefaId);
       } catch (err) {
          console.error('Erro ao carregar dados:', err);
@@ -370,38 +355,31 @@ export const ModalPermitirRetroativoTarefa: React.FC<
          setLoading(false);
       }
    }, [tarefaId, loadPermissions]);
+   // ===================
 
-   // Fetch recursos responsáveis pela tarefa quando o modal abre
+   // Fetch recursos responsáveis pelo chamado quando o modal abre
    useEffect(() => {
       if (isOpen) {
          fetchTarefaAndResources();
-         // Limpar permissões pendentes ao abrir
+         // 🆕 Limpar permissões pendentes ao abrir
          setPendingPermissions({});
       }
    }, [isOpen, fetchTarefaAndResources]);
+   // ===================
 
    // Função para marcar/desmarcar permissões (só armazena localmente)
    const handlePermissionToggle = (
-      resource: TabelaRecursoProps,
+      resource: RecursoProps,
       enabled: boolean
    ) => {
-      const resourceId =
-         resource.CODREC_TAREFA != null
-            ? resource.CODREC_TAREFA.toString()
-            : '';
-
-      console.log('🔄 Toggle permissão local (tarefa):', {
-         resource: resource.NOME_RECURSO,
-         enabled,
-         resourceId,
-         currentUserId,
-      });
+      const resourceId = resource.cod_recurso.toString();
 
       setPendingPermissions(prev => ({
          ...prev,
          [resourceId]: enabled,
       }));
    };
+   // ===================
 
    // Função para salvar todas as permissões pendentes
    const handleSavePermissions = async () => {
@@ -411,8 +389,6 @@ export const ModalPermitirRetroativoTarefa: React.FC<
       }
 
       setSavingPermissions(true);
-      console.log('💾 Iniciando salvamento das permissões (tarefa)...');
-      console.log('📋 Permissões pendentes:', pendingPermissions);
 
       let hasErrors = false;
 
@@ -422,9 +398,7 @@ export const ModalPermitirRetroativoTarefa: React.FC<
             pendingPermissions
          )) {
             const resource = resources.find(
-               r =>
-                  r.CODREC_TAREFA != null &&
-                  r.CODREC_TAREFA.toString() === resourceId
+               r => r.cod_recurso.toString() === resourceId
             );
 
             if (!resource) {
@@ -438,7 +412,7 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                // Habilitar permissão
                success = await enablePermission(
                   resourceId,
-                  resource.NOME_RECURSO,
+                  resource.nome_recurso,
                   tarefaId,
                   currentUserId
                );
@@ -449,7 +423,7 @@ export const ModalPermitirRetroativoTarefa: React.FC<
 
             if (!success) {
                console.error(
-                  `❌ Falha ao processar permissão para recurso: ${resource.NOME_RECURSO}`
+                  `❌ Falha ao processar permissão para recurso: ${resource.nome_recurso}`
                );
                hasErrors = true;
             }
@@ -460,18 +434,18 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                'Algumas permissões não puderam ser salvas. Verifique o console para detalhes.'
             );
          } else {
-            console.log('✅ Todas as permissões foram salvas com sucesso!');
-            // Limpar permissões pendentes após salvar
+            // 🆕 Limpar permissões pendentes após salvar
             setPendingPermissions({});
             onClose();
          }
       } catch (error) {
-         console.error('❌ Erro geral ao salvar permissões (tarefa):', error);
+         console.error('❌ Erro geral ao salvar permissões:', error);
          alert('Erro ao salvar permissões. Tente novamente.');
       } finally {
          setSavingPermissions(false);
       }
    };
+   // ===================
 
    // Função para verificar se um recurso está habilitado (considerando pendentes)
    const isResourceEnabled = (resourceId: string): boolean => {
@@ -483,20 +457,23 @@ export const ModalPermitirRetroativoTarefa: React.FC<
       // Senão, usar permissão existente da API
       return hasPermission(resourceId, tarefaId);
    };
+   // ===================
 
    const activePermissions = getActivePermissions().filter(
       p => p.tarefaId === tarefaId
    );
+   // ===================
 
    // Verificar se há pelo menos uma permissão ativa (incluindo pendentes)
    const hasPendingChanges = Object.keys(pendingPermissions).length > 0;
    const hasActivePermissions =
       activePermissions.length > 0 || hasPendingChanges;
+   // ===================
 
    if (!isOpen) return null;
-
+   // ===================
    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-lg">
+      <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 backdrop-blur-lg">
          <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-[800px] overflow-hidden rounded-2xl border-0 bg-white shadow-xl shadow-black transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 p-6 shadow-md shadow-black">
@@ -551,7 +528,7 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                               Nome:
                            </span>{' '}
                            <span className="text-sm font-bold tracking-widest text-blue-800 italic select-none">
-                              {tarefaInfo.nome}
+                              {tarefaInfo.assunto}
                            </span>
                         </p>
                         <p>
@@ -559,7 +536,7 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                               Projeto:
                            </span>{' '}
                            <span className="text-sm font-bold tracking-widest text-blue-800 italic select-none">
-                              {tarefaInfo.projeto}
+                              {tarefaInfo.cliente}
                            </span>
                         </p>
                         <p>
@@ -661,14 +638,12 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                      <div className="flex max-h-96 flex-col gap-2 overflow-y-auto">
                         {resources.map(resource => {
                            const resourceId =
-                              resource.CODREC_TAREFA != null
-                                 ? resource.CODREC_TAREFA.toString()
-                                 : '';
+                              resource.cod_recurso?.toString() || '';
                            const isEnabled = isResourceEnabled(resourceId);
 
                            return (
                               <div
-                                 key={resource.CODREC_TAREFA}
+                                 key={resource.cod_recurso}
                                  className={`flex items-center justify-between p-4 ${
                                     isEnabled
                                        ? 'rounded-lg border border-l-8 border-green-500 bg-green-100'
@@ -704,14 +679,15 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                                        <p className="text-sm font-extrabold tracking-widest text-green-700 italic select-none">
                                           Recurso:{' '}
                                           <span className="font-semibold">
-                                             {resource.NOME_RECURSO}
+                                             {resource.nome_recurso ||
+                                                'Desconhecido'}
                                           </span>
                                        </p>
                                        <p className="text-sm font-extrabold tracking-widest text-green-700 italic select-none">
                                           <span className="font-semibold">
                                              CÓD:
                                           </span>{' '}
-                                          {resource.CODREC_TAREFA}
+                                          {resource.cod_recurso}
                                        </p>
                                     </div>
                                  </div>

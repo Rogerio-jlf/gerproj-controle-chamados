@@ -192,7 +192,7 @@ type FormErrors = Partial<Record<keyof FormData | 'root', string>>;
 // COMPONENTE PRINCIPAL
 // ================================================================================
 
-export default function ModalApontamento({
+export default function ModalApontamentoOSTarefa({
    isOpen,
    onClose,
    tarefa,
@@ -747,7 +747,7 @@ export default function ModalApontamento({
 
    return (
       <>
-         <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
+         <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center p-4 duration-300">
             {/* ===== OVERLAY ===== */}
             <div
                className="absolute inset-0 bg-black/50 backdrop-blur-xl"
@@ -1115,12 +1115,12 @@ export default function ModalApontamento({
             </div>
          </div>
          {/* ===== MODAL DE PERMISSÕES RETROATIVAS ===== */}
-         {isAdmin && showBackdatedModal && (
+         {isAdmin && showBackdatedModal && tarefa && (
             <ModalPermitirRetroativoTarefa
                isOpen={showBackdatedModal}
                onClose={() => setShowBackdatedModal(false)}
                currentUserId={currentUserId}
-               tarefaId={codTarefa?.toString() || ''}
+               tarefaId={tarefa.COD_TAREFA.toString()}
             />
          )}{' '}
       </>

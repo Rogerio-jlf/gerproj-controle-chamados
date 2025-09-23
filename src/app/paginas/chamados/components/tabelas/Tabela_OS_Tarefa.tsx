@@ -24,9 +24,9 @@ import { TabelaOSProps } from '../../../../../types/types';
 import { InputGlobalFilterProps } from '../../../../../types/types';
 import { InputFilterTableHeaderProps } from '../../../../../types/types';
 // ================================================================================
+import ModalEditarOS from '../modais/Modal_Editar_OS';
 import { ModalExcluirOS } from '../modais/Modal_Deletar_OS';
 import { colunasTabelaOSTarefa } from '../colunas/Colunas_Tabela_OS_Tarefa';
-import ModalEditarOS from '../modais/Modal_Editar_OS';
 // ================================================================================
 import IsError from '../Error';
 import IsLoading from '../Loading';
@@ -44,17 +44,16 @@ import { FaExclamationTriangle, FaTasks, FaSearch } from 'react-icons/fa';
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
-interface TabelaOSTarefaProps {
+interface Props {
    isOpen: boolean;
    onClose: () => void;
+   onSuccess?: () => void;
    codTarefa: number | null;
    codChamado?: number | null;
-   onSuccess?: () => void;
 }
-// =========
 
 // ================================================================================
-// COMPONENTES DE FILTRO
+// FILTRO
 // ================================================================================
 const InputGlobalFilter = ({
    value,
@@ -224,9 +223,28 @@ const OrderTableHeader = ({
       </Tooltip>
    );
 };
-// ====================
+// ================================================================================
 
-// Função para definir a largura das colunas com base no ID
+// Função para largura fixa das colunas
+function getColumnWidth(columnId: string): string {
+   const widthMap: Record<string, string> = {
+      COD_OS: '8.5%',
+      NOME_CLIENTE: '15%',
+      CHAMADO_OS: '8%',
+      STATUS_OS: '10%',
+      OBS_OS: '18%',
+      DTINI_OS: '10%',
+      HRINI_OS: '8%',
+      HRFIM_OS: '8%',
+      QTD_HR_OS: '8%',
+      actions: '6.5%',
+   };
+
+   return widthMap[columnId] || 'auto';
+}
+// ===================
+
+// Função auxiliar para nomear as colunas ordenáveis
 const getColumnDisplayName = (columnId: string): string => {
    const displayNames: Record<string, string> = {
       COD_OS: 'Código OS',
@@ -238,26 +256,31 @@ const getColumnDisplayName = (columnId: string): string => {
    };
    return displayNames[columnId] || columnId;
 };
-// ================================================================================
 
-// ===== COMPONENTE PRINCIPAL =====
+// ================================================================================
+// COMPONENTE PRINCIPAL
+// ================================================================================
 export default function TabelaOSTarefa({
    isOpen,
    onClose,
+   onSuccess,
    codTarefa,
    codChamado,
-   onSuccess,
-}: TabelaOSTarefaProps) {
+}: Props) {
+   const [openModalEditarOS, setOpenModalEditarOS] = useState(false);
+   const [openModalExcluirOS, setOpenModalExcluirOS] = useState<number | null>(
+      null
+   );
+   const [selectedOSExcluir, setSelectedOSExcluir] = useState<number | null>(
+      null
+   );
+
    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
    const [globalFilter, setGlobalFilter] = useState('');
    const [sorting, setSorting] = useState<SortingState>([
       { id: 'COD_OS', desc: false },
    ]);
    const [showFilters, setShowFilters] = useState(false);
-   const [selectedOS, setSelectedOS] = useState<number | null>(null);
-   const [modalEditarOSOpen, setModalEditarOSOpen] = useState(false);
-   const [osParaExcluir, setOsParaExcluir] = useState<number | null>(null);
-
    // Estados para os valores dos inputs de filtro
    const [filterValues, setFilterValues] = useState({
       COD_OS: '',
@@ -271,7 +294,9 @@ export default function TabelaOSTarefa({
 
    const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+   // ====================
 
+   // Função para buscar as OS da Tarefa no banco de dados
    const fetchDataOSTarefa = async (codTarefa: number) => {
       const response = await fetch(`/api/OS-tarefa/${codTarefa}`, {
          headers: {
@@ -288,7 +313,9 @@ export default function TabelaOSTarefa({
       const data = await response.json();
       return Array.isArray(data) ? data : [data];
    };
+   // ====================
 
+   // useQuery para gerir os estados de busca das tarefas
    const {
       data: dataOSTarefa,
       isLoading: isLoading,
@@ -300,53 +327,59 @@ export default function TabelaOSTarefa({
       queryFn: () => fetchDataOSTarefa(codTarefa!),
       enabled: isOpen && !!codTarefa && !!token,
       staleTime: 1000 * 60 * 1,
+      retry: 2,
    });
+   // ====================
 
+   // Efeito para refetch quando o modal abrir ou o codTarefa mudar
    useEffect(() => {
       if (isOpen && codTarefa) {
          refetch();
       }
    }, [isOpen, codTarefa, refetch]);
+   // ================================================================================
 
-   const handleClose = () => {
+   // Função para fechar a tabela com delay para animação
+   const handleCloseTabelaOSTarefas = () => {
       setTimeout(() => {
          onClose();
       }, 300);
    };
+   // ================================================================================
 
-   const handleOpenEditarOS = (codOS: number) => {
-      setSelectedOS(codOS);
-      setModalEditarOSOpen(true);
+   const handleOpenModalEditarOS = (codOS: number) => {
+      setSelectedOSExcluir(codOS);
+      setOpenModalEditarOS(true);
    };
+   // ====================
 
-   const handleAbrirModalExclusao = (codOS: number) => {
-      setOsParaExcluir(codOS);
+   const handleCloseModalEditarOS = () => {
+      setOpenModalEditarOS(false);
+      setSelectedOSExcluir(null);
    };
+   // ================================================================================
 
-   const handleFecharModalExclusao = () => {
-      setOsParaExcluir(null);
+   const handleOpenModalExcluirOS = (codOS: number) => {
+      setOpenModalExcluirOS(codOS);
    };
+   // ====================
 
-   const handleCloseEditarOS = () => {
-      setModalEditarOSOpen(false);
-      setSelectedOS(null);
+   const handleCloseModalExcluirOS = () => {
+      setOpenModalExcluirOS(null);
    };
+   // ================================================================================
 
    const handleEditarOSSuccess = () => {
-      handleCloseEditarOS();
+      handleCloseModalEditarOS();
       onSuccess?.();
    };
+   // ====================
 
-   const handleExclusaoSuccess = () => {
-      handleFecharModalExclusao();
+   const handleExcluirOSSuccess = () => {
+      handleCloseModalExcluirOS();
       refetch();
    };
-
-   // Configuração da tabela
-   const colunas = colunasTabelaOSTarefa({
-      onEditarOS: handleOpenEditarOS,
-      onExcluirOS: handleAbrirModalExclusao,
-   });
+   // ================================================================================
 
    // Função de filtro global otimizada
    const globalFilterFn = useCallback(
@@ -426,6 +459,12 @@ export default function TabelaOSTarefa({
       []
    );
 
+   //  Define as colunas da tabela com useMemo para otimização
+   const colunas = colunasTabelaOSTarefa({
+      openModalEditarOS: handleOpenModalEditarOS,
+      openModalExcluirOS: handleOpenModalExcluirOS,
+   });
+
    const table = useReactTable({
       data: (dataOSTarefa ?? []) as TabelaOSProps[],
       columns: colunas,
@@ -458,6 +497,7 @@ export default function TabelaOSTarefa({
          filterFn: columnFilterFn,
       },
    });
+   // ====================
 
    // Calcula o total de filtros ativos
    const totalActiveFilters = useMemo(() => {
@@ -465,25 +505,7 @@ export default function TabelaOSTarefa({
       if (globalFilter && globalFilter.trim()) count += 1;
       return count;
    }, [columnFilters.length, globalFilter]);
-
-   // Obter valores únicos para filtros de select - usando useMemo para otimização
-   const clienteOptions = Array.from(
-      new Set(
-         dataOSTarefa
-            ?.map(item => item.NOME_CLIENTE)
-            .filter(Boolean)
-            .filter(cliente => cliente && cliente.trim() !== '')
-      )
-   ).sort();
-
-   const statusOptions = Array.from(
-      new Set(
-         dataOSTarefa
-            ?.map(item => item.STATUS_OS)
-            .filter(Boolean)
-            .filter(status => String(status).trim() !== '')
-      )
-   ).sort();
+   // ====================
 
    // Função para limpar todos os filtros e inputs
    const clearFilters = () => {
@@ -506,6 +528,7 @@ export default function TabelaOSTarefa({
          column.setFilterValue('');
       });
    };
+   // ====================
 
    // Atualiza os valores locais quando os filtros da tabela mudam
    useEffect(() => {
@@ -541,10 +564,11 @@ export default function TabelaOSTarefa({
          return hasChanged ? newFilterValues : prev;
       });
    }, [columnFilters, globalFilter]);
+   // ====================
 
    if (!isOpen) return null;
+   // ====================
 
-   // ===== LOADING CENTRALIZADO =====
    if (isLoading) {
       return (
          <>
@@ -557,6 +581,7 @@ export default function TabelaOSTarefa({
          </>
       );
    }
+   // ====================
 
    if (isError) {
       return (
@@ -570,7 +595,8 @@ export default function TabelaOSTarefa({
    }
 
    // ================================================================================
-
+   // RENDERIZAÇÃO
+   // ================================================================================
    return (
       <>
          <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -645,7 +671,7 @@ export default function TabelaOSTarefa({
 
                         {/* Botão fechar tabela */}
                         <button
-                           onClick={handleClose}
+                           onClick={handleCloseTabelaOSTarefas}
                            className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95"
                         >
                            <IoClose size={24} />
@@ -1078,49 +1104,31 @@ export default function TabelaOSTarefa({
                </main>
             </div>
          </div>
+         {/* ===== */}
 
-         {/* ===== MODAL EDIÇÃO DE OS ===== */}
-         {modalEditarOSOpen && selectedOS !== null && (
+         {/* ===== MODAL EDITAR OS ===== */}
+         {openModalEditarOS && selectedOSExcluir !== null && (
             <ModalEditarOS
-               isOpen={modalEditarOSOpen}
-               onClose={handleCloseEditarOS}
+               isOpen={openModalEditarOS}
+               onClose={handleCloseModalEditarOS}
+               onSuccess={handleEditarOSSuccess}
                codChamado={codChamado !== null ? Number(codChamado) : null}
-               codOS={selectedOS}
+               codOS={selectedOSExcluir}
                nomeCliente={
-                  dataOSTarefa?.find(os => os.COD_OS === selectedOS)
+                  dataOSTarefa?.find(os => os.COD_OS === selectedOSExcluir)
                      ?.NOME_CLIENTE
                }
-               onSuccess={handleEditarOSSuccess}
             />
          )}
+         {/* ========== */}
 
-         {/* ===== MODAL EXCLUSÃO DE OS ===== */}
+         {/* ===== MODAL EXCLUIR OS ===== */}
          <ModalExcluirOS
-            isOpen={!!osParaExcluir}
-            onClose={handleFecharModalExclusao}
-            codOS={osParaExcluir}
-            onSuccess={handleExclusaoSuccess}
+            isOpen={!!openModalExcluirOS}
+            onClose={handleCloseModalExcluirOS}
+            onSuccess={handleExcluirOSSuccess}
+            codOS={openModalExcluirOS}
          />
       </>
    );
-}
-
-// ================================================================================
-
-// Função para largura fixa das colunas
-function getColumnWidth(columnId: string): string {
-   const widthMap: Record<string, string> = {
-      COD_OS: '8.5%',
-      NOME_CLIENTE: '15%',
-      CHAMADO_OS: '8%',
-      STATUS_OS: '10%',
-      OBS_OS: '18%',
-      DTINI_OS: '10%',
-      HRINI_OS: '8%',
-      HRFIM_OS: '8%',
-      QTD_HR_OS: '8%',
-      actions: '6.5%',
-   };
-
-   return widthMap[columnId] || 'auto';
 }

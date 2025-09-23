@@ -21,16 +21,15 @@ import { FaDownload, FaPhoneAlt, FaHandPointUp } from 'react-icons/fa';
 // INTERFACES
 // ================================================================================
 interface BotoesAcaoProps {
-   visualizarOSTarefa?: (codTarefa: number) => void;
-   visualizarChamadosTarefa?: (codTarefa: number) => void;
-   apontamentoTarefa?: (tarefa: TabelaTarefaProps) => void;
+   openTabelaOSTarefa?: (codTarefa: number) => void;
+   openTabelaChamadosTarefa?: (codTarefa: number) => void;
+   openModalApontamentoOSTarefa?: (tarefa: TabelaTarefaProps) => void;
 }
-// ==============================
 
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export const colunasTabelaTarefas = (
+export const colunasTabelaTarefa = (
    props?: BotoesAcaoProps
 ): ColumnDef<TabelaTarefaProps>[] => [
    // Código da tarefa
@@ -113,26 +112,29 @@ export const colunasTabelaTarefas = (
          // =====
 
          const handleOpenTabelaOSTarefa = () => {
-            if (props?.visualizarOSTarefa) {
-               props.visualizarOSTarefa(tarefa.COD_TAREFA);
+            if (props?.openTabelaOSTarefa) {
+               props.openTabelaOSTarefa(tarefa.COD_TAREFA);
             }
          };
          // =====
 
-         const handleOpenChamadosTarefa = () => {
-            if (props?.visualizarChamadosTarefa) {
-               props.visualizarChamadosTarefa(tarefa.COD_TAREFA);
+         const handleOpenTabelaChamadosTarefa = () => {
+            if (props?.openTabelaChamadosTarefa) {
+               props.openTabelaChamadosTarefa(tarefa.COD_TAREFA);
             }
          };
          // =====
 
-         const handleApontamentoTarefa = () => {
-            if (props?.apontamentoTarefa) {
-               props.apontamentoTarefa(tarefa);
+         const handleOpenModalApontamentoOSTarefa = () => {
+            if (props?.openModalApontamentoOSTarefa) {
+               props.openModalApontamentoOSTarefa(tarefa);
             }
          };
          // =====
 
+         // ================================================================================
+         // RENDERIZAÇÃO
+         // ================================================================================
          return (
             <div className="flex items-center justify-center gap-4">
                {/* Botão download */}
@@ -181,7 +183,7 @@ export const colunasTabelaTarefas = (
                <Tooltip>
                   <TooltipTrigger asChild>
                      <button
-                        onClick={handleOpenChamadosTarefa}
+                        onClick={handleOpenTabelaChamadosTarefa}
                         className="cursor-pointer transition-all hover:scale-125 active:scale-95"
                      >
                         <FaPhoneAlt size={24} />
@@ -202,7 +204,7 @@ export const colunasTabelaTarefas = (
                <Tooltip>
                   <TooltipTrigger asChild>
                      <button
-                        onClick={handleApontamentoTarefa}
+                        onClick={handleOpenModalApontamentoOSTarefa}
                         className="cursor-pointer transition-all hover:scale-125 active:scale-95"
                      >
                         <FaHandPointUp size={24} />

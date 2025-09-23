@@ -33,11 +33,6 @@ interface PermitirRetroativoProps {
 interface RecursoProps {
    cod_recurso: number;
    nome_recurso: string;
-   hrdia_decimal: number;
-   hrdia_formatado: string;
-   custo_recurso: number;
-   receita_recurso: number;
-   tpcusto_recurso: number;
 }
 
 interface ModalPermitirRetroativoProps {
@@ -55,7 +50,10 @@ export const useBackdatedPermissions = () => {
    const [permissions, setPermissions] = useState<PermitirRetroativoProps[]>(
       []
    );
+   // ====================
+
    const [loading, setLoading] = useState(false);
+   // ====================
 
    // Função para fazer chamadas à API
    const makeApiCall = async (method: string, data?: any): Promise<any> => {
@@ -90,6 +88,7 @@ export const useBackdatedPermissions = () => {
 
       return response.json();
    };
+   // ====================
 
    // Carregar permissões da API
    const loadPermissions = useCallback(
@@ -127,6 +126,7 @@ export const useBackdatedPermissions = () => {
       },
       []
    );
+   // ====================
 
    // Habilitar permissão para um recurso em um chamado específico
    const enablePermission = async (
@@ -136,13 +136,6 @@ export const useBackdatedPermissions = () => {
       adminId: string
    ): Promise<boolean> => {
       try {
-         console.log('📤 Fazendo POST para habilitar permissão:', {
-            resourceId,
-            resourceName,
-            chamadoId,
-            adminId,
-         });
-
          await makeApiCall('POST', {
             resourceId,
             resourceName,
@@ -168,13 +161,13 @@ export const useBackdatedPermissions = () => {
             ];
          });
 
-         console.log('✅ Permissão habilitada com sucesso');
          return true;
       } catch (error) {
          console.error('❌ Erro ao habilitar permissão:', error);
          return false;
       }
    };
+   // ====================
 
    // Desabilitar permissão para um recurso em um chamado específico
    const disablePermission = async (
@@ -182,11 +175,6 @@ export const useBackdatedPermissions = () => {
       chamadoId: string
    ): Promise<boolean> => {
       try {
-         console.log('📤 Fazendo DELETE para desabilitar permissão:', {
-            resourceId,
-            chamadoId,
-         });
-
          await makeApiCall('DELETE', {
             resourceId,
             chamadoId,
@@ -199,13 +187,13 @@ export const useBackdatedPermissions = () => {
             )
          );
 
-         console.log('✅ Permissão desabilitada com sucesso');
          return true;
       } catch (error) {
          console.error('❌ Erro ao desabilitar permissão:', error);
          return false;
       }
    };
+   // ====================
 
    // Verificar se um recurso tem permissão para um chamado específico
    const hasPermission = (resourceId: string, chamadoId: string): boolean => {
@@ -216,6 +204,7 @@ export const useBackdatedPermissions = () => {
             p.enabled
       );
    };
+   // ====================
 
    // Obter todas as permissões ativas
    const getActivePermissions = (): PermitirRetroativoProps[] => {
@@ -232,6 +221,7 @@ export const useBackdatedPermissions = () => {
       getActivePermissions,
    };
 };
+// ====================
 
 // ================================================================================
 // MODAL DE GERENCIAMENTO DE PERMISSÕES (ATUALIZADO)
@@ -248,6 +238,7 @@ export const ModalPermitirRetroativo: React.FC<
       loadPermissions,
       loading: permissionsLoading,
    } = useBackdatedPermissions();
+   // ===================
 
    const [resources, setResources] = useState<RecursoProps[]>([]);
    const [loading, setLoading] = useState(false);
@@ -257,14 +248,11 @@ export const ModalPermitirRetroativo: React.FC<
       cliente: string;
       status: string;
    } | null>(null);
-
-   // 🆕 Estado para controlar permissões pendentes (não salvas ainda)
    const [pendingPermissions, setPendingPermissions] = useState<{
       [resourceId: string]: boolean;
    }>({});
-
-   // 🆕 Estado para loading do botão Concluir
    const [savingPermissions, setSavingPermissions] = useState(false);
+   // ====================
 
    const fetchChamadoAndResources = useCallback(async () => {
       setLoading(true);
@@ -292,6 +280,7 @@ export const ModalPermitirRetroativo: React.FC<
          }
 
          const chamadoData = await chamadoResponse.json();
+         console.log('Dados do chamado:', chamadoData);
 
          if (!chamadoData || chamadoData.length === 0) {
             throw new Error('Chamado não encontrado');
@@ -376,6 +365,7 @@ export const ModalPermitirRetroativo: React.FC<
          setLoading(false);
       }
    }, [chamadoId, loadPermissions]);
+   // ===================
 
    // Fetch recursos responsáveis pelo chamado quando o modal abre
    useEffect(() => {
@@ -385,28 +375,23 @@ export const ModalPermitirRetroativo: React.FC<
          setPendingPermissions({});
       }
    }, [isOpen, fetchChamadoAndResources]);
+   // ===================
 
-   // 🆕 Função para marcar/desmarcar permissões (só armazena localmente)
+   // Função para marcar/desmarcar permissões (só armazena localmente)
    const handlePermissionToggle = (
       resource: RecursoProps,
       enabled: boolean
    ) => {
       const resourceId = resource.cod_recurso.toString();
 
-      console.log('🔄 Toggle permissão local:', {
-         resource: resource.nome_recurso,
-         enabled,
-         resourceId,
-         currentUserId,
-      });
-
       setPendingPermissions(prev => ({
          ...prev,
          [resourceId]: enabled,
       }));
    };
+   // ===================
 
-   // 🆕 Função para salvar todas as permissões pendentes
+   // Função para salvar todas as permissões pendentes
    const handleSavePermissions = async () => {
       if (!currentUserId) {
          alert('ID do usuário não informado. Não é possível salvar.');
@@ -414,8 +399,6 @@ export const ModalPermitirRetroativo: React.FC<
       }
 
       setSavingPermissions(true);
-      console.log('💾 Iniciando salvamento das permissões...');
-      console.log('📋 Permissões pendentes:', pendingPermissions);
 
       let hasErrors = false;
 
@@ -461,7 +444,6 @@ export const ModalPermitirRetroativo: React.FC<
                'Algumas permissões não puderam ser salvas. Verifique o console para detalhes.'
             );
          } else {
-            console.log('✅ Todas as permissões foram salvas com sucesso!');
             // 🆕 Limpar permissões pendentes após salvar
             setPendingPermissions({});
             onClose();
@@ -473,8 +455,9 @@ export const ModalPermitirRetroativo: React.FC<
          setSavingPermissions(false);
       }
    };
+   // ===================
 
-   // 🆕 Função para verificar se um recurso está habilitado (considerando pendentes)
+   // Função para verificar se um recurso está habilitado (considerando pendentes)
    const isResourceEnabled = (resourceId: string): boolean => {
       // Se tem permissão pendente, usar ela
       if (resourceId in pendingPermissions) {
@@ -484,17 +467,21 @@ export const ModalPermitirRetroativo: React.FC<
       // Senão, usar permissão existente da API
       return hasPermission(resourceId, chamadoId);
    };
+   // ===================
 
    const activePermissions = getActivePermissions().filter(
       p => p.chamadoId === chamadoId
    );
+   // ===================
 
-   // 🆕 Verificar se há pelo menos uma permissão ativa (incluindo pendentes)
+   // Verificar se há pelo menos uma permissão ativa (incluindo pendentes)
    const hasPendingChanges = Object.keys(pendingPermissions).length > 0;
    const hasActivePermissions =
       activePermissions.length > 0 || hasPendingChanges;
+   // ===================
 
    if (!isOpen) return null;
+   // ===================
 
    return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-lg">
@@ -796,7 +783,6 @@ export const ModalPermitirRetroativo: React.FC<
                         <button
                            onClick={() => {
                               setPendingPermissions({});
-                              console.log('❌ Alterações canceladas');
                            }}
                            disabled={savingPermissions}
                            className="cursor-pointer rounded-xl border-none bg-gray-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-gray-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
