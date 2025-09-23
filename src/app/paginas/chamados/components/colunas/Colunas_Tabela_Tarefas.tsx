@@ -6,64 +6,34 @@ import {
    TooltipTrigger,
 } from '../../../../../components/ui/tooltip';
 // ================================================================================
+import { TabelaTarefaProps } from '../../../../../types/types';
+// ================================================================================
 import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
 import {
    formatarDataParaBR,
    formatarDecimalParaTempo,
 } from '../../../../../utils/formatters';
 // ================================================================================
-import { FaDownload, FaPhoneAlt, FaHandPointUp } from 'react-icons/fa';
 import { GrServices } from 'react-icons/gr';
+import { FaDownload, FaPhoneAlt, FaHandPointUp } from 'react-icons/fa';
 
 // ================================================================================
-// INTERFACES E TIPOS
+// INTERFACES
 // ================================================================================
-export interface TarefasProps {
-   COD_TAREFA: number;
-   NOME_TAREFA: string;
-   CODREC_TAREFA: number;
-   DTSOL_TAREFA: string;
-   HREST_TAREFA: number;
-   codChamado?: number;
-}
-
-export interface ChamadosProps {
-   COD_CHAMADO: number;
-   DATA_CHAMADO: string;
-   STATUS_CHAMADO: string;
-   CODTRF_CHAMADO: number;
-   COD_CLIENTE: number;
-   ASSUNTO_CHAMADO: string;
-   NOME_TAREFA: string;
-   NOME_CLIENTE: string;
-}
-
-interface ColunasProps {
+interface BotoesAcaoProps {
    visualizarOSTarefa?: (codTarefa: number) => void;
    visualizarChamadosTarefa?: (codTarefa: number) => void;
-   onCriarOS?: (tarefa: TarefasProps) => void; // ✅ Alterado
+   apontamentoTarefa?: (tarefa: TabelaTarefaProps) => void;
 }
+// ==============================
+
 // ================================================================================
-
-// Função para converter horas de HHMM, decimais para HH:MM
-const formatDecimalToTime = (decimalHours: number): string => {
-   if (!decimalHours && decimalHours !== 0) return '-';
-
-   const hours = Math.floor(decimalHours);
-   const minutes = Math.round((decimalHours - hours) * 60);
-
-   // Formatação com zero à esquerda
-   const formattedHours = hours.toString().padStart(2, '0');
-   const formattedMinutes = minutes.toString().padStart(2, '0');
-
-   return `${formattedHours}:${formattedMinutes}`;
-};
+// COMPONENTE PRINCIPAL
 // ================================================================================
-
-export const colunasTabela = (
-   props?: ColunasProps
-): ColumnDef<TarefasProps>[] => [
-   // código da tarefa
+export const colunasTabelaTarefas = (
+   props?: BotoesAcaoProps
+): ColumnDef<TabelaTarefaProps>[] => [
+   // Código da tarefa
    {
       accessorKey: 'COD_TAREFA',
       header: () => <div className="text-center">Código</div>,
@@ -74,7 +44,7 @@ export const colunasTabela = (
       ),
    },
 
-   // nome da tarefa
+   // Nome da tarefa
    {
       accessorKey: 'NOME_TAREFA',
       header: () => <div className="text-center">Tarefa</div>,
@@ -90,7 +60,7 @@ export const colunasTabela = (
       },
    },
 
-   // data de solicitação
+   // Data de solicitação da tarefa
    {
       accessorKey: 'DTSOL_TAREFA',
       header: () => <div className="text-center">Data</div>,
@@ -106,7 +76,7 @@ export const colunasTabela = (
       },
    },
 
-   // horas restantes
+   // Horas estipuladas para a tarefa
    {
       accessorKey: 'HREST_TAREFA',
       header: () => <div className="text-center">HR's Estipuladas</div>,
@@ -122,13 +92,12 @@ export const colunasTabela = (
       },
    },
 
-   // ações
+   // Botões de ação
    {
       id: 'actions',
       header: () => <div className="text-center">Ações</div>,
       cell: ({ row }) => {
          const tarefa = row.original;
-         const chamado = row.original;
 
          const handleDownload = () => {
             const blob = new Blob([JSON.stringify(tarefa, null, 2)], {
@@ -141,33 +110,37 @@ export const colunasTabela = (
             a.click();
             URL.revokeObjectURL(url);
          };
+         // =====
 
-         const handleVisualizarOS = () => {
+         const handleOpenTabelaOSTarefa = () => {
             if (props?.visualizarOSTarefa) {
                props.visualizarOSTarefa(tarefa.COD_TAREFA);
             }
          };
+         // =====
 
-         const handleAbrirChamados = () => {
+         const handleOpenChamadosTarefa = () => {
             if (props?.visualizarChamadosTarefa) {
                props.visualizarChamadosTarefa(tarefa.COD_TAREFA);
             }
          };
+         // =====
 
-         const handleCriarOS = () => {
-            if (props?.onCriarOS) {
-               props.onCriarOS(tarefa);
+         const handleApontamentoTarefa = () => {
+            if (props?.apontamentoTarefa) {
+               props.apontamentoTarefa(tarefa);
             }
          };
+         // =====
 
          return (
             <div className="flex items-center justify-center gap-4">
-               {/* Botão Download */}
+               {/* Botão download */}
                <Tooltip>
                   <TooltipTrigger asChild>
                      <button
                         onClick={handleDownload}
-                        className="cursor-pointer transition-all hover:-translate-y-1 hover:scale-102 active:scale-95"
+                        className="cursor-pointer transition-all hover:scale-125 active:scale-95"
                      >
                         <FaDownload size={24} />
                      </button>
@@ -181,13 +154,14 @@ export const colunasTabela = (
                      Baixar Arquivos
                   </TooltipContent>
                </Tooltip>
+               {/* ========== */}
 
-               {/* Botão Visualizar OS */}
+               {/* Botão visualizar OS */}
                <Tooltip>
                   <TooltipTrigger asChild>
                      <button
-                        onClick={handleVisualizarOS}
-                        className="cursor-pointer transition-all hover:-translate-y-1 hover:scale-102 active:scale-95"
+                        onClick={handleOpenTabelaOSTarefa}
+                        className="cursor-pointer transition-all hover:scale-125 active:scale-95"
                      >
                         <GrServices size={24} />
                      </button>
@@ -201,13 +175,14 @@ export const colunasTabela = (
                      Visualizar OS's
                   </TooltipContent>
                </Tooltip>
+               {/* ========== */}
 
                {/* Botão visualizar chamados */}
                <Tooltip>
                   <TooltipTrigger asChild>
                      <button
-                        onClick={handleAbrirChamados}
-                        className="cursor-pointer transition-all hover:-translate-y-1 hover:scale-102 active:scale-95"
+                        onClick={handleOpenChamadosTarefa}
+                        className="cursor-pointer transition-all hover:scale-125 active:scale-95"
                      >
                         <FaPhoneAlt size={24} />
                      </button>
@@ -221,13 +196,14 @@ export const colunasTabela = (
                      Visualizar Chamados
                   </TooltipContent>
                </Tooltip>
+               {/* ========== */}
 
-               {/* BOTÃO CRIAR OS */}
+               {/* Botão apontamento */}
                <Tooltip>
                   <TooltipTrigger asChild>
                      <button
-                        onClick={handleCriarOS}
-                        className="cursor-pointer transition-all hover:-translate-y-1 hover:scale-102 active:scale-95"
+                        onClick={handleApontamentoTarefa}
+                        className="cursor-pointer transition-all hover:scale-125 active:scale-95"
                      >
                         <FaHandPointUp size={24} />
                      </button>
@@ -241,6 +217,7 @@ export const colunasTabela = (
                      Efetuar Apontamento
                   </TooltipContent>
                </Tooltip>
+               {/* ========== */}
             </div>
          );
       },

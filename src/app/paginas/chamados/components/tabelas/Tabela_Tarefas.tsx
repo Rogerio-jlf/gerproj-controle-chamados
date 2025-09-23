@@ -21,7 +21,11 @@ import {
 } from '@/components/ui/tooltip';
 // ================================================================================
 import { useAuth } from '../../../../../hooks/useAuth';
-import { TarefasProps, colunasTabela } from '../colunas/Colunas_Tabela_Tarefas';
+import { colunasTabelaTarefas } from '../colunas/Colunas_Tabela_Tarefas';
+import { TabelaTarefaProps } from '../../../../../types/types';
+import { InputGlobalFilterProps } from '../../../../../types/types';
+import { InputFilterTableHeaderProps } from '../../../../../types/types';
+
 import ModalApontamento from '../modais/Modal_Apontamento';
 import TabelaChamadosTarefa from './Tabela_Chamados_Tarefa';
 import TabelaOSTarefa from './Tabela_OS_Tarefa';
@@ -40,22 +44,6 @@ import { FaFilterCircleXmark } from 'react-icons/fa6';
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
-interface InputGlobalFilter {
-   value: string;
-   onChange: (value: string) => void;
-   placeholder?: string;
-   onClear: () => void;
-}
-// ==========
-
-interface InputFilterTableHeaderProps {
-   value: string;
-   onChange: (value: string) => void;
-   placeholder?: string;
-   type?: string;
-   onClear?: () => void;
-}
-// =========
 
 interface ModalTarefasProps {
    isOpen: boolean;
@@ -65,13 +53,13 @@ interface ModalTarefasProps {
 // ==========
 
 // ================================================================================
-// COMPONENTES DE FILTRO
+// FILTROS
 // ================================================================================
 const InputGlobalFilter = ({
    value,
    onChange,
    placeholder = 'Buscar em todas as colunas...',
-}: InputGlobalFilter) => {
+}: InputGlobalFilterProps) => {
    const [localValue, setLocalValue] = useState(value);
    const inputRef = useRef<HTMLInputElement>(null);
    const [isFocused, setIsFocused] = useState(false);
@@ -191,7 +179,7 @@ const IndicatorFilter = ({
       </div>
    );
 };
-// ==================
+// ====================
 
 const OrderTableHeader = ({
    column,
@@ -235,9 +223,9 @@ const OrderTableHeader = ({
       </Tooltip>
    );
 };
-// ====================
+// ================================================================================
 
-// Função auxiliar para nomes das colunas
+// Função auxiliar para nomear as colunas ordenáveis
 const getColumnDisplayName = (columnId: string): string => {
    const displayNames: Record<string, string> = {
       COD_TAREFA: 'Código Tarefa',
@@ -246,53 +234,26 @@ const getColumnDisplayName = (columnId: string): string => {
    };
    return displayNames[columnId] || columnId;
 };
-
-// Função para buscar tarefas do banco de dados
-async function fetchTarefas(token: string): Promise<TarefasProps[]> {
-   const res = await fetch('/api/tarefas', {
-      headers: {
-         Authorization: `Bearer ${token}`,
-         'Content-Type': 'application/json',
-      },
-   });
-
-   if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.error || 'Erro ao buscar tarefas');
-   }
-
-   const data = await res.json();
-   return Array.isArray(data) ? data : [];
-}
-// ================================================================================
+// ==================
 
 // ================================================================================
-
-export default function TabelaTarefas({
-   isOpen,
-   onClose,
-   codChamado,
-}: ModalTarefasProps) {
+// COMPONENTE PRINCIPAL
+// ================================================================================
+export default function TabelaTarefas({ isOpen, onClose }: ModalTarefasProps) {
    const { user } = useAuth();
    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
    const [globalFilter, setGlobalFilter] = useState('');
    const [sorting, setSorting] = useState<SortingState>([
       { id: 'COD_TAREFA', desc: false },
    ]);
-
    const [isTabelaChamadosOpen, setIsTabelaChamadosOpen] = useState(false);
    const [selectedTarefaParaChamados, setSelectedTarefaParaChamados] = useState<
       number | null
    >(null);
-
    const [selectedTarefaParaCriarOS, setSelectedTarefaParaCriarOS] =
-      useState<TarefasProps | null>(null);
-
+      useState<TabelaTarefaProps | null>(null);
    const [showFilters, setShowFilters] = useState(false);
-
    const [isModalApontamentoOpen, setIsModalApontamentoOpen] = useState(false);
-
-   // ESTADOS PARA O MODAL DE OS (VISUALIZAR)
    const [isModalOSOpen, setIsModalOSOpen] = useState(false);
    const [selectedTarefaCodigo, setSelectedTarefaCodigo] = useState<
       number | null
@@ -305,17 +266,42 @@ export default function TabelaTarefas({
       DTSOL_TAREFA: '',
       global: '',
    });
+   // ================================================================================
 
+   // Pega o token do localStorage com verificação para SSR
    const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+   // ====================
 
+   // Controla quando a query deve ser executada
    const enabled = !!token && !!user && isOpen;
+   // ====================
 
+   // Função para buscar as tarefas do banco de dados
+   async function fetchTarefas(token: string): Promise<TabelaTarefaProps[]> {
+      const res = await fetch('/api/tarefas', {
+         headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+         },
+      });
+
+      if (!res.ok) {
+         const errorData = await res.json();
+         throw new Error(errorData.error || 'Erro ao buscar tarefas');
+      }
+
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+   }
+   // ==================
+
+   // useQuery para gerir os estados de busca das tarefas
    const {
-      data: dataTarefas,
-      isLoading,
-      isError,
-      error,
+      data: dataTarefas, // dados retornados pelo fetch
+      isLoading, // estado de loading
+      isError, // estado de erro
+      error, // detalhes do erro
    } = useQuery({
       queryKey: ['tarefas', token],
       queryFn: () => fetchTarefas(token!),
@@ -323,46 +309,57 @@ export default function TabelaTarefas({
       staleTime: 1000 * 60 * 5,
       retry: 2,
    });
+   // ================================================================================
 
-   const handleClose = () => {
-      setTimeout(() => {
-         onClose();
-      }, 300);
-   };
-
-   // Adicionar esta nova função:
-   const handleAbrirChamados = (codTarefa: number) => {
+   // Função para abrir a tabela de chamados vinculados à tarefa
+   const handleOpenChamadosTarefa = (codTarefa: number) => {
       setSelectedTarefaParaChamados(codTarefa);
       setIsTabelaChamadosOpen(true);
    };
+   // ==========
 
-   // Adicionar esta nova função para fechar:
+   // Função para fechar a tabela de chamados vinculados à tarefa
    const handleCloseTabelaChamados = () => {
       setIsTabelaChamadosOpen(false);
       setSelectedTarefaParaChamados(null);
    };
+   // ========================================
 
-   // FUNÇÃO PARA ABRIR O MODAL DE VISUALIZAR OS
-   const handleVisualizarOS = (codTarefa: number) => {
+   // Função para abrir a tabela de OS vinculadas à tarefa
+   const handleOpenTabelaOSTarefa = (codTarefa: number) => {
       setSelectedTarefaCodigo(codTarefa);
       setIsModalOSOpen(true);
    };
+   // ==========
 
-   // FUNÇÃO PARA FECHAR O MODAL DE VISUALIZAR OS
-   const handleCloseModalOS = () => {
+   // Função para fechar a tabela de OS vinculadas à tarefa
+   const handleCloseTabelaOSTarefa = () => {
       setIsModalOSOpen(false);
       setSelectedTarefaCodigo(null);
    };
+   // ========================================
 
-   const handleCriarOS = (tarefa: TarefasProps) => {
+   // Função para abrir o modal de apontamento vinculada à tarefa
+   const handleOpenModalApontamentoTarefa = (tarefa: TabelaTarefaProps) => {
       setSelectedTarefaParaCriarOS(tarefa);
       setIsModalApontamentoOpen(true);
    };
+   // ==========
 
-   const handleCloseModalApontamento = () => {
+   // Função para fechar o modal de apontamento vinculada à tarefa
+   const handleCloseModalApontamentoTarefa = () => {
       setIsModalApontamentoOpen(false);
       setSelectedTarefaParaCriarOS(null);
    };
+   // ========================================
+
+   // Função para fechar a tabela de tarefas
+   const handleCloseTabelaTarefa = () => {
+      setTimeout(() => {
+         onClose();
+      }, 300);
+   };
+   // ====================
 
    // Função de filtro global otimizada
    const globalFilterFn = useCallback(
@@ -400,6 +397,7 @@ export default function TabelaTarefas({
       },
       []
    );
+   // ====================
 
    // Função de filtro por coluna otimizada
    const columnFilterFn = useCallback(
@@ -435,20 +433,23 @@ export default function TabelaTarefas({
       },
       []
    );
+   // ====================
 
-   // ATUALIZADO PARA INCLUIR A NOVA FUNÇÃO onCriarOS
+   //  Define as colunas da tabela com useMemo para otimização
    const colunas = useMemo(
       () =>
-         colunasTabela({
-            visualizarOSTarefa: handleVisualizarOS,
-            visualizarChamadosTarefa: handleAbrirChamados,
-            onCriarOS: handleCriarOS,
+         colunasTabelaTarefas({
+            visualizarOSTarefa: handleOpenTabelaOSTarefa,
+            visualizarChamadosTarefa: handleOpenChamadosTarefa,
+            apontamentoTarefa: handleOpenModalApontamentoTarefa,
          }),
       []
    );
+   // ===================
 
+   // Inicializa a tabela com useReactTable
    const table = useReactTable({
-      data: (dataTarefas ?? []) as TarefasProps[],
+      data: (dataTarefas ?? []) as TabelaTarefaProps[],
       columns: colunas,
       getCoreRowModel: getCoreRowModel(),
       getFilteredRowModel: getFilteredRowModel(),
@@ -479,6 +480,7 @@ export default function TabelaTarefas({
          filterFn: columnFilterFn,
       },
    });
+   // ====================
 
    // Calcula o total de filtros ativos
    const totalActiveFilters = useMemo(() => {
@@ -486,6 +488,7 @@ export default function TabelaTarefas({
       if (globalFilter && globalFilter.trim()) count += 1;
       return count;
    }, [columnFilters.length, globalFilter]);
+   // ====================
 
    // Função para limpar todos os filtros e inputs
    const clearFilters = () => {
@@ -505,6 +508,7 @@ export default function TabelaTarefas({
          column.setFilterValue('');
       });
    };
+   // ====================
 
    // Atualiza os valores locais quando os filtros da tabela mudam
    useEffect(() => {
@@ -537,8 +541,10 @@ export default function TabelaTarefas({
          return hasChanged ? newFilterValues : prev;
       });
    }, [columnFilters, globalFilter]);
+   // ====================
 
    if (!isOpen) return null;
+   // ===================
 
    if (isLoading) {
       return (
@@ -550,6 +556,7 @@ export default function TabelaTarefas({
          </>
       );
    }
+   // ==================
 
    if (isError) {
       return (
@@ -561,7 +568,11 @@ export default function TabelaTarefas({
          </>
       );
    }
+   // ==================
 
+   // ================================================================================
+   // RENDERIZAÇÃO
+   // ================================================================================
    return (
       <>
          <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -627,7 +638,7 @@ export default function TabelaTarefas({
 
                         {/* Botão fechar tabela */}
                         <button
-                           onClick={handleClose}
+                           onClick={handleCloseTabelaTarefa}
                            className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95"
                         >
                            <IoClose size={24} />
@@ -1050,7 +1061,7 @@ export default function TabelaTarefas({
          {/* VISUALIZAR OS DA TAREFA */}
          <TabelaOSTarefa
             isOpen={isModalOSOpen}
-            onClose={handleCloseModalOS}
+            onClose={handleCloseTabelaOSTarefa}
             codTarefa={selectedTarefaCodigo}
             codChamado={null}
          />
@@ -1068,7 +1079,7 @@ export default function TabelaTarefas({
          {/* MODAL DE CRIAR OS */}
          <ModalApontamento
             isOpen={isModalApontamentoOpen}
-            onClose={handleCloseModalApontamento}
+            onClose={handleCloseModalApontamentoTarefa}
             tarefa={selectedTarefaParaCriarOS}
          />
       </>

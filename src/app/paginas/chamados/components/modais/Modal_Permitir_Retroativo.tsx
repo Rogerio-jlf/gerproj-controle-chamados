@@ -1,5 +1,5 @@
 'use client';
-
+// ================================================================================
 import { useState, useEffect, useCallback } from 'react';
 // ================================================================================
 import {
@@ -8,6 +8,10 @@ import {
    TooltipTrigger,
 } from '../../../../../components/ui/tooltip';
 // ================================================================================
+import { TabelaRecursoProps } from '../../../../../types/types';
+// ================================================================================
+import { Loader2 } from 'lucide-react';
+import { IoClose } from 'react-icons/io5';
 import {
    FaUserCog,
    FaCheck,
@@ -17,8 +21,6 @@ import {
    FaCalendarAlt,
    FaUser,
 } from 'react-icons/fa';
-import { IoClose } from 'react-icons/io5';
-import { Loader2 } from 'lucide-react';
 
 // ================================================================================
 // INTERFACES E TIPOS
@@ -30,16 +32,6 @@ interface PermitirRetroativoProps {
    enabled: boolean;
    enabledAt: string;
    enabledBy: string;
-}
-
-interface RecursoProps {
-   cod_recurso: number;
-   nome_recurso: string;
-   hrdia_decimal: number;
-   hrdia_formatado: string;
-   custo_recurso: number;
-   receita_recurso: number;
-   tpcusto_recurso: number;
 }
 
 interface ModalPermitirRetroativoProps {
@@ -248,7 +240,7 @@ export const ModalPermitirRetroativo: React.FC<
       loading: permissionsLoading,
    } = useModalPermitirRetroativo();
 
-   const [resources, setResources] = useState<RecursoProps[]>([]);
+   const [resources, setResources] = useState<TabelaRecursoProps[]>([]);
    const [loading, setLoading] = useState(false);
    const [error, setError] = useState<string | null>(null);
    const [chamadoInfo, setChamadoInfo] = useState<{
@@ -387,13 +379,13 @@ export const ModalPermitirRetroativo: React.FC<
 
    // 🆕 Função para marcar/desmarcar permissões (só armazena localmente)
    const handlePermissionToggle = (
-      resource: RecursoProps,
+      resource: TabelaRecursoProps,
       enabled: boolean
    ) => {
-      const resourceId = resource.cod_recurso.toString();
+      const resourceId = resource.COD_RECURSO.toString();
 
       console.log('🔄 Toggle permissão local:', {
-         resource: resource.nome_recurso,
+         resource: resource.NOME_RECURSO,
          enabled,
          resourceId,
          currentUserId,
@@ -424,7 +416,7 @@ export const ModalPermitirRetroativo: React.FC<
             pendingPermissions
          )) {
             const resource = resources.find(
-               r => r.cod_recurso.toString() === resourceId
+               r => r.COD_RECURSO.toString() === resourceId
             );
 
             if (!resource) {
@@ -438,7 +430,7 @@ export const ModalPermitirRetroativo: React.FC<
                // Habilitar permissão
                success = await enablePermission(
                   resourceId,
-                  resource.nome_recurso,
+                  resource.NOME_RECURSO,
                   chamadoId,
                   currentUserId
                );
@@ -449,7 +441,7 @@ export const ModalPermitirRetroativo: React.FC<
 
             if (!success) {
                console.error(
-                  `❌ Falha ao processar permissão para recurso: ${resource.nome_recurso}`
+                  `❌ Falha ao processar permissão para recurso: ${resource.NOME_RECURSO}`
                );
                hasErrors = true;
             }
@@ -674,12 +666,12 @@ export const ModalPermitirRetroativo: React.FC<
                      // Lista de Recursos
                      <div className="flex max-h-96 flex-col gap-2 overflow-y-auto">
                         {resources.map(resource => {
-                           const resourceId = resource.cod_recurso.toString();
+                           const resourceId = resource.COD_RECURSO.toString();
                            const isEnabled = isResourceEnabled(resourceId);
 
                            return (
                               <div
-                                 key={resource.cod_recurso}
+                                 key={resource.COD_RECURSO}
                                  className={`flex items-center justify-between p-4 ${
                                     isEnabled
                                        ? 'rounded-lg border border-l-8 border-green-500 bg-green-100'
@@ -717,14 +709,14 @@ export const ModalPermitirRetroativo: React.FC<
                                        <p className="text-sm font-extrabold tracking-widest text-green-700 italic select-none">
                                           Recurso:{' '}
                                           <span className="font-semibold">
-                                             {resource.nome_recurso}
+                                             {resource.NOME_RECURSO}
                                           </span>
                                        </p>
                                        <p className="text-sm font-extrabold tracking-widest text-green-700 italic select-none">
                                           <span className="font-semibold">
                                              CÓD:
                                           </span>{' '}
-                                          {resource.cod_recurso}
+                                          {resource.COD_RECURSO}
                                        </p>
                                     </div>
                                  </div>

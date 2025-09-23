@@ -6,8 +6,9 @@ import {
    TooltipTrigger,
 } from '../../../../../components/ui/tooltip';
 // ================================================================================
-import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
 import { TabelaOSProps } from '../../../../../types/types';
+// ================================================================================
+import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
 import {
    formatarDataParaBR,
    formatarDecimalParaTempo,
@@ -18,15 +19,19 @@ import { MdEditDocument } from 'react-icons/md';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
 
 // ================================================================================
-// INTERFACES E TIPOS
+// INTERFACES
 // ================================================================================
-export interface AcoesOSProps {
-   onEditarOS: (codOS: string) => void;
-   onExcluirOS: (codOS: string) => void;
+export interface AcoesTabelaOSTarefaProps {
+   onEditarOS: (codOS: number) => void;
+   onExcluirOS: (codOS: number) => void;
 }
+// ==============================
 
-export const colunasOSTarefa = (
-   acoes: AcoesOSProps
+// ================================================================================
+// COMPONENTE PRINCIPAL
+// ================================================================================
+export const colunasTabelaOSTarefa = (
+   acoes: AcoesTabelaOSTarefaProps
 ): ColumnDef<TabelaOSProps>[] => [
    // Código da OS
    {

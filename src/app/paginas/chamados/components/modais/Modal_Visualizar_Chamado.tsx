@@ -1,11 +1,14 @@
 'use client';
-
+// ================================================================================
 import { useState } from 'react';
 // ================================================================================
-import { TabelaChamadosProps } from '../../../../../types/types';
-import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
-import { getStylesStatus } from '../../../../../utils/formatters';
+import { TabelaChamadoProps } from '../../../../../types/types';
 // ================================================================================
+import { getStylesStatus } from '../../../../../utils/formatters';
+import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+// ================================================================================
+import { MdDescription } from 'react-icons/md';
+import { IoClose, IoCall } from 'react-icons/io5';
 import {
    FaCalendarAlt,
    FaUser,
@@ -14,8 +17,6 @@ import {
    FaUserTie,
    FaDatabase,
 } from 'react-icons/fa';
-import { IoClose, IoCall } from 'react-icons/io5';
-import { MdDescription } from 'react-icons/md';
 
 // ================================================================================
 // INTERFACES E TIPOS
@@ -23,7 +24,7 @@ import { MdDescription } from 'react-icons/md';
 interface ModalVisualizarChamadoProps {
    isOpen: boolean;
    onClose: () => void;
-   chamado: TabelaChamadosProps | null;
+   chamado: TabelaChamadoProps | null;
 }
 
 // ================================================================================
@@ -322,7 +323,7 @@ export default function ModalVisualizarChamado({
                                  <div className="flex flex-col">
                                     <p className="text-lg font-bold tracking-wider text-black select-none">
                                        {corrigirTextoCorrompido(
-                                          chamado.ASSUNTO_CHAMADO
+                                          chamado.ASSUNTO_CHAMADO ?? ''
                                        ) ?? '-'}
                                     </p>
                                  </div>

@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { toast } from 'sonner';
 import { z } from 'zod';
+import { toast } from 'sonner';
+import React, { useState } from 'react';
 // ================================================================================
 import { ToastCustom } from '../../../../../components/Toast_Custom';
 // ================================================================================
+import { BsFillXOctagonFill } from 'react-icons/bs';
+import { IoIosSave, IoMdClock } from 'react-icons/io';
 import { IoClose, IoDocumentText } from 'react-icons/io5';
 import { FaExclamationTriangle, FaCalendarAlt } from 'react-icons/fa';
-import { IoIosSave, IoMdClock } from 'react-icons/io';
-import { BsFillXOctagonFill } from 'react-icons/bs';
 
 // ================================================================================
 // INTERFACES E TIPOS
@@ -16,7 +16,7 @@ interface ModalEditarOSProps {
    isOpen: boolean;
    onClose: () => void;
    codChamado: number | null;
-   codOS: string | null;
+   codOS: number | null;
    nomeCliente?: string;
    onSuccess?: () => void;
 }

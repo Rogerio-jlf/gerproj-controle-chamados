@@ -1,13 +1,16 @@
 'use client';
-
-import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
+// ================================================================================
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
+// ================================================================================
+import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
 import SelectAno from '../../../../components/seletores/Select_Ano';
 import SelectMes from '../../../../components/seletores/Select_Mes';
-// ================================================================================
 
-interface Props {
+// ================================================================================
+//  INTERFACES
+// ================================================================================
+interface FiltrosProps {
    onFiltersChange: (filters: {
       ano: number | 'todos';
       mes: number | 'todos';
@@ -16,9 +19,11 @@ interface Props {
       status: string;
    }) => void;
 }
-// ================================================================================
 
-export default function Filtros({ onFiltersChange }: Props) {
+// ================================================================================
+// COMPONENTE PRINCIPAL
+// ================================================================================
+export default function Filtros({ onFiltersChange }: FiltrosProps) {
    const hoje = new Date();
    const { filters, setFilters } = useFiltersTabelaChamados();
 
@@ -60,6 +65,9 @@ export default function Filtros({ onFiltersChange }: Props) {
       onFiltersChange,
    ]);
 
+   // ================================================================================
+   // RENDERIZAÇÃO PRINCIPAL
+   // ================================================================================
    return (
       <div className="flex w-full gap-6">
          <div className="flex-1">

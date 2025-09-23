@@ -6,6 +6,8 @@ import {
    TooltipTrigger,
 } from '@/components/ui/tooltip';
 // ================================================================================
+import { TabelaOSProps } from '../../../../../types/types';
+// ================================================================================
 import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
 import {
    formatarDataParaBR,
@@ -17,53 +19,21 @@ import { MdEditDocument } from 'react-icons/md';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
 
 // ================================================================================
-// INTERFACES E TIPOS
+// INTERFACES
 // ================================================================================
-export interface OSProps {
-   COD_OS: string;
-   CODTRF_OS: string;
-   DTINI_OS: string | null;
-   HRINI_OS: string | null;
-   HRFIM_OS: string | null;
-   OBS_OS: string;
-   STATUS_OS: string;
-   PRODUTIVO_OS: string;
-   CODREC_OS: string;
-   PRODUTIVO2_OS: string;
-   RESPCLI_OS: string;
-   REMDES_OS: string;
-   ABONO_OS: string;
-   DESLOC_OS: string;
-   OBS: string;
-   DTINC_OS: string | null;
-   FATURADO_OS: string;
-   PERC_OS: string | null;
-   COD_FATURAMENTO: string;
-   COMP_OS: string;
-   VALID_OS: string;
-   VRHR_OS: string | null;
-   NUM_OS: string;
-   CHAMADO_OS: string;
-   COD_CHAMADO: string;
-   COD_CLIENTE: string;
-   NOME_CLIENTE: string;
-   COD_TAREFA: string;
-   NOME_TAREFA: string;
-   QTD_HR_OS?: number;
-}
-
 export interface OSTarefaProps {
    isOpen: boolean;
    onClose: () => void;
    onSuccess?: () => void;
    codChamado?: number | null;
 }
+// ==========
 
-export interface AcoesOSProps {
-   onEditarOS: (codOS: string) => void;
-   onExcluirOS: (codOS: string) => void;
+export interface AcoesTabelaOSProps {
+   onEditarOS: (codOS: number) => void;
+   onExcluirOS: (codOS: number) => void;
 }
-// ================================================================================
+// ==============================
 
 // Função para converter horas de HHMM, decimais para HH:MM
 const formatDecimalToTime = (decimalHours: number): string => {
@@ -80,8 +50,12 @@ const formatDecimalToTime = (decimalHours: number): string => {
 };
 // ================================================================================
 
-// Definição das colunas da tabela de OS
-export const colunasTabelaOS = (acoes: AcoesOSProps): ColumnDef<OSProps>[] => [
+// ================================================================================
+// COMPONENTE PRINCIPAL
+// ================================================================================
+export const colunasTabelaOS = (
+   acoes: AcoesTabelaOSProps
+): ColumnDef<TabelaOSProps>[] => [
    // Código da OS
    {
       accessorKey: 'COD_OS',

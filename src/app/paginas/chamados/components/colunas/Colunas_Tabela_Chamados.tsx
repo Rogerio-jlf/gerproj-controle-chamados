@@ -1,7 +1,7 @@
+import Link from 'next/link';
 import { useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
 // ================================================================================
 import {
    Tooltip,
@@ -9,24 +9,25 @@ import {
    TooltipTrigger,
 } from '../../../../../components/ui/tooltip';
 // ================================================================================
-import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
-import { formatarDataParaBR } from '../../../../../utils/formatters';
-import { TabelaChamadosProps } from '../../../../../types/types';
-import StatusApontamentoChamado from '../modais/Modal_Status_Apontamento_Chamado';
+import { TabelaChamadoProps } from '../../../../../types/types';
 // ================================================================================
-import { FaDownload, FaTasks, FaBrain } from 'react-icons/fa';
+import { formatarDataParaBR } from '../../../../../utils/formatters';
+import StatusApontamentoChamado from '../modais/Modal_Status_Apontamento_Chamado';
+import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+// ================================================================================
 import { IoCall } from 'react-icons/io5';
 import { GrServices } from 'react-icons/gr';
 import { HiMiniSquaresPlus } from 'react-icons/hi2';
+import { FaDownload, FaTasks, FaBrain } from 'react-icons/fa';
 
 // ================================================================================
-// INTERFACES E TIPOS
+// INTERFACES
 // ================================================================================
-interface AcoesProps {
+interface AcoesTabelaChamadosProps {
    onVisualizarChamado: (codChamado: number) => void;
    onVisualizarOS: (codChamado: number) => void;
    onVisualizarTarefas: () => void;
-   onAtribuicaoInteligente: (chamado: TabelaChamadosProps) => void;
+   onAtribuicaoInteligente: (chamado: TabelaChamadoProps) => void;
    onUpdateAssunto: (codChamado: number, novoAssunto: string) => Promise<any>;
    onUpdateStatus?: (
       codChamado: number,
@@ -34,17 +35,20 @@ interface AcoesProps {
       codClassificacao?: number,
       codTarefa?: number
    ) => Promise<void>;
-   onOpenApontamentos?: (codChamado: number, newStatus: string) => void; // NOVA PROP
+   onOpenApontamentos?: (codChamado: number, newStatus: string) => void;
    userType?: string;
 }
 
 interface BotaoCircularMenuProps {
-   chamado: TabelaChamadosProps;
-   acoes: AcoesProps;
+   chamado: TabelaChamadoProps;
+   acoes: AcoesTabelaChamadosProps;
 }
+// ==============================
 
-// ===== MENU CIRCULAR AÇÕES MELHORADO =====
-const CircularActionsMenu = ({ chamado, acoes }: BotaoCircularMenuProps) => {
+// ================================================================================
+// BOTÃO MENU CIRCULAR
+// ================================================================================
+const BotaoMenuCircular = ({ chamado, acoes }: BotaoCircularMenuProps) => {
    const [isOpen, setIsOpen] = useState(false);
    const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
    const [hoveredButton, setHoveredButton] = useState<number | null>(null);
@@ -306,15 +310,17 @@ const CircularActionsMenu = ({ chamado, acoes }: BotaoCircularMenuProps) => {
       </>
    );
 };
-// ================================================================================
+// ==============================
 
-// ===== COMPONENTE COLUNAS TABELA =====
-export const colunasTabela = (
-   acoes: AcoesProps,
+// ================================================================================
+// COMPONENTE PRINCIPAL
+// ================================================================================
+export const colunasTabelaChamados = (
+   acoes: AcoesTabelaChamadosProps,
    userType?: string
-): ColumnDef<TabelaChamadosProps>[] => {
+): ColumnDef<TabelaChamadoProps>[] => {
    // Array base de colunas (sem a coluna de recurso)
-   const baseColumns: ColumnDef<TabelaChamadosProps>[] = [
+   const baseColumns: ColumnDef<TabelaChamadoProps>[] = [
       // Código chamado
       {
          accessorKey: 'COD_CHAMADO',
@@ -390,7 +396,7 @@ export const colunasTabela = (
    ];
 
    // Coluna de recurso
-   const recursoColumn: ColumnDef<TabelaChamadosProps> = {
+   const recursoColumn: ColumnDef<TabelaChamadoProps> = {
       accessorKey: 'NOME_RECURSO',
       header: () => <div className="text-center">Recurso</div>,
       cell: ({ row }) => {
@@ -416,7 +422,7 @@ export const colunasTabela = (
    };
 
    // Colunas finais
-   const finalColumns: ColumnDef<TabelaChamadosProps>[] = [
+   const finalColumns: ColumnDef<TabelaChamadoProps>[] = [
       // Email chamado
       {
          accessorKey: 'EMAIL_CHAMADO',
@@ -444,7 +450,7 @@ export const colunasTabela = (
          header: () => <div className="text-center">Ações</div>,
          cell: ({ row }) => {
             const chamado = row.original;
-            return <CircularActionsMenu chamado={chamado} acoes={acoes} />;
+            return <BotaoMenuCircular chamado={chamado} acoes={acoes} />;
          },
       },
    ];

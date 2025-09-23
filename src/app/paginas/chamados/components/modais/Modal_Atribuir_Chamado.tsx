@@ -1,3 +1,6 @@
+import { z } from 'zod';
+import { useQuery } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import React, {
    useState,
    useEffect,
@@ -5,9 +8,6 @@ import React, {
    createContext,
    useContext,
 } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import { z } from 'zod';
 // ================================================================================
 import {
    Tooltip,
@@ -15,9 +15,21 @@ import {
    TooltipTrigger,
 } from '../../../../../components/ui/tooltip';
 // ================================================================================
-import { useEmailAtribuirChamados } from '../../../../../hooks/useEmailAtribuirChamados';
-import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+import { TabelaChamadoProps } from '../../../../../types/types';
 // ================================================================================
+import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+import { useEmailAtribuirChamados } from '../../../../../hooks/useEmailAtribuirChamados';
+// ================================================================================
+import { Loader2 } from 'lucide-react';
+import { IoIosSave } from 'react-icons/io';
+import { FiActivity } from 'react-icons/fi';
+import { BiSolidZap } from 'react-icons/bi';
+import { HiTrendingUp } from 'react-icons/hi';
+import { ImUsers, ImTarget } from 'react-icons/im';
+import { MdMessage, MdEmail } from 'react-icons/md';
+import { BsAwardFill, BsFillSendFill } from 'react-icons/bs';
+import { FaShield, FaMessage as FaMessage6 } from 'react-icons/fa6';
+import { IoAlertCircle, IoBarChart, IoClose } from 'react-icons/io5';
 import {
    FaCheckCircle,
    FaClock,
@@ -31,16 +43,6 @@ import {
    FaMoon,
    FaSun,
 } from 'react-icons/fa';
-import { IoAlertCircle, IoBarChart, IoClose } from 'react-icons/io5';
-import { FaShield, FaMessage as FaMessage6 } from 'react-icons/fa6';
-import { ImUsers, ImTarget } from 'react-icons/im';
-import { FiActivity } from 'react-icons/fi';
-import { BsAwardFill, BsFillSendFill } from 'react-icons/bs';
-import { BiSolidZap } from 'react-icons/bi';
-import { HiTrendingUp } from 'react-icons/hi';
-import { MdMessage, MdEmail } from 'react-icons/md';
-import { IoIosSave } from 'react-icons/io';
-import { Loader2 } from 'lucide-react';
 
 // ================================================================================
 // INTERFACES E TIPOS
@@ -135,19 +137,6 @@ type FormErrors = Partial<Record<keyof FormData | 'root', string>>;
 // INTERFACES E TIPOS (mantidas iguais)
 // ================================================================================
 
-interface ChamadoProps {
-   COD_CHAMADO: number;
-   DATA_CHAMADO: string;
-   ASSUNTO_CHAMADO: string;
-   STATUS_CHAMADO: string;
-   EMAIL_CHAMADO: string;
-   PRIOR_CHAMADO: string;
-   COD_CLIENTE: number;
-   NOME_CLIENTE: string;
-   COD_RECURSO?: number;
-   NOME_RECURSO?: string;
-}
-
 interface RecursoStats {
    COD_RECURSO: number;
    NOME_RECURSO: string;
@@ -163,7 +152,7 @@ interface RecursoStats {
 interface ModalAtribuicaoInteligenteProps {
    isOpen: boolean;
    onClose: () => void;
-   chamado: ChamadoProps | null;
+   chamado: TabelaChamadoProps | null;
    onAtribuicaoSuccess?: () => void;
    initialDarkMode?: boolean;
 }
@@ -189,12 +178,11 @@ const RecomendacaoIcon = ({ recomendacao }: { recomendacao: string }) => {
    return <Icon size={16} />;
 };
 
-const PrioridadeTag = ({ prioridade }: { prioridade: string }) => {
-   const getPrioridadeInfo = (prioridade: string) => {
-      const prio = parseInt(prioridade) || 100;
-      if (prio <= 50)
+const PrioridadeTag = ({ prioridade }: { prioridade: number }) => {
+   const getPrioridadeInfo = (prioridade: number) => {
+      if (prioridade <= 50)
          return { label: 'ALTA', color: 'text-red-800', bgColor: 'bg-red-400' };
-      if (prio <= 100)
+      if (prioridade <= 100)
          return {
             label: 'MÉDIA',
             color: 'text-yellow-800',
@@ -811,7 +799,9 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
                            <p
                               className={`mt-1 ml-6 text-base font-semibold tracking-wider ${theme.primaryText} select-none`}
                            >
-                              {corrigirTextoCorrompido(chamado.ASSUNTO_CHAMADO)}
+                              {corrigirTextoCorrompido(
+                                 chamado.ASSUNTO_CHAMADO ?? ''
+                              )}
                            </p>
                         </div>
 

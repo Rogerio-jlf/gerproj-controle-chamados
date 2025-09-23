@@ -1,17 +1,17 @@
 'use client';
-
+// ================================================================================
+import { debounce } from 'lodash';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
-import { debounce } from 'lodash';
 import {
    flexRender,
-   getCoreRowModel,
+   SortingState,
    useReactTable,
-   getFilteredRowModel,
-   getPaginationRowModel,
+   getCoreRowModel,
    getSortedRowModel,
    ColumnFiltersState,
-   SortingState,
+   getFilteredRowModel,
+   getPaginationRowModel,
 } from '@tanstack/react-table';
 // ================================================================================
 import {
@@ -20,44 +20,29 @@ import {
    TooltipTrigger,
 } from '../../../../../components/ui/tooltip';
 // ================================================================================
+import { TabelaChamadoProps } from '../../../../../types/types';
+import { InputGlobalFilterProps } from '../../../../../types/types';
+import { InputFilterTableHeaderProps } from '../../../../../types/types';
+// ================================================================================
 import { useAuth } from '../../../../../hooks/useAuth';
-import {
-   ChamadosProps,
-   colunasTabela,
-} from '../colunas/Colunas_Tabela_Chamados_Tarefa';
-import IsLoading from '../Loading';
+import { colunasTabelaChamadosTarefa } from '../colunas/Colunas_Tabela_Chamados_Tarefa';
+// ================================================================================
 import IsError from '../Error';
+import IsLoading from '../Loading';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
+import { RiArrowUpDownLine } from 'react-icons/ri';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
-import { FaExclamationTriangle, FaSearch, FaTasks } from 'react-icons/fa';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { IoArrowDown, IoArrowUp, IoClose, IoCall } from 'react-icons/io5';
-import { RiArrowUpDownLine } from 'react-icons/ri';
+import { FaExclamationTriangle, FaSearch, FaTasks } from 'react-icons/fa';
 
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
-interface InputGlobalFilter {
-   value: string;
-   onChange: (value: string) => void;
-   placeholder?: string;
-   onClear: () => void;
-}
-// ==========
-
-interface InputFilterTableHeaderProps {
-   value: string;
-   onChange: (value: string) => void;
-   placeholder?: string;
-   type?: string;
-   onClear?: () => void;
-}
-
-// =========
-interface ChamadosTarefaProps {
+interface TabelaChamadosTarefaProps {
    isOpen: boolean;
    onClose: () => void;
    codTarefa: number | null;
@@ -72,7 +57,7 @@ const InputGlobalFilter = ({
    value,
    onChange,
    placeholder = 'Buscar em todas as colunas...',
-}: InputGlobalFilter) => {
+}: InputGlobalFilterProps) => {
    const [localValue, setLocalValue] = useState(value);
    const inputRef = useRef<HTMLInputElement>(null);
    const [isFocused, setIsFocused] = useState(false);
@@ -257,7 +242,7 @@ const getColumnDisplayName = (columnId: string): string => {
 async function fetchChamados(
    token: string,
    codTarefa: number
-): Promise<ChamadosProps[]> {
+): Promise<TabelaChamadoProps[]> {
    const res = await fetch(`/api/chamados-tarefa/${codTarefa}`, {
       headers: {
          Authorization: `Bearer ${token}`,
@@ -280,7 +265,7 @@ export default function TabelaChamadosTarefa({
    onClose,
    codTarefa,
    codChamado,
-}: ChamadosTarefaProps) {
+}: TabelaChamadosTarefaProps) {
    const { user } = useAuth();
    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
    const [globalFilter, setGlobalFilter] = useState('');
@@ -413,10 +398,10 @@ export default function TabelaChamadosTarefa({
       []
    );
 
-   const colunas = useMemo(() => colunasTabela(), []);
+   const colunas = useMemo(() => colunasTabelaChamadosTarefa(), []);
 
    const table = useReactTable({
-      data: (dataChamadosTarefa ?? []) as ChamadosProps[],
+      data: (dataChamadosTarefa ?? []) as TabelaChamadoProps[],
       columns: colunas,
       getCoreRowModel: getCoreRowModel(),
       getFilteredRowModel: getFilteredRowModel(),

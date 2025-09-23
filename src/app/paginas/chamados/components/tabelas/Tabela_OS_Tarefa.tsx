@@ -1,17 +1,17 @@
 'use client';
-
+// ================================================================================
+import { debounce } from 'lodash';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
-import { debounce } from 'lodash';
 import {
    flexRender,
-   getCoreRowModel,
+   SortingState,
    useReactTable,
-   getFilteredRowModel,
-   getPaginationRowModel,
+   getCoreRowModel,
    getSortedRowModel,
    ColumnFiltersState,
-   SortingState,
+   getFilteredRowModel,
+   getPaginationRowModel,
 } from '@tanstack/react-table';
 // ================================================================================
 import {
@@ -20,43 +20,36 @@ import {
    TooltipTrigger,
 } from '../../../../../components/ui/tooltip';
 // ================================================================================
-import { ModalExcluirOS } from '../modais/Modal_Deletar_OS';
 import { TabelaOSProps } from '../../../../../types/types';
-import {
-   colunasOSTarefa,
-   TabelaOSTarefaProps,
-} from '../colunas/Colunas_Tabela_OS_Tarefa';
-import ModalEditarOS from '../modais/Modal_Editar_OS';
-import IsLoading from '../Loading';
-import IsError from '../Error';
+import { InputGlobalFilterProps } from '../../../../../types/types';
+import { InputFilterTableHeaderProps } from '../../../../../types/types';
 // ================================================================================
-import { FaExclamationTriangle, FaTasks, FaSearch } from 'react-icons/fa';
+import { ModalExcluirOS } from '../modais/Modal_Deletar_OS';
+import { colunasTabelaOSTarefa } from '../colunas/Colunas_Tabela_OS_Tarefa';
+import ModalEditarOS from '../modais/Modal_Editar_OS';
+// ================================================================================
+import IsError from '../Error';
+import IsLoading from '../Loading';
+// ================================================================================
+import { GrServices } from 'react-icons/gr';
+import { BsEraserFill } from 'react-icons/bs';
+import { RiArrowUpDownLine } from 'react-icons/ri';
+import { LuFilter, LuFilterX } from 'react-icons/lu';
+import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { IoArrowDown, IoArrowUp, IoClose } from 'react-icons/io5';
-import { RiArrowUpDownLine } from 'react-icons/ri';
-import { LuFilter, LuFilterX } from 'react-icons/lu';
-import { BsEraserFill } from 'react-icons/bs';
-import { FaFilterCircleXmark } from 'react-icons/fa6';
-import { GrServices } from 'react-icons/gr';
+import { FaExclamationTriangle, FaTasks, FaSearch } from 'react-icons/fa';
 
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
-interface InputGlobalFilter {
-   value: string;
-   onChange: (value: string) => void;
-   placeholder?: string;
-   onClear: () => void;
-}
-// ==========
-
-interface InputFilterTableHeaderProps {
-   value: string;
-   onChange: (value: string) => void;
-   placeholder?: string;
-   type?: string;
-   onClear?: () => void;
+interface TabelaOSTarefaProps {
+   isOpen: boolean;
+   onClose: () => void;
+   codTarefa: number | null;
+   codChamado?: number | null;
+   onSuccess?: () => void;
 }
 // =========
 
@@ -67,7 +60,7 @@ const InputGlobalFilter = ({
    value,
    onChange,
    placeholder = 'Buscar em todas as colunas...',
-}: InputGlobalFilter) => {
+}: InputGlobalFilterProps) => {
    const [localValue, setLocalValue] = useState(value);
    const inputRef = useRef<HTMLInputElement>(null);
    const [isFocused, setIsFocused] = useState(false);
@@ -261,9 +254,9 @@ export default function TabelaOSTarefa({
       { id: 'COD_OS', desc: false },
    ]);
    const [showFilters, setShowFilters] = useState(false);
-   const [selectedOS, setSelectedOS] = useState<string | null>(null);
+   const [selectedOS, setSelectedOS] = useState<number | null>(null);
    const [modalEditarOSOpen, setModalEditarOSOpen] = useState(false);
-   const [osParaExcluir, setOsParaExcluir] = useState<string | null>(null);
+   const [osParaExcluir, setOsParaExcluir] = useState<number | null>(null);
 
    // Estados para os valores dos inputs de filtro
    const [filterValues, setFilterValues] = useState({
@@ -321,12 +314,12 @@ export default function TabelaOSTarefa({
       }, 300);
    };
 
-   const handleOpenEditarOS = (codOS: string) => {
+   const handleOpenEditarOS = (codOS: number) => {
       setSelectedOS(codOS);
       setModalEditarOSOpen(true);
    };
 
-   const handleAbrirModalExclusao = (codOS: string) => {
+   const handleAbrirModalExclusao = (codOS: number) => {
       setOsParaExcluir(codOS);
    };
 
@@ -350,7 +343,7 @@ export default function TabelaOSTarefa({
    };
 
    // Configuração da tabela
-   const colunas = colunasOSTarefa({
+   const colunas = colunasTabelaOSTarefa({
       onEditarOS: handleOpenEditarOS,
       onExcluirOS: handleAbrirModalExclusao,
    });

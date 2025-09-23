@@ -1,18 +1,21 @@
 'use client';
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { toast } from 'sonner';
+// ================================================================================
 import { z } from 'zod';
+import { toast } from 'sonner';
+import { useState, useRef, useEffect, useCallback } from 'react';
 // ================================================================================
 import {
    Tooltip,
    TooltipContent,
-   TooltipProvider,
    TooltipTrigger,
 } from '../../../../../components/ui/tooltip';
 // ================================================================================
+import { TabelaTarefaProps } from '../../../../../types/types';
+// ================================================================================
+import { useAuth } from '../../../../../hooks/useAuth';
 import { getStylesStatus } from '../../../../../utils/formatters';
 import { ToastCustom } from '../../../../../components/Toast_Custom';
-import { useAuth } from '../../../../../hooks/useAuth';
+import { TabelaClassificacaoProps } from '../../../../../types/types';
 import {
    canUseBackdatedAppointments,
    ModalPermitirRetroativo,
@@ -20,6 +23,11 @@ import {
    isUserAdmin,
 } from './Modal_Permitir_Retroativo';
 // ================================================================================
+import { Loader2 } from 'lucide-react';
+import { FaArrowRightLong } from 'react-icons/fa6';
+import { BsFillXOctagonFill } from 'react-icons/bs';
+import { IoMdClock, IoIosSave } from 'react-icons/io';
+import { IoClose, IoDocumentText } from 'react-icons/io5';
 import {
    FaExclamationTriangle,
    FaEdit,
@@ -28,24 +36,10 @@ import {
    FaUserClock,
    FaUserCog,
 } from 'react-icons/fa';
-import { FaArrowRightLong } from 'react-icons/fa6';
-import { IoClose, IoDocumentText } from 'react-icons/io5';
-import { IoMdClock, IoIosSave } from 'react-icons/io';
-import { BsFillXOctagonFill } from 'react-icons/bs';
-import { Loader2 } from 'lucide-react';
 
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
-interface ClassificacaoProps {
-   COD_CLASSIFICACAO: number;
-   NOME_CLASSIFICACAO: string;
-}
-
-interface TarefaProps {
-   COD_TAREFA: number;
-   NOME_TAREFA: string;
-}
 
 interface Props {
    status: string;
@@ -296,10 +290,10 @@ export default function StatusApontamentoChamado({
    // ================================================================================
    // ESTADOS - DADOS E CARREGAMENTO
    // ================================================================================
-   const [classificacoes, setClassificacoes] = useState<ClassificacaoProps[]>(
-      []
-   );
-   const [tarefas, setTarefas] = useState<TarefaProps[]>([]);
+   const [classificacoes, setClassificacoes] = useState<
+      TabelaClassificacaoProps[]
+   >([]);
+   const [tarefas, setTarefas] = useState<TabelaTarefaProps[]>([]);
    const [selectedClassificacao, setSelectedClassificacao] = useState<
       number | null
    >(null);
@@ -1094,50 +1088,48 @@ export default function StatusApontamentoChamado({
                </select>
             ) : (
                // ===== TOOLTIP =====
-               <TooltipProvider>
-                  <Tooltip>
-                     <TooltipTrigger asChild>
-                        <div
-                           className={`group relative rounded-md px-6 py-2 font-semibold transition-all ${
-                              isStatusEditable
-                                 ? 'cursor-pointer hover:scale-105 hover:shadow-lg hover:shadow-black'
-                                 : 'cursor-not-allowed opacity-75'
-                           } ${getStylesStatus(status)} ${
-                              isUpdating ? 'cursor-wait opacity-50' : ''
-                           }`}
-                           onClick={handleStatusCellClick}
-                        >
-                           <div className="flex items-center justify-center gap-4">
-                              <span className="font-semibold">
-                                 {status ?? 'Sem status'}
-                              </span>
-                              {isStatusEditable && (
-                                 <FaEdit
-                                    className="opacity-0 transition-opacity group-hover:opacity-100"
-                                    size={16}
-                                 />
-                              )}
-                           </div>
-                        </div>
-                     </TooltipTrigger>
-                     <TooltipContent
-                        side="right"
-                        align="start"
-                        sideOffset={8}
-                        className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
+               <Tooltip>
+                  <TooltipTrigger asChild>
+                     <div
+                        className={`group relative rounded-md px-6 py-2 font-semibold transition-all ${
+                           isStatusEditable
+                              ? 'cursor-pointer hover:scale-105 hover:shadow-lg hover:shadow-black'
+                              : 'cursor-not-allowed opacity-75'
+                        } ${getStylesStatus(status)} ${
+                           isUpdating ? 'cursor-wait opacity-50' : ''
+                        }`}
+                        onClick={handleStatusCellClick}
                      >
-                        <div className="text-sm font-semibold tracking-wider text-black italic select-none">
-                           {isUpdating
-                              ? 'Aguarde...'
-                              : !isStatusEditable
-                                ? 'Esse chamado só pode ser "ATRIBUIDO", via Atribuir Chamado'
-                                : status === 'ATRIBUIDO'
-                                  ? 'Clique para colocar "EM ATENDIMENTO"'
-                                  : 'Clique para alterar o Status'}
+                        <div className="flex items-center justify-center gap-4">
+                           <span className="font-semibold">
+                              {status ?? 'Sem status'}
+                           </span>
+                           {isStatusEditable && (
+                              <FaEdit
+                                 className="opacity-0 transition-opacity group-hover:opacity-100"
+                                 size={16}
+                              />
+                           )}
                         </div>
-                     </TooltipContent>
-                  </Tooltip>
-               </TooltipProvider>
+                     </div>
+                  </TooltipTrigger>
+                  <TooltipContent
+                     side="right"
+                     align="start"
+                     sideOffset={8}
+                     className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
+                  >
+                     <div className="text-sm font-semibold tracking-wider text-black italic select-none">
+                        {isUpdating
+                           ? 'Aguarde...'
+                           : !isStatusEditable
+                             ? 'Esse chamado só pode ser "ATRIBUIDO", via Atribuir Chamado'
+                             : status === 'ATRIBUIDO'
+                               ? 'Clique para colocar "EM ATENDIMENTO"'
+                               : 'Clique para alterar o Status'}
+                     </div>
+                  </TooltipContent>
+               </Tooltip>
             )}
          </div>
          {/* ============================== */}

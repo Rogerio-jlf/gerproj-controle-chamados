@@ -1,11 +1,20 @@
 import { Loader2 } from 'lucide-react';
 import { FaDatabase } from 'react-icons/fa';
 
+// ================================================================================
+//  INTERFACES
+// ================================================================================
 interface IsLoadingProps {
    title: string;
 }
 
+// ================================================================================
+// COMPONENTE PRINCIPAL
+// ================================================================================
 export default function IsLoading({ title }: IsLoadingProps) {
+   // ================================================================================
+   // RENDERIZAÇÃO PRINCIPAL
+   // ================================================================================
    return (
       <div className="flex flex-col items-center justify-center gap-6 py-40">
          <div className="relative">

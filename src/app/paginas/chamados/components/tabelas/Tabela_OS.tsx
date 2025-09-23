@@ -1,17 +1,17 @@
 'use client';
 
+import { debounce } from 'lodash';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
-import { debounce } from 'lodash';
 import {
    flexRender,
-   getCoreRowModel,
+   SortingState,
    useReactTable,
-   getFilteredRowModel,
-   getPaginationRowModel,
+   getCoreRowModel,
    getSortedRowModel,
    ColumnFiltersState,
-   SortingState,
+   getFilteredRowModel,
+   getPaginationRowModel,
 } from '@tanstack/react-table';
 // ================================================================================
 import {
@@ -20,42 +20,26 @@ import {
    TooltipTrigger,
 } from '../../../../../components/ui/tooltip';
 // ================================================================================
-import { colunasTabelaOS, OSTarefaProps } from '../colunas/Colunas_Tabela_OS';
 import { TabelaOSProps } from '../../../../../types/types';
-import { ModalExcluirOS } from '../modais/Modal_Deletar_OS';
-import ModalEditarOS from '../modais/Modal_Editar_OS';
-import IsLoading from '../Loading';
-import IsError from '../Error';
+import { InputGlobalFilterProps } from '../../../../../types/types';
+import { InputFilterTableHeaderProps } from '../../../../../types/types';
 // ================================================================================
-import { FaExclamationTriangle, FaSearch } from 'react-icons/fa';
-import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
-import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
-import { RiArrowUpDownLine } from 'react-icons/ri';
-import { IoArrowUp, IoArrowDown, IoClose } from 'react-icons/io5';
+import { ModalExcluirOS } from '../modais/Modal_Deletar_OS';
+import { colunasTabelaOS, OSTarefaProps } from '../colunas/Colunas_Tabela_OS';
+import ModalEditarOS from '../modais/Modal_Editar_OS';
+// ================================================================================
+import IsError from '../Error';
+import IsLoading from '../Loading';
+// ================================================================================
+import { GrServices } from 'react-icons/gr';
 import { BsEraserFill } from 'react-icons/bs';
+import { RiArrowUpDownLine } from 'react-icons/ri';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
-import { GrServices } from 'react-icons/gr';
-
-// ================================================================================
-// INTERFACES E TIPOS
-// ================================================================================
-interface InputGlobalFilter {
-   value: string;
-   onChange: (value: string) => void;
-   placeholder?: string;
-   onClear: () => void;
-}
-// ==========
-
-interface InputFilterTableHeaderProps {
-   value: string;
-   onChange: (value: string) => void;
-   placeholder?: string;
-   type?: string;
-   onClear?: () => void;
-}
-// =========
+import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
+import { FaExclamationTriangle, FaSearch } from 'react-icons/fa';
+import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
+import { IoArrowUp, IoArrowDown, IoClose } from 'react-icons/io5';
 
 // ================================================================================
 // COMPONENTES DE FILTRO
@@ -64,7 +48,7 @@ const InputGlobalFilter = ({
    value,
    onChange,
    placeholder = 'Buscar em todas as colunas...',
-}: InputGlobalFilter) => {
+}: InputGlobalFilterProps) => {
    const [localValue, setLocalValue] = useState(value);
    const inputRef = useRef<HTMLInputElement>(null);
    const [isFocused, setIsFocused] = useState(false);
@@ -312,8 +296,8 @@ export default function TabelaOS({
    // ESTADOS - MODAIS E COMPONENTES
    // ================================================================================
    const [modalEditarOSOpen, setModalEditarOSOpen] = useState(false);
-   const [selectedOS, setSelectedOS] = useState<string | null>(null);
-   const [osParaExcluir, setOsParaExcluir] = useState<string | null>(null);
+   const [selectedOS, setSelectedOS] = useState<number | null>(null);
+   const [osParaExcluir, setOsParaExcluir] = useState<number | null>(null);
 
    // ================================================================================
    // ESTADOS - FILTROS E ORDENAÇÃO
@@ -489,7 +473,7 @@ export default function TabelaOS({
    };
    // ====================
 
-   const handleOpenEditarOS = (codOS: string) => {
+   const handleOpenEditarOS = (codOS: number) => {
       setSelectedOS(codOS);
       setModalEditarOSOpen(true);
    };
@@ -500,7 +484,7 @@ export default function TabelaOS({
    };
    // ====================
 
-   const handleAbrirModalExclusao = (codOS: string) => {
+   const handleAbrirModalExclusao = (codOS: number) => {
       setOsParaExcluir(codOS);
    };
 

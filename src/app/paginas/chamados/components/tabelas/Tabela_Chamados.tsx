@@ -1,18 +1,18 @@
 'use client';
-
-import { useQueryClient } from '@tanstack/react-query';
-import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+// ================================================================================
 import { debounce } from 'lodash';
+import { useQuery } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import {
    flexRender,
-   getCoreRowModel,
+   SortingState,
    useReactTable,
-   getFilteredRowModel,
-   getPaginationRowModel,
+   getCoreRowModel,
    getSortedRowModel,
    ColumnFiltersState,
-   SortingState,
+   getFilteredRowModel,
+   getPaginationRowModel,
 } from '@tanstack/react-table';
 // ================================================================================
 import {
@@ -21,47 +21,31 @@ import {
    TooltipTrigger,
 } from '../../../../../components/ui/tooltip';
 // ================================================================================
+import { TabelaChamadoProps } from '../../../../../types/types';
+import { InputGlobalFilterProps } from '../../../../../types/types';
+import { InputFilterTableHeaderProps } from '../../../../../types/types';
+// ================================================================================
 import { useAuth } from '../../../../../hooks/useAuth';
-import { useFiltersTabelaChamados } from '../../../../../contexts/Filters_Context';
-import { colunasTabela } from '../colunas/Colunas_Tabela_Chamados';
-import { TabelaChamadosProps } from '../../../../../types/types';
 import { normalizeDate } from '../../../../../utils/formatters';
-import ModalApontamento from '../modais/Modal_Apontamento';
-import TabelaTarefas from './Tabela_Tarefas';
+import { colunasTabelaChamados } from '../colunas/Colunas_Tabela_Chamados';
+import { useFiltersTabelaChamados } from '../../../../../contexts/Filters_Context';
 import TabelaOS from './Tabela_OS';
+import TabelaTarefas from './Tabela_Tarefas';
+import ModalApontamento from '../modais/Modal_Apontamento';
 import ModalVisualizarChamado from '../modais/Modal_Visualizar_Chamado';
 import ModalAtribuicaoInteligente from '../modais/Modal_Atribuir_Chamado';
-import IsLoading from '../Loading';
-import IsError from '../Error';
 // ================================================================================
+import IsError from '../Error';
+import IsLoading from '../Loading';
+// ================================================================================
+import { BsEraserFill } from 'react-icons/bs';
+import { RiArrowUpDownLine } from 'react-icons/ri';
+import { LuFilter, LuFilterX } from 'react-icons/lu';
+import { FaFilterCircleXmark } from 'react-icons/fa6';
+import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FaExclamationTriangle, FaSearch } from 'react-icons/fa';
 import { IoArrowUp, IoArrowDown, IoCall } from 'react-icons/io5';
-import { BsEraserFill } from 'react-icons/bs';
-import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
-import { RiArrowUpDownLine } from 'react-icons/ri';
-import { FaFilterCircleXmark } from 'react-icons/fa6';
-import { LuFilter, LuFilterX } from 'react-icons/lu';
-
-// ================================================================================
-// INTERFACES E TIPOS
-// ================================================================================
-interface InputGlobalFilter {
-   value: string;
-   onChange: (value: string) => void;
-   placeholder?: string;
-   onClear: () => void;
-}
-// ==========
-
-interface InputFilterTableHeaderProps {
-   value: string;
-   onChange: (value: string) => void;
-   placeholder?: string;
-   type?: string;
-   onClear?: () => void;
-}
-// =========
 
 // ================================================================================
 // COMPONENTES DE FILTRO
@@ -70,7 +54,7 @@ const InputGlobalFilter = ({
    value,
    onChange,
    placeholder = 'Buscar em todas as colunas...',
-}: InputGlobalFilter) => {
+}: InputGlobalFilterProps) => {
    const [localValue, setLocalValue] = useState(value);
    const inputRef = useRef<HTMLInputElement>(null);
    const [isFocused, setIsFocused] = useState(false);
@@ -299,7 +283,7 @@ export default function TabelaChamados() {
    // ================================================================================
    const [modalChamadosOpen, setModalChamadosOpen] = useState(false);
    const [selectedChamado, setSelectedChamado] =
-      useState<TabelaChamadosProps | null>(null);
+      useState<TabelaChamadoProps | null>(null);
    const [tabelaOSOpen, setTabelaOSOpen] = useState(false);
    const [selectedCodChamado, setSelectedCodChamado] = useState<number | null>(
       null
@@ -308,7 +292,7 @@ export default function TabelaChamados() {
    const [dashboardOpen, setDashboardOpen] = useState(false);
    const [modalAtribuicaoOpen, setModalAtribuicaoOpen] = useState(false);
    const [chamadoParaAtribuir, setChamadoParaAtribuir] =
-      useState<TabelaChamadosProps | null>(null);
+      useState<TabelaChamadoProps | null>(null);
 
    const [modalApontamentosOpen, setModalApontamentosOpen] = useState(false);
    const [apontamentoData, setApontamentoData] = useState<{
@@ -475,7 +459,7 @@ export default function TabelaChamados() {
    async function fetchChamados(
       params: URLSearchParams,
       token: string
-   ): Promise<TabelaChamadosProps[]> {
+   ): Promise<TabelaChamadoProps[]> {
       const res = await fetch(`/api/chamados?${params}`, {
          headers: {
             Authorization: `Bearer ${token}`,
@@ -518,7 +502,7 @@ export default function TabelaChamados() {
 
             queryClient.setQueryData(
                ['chamadosAbertos', queryParams.toString(), token],
-               (oldData: TabelaChamadosProps[] | undefined) => {
+               (oldData: TabelaChamadoProps[] | undefined) => {
                   if (!oldData) return oldData;
 
                   return oldData.map(chamado =>
@@ -582,7 +566,7 @@ export default function TabelaChamados() {
    // ====================
 
    const handleAbrirAtribuicaoInteligente = useCallback(
-      (chamado: TabelaChamadosProps) => {
+      (chamado: TabelaChamadoProps) => {
          setChamadoParaAtribuir(chamado);
          setModalAtribuicaoOpen(true);
       },
@@ -680,7 +664,7 @@ export default function TabelaChamados() {
             // Atualizar dados locais
             queryClient.setQueryData(
                ['chamadosAbertos', queryParams.toString(), token],
-               (oldData: TabelaChamadosProps[] | undefined) => {
+               (oldData: TabelaChamadoProps[] | undefined) => {
                   if (!oldData) return oldData;
 
                   return oldData.map(chamado =>
@@ -705,7 +689,7 @@ export default function TabelaChamados() {
    // ================================================================================
    const colunas = useMemo(
       () =>
-         colunasTabela(
+         colunasTabelaChamados(
             {
                onVisualizarChamado: handleVisualizarChamado,
                onVisualizarOS: handleVisualizarOS,

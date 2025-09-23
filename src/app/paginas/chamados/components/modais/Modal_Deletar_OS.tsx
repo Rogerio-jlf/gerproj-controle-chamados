@@ -1,14 +1,14 @@
 'use client';
-
-import { useState } from 'react';
+// ================================================================================
 import { toast } from 'sonner';
+import { useState } from 'react';
 // ================================================================================
 import { ToastCustom } from '../../../../../components/Toast_Custom';
 // ================================================================================
 import { IoClose } from 'react-icons/io5';
-import { FaExclamationTriangle } from 'react-icons/fa';
-import { MdDeleteSweep } from 'react-icons/md';
 import { IoIosSave } from 'react-icons/io';
+import { MdDeleteSweep } from 'react-icons/md';
+import { FaExclamationTriangle } from 'react-icons/fa';
 
 // ================================================================================
 // INTERFACES E TIPOS
@@ -16,7 +16,7 @@ import { IoIosSave } from 'react-icons/io';
 interface ModalExcluirOSProps {
    isOpen: boolean;
    onClose: () => void;
-   codOS: string | null;
+   codOS: number | null;
    onSuccess?: () => void;
 }
 // ================================================================================
