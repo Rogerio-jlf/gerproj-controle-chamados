@@ -1338,7 +1338,6 @@ export default function TabelaChamados() {
             onClose={handleCloseApontamentos}
             tarefa={apontamentoData?.tarefa}
             nomeCliente={apontamentoData?.nomeCliente}
-            codChamado={apontamentoData?.codChamado}
             onSuccess={handleApontamentoSuccess}
          />
       </>

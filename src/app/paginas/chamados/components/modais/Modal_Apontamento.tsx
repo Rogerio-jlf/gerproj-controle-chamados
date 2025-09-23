@@ -11,12 +11,12 @@ import {
    TooltipTrigger,
 } from '../../../../../components/ui/tooltip';
 import {
-   canUseBackdatedAppointments,
-   ModalPermitirRetroativo,
-   getCurrentUserId,
-   isUserAdmin,
-} from './Modal_Permitir_Retroativo';
-// ================================================================================
+   canUseBackdatedAppointmentsTarefa,
+   ModalPermitirRetroativoTarefa,
+   getCurrentUserIdTarefa,
+   isUserAdminTarefa,
+} from './Modal_Permitir_Retroativo_Tarefa'; // ou o caminho correto//
+//  ================================================================================
 import { BsFillXOctagonFill } from 'react-icons/bs';
 import { IoMdClock, IoIosSave } from 'react-icons/io';
 import { IoClose, IoDocumentText } from 'react-icons/io5';
@@ -36,9 +36,8 @@ export interface ModalApontamentoProps {
    tarefa: TabelaTarefaProps | null;
    nomeCliente?: string;
    onSuccess?: () => void;
-   codChamado?: number;
+   codTarefa?: number; // MUDANÇA: codChamado -> codTarefa
 }
-
 // ================================================================================
 // FUNÇÕES UTILITÁRIAS
 // ================================================================================
@@ -199,7 +198,7 @@ export default function ModalApontamento({
    tarefa,
    nomeCliente,
    onSuccess,
-   codChamado,
+   codTarefa, // MUDANÇA: codChamado -> codTarefa
 }: ModalApontamentoProps) {
    const { user } = useAuth();
 
@@ -223,13 +222,12 @@ export default function ModalApontamento({
    // ================================================================================
    // VARIÁVEIS COMPUTADAS PARA PERMISSÕES
    // ================================================================================
-   const currentUserId = getCurrentUserId(user);
-   const isAdmin = isUserAdmin(user);
-   const canUseBackdatedDates = canUseBackdatedAppointments(
+   const currentUserId = getCurrentUserIdTarefa(user);
+   const isAdmin = isUserAdminTarefa(user);
+   const canUseBackdatedDates = canUseBackdatedAppointmentsTarefa(
       currentUserId,
-      codChamado?.toString() || ''
+      codTarefa?.toString() || ''
    );
-
    // ================================================================================
    // REFS
    // ================================================================================
@@ -660,6 +658,7 @@ export default function ModalApontamento({
          horaFimOS: '',
       });
       setErrors({});
+      setShowBackdatedModal(false); // <- ADICIONAR ESTA LINHA
    };
 
    // Função para fechar o modal
@@ -732,6 +731,13 @@ export default function ModalApontamento({
          }
       }
    }, [formData.dataInicioOS, isDateFromPreviousMonth]);
+
+   useEffect(() => {
+      if (!isOpen) {
+         // Quando o modal principal fechar, garantir que o modal de permissões também feche
+         setShowBackdatedModal(false);
+      }
+   }, [isOpen]);
 
    if (!isOpen || !tarefa) return null;
 
@@ -814,7 +820,7 @@ export default function ModalApontamento({
                         </div>
                         <p className="text-sm text-blue-700">
                            Você tem permissão para criar apontamentos em datas
-                           de meses anteriores ao atual para este chamado.
+                           de meses anteriores ao atual para esta tarefa.
                         </p>
                      </div>
                   )}
@@ -1108,16 +1114,15 @@ export default function ModalApontamento({
                </footer>
             </div>
          </div>
-
          {/* ===== MODAL DE PERMISSÕES RETROATIVAS ===== */}
-         {isAdmin && (
-            <ModalPermitirRetroativo
+         {isAdmin && showBackdatedModal && (
+            <ModalPermitirRetroativoTarefa
                isOpen={showBackdatedModal}
                onClose={() => setShowBackdatedModal(false)}
                currentUserId={currentUserId}
-               chamadoId={tarefa.COD_TAREFA.toString()}
+               tarefaId={codTarefa?.toString() || ''}
             />
-         )}
+         )}{' '}
       </>
    );
 }

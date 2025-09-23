@@ -30,8 +30,10 @@ export async function GET(request: Request) {
         Recurso.HRDIA_RECURSO,
         Recurso.CUSTO_RECURSO,
         Recurso.RECEITA_RECURSO,
-        Recurso.TPCUSTO_RECURSO
+        Recurso.TPCUSTO_RECURSO,
+        tarefa.CODREC_TAREFA
       FROM RECURSO Recurso
+      LEFT JOIN TAREFA tarefa ON Recurso.COD_RECURSO = tarefa.CODREC_TAREFA
       WHERE Recurso.ATIVO_RECURSO = 1
     `;
 

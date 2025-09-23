@@ -62,3 +62,8 @@ Content-Type: application/json
     "recurso": "1"
   }
 }
+
+###
+
+GET http://localhost:3000/api/permitir-retroativo
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1ODYzNzMzNywiZXhwIjoxNzU4NjQwOTM3fQ.Lzc7tx8Rbly_E3tv2uvHR60lpXxAVshw-RvB3Whnofk

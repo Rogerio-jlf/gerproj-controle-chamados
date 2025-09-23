@@ -113,6 +113,8 @@ export interface TabelaRecursoProps {
    TPCUSTO_RECURSO: number;
    CEL_RECURSO?: string | null;
    ANIVERSARIO_RECURSO?: string | null;
+   // =====
+   CODREC_TAREFA?: number | null;
 }
 // ================================================================================
 
