@@ -79,7 +79,10 @@ export const useBackdatedPermissions = () => {
          options.body = JSON.stringify(data);
       }
 
-      const response = await fetch('/api/permitir-retroativo', options);
+      const response = await fetch(
+         '/api/permitir-retroativo-os-chamado',
+         options
+      );
 
       if (!response.ok) {
          throw new Error(`Erro na API: ${response.statusText}`);
@@ -93,7 +96,7 @@ export const useBackdatedPermissions = () => {
       async (resourceId?: string, chamadoId?: string) => {
          setLoading(true);
          try {
-            let url = '/api/permitir-retroativo';
+            let url = '/api/permitir-retroativo-os-chamado';
             const params = new URLSearchParams();
 
             if (resourceId) params.append('resourceId', resourceId);

@@ -17,7 +17,7 @@ interface PermitirRetroativo {
 const PERMISSIONS_FILE_PATH = path.join(
    process.cwd(),
    'data',
-   'permitir-retroativo.json'
+   'permitir-retroativo-os-chamado.json'
 );
 
 // Função para garantir que o diretório existe
