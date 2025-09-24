@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import transporter from '@/lib/email/transporter';
 import { firebirdQuery } from '../../../lib/firebird/firebird-client';
 import { gerarTemplateEmailChamado } from '@/lib/templates/email_atribuir_chamados';
+import { whatsappClient } from '@/lib/whatsapp/client';
+import { gerarMensagemWhatsApp } from '@/lib/whatsapp/template';
 
 export async function POST(request: Request) {
    try {
@@ -89,16 +91,20 @@ export async function POST(request: Request) {
       let nomeRecurso = 'Recurso';
       let emailCliente = '';
       let emailRecurso = '';
+      let celularCliente = '';
+      let zapCliente = 'NAO';
 
-      // Busca informações do cliente (sempre busca o nome)
+      // Busca informações do cliente (ATUALIZADO para incluir WhatsApp)
       const clienteResult = await firebirdQuery(
-         `SELECT FIRST 1 NOME_CLIENTE, EMAIL_CLIENTE FROM CLIENTE WHERE COD_CLIENTE = ?`,
+         `SELECT FIRST 1 NOME_CLIENTE, EMAIL_CLIENTE, CEL_CLIENTE, ZAP_CLIENTE FROM CLIENTE WHERE COD_CLIENTE = ?`,
          [codClienteNum]
       );
 
       if (clienteResult[0]) {
          nomeCliente = clienteResult[0].NOME_CLIENTE || 'Cliente';
          emailCliente = clienteResult[0].EMAIL_CLIENTE || '';
+         celularCliente = clienteResult[0].CEL_CLIENTE || '';
+         zapCliente = clienteResult[0].ZAP_CLIENTE || 'NAO';
 
          // Só adiciona aos destinatários se quiser enviar email E tiver email
          if (enviarEmailCliente && emailCliente) {
@@ -106,7 +112,7 @@ export async function POST(request: Request) {
          }
       }
 
-      // Busca informações do recurso (sempre busca o nome)
+      // Busca informações do recurso (mantém sua lógica original)
       const recursoResult = await firebirdQuery(
          `SELECT FIRST 1 NOME_RECURSO, EMAIL_RECURSO FROM RECURSO WHERE COD_RECURSO = ?`,
          [codRecursoNum]
@@ -122,24 +128,103 @@ export async function POST(request: Request) {
          }
       }
 
-      // Envia email somente se houver destinatários
-      if (destinatarios.length > 0) {
-         const { subject, html } = gerarTemplateEmailChamado({
-            codChamado: codChamadoNum,
-            nomeCliente,
-            nomeRecurso,
-         });
+      // Variável para armazenar resultados das notificações
+      const resultadosNotificacoes = {
+         email: { enviado: false, erro: null as string | null },
+         whatsapp: { enviado: false, erro: null as string | null },
+      };
 
-         await transporter.sendMail({
-            from: process.env.EMAIL_FROM,
-            to: destinatarios.join(','),
-            subject,
-            html,
-         });
+      // Envia email somente se houver destinatários (MANTÉM SUA LÓGICA)
+      if (destinatarios.length > 0) {
+         try {
+            const { subject, html } = gerarTemplateEmailChamado({
+               codChamado: codChamadoNum,
+               nomeCliente,
+               nomeRecurso,
+            });
+
+            await transporter.sendMail({
+               from: process.env.EMAIL_FROM,
+               to: destinatarios.join(','),
+               subject,
+               html,
+            });
+
+            resultadosNotificacoes.email.enviado = true;
+         } catch (error) {
+            console.error('Erro ao enviar email:', error);
+            resultadosNotificacoes.email.erro =
+               error instanceof Error ? error.message : 'Erro ao enviar email';
+         }
       }
 
+      // ================================================================================
+      // NOVA FUNCIONALIDADE: ENVIO DE WHATSAPP
+      // ================================================================================
+      if (zapCliente === 'SIM' && celularCliente) {
+         try {
+            const mensagemWhatsApp = gerarMensagemWhatsApp({
+               codChamado: codChamadoNum,
+               nomeCliente,
+               nomeRecurso,
+               assuntoChamado: novoAssunto,
+            });
+
+            const resultadoWhatsApp = await whatsappClient.enviarMensagem({
+               to: celularCliente,
+               message: mensagemWhatsApp,
+            });
+
+            if (resultadoWhatsApp.success) {
+               resultadosNotificacoes.whatsapp.enviado = true;
+
+               // Opcional: Log no banco de dados
+               try {
+                  await firebirdQuery(
+                     `INSERT INTO LOG_WHATSAPP (COD_CHAMADO, COD_CLIENTE, TELEFONE, MESSAGE_ID, STATUS_ENVIO, DATA_ENVIO) 
+                      VALUES (?, ?, ?, ?, 'ENVIADO', CURRENT_TIMESTAMP)`,
+                     [
+                        codChamadoNum,
+                        codClienteNum,
+                        celularCliente,
+                        resultadoWhatsApp.messageId || '',
+                     ]
+                  );
+               } catch (logError) {
+                  console.log(
+                     'Erro ao registrar log WhatsApp (não crítico):',
+                     logError
+                  );
+               }
+            } else {
+               resultadosNotificacoes.whatsapp.erro =
+                  resultadoWhatsApp.error || 'Erro desconhecido';
+            }
+         } catch (error) {
+            console.error('Erro ao enviar WhatsApp:', error);
+            resultadosNotificacoes.whatsapp.erro =
+               error instanceof Error
+                  ? error.message
+                  : 'Erro ao enviar WhatsApp';
+         }
+      }
+
+      // Resposta com informações das notificações
       return NextResponse.json({
-         message: 'Chamado atualizado e e-mails enviados.',
+         message: 'Chamado atualizado com sucesso.',
+         notificacoes: {
+            email: {
+               enviado: resultadosNotificacoes.email.enviado,
+               destinatarios: destinatarios.length,
+               erro: resultadosNotificacoes.email.erro,
+            },
+            whatsapp: {
+               enviado: resultadosNotificacoes.whatsapp.enviado,
+               habilitado: zapCliente === 'SIM',
+               temCelular: !!celularCliente,
+               erro: resultadosNotificacoes.whatsapp.erro,
+            },
+         },
       });
    } catch (error) {
       console.error('Erro ao configurar notificações:', error);
