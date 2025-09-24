@@ -32,7 +32,7 @@ import { useFiltersTabelaChamados } from '../../../../../contexts/Filters_Contex
 import TabelaOS from './Tabela_OS';
 import TabelaTarefas from './Tabela_Tarefas';
 import ModalApontamento from '../modais/Modal_Apontamento_OS_Tarefa';
-import ModalVisualizarChamado from '../modais/Modal_Visualizar_Dados_Chamado';
+import { ModalVisualizarDadosChamado } from '../modais/Modal_Visualizar_Dados_Chamado';
 import { ModalAtribuirChamado } from '../modais/Modal_Atribuir_Chamado';
 // ================================================================================
 import IsError from '../Error';
@@ -1271,7 +1271,7 @@ export default function TabelaChamados() {
          {/* ============================== */}
 
          {/* ===== MODAL CHAMADO ===== */}
-         <ModalVisualizarChamado
+         <ModalVisualizarDadosChamado
             isOpen={modalChamadosOpen}
             onClose={handleCloseModalChamados}
             chamado={selectedChamado}

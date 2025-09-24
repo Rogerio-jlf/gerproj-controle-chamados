@@ -21,7 +21,7 @@ import {
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
-interface PermitirRetroativoProps {
+interface BackdatedPermission {
    resourceId: string;
    resourceName: string;
    chamadoId: string;
@@ -30,12 +30,17 @@ interface PermitirRetroativoProps {
    enabledBy: string;
 }
 
-interface RecursoProps {
+interface Resource {
    cod_recurso: number;
    nome_recurso: string;
+   hrdia_decimal: number;
+   hrdia_formatado: string;
+   custo_recurso: number;
+   receita_recurso: number;
+   tpcusto_recurso: number;
 }
 
-interface ModalPermitirRetroativoProps {
+interface BackdatedPermissionsModalProps {
    isOpen: boolean;
    onClose: () => void;
    currentUserId: string;
@@ -45,15 +50,9 @@ interface ModalPermitirRetroativoProps {
 // ================================================================================
 // HOOK PARA GERENCIAR PERMISSÕES (AGORA COM API)
 // ================================================================================
-
 export const useBackdatedPermissions = () => {
-   const [permissions, setPermissions] = useState<PermitirRetroativoProps[]>(
-      []
-   );
-   // ====================
-
+   const [permissions, setPermissions] = useState<BackdatedPermission[]>([]);
    const [loading, setLoading] = useState(false);
-   // ====================
 
    // Função para fazer chamadas à API
    const makeApiCall = async (method: string, data?: any): Promise<any> => {
@@ -77,10 +76,7 @@ export const useBackdatedPermissions = () => {
          options.body = JSON.stringify(data);
       }
 
-      const response = await fetch(
-         '/api/permitir-retroativo-os-chamado',
-         options
-      );
+      const response = await fetch('/api/permitir-retroativo', options);
 
       if (!response.ok) {
          throw new Error(`Erro na API: ${response.statusText}`);
@@ -88,14 +84,13 @@ export const useBackdatedPermissions = () => {
 
       return response.json();
    };
-   // ====================
 
    // Carregar permissões da API
    const loadPermissions = useCallback(
       async (resourceId?: string, chamadoId?: string) => {
          setLoading(true);
          try {
-            let url = '/api/permitir-retroativo-os-chamado';
+            let url = '/api/permitir-retroativo';
             const params = new URLSearchParams();
 
             if (resourceId) params.append('resourceId', resourceId);
@@ -126,7 +121,6 @@ export const useBackdatedPermissions = () => {
       },
       []
    );
-   // ====================
 
    // Habilitar permissão para um recurso em um chamado específico
    const enablePermission = async (
@@ -136,6 +130,13 @@ export const useBackdatedPermissions = () => {
       adminId: string
    ): Promise<boolean> => {
       try {
+         console.log('📤 Fazendo POST para habilitar permissão:', {
+            resourceId,
+            resourceName,
+            chamadoId,
+            adminId,
+         });
+
          await makeApiCall('POST', {
             resourceId,
             resourceName,
@@ -161,13 +162,13 @@ export const useBackdatedPermissions = () => {
             ];
          });
 
+         console.log('✅ Permissão habilitada com sucesso');
          return true;
       } catch (error) {
          console.error('❌ Erro ao habilitar permissão:', error);
          return false;
       }
    };
-   // ====================
 
    // Desabilitar permissão para um recurso em um chamado específico
    const disablePermission = async (
@@ -175,6 +176,11 @@ export const useBackdatedPermissions = () => {
       chamadoId: string
    ): Promise<boolean> => {
       try {
+         console.log('📤 Fazendo DELETE para desabilitar permissão:', {
+            resourceId,
+            chamadoId,
+         });
+
          await makeApiCall('DELETE', {
             resourceId,
             chamadoId,
@@ -187,13 +193,13 @@ export const useBackdatedPermissions = () => {
             )
          );
 
+         console.log('✅ Permissão desabilitada com sucesso');
          return true;
       } catch (error) {
          console.error('❌ Erro ao desabilitar permissão:', error);
          return false;
       }
    };
-   // ====================
 
    // Verificar se um recurso tem permissão para um chamado específico
    const hasPermission = (resourceId: string, chamadoId: string): boolean => {
@@ -204,10 +210,9 @@ export const useBackdatedPermissions = () => {
             p.enabled
       );
    };
-   // ====================
 
    // Obter todas as permissões ativas
-   const getActivePermissions = (): PermitirRetroativoProps[] => {
+   const getActivePermissions = (): BackdatedPermission[] => {
       return permissions.filter(p => p.enabled);
    };
 
@@ -221,14 +226,12 @@ export const useBackdatedPermissions = () => {
       getActivePermissions,
    };
 };
-// ====================
 
 // ================================================================================
-// MODAL DE GERENCIAMENTO DE PERMISSÕES (ATUALIZADO)
+// COMPONENTE PRINCIPAL
 // ================================================================================
-
-export const ModalPermitirRetroativo: React.FC<
-   ModalPermitirRetroativoProps
+export const ModalPermitirRetroativoOsChamado: React.FC<
+   BackdatedPermissionsModalProps
 > = ({ isOpen, onClose, currentUserId, chamadoId }) => {
    const {
       hasPermission,
@@ -238,9 +241,8 @@ export const ModalPermitirRetroativo: React.FC<
       loadPermissions,
       loading: permissionsLoading,
    } = useBackdatedPermissions();
-   // ===================
 
-   const [resources, setResources] = useState<RecursoProps[]>([]);
+   const [resources, setResources] = useState<Resource[]>([]);
    const [loading, setLoading] = useState(false);
    const [error, setError] = useState<string | null>(null);
    const [chamadoInfo, setChamadoInfo] = useState<{
@@ -248,11 +250,14 @@ export const ModalPermitirRetroativo: React.FC<
       cliente: string;
       status: string;
    } | null>(null);
+
+   // 🆕 Estado para controlar permissões pendentes (não salvas ainda)
    const [pendingPermissions, setPendingPermissions] = useState<{
       [resourceId: string]: boolean;
    }>({});
+
+   // 🆕 Estado para loading do botão Concluir
    const [savingPermissions, setSavingPermissions] = useState(false);
-   // ====================
 
    const fetchChamadoAndResources = useCallback(async () => {
       setLoading(true);
@@ -280,7 +285,6 @@ export const ModalPermitirRetroativo: React.FC<
          }
 
          const chamadoData = await chamadoResponse.json();
-         console.log('Dados do chamado:', chamadoData);
 
          if (!chamadoData || chamadoData.length === 0) {
             throw new Error('Chamado não encontrado');
@@ -365,7 +369,6 @@ export const ModalPermitirRetroativo: React.FC<
          setLoading(false);
       }
    }, [chamadoId, loadPermissions]);
-   // ===================
 
    // Fetch recursos responsáveis pelo chamado quando o modal abre
    useEffect(() => {
@@ -375,23 +378,25 @@ export const ModalPermitirRetroativo: React.FC<
          setPendingPermissions({});
       }
    }, [isOpen, fetchChamadoAndResources]);
-   // ===================
 
-   // Função para marcar/desmarcar permissões (só armazena localmente)
-   const handlePermissionToggle = (
-      resource: RecursoProps,
-      enabled: boolean
-   ) => {
+   // 🆕 Função para marcar/desmarcar permissões (só armazena localmente)
+   const handlePermissionToggle = (resource: Resource, enabled: boolean) => {
       const resourceId = resource.cod_recurso.toString();
+
+      console.log('🔄 Toggle permissão local:', {
+         resource: resource.nome_recurso,
+         enabled,
+         resourceId,
+         currentUserId,
+      });
 
       setPendingPermissions(prev => ({
          ...prev,
          [resourceId]: enabled,
       }));
    };
-   // ===================
 
-   // Função para salvar todas as permissões pendentes
+   // 🆕 Função para salvar todas as permissões pendentes
    const handleSavePermissions = async () => {
       if (!currentUserId) {
          alert('ID do usuário não informado. Não é possível salvar.');
@@ -399,6 +404,8 @@ export const ModalPermitirRetroativo: React.FC<
       }
 
       setSavingPermissions(true);
+      console.log('💾 Iniciando salvamento das permissões...');
+      console.log('📋 Permissões pendentes:', pendingPermissions);
 
       let hasErrors = false;
 
@@ -444,6 +451,7 @@ export const ModalPermitirRetroativo: React.FC<
                'Algumas permissões não puderam ser salvas. Verifique o console para detalhes.'
             );
          } else {
+            console.log('✅ Todas as permissões foram salvas com sucesso!');
             // 🆕 Limpar permissões pendentes após salvar
             setPendingPermissions({});
             onClose();
@@ -455,9 +463,8 @@ export const ModalPermitirRetroativo: React.FC<
          setSavingPermissions(false);
       }
    };
-   // ===================
 
-   // Função para verificar se um recurso está habilitado (considerando pendentes)
+   // 🆕 Função para verificar se um recurso está habilitado (considerando pendentes)
    const isResourceEnabled = (resourceId: string): boolean => {
       // Se tem permissão pendente, usar ela
       if (resourceId in pendingPermissions) {
@@ -467,21 +474,17 @@ export const ModalPermitirRetroativo: React.FC<
       // Senão, usar permissão existente da API
       return hasPermission(resourceId, chamadoId);
    };
-   // ===================
 
    const activePermissions = getActivePermissions().filter(
       p => p.chamadoId === chamadoId
    );
-   // ===================
 
-   // Verificar se há pelo menos uma permissão ativa (incluindo pendentes)
+   // 🆕 Verificar se há pelo menos uma permissão ativa (incluindo pendentes)
    const hasPendingChanges = Object.keys(pendingPermissions).length > 0;
    const hasActivePermissions =
       activePermissions.length > 0 || hasPendingChanges;
-   // ===================
 
    if (!isOpen) return null;
-   // ===================
 
    return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-lg">
@@ -783,6 +786,7 @@ export const ModalPermitirRetroativo: React.FC<
                         <button
                            onClick={() => {
                               setPendingPermissions({});
+                              console.log('❌ Alterações canceladas');
                            }}
                            disabled={savingPermissions}
                            className="cursor-pointer rounded-xl border-none bg-gray-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-gray-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
@@ -829,46 +833,98 @@ export const ModalPermitirRetroativo: React.FC<
 // Função para verificar se o usuário atual pode usar datas retroativas para um chamado específico
 export const canUseBackdatedAppointments = (
    userId: string,
-   chamadoId: string
+   chamadoId: string,
+   userObject?: any // ✅ NOVO PARÂMETRO - objeto user completo
 ): boolean => {
-   const STORAGE_KEY = 'backdated_appointments_permissions';
+   console.log('🔍 [PERMISSÃO] Verificando permissão para:', {
+      userId,
+      chamadoId,
+      userObject,
+   });
 
-   if (!userId || !chamadoId) return false;
+   if (!userId || !chamadoId) {
+      console.log('❌ [PERMISSÃO] userId ou chamadoId faltando');
+      return false;
+   }
 
    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) return false;
+      // ✅ PRIMEIRO: Determinar o resourceId correto
+      // Se temos o userObject completo, pegar o ID do recurso dele
+      let resourceIdToCheck = userId; // default é o userId
 
-      const permissions = JSON.parse(stored);
-      return (
-         Array.isArray(permissions) &&
-         permissions.some(
-            (p: any) =>
-               p.resourceId === userId && p.chamadoId === chamadoId && p.enabled
-         )
+      if (userObject?.recurso?.id) {
+         resourceIdToCheck = userObject.recurso.id.toString();
+         console.log('✅ [PERMISSÃO] Usando ID do recurso:', resourceIdToCheck);
+      } else if (userObject?.codRecurso) {
+         resourceIdToCheck = userObject.codRecurso.toString();
+         console.log('✅ [PERMISSÃO] Usando codRecurso:', resourceIdToCheck);
+      } else {
+         console.log(
+            'ℹ️ [PERMISSÃO] Usando userId como resourceId:',
+            resourceIdToCheck
+         );
+      }
+
+      // ✅ SEGUNDO: Verificar na API com o resourceId correto
+      const token = localStorage.getItem('token');
+      if (!token) {
+         console.log('❌ [PERMISSÃO] Token não encontrado');
+         return false;
+      }
+
+      // Fazer requisição síncrona
+      const xhr = new XMLHttpRequest();
+      xhr.open(
+         'GET',
+         `/api/permitir-retroativo?resourceId=${resourceIdToCheck}&chamadoId=${chamadoId}`,
+         false
       );
-   } catch {
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send();
+
+      if (xhr.status === 200) {
+         const permissions = JSON.parse(xhr.responseText);
+         console.log(
+            '🔍 [PERMISSÃO] Permissões da API para resourceId',
+            resourceIdToCheck,
+            ':',
+            permissions
+         );
+
+         const hasPermission =
+            Array.isArray(permissions) && permissions.some(p => p.enabled);
+         console.log('✅ [PERMISSÃO] Resultado API:', hasPermission);
+         return hasPermission;
+      } else {
+         console.log('❌ [PERMISSÃO] Erro na API:', xhr.status, xhr.statusText);
+         return false;
+      }
+   } catch (error) {
+      console.error('❌ [PERMISSÃO] Erro geral:', error);
       return false;
    }
 };
 
 // Função helper para obter o ID do usuário atual independente do sistema usado
 export const getCurrentUserId = (user: any): string => {
-   // Para o hook useAuth (segunda versão)
-   if (user?.recurso?.id) {
-      return user.recurso.id.toString();
-   }
+   console.log('🔍 [DEBUG] getCurrentUserId - user object:', user);
 
-   // Para o AuthContext (primeira versão)
-   if (user?.codRecurso) {
-      return user.codRecurso.toString();
-   }
-
-   // Fallback para ID geral
+   // ✅ CORREÇÃO: Sempre retornar o ID do usuário, não do recurso
    if (user?.id) {
+      console.log('✅ [DEBUG] Usando user.id:', user.id);
       return user.id.toString();
    }
 
+   // ❌ REMOVER estas linhas - elas estão causando o problema
+   // if (user?.recurso?.id) {
+   //    return user.recurso.id.toString();
+   // }
+   // if (user?.codRecurso) {
+   //    return user.codRecurso.toString();
+   // }
+
+   console.log('❌ [DEBUG] Nenhum ID encontrado');
    return '';
 };
 

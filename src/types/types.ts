@@ -16,12 +16,15 @@ export interface TabelaChamadoProps {
    PRIOR_CHAMADO: number;
    COD_CLASSIFICACAO: number;
    // =====
-   NOME_RECURSO: string;
+   NOME_RECURSO?: string | null;
    // =====
-   NOME_CLIENTE: string;
+   NOME_CLIENTE?: string | null;
    // =====
-   NOME_TAREFA: string;
+   NOME_TAREFA?: string | null;
+   // =====
+   NOME_CLASSIFICACAO?: string | null;
 }
+
 // ================================================================================
 
 export interface TabelaOSProps {

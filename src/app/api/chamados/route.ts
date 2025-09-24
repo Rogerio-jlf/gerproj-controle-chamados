@@ -126,10 +126,12 @@ export async function GET(request: Request) {
         Chamado.PRIOR_CHAMADO,
         Chamado.COD_CLASSIFICACAO,
         Cliente.NOME_CLIENTE,
-        Recurso.NOME_RECURSO
+        Recurso.NOME_RECURSO,
+        Classificacao.NOME_CLASSIFICACAO
       FROM CHAMADO Chamado
       LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
       LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = Chamado.COD_RECURSO
+      LEFT JOIN CLASSIFICACAO Classificacao ON Classificacao.COD_CLASSIFICACAO = Chamado.COD_CLASSIFICACAO
       ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
       ORDER BY Chamado.DATA_CHAMADO DESC, Chamado.COD_CHAMADO DESC
     `;

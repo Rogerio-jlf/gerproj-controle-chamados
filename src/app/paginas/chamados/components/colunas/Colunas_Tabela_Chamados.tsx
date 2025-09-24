@@ -12,7 +12,7 @@ import {
 import { TabelaChamadoProps } from '../../../../../types/types';
 // ================================================================================
 import { formatarDataParaBR } from '../../../../../utils/formatters';
-import StatusApontamentoChamado from '../modais/Modal_Status_Apontamento_Chamado';
+import StatusApontamentoChamado from '../modais/Modal_Atualizar_Status_Apontar_OS_Chamado';
 import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
 // ================================================================================
 import { IoCall } from 'react-icons/io5';
@@ -385,7 +385,7 @@ export const colunasTabelaChamados = (
             <StatusApontamentoChamado
                status={row.original.STATUS_CHAMADO}
                codChamado={row.original.COD_CHAMADO}
-               nomeCliente={row.original.NOME_CLIENTE}
+               nomeCliente={row.original.NOME_CLIENTE ?? '-'}
                onUpdateSuccess={() => {
                   // Callback após sucesso
                   // refetchData(); // Remova ou implemente refetchData se necessário

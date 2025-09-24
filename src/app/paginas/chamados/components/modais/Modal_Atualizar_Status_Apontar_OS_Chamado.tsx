@@ -1,33 +1,25 @@
 'use client';
-// ================================================================================
-import { z } from 'zod';
-import { toast } from 'sonner';
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
+import { z } from 'zod';
 // ================================================================================
 import {
    Tooltip,
    TooltipContent,
+   TooltipProvider,
    TooltipTrigger,
 } from '../../../../../components/ui/tooltip';
 // ================================================================================
-import { TabelaTarefaProps } from '../../../../../types/types';
-// ================================================================================
-import { useAuth } from '../../../../../hooks/useAuth';
 import { getStylesStatus } from '../../../../../utils/formatters';
 import { ToastCustom } from '../../../../../components/Toast_Custom';
-import { TabelaClassificacaoProps } from '../../../../../types/types';
+import { useAuth } from '../../../../../hooks/useAuth';
 import {
    canUseBackdatedAppointments,
-   ModalPermitirRetroativo,
+   ModalPermitirRetroativoOsChamado,
    getCurrentUserId,
    isUserAdmin,
-} from './Modal_Permitir_Retroativo_OS_Chamado';
+} from './Modal_Permitir_Reatroativo_OS_Chamado';
 // ================================================================================
-import { Loader2 } from 'lucide-react';
-import { FaArrowRightLong } from 'react-icons/fa6';
-import { BsFillXOctagonFill } from 'react-icons/bs';
-import { IoMdClock, IoIosSave } from 'react-icons/io';
-import { IoClose, IoDocumentText } from 'react-icons/io5';
 import {
    FaExclamationTriangle,
    FaEdit,
@@ -36,10 +28,25 @@ import {
    FaUserClock,
    FaUserCog,
 } from 'react-icons/fa';
+import { FaArrowRightLong } from 'react-icons/fa6';
+import { IoClose, IoDocumentText } from 'react-icons/io5';
+import { IoMdClock, IoIosSave } from 'react-icons/io';
+import { BsFillXOctagonFill } from 'react-icons/bs';
+import { Loader2 } from 'lucide-react';
 
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
+
+interface Classificacao {
+   COD_CLASSIFICACAO: number;
+   NOME_CLASSIFICACAO: string;
+}
+
+interface Tarefa {
+   COD_TAREFA: number;
+   NOME_TAREFA: string;
+}
 
 interface Props {
    status: string;
@@ -49,11 +56,11 @@ interface Props {
 }
 
 // Modal Component
-interface ModalStatusApontamentoChamadoProps {
+interface ModalProps {
    isOpen: boolean;
    onClose: () => void;
    children: React.ReactNode;
-   needsApontamento?: boolean;
+   needsApontamento?: boolean; // NOVA PROP
 }
 
 const Modal = ({
@@ -61,7 +68,7 @@ const Modal = ({
    onClose,
    children,
    needsApontamento = false,
-}: ModalStatusApontamentoChamadoProps) => {
+}: ModalProps) => {
    useEffect(() => {
       const handleEscape = (e: KeyboardEvent) => {
          if (e.key === 'Escape') {
@@ -267,12 +274,21 @@ const removerAcentos = (texto: string): string => {
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export default function StatusApontamentoChamado({
+
+export default function StatusCellUnified({
    status: initialStatus,
    codChamado,
    onUpdateSuccess,
 }: Props) {
    const { user } = useAuth();
+
+   // ================================================================================
+   // DEBUG - Adicione estas linhas
+   // ================================================================================
+   console.log('🔍 [DEBUG] User object:', user);
+   console.log('🔍 [DEBUG] Current userId:', getCurrentUserId(user));
+   console.log('🔍 [DEBUG] Is user admin:', isUserAdmin(user));
+   console.log('🔍 [DEBUG] Chamado ID:', codChamado);
 
    // ================================================================================
    // ESTADOS - CONTROLES DE EDIÇÃO
@@ -290,10 +306,8 @@ export default function StatusApontamentoChamado({
    // ================================================================================
    // ESTADOS - DADOS E CARREGAMENTO
    // ================================================================================
-   const [classificacoes, setClassificacoes] = useState<
-      TabelaClassificacaoProps[]
-   >([]);
-   const [tarefas, setTarefas] = useState<TabelaTarefaProps[]>([]);
+   const [classificacoes, setClassificacoes] = useState<Classificacao[]>([]);
+   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
    const [selectedClassificacao, setSelectedClassificacao] = useState<
       number | null
    >(null);
@@ -335,10 +349,15 @@ export default function StatusApontamentoChamado({
 
    const currentUserId = getCurrentUserId(user);
    const isAdmin = isUserAdmin(user);
+
+   // ✅ CORREÇÃO: Passar o objeto user completo para a função
    const canUseBackdatedDates = canUseBackdatedAppointments(
       currentUserId,
-      codChamado.toString()
+      codChamado.toString(),
+      user // ✅ Objeto user completo
    );
+
+   console.log('🔍 [DEBUG] canUseBackdatedDates:', canUseBackdatedDates);
 
    // ================================================================================
    // API E FUNÇÕES DE DADOS
@@ -409,6 +428,29 @@ export default function StatusApontamentoChamado({
    };
    // ====================
 
+   // Função para verificar se uma data é de um mês anterior ao atual
+   const isDateFromPreviousMonth = useCallback(
+      (dateString: string): boolean => {
+         // ✅ CORREÇÃO: Se o usuário tem permissão especial, SEMPRE permitir
+         if (canUseBackdatedDates) {
+            return false; // Sempre permitir para usuários com permissão especial
+         }
+
+         // Lógica original apenas para usuários sem permissão
+         const [year, month, day] = dateString.split('-').map(Number);
+         const today = new Date();
+         const currentYear = today.getFullYear();
+         const currentMonth = today.getMonth() + 1;
+
+         if (year < currentYear) return true;
+         if (year === currentYear && month < currentMonth) return true;
+
+         return false;
+      },
+      [canUseBackdatedDates] // ✅ Importante: dependência do canUseBackdatedDates
+   );
+   // ====================
+
    // Handler para mudanças nos inputs de apontamento
    const handleApontamentoInputChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -442,10 +484,11 @@ export default function StatusApontamentoChamado({
                dataInicioOS: 'Data não pode ser maior que hoje',
             }));
          } else if (isDateFromPreviousMonth(newValue)) {
+            // ✅ CORREÇÃO: Só mostrar erro se o usuário NÃO tiver permissão
             setApontamentoErrors((prev: ApontamentoFormErrors) => ({
                ...prev,
                dataInicioOS: canUseBackdatedDates
-                  ? undefined
+                  ? undefined // ✅ Permite se tiver permissão
                   : 'Não é possível selecionar datas de meses anteriores ao atual',
             }));
          } else {
@@ -556,29 +599,6 @@ export default function StatusApontamentoChamado({
          });
       }
    };
-   // ====================
-
-   // Função para verificar se uma data é de um mês anterior ao atual
-   const isDateFromPreviousMonth = useCallback(
-      (dateString: string): boolean => {
-         // Se o usuário tem permissão especial, sempre permitir
-         if (canUseBackdatedDates) {
-            return false; // Sempre permitir para usuários com permissão especial
-         }
-
-         // Lógica original para usuários normais
-         const [year, month, day] = dateString.split('-').map(Number);
-         const today = new Date();
-         const currentYear = today.getFullYear();
-         const currentMonth = today.getMonth() + 1;
-
-         if (year < currentYear) return true;
-         if (year === currentYear && month < currentMonth) return true;
-
-         return false;
-      },
-      [canUseBackdatedDates]
-   );
    // ====================
 
    // Função para abrir o calendário ao clicar no input
@@ -794,14 +814,11 @@ export default function StatusApontamentoChamado({
 
          const start = Date.now();
 
-         const response = await fetch(
-            `/api/status-apontamento-chamado/${codChamado}`,
-            {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify(payload),
-            }
-         );
+         const response = await fetch(`/api/unified-status-os/${codChamado}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+         });
 
          const responseData = await response.json();
 
@@ -898,13 +915,13 @@ export default function StatusApontamentoChamado({
    // Para melhorar a UX, você pode também definir o atributo 'min' no input de data:
    const getCurrentMonthFirstDay = (): string => {
       if (canUseBackdatedDates) {
-         // Permitir datas de até 3 meses atrás para usuários com permissão especial
-         const threeMonthsAgo = new Date();
-         threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-         return threeMonthsAgo.toISOString().split('T')[0];
+         // Permitir datas de até 1 ano atrás para usuários com permissão especial
+         const oneYearAgo = new Date();
+         oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+         return oneYearAgo.toISOString().split('T')[0];
       }
 
-      // Lógica original
+      // Lógica original para usuários sem permissão
       const today = new Date();
       const year = today.getFullYear();
       const month = today.getMonth();
@@ -1088,48 +1105,50 @@ export default function StatusApontamentoChamado({
                </select>
             ) : (
                // ===== TOOLTIP =====
-               <Tooltip>
-                  <TooltipTrigger asChild>
-                     <div
-                        className={`group relative rounded-md px-6 py-2 font-semibold transition-all ${
-                           isStatusEditable
-                              ? 'cursor-pointer hover:scale-105 hover:shadow-lg hover:shadow-black'
-                              : 'cursor-not-allowed opacity-75'
-                        } ${getStylesStatus(status)} ${
-                           isUpdating ? 'cursor-wait opacity-50' : ''
-                        }`}
-                        onClick={handleStatusCellClick}
-                     >
-                        <div className="flex items-center justify-center gap-4">
-                           <span className="font-semibold">
-                              {status ?? 'Sem status'}
-                           </span>
-                           {isStatusEditable && (
-                              <FaEdit
-                                 className="opacity-0 transition-opacity group-hover:opacity-100"
-                                 size={16}
-                              />
-                           )}
+               <TooltipProvider>
+                  <Tooltip>
+                     <TooltipTrigger asChild>
+                        <div
+                           className={`group relative rounded-md px-6 py-2 font-semibold transition-all ${
+                              isStatusEditable
+                                 ? 'cursor-pointer hover:scale-105 hover:shadow-lg hover:shadow-black'
+                                 : 'cursor-not-allowed opacity-75'
+                           } ${getStylesStatus(status)} ${
+                              isUpdating ? 'cursor-wait opacity-50' : ''
+                           }`}
+                           onClick={handleStatusCellClick}
+                        >
+                           <div className="flex items-center justify-center gap-4">
+                              <span className="font-semibold">
+                                 {status ?? 'Sem status'}
+                              </span>
+                              {isStatusEditable && (
+                                 <FaEdit
+                                    className="opacity-0 transition-opacity group-hover:opacity-100"
+                                    size={16}
+                                 />
+                              )}
+                           </div>
                         </div>
-                     </div>
-                  </TooltipTrigger>
-                  <TooltipContent
-                     side="right"
-                     align="start"
-                     sideOffset={8}
-                     className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
-                  >
-                     <div className="text-sm font-semibold tracking-wider text-black italic select-none">
-                        {isUpdating
-                           ? 'Aguarde...'
-                           : !isStatusEditable
-                             ? 'Esse chamado só pode ser "ATRIBUIDO", via Atribuir Chamado'
-                             : status === 'ATRIBUIDO'
-                               ? 'Clique para colocar "EM ATENDIMENTO"'
-                               : 'Clique para alterar o Status'}
-                     </div>
-                  </TooltipContent>
-               </Tooltip>
+                     </TooltipTrigger>
+                     <TooltipContent
+                        side="right"
+                        align="start"
+                        sideOffset={8}
+                        className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
+                     >
+                        <div className="text-sm font-semibold tracking-wider text-black italic select-none">
+                           {isUpdating
+                              ? 'Aguarde...'
+                              : !isStatusEditable
+                                ? 'Esse chamado, só pode ser "ATRIBUIDO", via Atribuir Chamado'
+                                : status === 'ATRIBUIDO'
+                                  ? 'Clique para colocar "EM ATENDIMENTO"'
+                                  : 'Clique para alterar o Status'}
+                        </div>
+                     </TooltipContent>
+                  </Tooltip>
+               </TooltipProvider>
             )}
          </div>
          {/* ============================== */}
@@ -1141,7 +1160,7 @@ export default function StatusApontamentoChamado({
             needsApontamento={!!needsApontamento}
          >
             <div
-               className={`animate-in slide-in-from-bottom-4 ${needsApontamento ? 'w-[1500px]' : 'w-[750px]'} relative z-10 max-h-[100vh] overflow-hidden rounded-2xl border-0 bg-white shadow-xl shadow-black transition-all duration-500 ease-out`}
+               className={`animate-in slide-in-from-bottom-4 ${needsApontamento ? 'w-[1500px]' : 'w-[750px]'} relative z-10 max-h-[100vh] overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out`}
             >
                {/* ===== OVERLAY LOADING ===== */}
                {(loadingClassificacoes || loadingTarefas) && (
@@ -1497,11 +1516,15 @@ export default function StatusApontamentoChamado({
                                  type="date"
                                  name="dataInicioOS"
                                  value={apontamentoData.dataInicioOS}
-                                 onChange={handleDateChangeNew} // ✅ MUDANÇA
+                                 onChange={handleDateChangeNew}
                                  onBlur={handleFieldBlur}
                                  onKeyDown={handleDateKeyDown}
-                                 onClick={handleDateClick} // ✅ NOVA FUNÇÃO
-                                 min={getCurrentMonthFirstDay()}
+                                 onClick={handleDateClick}
+                                 min={
+                                    canUseBackdatedDates
+                                       ? undefined
+                                       : getCurrentMonthFirstDay()
+                                 } // ✅ CORREÇÃO
                                  max={new Date().toISOString().split('T')[0]}
                                  disabled={isUpdating}
                                  className={`w-full cursor-pointer rounded-md border-t-0 border-slate-300 bg-white px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
@@ -1816,7 +1839,7 @@ export default function StatusApontamentoChamado({
          </Modal>
 
          {isAdmin && (
-            <ModalPermitirRetroativo
+            <ModalPermitirRetroativoOsChamado
                isOpen={showBackdatedModal}
                onClose={() => setShowBackdatedModal(false)}
                currentUserId={currentUserId}
