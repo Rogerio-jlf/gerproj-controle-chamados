@@ -30,7 +30,7 @@ import { colunasTabelaTarefa } from '../colunas/Colunas_Tabela_Tarefas';
 import IsError from '../Error';
 import IsLoading from '../Loading';
 import TabelaOSTarefa from './Tabela_OS_Tarefa';
-import ModalApontamentoOSTarefa from '../modais/Modal_Apontamento';
+import ModalApontamentoOSTarefa from '../modais/Modal_Apontamento_OS_Tarefa';
 import TabelaChamadosTarefa from './Tabela_Chamados_Tarefa';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';

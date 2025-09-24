@@ -21,7 +21,7 @@ import {
    ModalPermitirRetroativo,
    getCurrentUserId,
    isUserAdmin,
-} from './Modal_Permitir_Retroativo';
+} from './Modal_Permitir_Retroativo_OS_Chamado';
 // ================================================================================
 import { Loader2 } from 'lucide-react';
 import { FaArrowRightLong } from 'react-icons/fa6';

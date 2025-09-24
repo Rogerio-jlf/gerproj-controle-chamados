@@ -1,7 +1,7 @@
-import transporter from '@/lib/email/transporter';
-import { gerarTemplateEmailChamado } from '@/lib/templates/email_atribuir_chamados';
 import { NextResponse } from 'next/server';
+import transporter from '@/lib/email/transporter';
 import { firebirdQuery } from '../../../lib/firebird/firebird-client';
+import { gerarTemplateEmailChamado } from '@/lib/templates/email_atribuir_chamados';
 
 export async function POST(request: Request) {
    try {
@@ -25,12 +25,60 @@ export async function POST(request: Request) {
          );
       }
 
+      // Formatar a data e hora atual no formato brasileiro: DD/MM/AAAA - HH:MM
+      const agora = new Date();
+      const dataFormatada =
+         agora.toLocaleDateString('pt-BR') +
+         ' - ' +
+         agora.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit',
+         });
+
+      // Buscar o assunto atual do chamado
+      const chamadoResult = await firebirdQuery(
+         `SELECT FIRST 1 ASSUNTO_CHAMADO FROM CHAMADO WHERE COD_CHAMADO = ?`,
+         [codChamadoNum]
+      );
+
+      if (!chamadoResult[0]) {
+         return NextResponse.json(
+            { error: 'Chamado não encontrado' },
+            { status: 404 }
+         );
+      }
+
+      const assuntoAtual = chamadoResult[0].ASSUNTO_CHAMADO || '';
+
+      // Buscar informações do cliente para o assunto
+      const clienteAssuntoResult = await firebirdQuery(
+         `SELECT FIRST 1 NOME_CLIENTE FROM CLIENTE WHERE COD_CLIENTE = ?`,
+         [codClienteNum]
+      );
+
+      let novoAssunto = assuntoAtual;
+      if (clienteAssuntoResult[0] && clienteAssuntoResult[0].NOME_CLIENTE) {
+         const nomeCompleto = clienteAssuntoResult[0].NOME_CLIENTE;
+         const primeiroNome = nomeCompleto.split(' ')[0].toUpperCase();
+
+         // Verificar se o assunto já não tem o prefixo do cliente para evitar duplicação
+         if (!assuntoAtual.startsWith(`[${primeiroNome}]`)) {
+            novoAssunto = `[${primeiroNome}] - ${assuntoAtual}`;
+         }
+      }
+
       const updateSql = `
       UPDATE CHAMADO
-      SET COD_CLIENTE = ?, COD_RECURSO = ?, STATUS_CHAMADO = 'ATRIBUIDO'
+      SET COD_CLIENTE = ?, COD_RECURSO = ?, STATUS_CHAMADO = 'ATRIBUIDO', DTENVIO_CHAMADO = ?, ASSUNTO_CHAMADO = ?
       WHERE COD_CHAMADO = ?
     `;
-      const updateParams = [codClienteNum, codRecursoNum, codChamadoNum];
+      const updateParams = [
+         codClienteNum,
+         codRecursoNum,
+         dataFormatada,
+         novoAssunto,
+         codChamadoNum,
+      ];
 
       await firebirdQuery(updateSql, updateParams);
 

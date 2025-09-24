@@ -1,6 +1,8 @@
 import { z } from 'zod';
+import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ToastCustom } from '../../../../../components/Toast_Custom';
 import React, {
    useState,
    useEffect,
@@ -45,13 +47,67 @@ import {
 } from 'react-icons/fa';
 
 // ================================================================================
-// INTERFACES E TIPOS
+// INTERFACES E TIPOS (mantidas iguais)
 // ================================================================================
+interface RecursoStats {
+   COD_RECURSO: number;
+   NOME_RECURSO: string;
+   TOTAL_CHAMADOS_ATIVOS: number;
+   CHAMADOS_ALTA_PRIORIDADE: number;
+   CHAMADOS_CRITICOS: number;
+   SCORE_CARGA_TRABALHO: number;
+   RECOMENDACAO: 'DISPONÍVEL' | 'MODERADO' | 'SOBRECARREGADO' | 'CRÍTICO';
+   PERCENTUAL_ALTA_PRIORIDADE: number;
+   TEMPO_MEDIO_RESOLUCAO: number | null;
+}
+// ==========
+
+interface ModalAtribuicaoInteligenteProps {
+   isOpen: boolean;
+   onClose: () => void;
+   chamado: TabelaChamadoProps | null;
+   initialDarkMode?: boolean;
+}
+// ==========
+
+interface OverlayContent {
+   title: string;
+   message: string;
+   type: 'info' | 'warning' | 'error' | 'success';
+}
+// ==========
+
 interface DarkModeProps {
    isDarkMode: boolean;
    toggleDarkMode: () => void;
 }
 
+// ================================================================================
+// SCHEMAS ZOD
+// ================================================================================
+const formSchema = z
+   .object({
+      cliente: z
+         .string()
+         .min(1, 'Cliente é obrigatório')
+         .refine(
+            val => !isNaN(Number(val)) && Number(val) > 0,
+            'Selecione um cliente válido'
+         ),
+      enviarEmailCliente: z.boolean().optional().default(false),
+      enviarEmailRecurso: z.boolean().optional().default(false),
+   })
+   .refine(data => data.enviarEmailCliente || data.enviarEmailRecurso, {
+      message: 'Pelo menos um método de notificação deve ser selecionado',
+      path: ['root'],
+   });
+
+type FormData = z.infer<typeof formSchema>;
+type FormErrors = Partial<Record<keyof FormData | 'root', string>>;
+
+// ================================================================================
+// DARK MODE TOGGLE COMPONENT
+// ================================================================================
 const DarkModeContext = createContext<DarkModeProps>({
    isDarkMode: true,
    toggleDarkMode: () => {},
@@ -59,10 +115,38 @@ const DarkModeContext = createContext<DarkModeProps>({
 
 const useDarkMode = () => useContext(DarkModeContext);
 
-// ================================================================================
-// THEME UTILITY
-// ================================================================================
+const DarkModeToggle = () => {
+   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
+   return (
+      <Tooltip>
+         <TooltipTrigger asChild>
+            <button
+               onClick={toggleDarkMode}
+               className={`cursor-pointer rounded-full p-3 transition-all hover:scale-125 hover:rotate-180 active:scale-95 ${
+                  isDarkMode
+                     ? 'bg-yellow-500 text-black hover:bg-yellow-400'
+                     : 'bg-black text-white hover:bg-black/80'
+               } hover:scale-110 active:scale-95`}
+            >
+               {isDarkMode ? <FaSun size={24} /> : <FaMoon size={24} />}
+            </button>
+         </TooltipTrigger>
+         <TooltipContent
+            side="bottom"
+            align="center"
+            sideOffset={8}
+            className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
+         >
+            {isDarkMode ? 'Modo Claro' : 'Modo Escuro'}
+         </TooltipContent>
+      </Tooltip>
+   );
+};
+
+// ================================================================================
+// COMPONENTES UTILITÁRIOS ATUALIZADOS
+// ================================================================================
 const getThemeClasses = (isDark: boolean) => ({
    // Backgrounds
    modalBg: isDark ? 'bg-slate-800' : 'bg-white',
@@ -108,64 +192,7 @@ const getThemeClasses = (isDark: boolean) => ({
    warningBg: isDark ? 'bg-yellow-600/30' : 'bg-yellow-200',
    warningText: isDark ? 'text-yellow-200' : 'text-black',
 });
-
-// ================================================================================
-// SCHEMAS E TIPOS (mantidos iguais)
-// ================================================================================
-
-const formSchema = z
-   .object({
-      cliente: z
-         .string()
-         .min(1, 'Cliente é obrigatório')
-         .refine(
-            val => !isNaN(Number(val)) && Number(val) > 0,
-            'Selecione um cliente válido'
-         ),
-      enviarEmailCliente: z.boolean().optional().default(false),
-      enviarEmailRecurso: z.boolean().optional().default(false),
-   })
-   .refine(data => data.enviarEmailCliente || data.enviarEmailRecurso, {
-      message: 'Pelo menos um método de notificação deve ser selecionado',
-      path: ['root'],
-   });
-
-type FormData = z.infer<typeof formSchema>;
-type FormErrors = Partial<Record<keyof FormData | 'root', string>>;
-
-// ================================================================================
-// INTERFACES E TIPOS (mantidas iguais)
-// ================================================================================
-
-interface RecursoStats {
-   COD_RECURSO: number;
-   NOME_RECURSO: string;
-   TOTAL_CHAMADOS_ATIVOS: number;
-   CHAMADOS_ALTA_PRIORIDADE: number;
-   CHAMADOS_CRITICOS: number;
-   SCORE_CARGA_TRABALHO: number;
-   RECOMENDACAO: 'DISPONÍVEL' | 'MODERADO' | 'SOBRECARREGADO' | 'CRÍTICO';
-   PERCENTUAL_ALTA_PRIORIDADE: number;
-   TEMPO_MEDIO_RESOLUCAO: number | null;
-}
-
-interface ModalAtribuicaoInteligenteProps {
-   isOpen: boolean;
-   onClose: () => void;
-   chamado: TabelaChamadoProps | null;
-   onAtribuicaoSuccess?: () => void;
-   initialDarkMode?: boolean;
-}
-
-interface OverlayContent {
-   title: string;
-   message: string;
-   type: 'info' | 'warning' | 'error' | 'success';
-}
-
-// ================================================================================
-// COMPONENTES UTILITÁRIOS ATUALIZADOS
-// ================================================================================
+// ==========
 
 const RecomendacaoIcon = ({ recomendacao }: { recomendacao: string }) => {
    const icons = {
@@ -177,6 +204,7 @@ const RecomendacaoIcon = ({ recomendacao }: { recomendacao: string }) => {
    const Icon = icons[recomendacao as keyof typeof icons] || FiActivity;
    return <Icon size={16} />;
 };
+// ==========
 
 const PrioridadeTag = ({ prioridade }: { prioridade: number }) => {
    const getPrioridadeInfo = (prioridade: number) => {
@@ -205,6 +233,7 @@ const PrioridadeTag = ({ prioridade }: { prioridade: number }) => {
       </div>
    );
 };
+// ==========
 
 const LoadingSpinner = ({ text = 'Carregando...' }: { text?: string }) => {
    const { isDarkMode } = useDarkMode();
@@ -226,6 +255,7 @@ const LoadingSpinner = ({ text = 'Carregando...' }: { text?: string }) => {
       </div>
    );
 };
+// ==========
 
 const ErrorDisplay = ({
    onRetry,
@@ -254,43 +284,7 @@ const ErrorDisplay = ({
       </button>
    </div>
 );
-
-// ================================================================================
-// DARK MODE TOGGLE COMPONENT
-// ================================================================================
-
-const DarkModeToggle = () => {
-   const { isDarkMode, toggleDarkMode } = useDarkMode();
-
-   return (
-      <Tooltip>
-         <TooltipTrigger asChild>
-            <button
-               onClick={toggleDarkMode}
-               className={`cursor-pointer rounded-full p-3 transition-all hover:scale-125 hover:rotate-180 active:scale-95 ${
-                  isDarkMode
-                     ? 'bg-yellow-500 text-black hover:bg-yellow-400'
-                     : 'bg-black text-white hover:bg-black/80'
-               } hover:scale-110 active:scale-95`}
-            >
-               {isDarkMode ? <FaSun size={24} /> : <FaMoon size={24} />}
-            </button>
-         </TooltipTrigger>
-         <TooltipContent
-            side="bottom"
-            align="center"
-            sideOffset={8}
-            className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
-         >
-            {isDarkMode ? 'Modo Claro' : 'Modo Escuro'}
-         </TooltipContent>
-      </Tooltip>
-   );
-};
-
-// ================================================================================
-// UTILITÁRIOS (mantidos iguais)
-// ================================================================================
+// ==========
 
 const getRecomendacaoColor = (recomendacao: string) => {
    const colors = {
@@ -306,13 +300,9 @@ const getRecomendacaoColor = (recomendacao: string) => {
 // COMPONENTE PRINCIPAL
 // ================================================================================
 
-const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
-   isOpen,
-   onClose,
-   chamado,
-   onAtribuicaoSuccess,
-   initialDarkMode = true,
-}) => {
+export const ModalAtribuirChamado: React.FC<
+   ModalAtribuicaoInteligenteProps
+> = ({ isOpen, onClose, chamado, initialDarkMode = true }) => {
    // ================================================================================
    // DARK MODE STATE
    // ================================================================================
@@ -384,42 +374,6 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
       setOverlayContent({ title, message, type });
       setShowOverlay(true);
    };
-
-   // ================================================================================
-   // EFEITOS E RESETS (mantidos iguais)
-   // ================================================================================
-   useEffect(() => {
-      if (isOpen) {
-         setSelectedRecurso(null);
-         setShowDetails(null);
-         setFormData({
-            cliente: chamado?.COD_CLIENTE?.toString() || '',
-            enviarEmailCliente: false,
-            enviarEmailRecurso: false,
-         });
-         setErrors({});
-         setSuccess(false);
-      }
-   }, [isOpen, chamado]);
-
-   useEffect(() => {
-      if (atribuirMutation.isSuccess) {
-         setSuccess(true);
-         onAtribuicaoSuccess?.();
-         setTimeout(() => {
-            onClose();
-         }, 2000);
-      }
-
-      if (atribuirMutation.isError) {
-         setErrors({ root: 'Erro ao atribuir chamado' });
-      }
-   }, [
-      atribuirMutation.isSuccess,
-      atribuirMutation.isError,
-      onAtribuicaoSuccess,
-      onClose,
-   ]);
 
    // ================================================================================
    // QUERIES DE DADOS (mantidas iguais)
@@ -511,6 +465,85 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
       },
       enabled: !!selectedRecurso && !!token,
    });
+
+   // ================================================================================
+   // MEMOIZED VALUES (mantidos iguais)
+   // ================================================================================
+   const recursosFiltrados = useMemo(() => {
+      if (!recursosData?.recursos) return [];
+
+      return recursosData.recursos.filter((recurso: RecursoStats) => {
+         const matchesSearch = recurso.NOME_RECURSO.toLowerCase().includes(
+            searchTerm.toLowerCase()
+         );
+         const matchesFilter =
+            filtroRecomendacao === 'TODOS' ||
+            recurso.RECOMENDACAO === filtroRecomendacao;
+         return matchesSearch && matchesFilter;
+      });
+   }, [recursosData?.recursos, searchTerm, filtroRecomendacao]);
+
+   // ================================================================================
+   // EFEITOS E RESETS (mantidos iguais)
+   // ================================================================================
+   useEffect(() => {
+      if (isOpen) {
+         setSelectedRecurso(null);
+         setShowDetails(null);
+         setFormData({
+            cliente: chamado?.COD_CLIENTE?.toString() || '',
+            enviarEmailCliente: false,
+            enviarEmailRecurso: false,
+         });
+         setErrors({});
+         setSuccess(false);
+      }
+   }, [isOpen, chamado]);
+
+   const recursoSelecionadoNome = useMemo(() => {
+      if (!selectedRecurso || !recursosFiltrados) return null;
+
+      const recurso = recursosFiltrados.find(
+         (r: RecursoStats) => r.COD_RECURSO === selectedRecurso
+      );
+
+      return recurso ? corrigirTextoCorrompido(recurso.NOME_RECURSO) : null;
+   }, [selectedRecurso, recursosFiltrados]);
+
+   // E substitua seu useEffect atual por este:
+   useEffect(() => {
+      if (atribuirMutation.isSuccess) {
+         toast.custom(t => (
+            <ToastCustom
+               type="success"
+               title="Operação realizada com sucesso!"
+               description={`Chamado #${chamado?.COD_CHAMADO} atribuído${
+                  recursoSelecionadoNome
+                     ? ` para ${recursoSelecionadoNome}`
+                     : ''
+               } com sucesso.`}
+            />
+         ));
+      }
+   }, [
+      atribuirMutation.isSuccess,
+      recursoSelecionadoNome,
+      chamado?.COD_CHAMADO,
+   ]);
+
+   useEffect(() => {
+      if (atribuirMutation.isError) {
+         toast.custom(t => (
+            <ToastCustom
+               type="error"
+               title="Erro ao tentar realizar Apontamento"
+               description={
+                  atribuirMutation.error?.message || 'Tente novamente.'
+               }
+            />
+         ));
+      }
+   }, [atribuirMutation.isError, atribuirMutation.error?.message]);
 
    // ================================================================================
    // FUNÇÕES DE VALIDAÇÃO (mantidas iguais)
@@ -616,23 +649,6 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
       setErrors({});
       setSelectedRecurso(null);
    };
-
-   // ================================================================================
-   // MEMOIZED VALUES (mantidos iguais)
-   // ================================================================================
-   const recursosFiltrados = useMemo(() => {
-      if (!recursosData?.recursos) return [];
-
-      return recursosData.recursos.filter((recurso: RecursoStats) => {
-         const matchesSearch = recurso.NOME_RECURSO.toLowerCase().includes(
-            searchTerm.toLowerCase()
-         );
-         const matchesFilter =
-            filtroRecomendacao === 'TODOS' ||
-            recurso.RECOMENDACAO === filtroRecomendacao;
-         return matchesSearch && matchesFilter;
-      });
-   }, [recursosData?.recursos, searchTerm, filtroRecomendacao]);
 
    // ================================================================================
    // RENDERIZAÇÃO CONDICIONAL
@@ -1723,7 +1739,7 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
                                     {atribuirMutation.isPending ? (
                                        <div className="flex items-center gap-2">
                                           <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                          <span>Atualizando...</span>
+                                          <span>Salvando...</span>
                                        </div>
                                     ) : (
                                        <div className="flex items-center gap-1">
@@ -1731,7 +1747,7 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
                                              className="mr-2 inline-block"
                                              size={20}
                                           />
-                                          <span>Atualizar</span>
+                                          <span>Atribuir</span>
                                        </div>
                                     )}
                                  </button>
@@ -1775,5 +1791,3 @@ const ModalAtribuicaoInteligente: React.FC<ModalAtribuicaoInteligenteProps> = ({
       </DarkModeContext.Provider>
    );
 };
-
-export default ModalAtribuicaoInteligente;
