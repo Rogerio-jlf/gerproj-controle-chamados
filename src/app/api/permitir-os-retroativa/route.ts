@@ -4,10 +4,10 @@ import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Interface das permissões
-interface PermitirRetroativo {
+interface BackdatedPermission {
    resourceId: string;
    resourceName: string;
-   tarefaId: string;
+   osId: string;
    enabled: boolean;
    enabledAt: string;
    enabledBy: string;
@@ -17,7 +17,7 @@ interface PermitirRetroativo {
 const PERMISSIONS_FILE_PATH = path.join(
    process.cwd(),
    'data',
-   'permitir-retroativo-os-tarefa.json'
+   'permitir-os-retroativa.json'
 );
 
 // Função para garantir que o diretório existe
@@ -29,7 +29,7 @@ const ensureDataDirectory = () => {
 };
 
 // Função para ler as permissões do arquivo
-const readPermissions = (): PermitirRetroativo[] => {
+const readPermissions = (): BackdatedPermission[] => {
    try {
       ensureDataDirectory();
 
@@ -49,7 +49,7 @@ const readPermissions = (): PermitirRetroativo[] => {
 };
 
 // Função para salvar as permissões no arquivo
-const writePermissions = (permissions: PermitirRetroativo[]): boolean => {
+const writePermissions = (permissions: BackdatedPermission[]): boolean => {
    try {
       ensureDataDirectory();
       fs.writeFileSync(
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
 
       const { searchParams } = new URL(request.url);
       const resourceId = searchParams.get('resourceId');
-      const tarefaId = searchParams.get('tarefaId');
+      const osId = searchParams.get('osId');
 
       let permissions = readPermissions();
 
@@ -97,9 +97,9 @@ export async function GET(request: NextRequest) {
          permissions = permissions.filter(p => p.resourceId === resourceId);
       }
 
-      // Filtrar por tarefaId se fornecido
-      if (tarefaId) {
-         permissions = permissions.filter(p => p.tarefaId === tarefaId);
+      // Filtrar por osId se fornecido
+      if (osId) {
+         permissions = permissions.filter(p => p.osId === osId);
       }
 
       return NextResponse.json(permissions);
@@ -120,12 +120,12 @@ export async function POST(request: NextRequest) {
       if (authError) return authError;
 
       const body = await request.json();
-      const { resourceId, resourceName, tarefaId, adminId } = body;
+      const { resourceId, resourceName, osId, adminId } = body;
 
-      if (!resourceId || !resourceName || !tarefaId || !adminId) {
+      if (!resourceId || !resourceName || !osId || !adminId) {
          return NextResponse.json(
             {
-               error: 'Parâmetros obrigatórios: resourceId, resourceName, tarefaId, adminId',
+               error: 'Parâmetros obrigatórios: resourceId, resourceName, osId, adminId',
             },
             { status: 400 }
          );
@@ -133,16 +133,16 @@ export async function POST(request: NextRequest) {
 
       const permissions = readPermissions();
 
-      // Remove permissão existente para o mesmo recurso/tarefa
+      // Remove permissão existente para o mesmo recurso/OS
       const filteredPermissions = permissions.filter(
-         p => !(p.resourceId === resourceId && p.tarefaId === tarefaId)
+         p => !(p.resourceId === resourceId && p.osId === osId)
       );
 
       // Adiciona nova permissão
-      const newPermission: PermitirRetroativo = {
+      const newPermission: BackdatedPermission = {
          resourceId,
          resourceName,
-         tarefaId,
+         osId,
          enabled: true,
          enabledAt: new Date().toISOString(),
          enabledBy: adminId,
@@ -179,18 +179,18 @@ export async function DELETE(request: NextRequest) {
       if (authError) return authError;
 
       const body = await request.json();
-      const { resourceId, tarefaId } = body;
+      const { resourceId, osId } = body;
 
-      if (!resourceId || !tarefaId) {
+      if (!resourceId || !osId) {
          return NextResponse.json(
-            { error: 'Parâmetros obrigatórios: resourceId, tarefaId' },
+            { error: 'Parâmetros obrigatórios: resourceId, osId' },
             { status: 400 }
          );
       }
 
       const permissions = readPermissions();
       const updatedPermissions = permissions.filter(
-         p => !(p.resourceId === resourceId && p.tarefaId === tarefaId)
+         p => !(p.resourceId === resourceId && p.osId === osId)
       );
 
       if (writePermissions(updatedPermissions)) {
@@ -221,25 +221,24 @@ export async function PUT(request: NextRequest) {
       if (authError) return authError;
 
       const body = await request.json();
-      const { resourceId, tarefaId } = body;
+      const { resourceId, osId } = body;
 
-      if (!resourceId || !tarefaId) {
+      if (!resourceId || !osId) {
          return NextResponse.json(
-            { error: 'Parâmetros obrigatórios: resourceId, tarefaId' },
+            { error: 'Parâmetros obrigatórios: resourceId, osId' },
             { status: 400 }
          );
       }
 
       const permissions = readPermissions();
       const hasPermission = permissions.some(
-         p =>
-            p.resourceId === resourceId && p.tarefaId === tarefaId && p.enabled
+         p => p.resourceId === resourceId && p.osId === osId && p.enabled
       );
 
       return NextResponse.json({
          hasPermission,
          resourceId,
-         tarefaId,
+         osId,
       });
    } catch (error) {
       console.error('Erro no PUT:', error);

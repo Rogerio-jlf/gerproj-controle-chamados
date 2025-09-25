@@ -18,7 +18,7 @@ import {
    ModalPermitirRetroativoOsChamado,
    getCurrentUserId,
    isUserAdmin,
-} from './Modal_Permitir_Reatroativo_OS_Chamado';
+} from './Modal_Permitir_OS_Retroativa_Chamado';
 // ================================================================================
 import {
    FaExclamationTriangle,
@@ -814,11 +814,14 @@ export default function StatusCellUnified({
 
          const start = Date.now();
 
-         const response = await fetch(`/api/unified-status-os/${codChamado}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-         });
+         const response = await fetch(
+            `/api/status-apontamento-chamado/${codChamado}`,
+            {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify(payload),
+            }
+         );
 
          const responseData = await response.json();
 
@@ -865,12 +868,8 @@ export default function StatusCellUnified({
          toast.custom(t => (
             <ToastCustom
                type="error"
-               title="Erro ao processar solicitação"
-               description={
-                  error instanceof Error
-                     ? error.message
-                     : 'Tente novamente em instantes.'
-               }
+               title="Erro na Solicitação"
+               description={`Não foi possível atualizar o status, nem realizar o apontamento para o chamado #${codChamado}.`}
             />
          ));
       } finally {

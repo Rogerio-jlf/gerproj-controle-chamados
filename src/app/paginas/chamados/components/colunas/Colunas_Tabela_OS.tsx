@@ -15,7 +15,7 @@ import {
    formatarHora,
 } from '../../../../../utils/formatters';
 // ================================================================================
-import { MdEditDocument } from 'react-icons/md';
+import { RiEditFill } from 'react-icons/ri';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
 
 // ================================================================================
@@ -34,21 +34,6 @@ export interface AcoesTabelaOSProps {
    onExcluirOS: (codOS: number) => void;
 }
 // ==============================
-
-// Função para converter horas de HHMM, decimais para HH:MM
-const formatDecimalToTime = (decimalHours: number): string => {
-   if (!decimalHours && decimalHours !== 0) return '-';
-
-   const hours = Math.floor(decimalHours);
-   const minutes = Math.round((decimalHours - hours) * 60);
-
-   // Formatação com zero à esquerda
-   const formattedHours = hours.toString().padStart(2, '0');
-   const formattedMinutes = minutes.toString().padStart(2, '0');
-
-   return `${formattedHours}:${formattedMinutes}`;
-};
-// ================================================================================
 
 // ================================================================================
 // COMPONENTE PRINCIPAL
@@ -129,7 +114,7 @@ export const colunasTabelaOS = (
          const dataFormatada = formatarDataParaBR(dateString);
 
          return (
-            <div className="rounded-md bg-green-500 p-2 text-center text-black">
+            <div className="rounded-md bg-slate-900 p-2 text-center text-white">
                {dataFormatada}
             </div>
          );
@@ -146,7 +131,7 @@ export const colunasTabelaOS = (
          const horaFormatada = formatarHora(timeString);
 
          return (
-            <div className="rounded-md bg-green-500 p-2 text-center text-black">
+            <div className="rounded-md bg-slate-900 p-2 text-center text-white">
                {horaFormatada}
             </div>
          );
@@ -163,7 +148,7 @@ export const colunasTabelaOS = (
          const horaFormatada = formatarHora(timeString);
 
          return (
-            <div className="rounded-md bg-green-500 p-2 text-center text-black">
+            <div className="rounded-md bg-slate-900 p-2 text-center text-white">
                {horaFormatada}
             </div>
          );
@@ -180,7 +165,7 @@ export const colunasTabelaOS = (
          const tempoFormatado = formatarDecimalParaTempo(value);
 
          return (
-            <div className="rounded-md bg-green-500 p-2 text-center text-black">
+            <div className="rounded-md bg-slate-900 p-2 text-center text-white">
                {tempoFormatado}
             </div>
          );
@@ -202,9 +187,9 @@ export const colunasTabelaOS = (
                   <TooltipTrigger asChild>
                      <button
                         onClick={() => acoes.onEditarOS(os.COD_OS)}
-                        className="cursor-pointer transition-all hover:-translate-y-1 hover:scale-102 active:scale-95"
+                        className="cursor-pointer transition-all active:scale-95"
                      >
-                        <MdEditDocument size={32} />
+                        <RiEditFill size={32} />
                      </button>
                   </TooltipTrigger>
                   <TooltipContent
@@ -223,7 +208,7 @@ export const colunasTabelaOS = (
                   <TooltipTrigger asChild>
                      <button
                         onClick={() => acoes.onExcluirOS(os.COD_OS)}
-                        className="cursor-pointer transition-all hover:-translate-y-1 hover:scale-102 active:scale-95"
+                        className="cursor-pointer transition-all active:scale-95"
                      >
                         <RiDeleteBin5Fill size={32} />
                      </button>

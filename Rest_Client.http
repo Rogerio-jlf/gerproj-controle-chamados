@@ -41,7 +41,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ1LCJub21lI
 
 
 ### Atualizar chamado para EM ATENDIMENTO (não deve criar OS)
-POST http://localhost:3000/api/unified-status-os/13471
+POST http://localhost:3000/api/status-apontamento-chamado/13471
 Content-Type: application/json
 
 {
@@ -53,7 +53,7 @@ Content-Type: application/json
 ###
 
 ### Atualizar chamado para FINALIZADO (OS obrigatória)
-POST http://localhost:3000/api/unified-status-os/13471
+POST http://localhost:3000/api/status-apontamento-chamado/13471
 Content-Type: application/json
 
 {

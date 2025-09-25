@@ -174,7 +174,7 @@ const BotaoMenuCircular = ({ chamado, acoes }: BotaoCircularMenuProps) => {
    return (
       <>
          {/* Botão Principal Melhorado */}
-         <div className="relative flex items-center justify-center">
+         <div className="relative flex items-center justify-center rounded-md bg-slate-900 p-2 text-center text-white">
             <motion.button
                onClick={handleToggle}
                className="cursor-pointer transition-all hover:scale-110 focus:outline-none active:scale-95"
@@ -405,7 +405,7 @@ export const colunasTabelaChamados = (
 
          if (codRecurso !== null && codRecurso !== undefined && recurso) {
             return (
-               <div className="rounded-md bg-lime-500 p-2 text-center text-black">
+               <div className="rounded-md bg-slate-900 p-2 text-center text-white">
                   {corrigirTextoCorrompido(
                      recurso.split(' ').slice(0, 2).join(' ')
                   )}
@@ -414,7 +414,7 @@ export const colunasTabelaChamados = (
          }
 
          return (
-            <div className="rounded-md bg-orange-500 p-2 text-center text-black">
+            <div className="rounded-md bg-yellow-500 p-2 text-center text-black">
                <span className="uppercase">Não atribuído</span>
             </div>
          );

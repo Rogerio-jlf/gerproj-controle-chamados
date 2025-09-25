@@ -4,10 +4,10 @@ import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Interface das permissões
-interface BackdatedPermission {
+interface PermitirRetroativo {
    resourceId: string;
    resourceName: string;
-   chamadoId: string;
+   tarefaId: string;
    enabled: boolean;
    enabledAt: string;
    enabledBy: string;
@@ -17,7 +17,7 @@ interface BackdatedPermission {
 const PERMISSIONS_FILE_PATH = path.join(
    process.cwd(),
    'data',
-   'permitir-retroativo.json'
+   'permitir-os-retroativa-tarefa.json'
 );
 
 // Função para garantir que o diretório existe
@@ -29,7 +29,7 @@ const ensureDataDirectory = () => {
 };
 
 // Função para ler as permissões do arquivo
-const readPermissions = (): BackdatedPermission[] => {
+const readPermissions = (): PermitirRetroativo[] => {
    try {
       ensureDataDirectory();
 
@@ -49,7 +49,7 @@ const readPermissions = (): BackdatedPermission[] => {
 };
 
 // Função para salvar as permissões no arquivo
-const writePermissions = (permissions: BackdatedPermission[]): boolean => {
+const writePermissions = (permissions: PermitirRetroativo[]): boolean => {
    try {
       ensureDataDirectory();
       fs.writeFileSync(
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
 
       const { searchParams } = new URL(request.url);
       const resourceId = searchParams.get('resourceId');
-      const chamadoId = searchParams.get('chamadoId');
+      const tarefaId = searchParams.get('tarefaId');
 
       let permissions = readPermissions();
 
@@ -97,9 +97,9 @@ export async function GET(request: NextRequest) {
          permissions = permissions.filter(p => p.resourceId === resourceId);
       }
 
-      // Filtrar por chamadoId se fornecido
-      if (chamadoId) {
-         permissions = permissions.filter(p => p.chamadoId === chamadoId);
+      // Filtrar por tarefaId se fornecido
+      if (tarefaId) {
+         permissions = permissions.filter(p => p.tarefaId === tarefaId);
       }
 
       return NextResponse.json(permissions);
@@ -120,12 +120,12 @@ export async function POST(request: NextRequest) {
       if (authError) return authError;
 
       const body = await request.json();
-      const { resourceId, resourceName, chamadoId, adminId } = body;
+      const { resourceId, resourceName, tarefaId, adminId } = body;
 
-      if (!resourceId || !resourceName || !chamadoId || !adminId) {
+      if (!resourceId || !resourceName || !tarefaId || !adminId) {
          return NextResponse.json(
             {
-               error: 'Parâmetros obrigatórios: resourceId, resourceName, chamadoId, adminId',
+               error: 'Parâmetros obrigatórios: resourceId, resourceName, tarefaId, adminId',
             },
             { status: 400 }
          );
@@ -133,16 +133,16 @@ export async function POST(request: NextRequest) {
 
       const permissions = readPermissions();
 
-      // Remove permissão existente para o mesmo recurso/chamado
+      // Remove permissão existente para o mesmo recurso/tarefa
       const filteredPermissions = permissions.filter(
-         p => !(p.resourceId === resourceId && p.chamadoId === chamadoId)
+         p => !(p.resourceId === resourceId && p.tarefaId === tarefaId)
       );
 
       // Adiciona nova permissão
-      const newPermission: BackdatedPermission = {
+      const newPermission: PermitirRetroativo = {
          resourceId,
          resourceName,
-         chamadoId,
+         tarefaId,
          enabled: true,
          enabledAt: new Date().toISOString(),
          enabledBy: adminId,
@@ -179,18 +179,18 @@ export async function DELETE(request: NextRequest) {
       if (authError) return authError;
 
       const body = await request.json();
-      const { resourceId, chamadoId } = body;
+      const { resourceId, tarefaId } = body;
 
-      if (!resourceId || !chamadoId) {
+      if (!resourceId || !tarefaId) {
          return NextResponse.json(
-            { error: 'Parâmetros obrigatórios: resourceId, chamadoId' },
+            { error: 'Parâmetros obrigatórios: resourceId, tarefaId' },
             { status: 400 }
          );
       }
 
       const permissions = readPermissions();
       const updatedPermissions = permissions.filter(
-         p => !(p.resourceId === resourceId && p.chamadoId === chamadoId)
+         p => !(p.resourceId === resourceId && p.tarefaId === tarefaId)
       );
 
       if (writePermissions(updatedPermissions)) {
@@ -221,11 +221,11 @@ export async function PUT(request: NextRequest) {
       if (authError) return authError;
 
       const body = await request.json();
-      const { resourceId, chamadoId } = body;
+      const { resourceId, tarefaId } = body;
 
-      if (!resourceId || !chamadoId) {
+      if (!resourceId || !tarefaId) {
          return NextResponse.json(
-            { error: 'Parâmetros obrigatórios: resourceId, chamadoId' },
+            { error: 'Parâmetros obrigatórios: resourceId, tarefaId' },
             { status: 400 }
          );
       }
@@ -233,15 +233,13 @@ export async function PUT(request: NextRequest) {
       const permissions = readPermissions();
       const hasPermission = permissions.some(
          p =>
-            p.resourceId === resourceId &&
-            p.chamadoId === chamadoId &&
-            p.enabled
+            p.resourceId === resourceId && p.tarefaId === tarefaId && p.enabled
       );
 
       return NextResponse.json({
          hasPermission,
          resourceId,
-         chamadoId,
+         tarefaId,
       });
    } catch (error) {
       console.error('Erro no PUT:', error);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
    FaUserCog,
    FaCheck,
@@ -9,7 +9,6 @@ import {
    FaExclamationTriangle,
    FaCalendarAlt,
    FaUser,
-   FaTasks,
 } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import { Loader2 } from 'lucide-react';
@@ -18,43 +17,43 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from '../../../../../components/ui/tooltip';
+import { debounce } from 'lodash';
 
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
-interface PermitirRetroativoProps {
+interface BackdatedPermission {
    resourceId: string;
    resourceName: string;
-   tarefaId: string;
+   chamadoId: string;
    enabled: boolean;
    enabledAt: string;
    enabledBy: string;
 }
 
-interface RecursoProps {
+interface Resource {
    cod_recurso: number;
    nome_recurso: string;
+   hrdia_decimal: number;
+   hrdia_formatado: string;
+   custo_recurso: number;
+   receita_recurso: number;
+   tpcusto_recurso: number;
 }
 
-interface ModalPermitirRetroativoProps {
+interface BackdatedPermissionsModalProps {
    isOpen: boolean;
    onClose: () => void;
    currentUserId: string;
-   tarefaId: string;
+   chamadoId: string;
 }
 
 // ================================================================================
 // HOOK PARA GERENCIAR PERMISSÕES (AGORA COM API)
 // ================================================================================
-
 export const useBackdatedPermissions = () => {
-   const [permissions, setPermissions] = useState<PermitirRetroativoProps[]>(
-      []
-   );
-   // ====================
-
+   const [permissions, setPermissions] = useState<BackdatedPermission[]>([]);
    const [loading, setLoading] = useState(false);
-   // ====================
 
    // Função para fazer chamadas à API
    const makeApiCall = async (method: string, data?: any): Promise<any> => {
@@ -79,7 +78,7 @@ export const useBackdatedPermissions = () => {
       }
 
       const response = await fetch(
-         '/api/permitir-retroativo-os-tarefa',
+         '/api/permitir-os-retroativa-chamado',
          options
       );
 
@@ -89,18 +88,17 @@ export const useBackdatedPermissions = () => {
 
       return response.json();
    };
-   // ====================
 
-   // Carregar permissões da API
-   const loadPermissions = useCallback(
-      async (resourceId?: string, tarefaId?: string) => {
+   // Função interna para carregar permissões (sem debounce)
+   const loadPermissionsInternal = useCallback(
+      async (resourceId?: string, chamadoId?: string) => {
          setLoading(true);
          try {
-            let url = '/api/permitir-retroativo-os-tarefa';
+            let url = '/api/permitir-os-retroativa-chamado';
             const params = new URLSearchParams();
 
             if (resourceId) params.append('resourceId', resourceId);
-            if (tarefaId) params.append('tarefaId', tarefaId);
+            if (chamadoId) params.append('chamadoId', chamadoId);
 
             if (params.toString()) {
                url += `?${params.toString()}`;
@@ -127,34 +125,47 @@ export const useBackdatedPermissions = () => {
       },
       []
    );
-   // ====================
+
+   // Versão com debounce usando useMemo para estabilizar a referência
+   const loadPermissions = useMemo(
+      () => debounce(loadPermissionsInternal, 300),
+      [loadPermissionsInternal]
+   );
+
+   // Cleanup do debounce quando o componente desmontar
+   useEffect(() => {
+      return () => {
+         loadPermissions.cancel();
+      };
+   }, [loadPermissions]);
 
    // Habilitar permissão para um recurso em um chamado específico
    const enablePermission = async (
       resourceId: string,
       resourceName: string,
-      tarefaId: string,
+      chamadoId: string,
       adminId: string
    ): Promise<boolean> => {
       try {
          await makeApiCall('POST', {
             resourceId,
             resourceName,
-            tarefaId,
+            chamadoId,
             adminId,
          });
 
-         // Atualizar estado local
+         invalidatePermissionsCache(resourceId, chamadoId);
+
          setPermissions(prev => {
             const filtered = prev.filter(
-               p => !(p.resourceId === resourceId && p.tarefaId === tarefaId)
+               p => !(p.resourceId === resourceId && p.chamadoId === chamadoId)
             );
             return [
                ...filtered,
                {
                   resourceId,
                   resourceName,
-                  tarefaId,
+                  chamadoId,
                   enabled: true,
                   enabledAt: new Date().toISOString(),
                   enabledBy: adminId,
@@ -164,49 +175,49 @@ export const useBackdatedPermissions = () => {
 
          return true;
       } catch (error) {
-         console.error('❌ Erro ao habilitar permissão:', error);
+         console.error('Erro ao habilitar permissão:', error);
          return false;
       }
    };
-   // ====================
 
    // Desabilitar permissão para um recurso em um chamado específico
    const disablePermission = async (
       resourceId: string,
-      tarefaId: string
+      chamadoId: string
    ): Promise<boolean> => {
       try {
          await makeApiCall('DELETE', {
             resourceId,
-            tarefaId,
+            chamadoId,
          });
 
-         // Atualizar estado local
+         invalidatePermissionsCache(resourceId, chamadoId);
+
          setPermissions(prev =>
             prev.filter(
-               p => !(p.resourceId === resourceId && p.tarefaId === tarefaId)
+               p => !(p.resourceId === resourceId && p.chamadoId === chamadoId)
             )
          );
 
          return true;
       } catch (error) {
-         console.error('❌ Erro ao desabilitar permissão:', error);
+         console.error('Erro ao desabilitar permissão:', error);
          return false;
       }
    };
-   // ====================
 
    // Verificar se um recurso tem permissão para um chamado específico
-   const hasPermission = (resourceId: string, tarefaId: string): boolean => {
+   const hasPermission = (resourceId: string, chamadoId: string): boolean => {
       return permissions.some(
          p =>
-            p.resourceId === resourceId && p.tarefaId === tarefaId && p.enabled
+            p.resourceId === resourceId &&
+            p.chamadoId === chamadoId &&
+            p.enabled
       );
    };
-   // ====================
 
    // Obter todas as permissões ativas
-   const getActivePermissions = (): PermitirRetroativoProps[] => {
+   const getActivePermissions = (): BackdatedPermission[] => {
       return permissions.filter(p => p.enabled);
    };
 
@@ -219,16 +230,12 @@ export const useBackdatedPermissions = () => {
       hasPermission,
       getActivePermissions,
    };
-};
-// ====================
-
+}; // ================================================================================
+// COMPONENTE PRINCIPAL
 // ================================================================================
-// MODAL DE GERENCIAMENTO DE PERMISSÕES PARA TAREFAS
-// ================================================================================
-
-export const ModalPermitirRetroativoTarefa: React.FC<
-   ModalPermitirRetroativoProps
-> = ({ isOpen, onClose, currentUserId, tarefaId }) => {
+export const ModalPermitirRetroativoOsChamado: React.FC<
+   BackdatedPermissionsModalProps
+> = ({ isOpen, onClose, currentUserId, chamadoId }) => {
    const {
       hasPermission,
       enablePermission,
@@ -237,23 +244,24 @@ export const ModalPermitirRetroativoTarefa: React.FC<
       loadPermissions,
       loading: permissionsLoading,
    } = useBackdatedPermissions();
-   // ===================
 
-   const [resources, setResources] = useState<RecursoProps[]>([]);
+   const [resources, setResources] = useState<Resource[]>([]);
    const [loading, setLoading] = useState(false);
    const [error, setError] = useState<string | null>(null);
-   const [tarefaInfo, setTarefaInfo] = useState<{
+   const [chamadoInfo, setChamadoInfo] = useState<{
       assunto: string;
       cliente: string;
       status: string;
    } | null>(null);
+
    const [pendingPermissions, setPendingPermissions] = useState<{
       [resourceId: string]: boolean;
    }>({});
-   const [savingPermissions, setSavingPermissions] = useState(false);
-   // ====================
 
-   const fetchTarefaAndResources = useCallback(async () => {
+   const [savingPermissions, setSavingPermissions] = useState(false);
+   // ==============================
+
+   const fetchChamadoAndResources = useCallback(async () => {
       setLoading(true);
       setError(null);
 
@@ -263,8 +271,8 @@ export const ModalPermitirRetroativoTarefa: React.FC<
             throw new Error('Token não encontrado');
          }
 
-         const tarefaResponse = await fetch(
-            `/api/tarefas?codTarefa=${tarefaId}`,
+         const chamadoResponse = await fetch(
+            `/api/chamados?codChamado=${chamadoId}`,
             {
                headers: {
                   Authorization: `Bearer ${token}`,
@@ -273,41 +281,34 @@ export const ModalPermitirRetroativoTarefa: React.FC<
             }
          );
 
-         if (!tarefaResponse.ok) {
-            throw new Error('Erro ao carregar dados da tarefa');
+         if (!chamadoResponse.ok) {
+            throw new Error('Erro ao carregar dados do chamado');
          }
 
-         const tarefaData = await tarefaResponse.json();
+         const chamadoData = await chamadoResponse.json();
 
-         if (!tarefaData || tarefaData.length === 0) {
-            throw new Error('Tarefa não encontrada');
+         if (!chamadoData || chamadoData.length === 0) {
+            throw new Error('Chamado não encontrado');
          }
 
-         const tarefa = tarefaData[0];
+         const chamado = chamadoData[0];
 
-         // Salvar informações da tarefa
-         setTarefaInfo({
-            assunto:
-               tarefa.ASSUNTO_TAREFA || tarefa.NOME_TAREFA || 'Sem assunto',
-            cliente: tarefa.NOME_CLIENTE || 'Cliente não informado',
-            status:
-               tarefa.STATUS_TAREFA_TEXTO?.trim() ||
-               `Status ${tarefa.STATUS_TAREFA}`,
+         setChamadoInfo({
+            assunto: chamado.ASSUNTO_CHAMADO || 'Sem assunto',
+            cliente: chamado.NOME_CLIENTE || 'Cliente não informado',
+            status: chamado.STATUS_CHAMADO || 'Status não informado',
          });
 
-         // CORREÇÃO: Verificar se está em atendimento (assumindo que 2 = EM ATENDIMENTO)
-         if (tarefa.STATUS_TAREFA === 2) {
+         if (chamado.STATUS_CHAMADO === 'EM ATENDIMENTO') {
             setError(
-               'Não é possível conceder permissões para tarefas em atendimento'
+               'Não é possível conceder permissões para chamados em atendimento'
             );
             return;
          }
 
-         // CORREÇÃO: Lidar com COD_RECURSO = 0
-         if (tarefa.COD_RECURSO && tarefa.COD_RECURSO !== 0) {
-            // Buscar recurso específico
+         if (chamado.COD_RECURSO) {
             const recursoResponse = await fetch(
-               `/api/recursos?codRecurso=${tarefa.COD_RECURSO}`,
+               `/api/recursos?codRecurso=${chamado.COD_RECURSO}`,
                {
                   headers: {
                      Authorization: `Bearer ${token}`,
@@ -316,22 +317,30 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                }
             );
 
-            if (recursoResponse.ok) {
-               const recursoData = await recursoResponse.json();
-               setResources(recursoData);
-            } else {
+            if (!recursoResponse.ok) {
                throw new Error('Erro ao carregar dados do recurso');
             }
-         } else if (tarefa.NOME_RECURSO && tarefa.NOME_RECURSO.trim()) {
-            // Usar o código real do recurso (mesmo se for 0)
-            setResources([
-               {
-                  cod_recurso: tarefa.COD_RECURSO, // Usar o código real (pode ser 0)
-                  nome_recurso: tarefa.NOME_RECURSO.trim(),
-               },
-            ]);
+
+            const recursoData = await recursoResponse.json();
+
+            if (recursoData && recursoData.length > 0) {
+               setResources(recursoData);
+            } else {
+               const allResourcesResponse = await fetch('/api/recursos', {
+                  headers: {
+                     Authorization: `Bearer ${token}`,
+                     'Content-Type': 'application/json',
+                  },
+               });
+
+               if (allResourcesResponse.ok) {
+                  const allResourcesData = await allResourcesResponse.json();
+                  setResources(allResourcesData);
+               } else {
+                  throw new Error('Erro ao carregar recursos');
+               }
+            }
          } else {
-            // Buscar todos os recursos
             const allResourcesResponse = await fetch('/api/recursos', {
                headers: {
                   Authorization: `Bearer ${token}`,
@@ -347,31 +356,27 @@ export const ModalPermitirRetroativoTarefa: React.FC<
             }
          }
 
-         await loadPermissions(undefined, tarefaId);
+         await loadPermissions(undefined, chamadoId);
       } catch (err) {
          console.error('Erro ao carregar dados:', err);
          setError(err instanceof Error ? err.message : 'Erro desconhecido');
       } finally {
          setLoading(false);
       }
-   }, [tarefaId, loadPermissions]);
-   // ===================
+   }, [chamadoId, loadPermissions]);
+   // ==============================
 
    // Fetch recursos responsáveis pelo chamado quando o modal abre
    useEffect(() => {
       if (isOpen) {
-         fetchTarefaAndResources();
-         // 🆕 Limpar permissões pendentes ao abrir
+         fetchChamadoAndResources();
          setPendingPermissions({});
       }
-   }, [isOpen, fetchTarefaAndResources]);
-   // ===================
+   }, [isOpen, fetchChamadoAndResources]);
+   // ==============================
 
    // Função para marcar/desmarcar permissões (só armazena localmente)
-   const handlePermissionToggle = (
-      resource: RecursoProps,
-      enabled: boolean
-   ) => {
+   const handlePermissionToggle = (resource: Resource, enabled: boolean) => {
       const resourceId = resource.cod_recurso.toString();
 
       setPendingPermissions(prev => ({
@@ -379,7 +384,7 @@ export const ModalPermitirRetroativoTarefa: React.FC<
          [resourceId]: enabled,
       }));
    };
-   // ===================
+   // ==============================
 
    // Função para salvar todas as permissões pendentes
    const handleSavePermissions = async () => {
@@ -393,7 +398,6 @@ export const ModalPermitirRetroativoTarefa: React.FC<
       let hasErrors = false;
 
       try {
-         // Processar cada permissão pendente
          for (const [resourceId, enabled] of Object.entries(
             pendingPermissions
          )) {
@@ -402,28 +406,26 @@ export const ModalPermitirRetroativoTarefa: React.FC<
             );
 
             if (!resource) {
-               console.warn(`⚠️ Recurso não encontrado: ${resourceId}`);
+               console.warn(`Recurso não encontrado: ${resourceId}`);
                continue;
             }
 
             let success = false;
 
             if (enabled) {
-               // Habilitar permissão
                success = await enablePermission(
                   resourceId,
                   resource.nome_recurso,
-                  tarefaId,
+                  chamadoId,
                   currentUserId
                );
             } else {
-               // Desabilitar permissão
-               success = await disablePermission(resourceId, tarefaId);
+               success = await disablePermission(resourceId, chamadoId);
             }
 
             if (!success) {
                console.error(
-                  `❌ Falha ao processar permissão para recurso: ${resource.nome_recurso}`
+                  `Falha ao processar permissão para recurso: ${resource.nome_recurso}`
                );
                hasErrors = true;
             }
@@ -434,62 +436,63 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                'Algumas permissões não puderam ser salvas. Verifique o console para detalhes.'
             );
          } else {
-            // 🆕 Limpar permissões pendentes após salvar
             setPendingPermissions({});
             onClose();
          }
       } catch (error) {
-         console.error('❌ Erro geral ao salvar permissões:', error);
+         console.error('Erro geral ao salvar permissões:', error);
          alert('Erro ao salvar permissões. Tente novamente.');
       } finally {
          setSavingPermissions(false);
       }
    };
-   // ===================
+   // ==============================
 
    // Função para verificar se um recurso está habilitado (considerando pendentes)
    const isResourceEnabled = (resourceId: string): boolean => {
-      // Se tem permissão pendente, usar ela
       if (resourceId in pendingPermissions) {
          return pendingPermissions[resourceId];
       }
 
-      // Senão, usar permissão existente da API
-      return hasPermission(resourceId, tarefaId);
+      return hasPermission(resourceId, chamadoId);
    };
-   // ===================
+   // ==============================
 
    const activePermissions = getActivePermissions().filter(
-      p => p.tarefaId === tarefaId
+      p => p.chamadoId === chamadoId
    );
-   // ===================
+   // ==============================
 
    // Verificar se há pelo menos uma permissão ativa (incluindo pendentes)
    const hasPendingChanges = Object.keys(pendingPermissions).length > 0;
    const hasActivePermissions =
       activePermissions.length > 0 || hasPendingChanges;
-   // ===================
+   // ==============================
 
    if (!isOpen) return null;
-   // ===================
+   // ==============================
+
    return (
-      <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 backdrop-blur-lg">
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-[800px] overflow-hidden rounded-2xl border-0 bg-white shadow-xl shadow-black transition-all duration-500 ease-out">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-lg">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-[800px] overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
-            <header className="relative flex items-center justify-between bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 p-6 shadow-md shadow-black">
+            <header className="relative flex items-center justify-between bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 p-6 shadow-md shadow-black">
                <div className="flex items-center justify-center gap-6">
                   <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
-                     <FaTasks className="text-white" size={32} />
+                     <FaUserCog className="text-white" size={32} />
                   </div>
+                  {/* ========== */}
                   <div className="flex flex-col">
                      <h1 className="text-3xl font-extrabold tracking-wider text-white select-none">
                         Apontamento Retroativo
                      </h1>
+                     {/* ===== */}
                      <p className="text-xl font-bold tracking-widest text-white italic select-none">
-                        Tarefa - #{tarefaId}
+                        Chamado - #{chamadoId}
                      </p>
                   </div>
                </div>
+               {/* ========== */}
 
                {/* Botão Fechar Modal */}
                <Tooltip>
@@ -511,45 +514,50 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                   </TooltipContent>
                </Tooltip>
             </header>
-
+            {/* ============================== */}
             <div className="flex flex-col gap-6 p-6">
-               {/* ===== INFORMAÇÕES DA TAREFA ===== */}
-               {tarefaInfo && (
+               {/* ===== INFORMAÇÕES DO CHAMADO ===== */}
+               {chamadoInfo && (
                   <div className="flex flex-col gap-2 rounded-lg border border-l-8 border-blue-500 bg-blue-100 p-4">
                      <div className="flex items-center gap-3">
-                        <FaTasks className="text-blue-800" size={20} />
+                        <FaCalendarAlt className="text-blue-800" size={20} />
+                        {/* ===== */}
                         <span className="text-base font-extrabold tracking-wider text-blue-800 uppercase select-none">
-                           Informações da tarefa
+                           Informações do chamado
                         </span>
                      </div>
+                     {/* ========== */}
                      <div className="flex flex-col gap-1">
                         <p>
                            <span className="text-xs font-extrabold tracking-widest text-blue-800 uppercase select-none">
-                              Nome:
+                              Assunto:
                            </span>{' '}
                            <span className="text-sm font-bold tracking-widest text-blue-800 italic select-none">
-                              {tarefaInfo.assunto}
+                              {chamadoInfo.assunto}
                            </span>
                         </p>
+                        {/* ===== */}
                         <p>
                            <span className="text-xs font-extrabold tracking-widest text-blue-800 uppercase select-none">
-                              Projeto:
+                              Cliente:
                            </span>{' '}
                            <span className="text-sm font-bold tracking-widest text-blue-800 italic select-none">
-                              {tarefaInfo.cliente}
+                              {chamadoInfo.cliente}
                            </span>
                         </p>
+                        {/* ===== */}
                         <p>
                            <span className="text-xs font-extrabold tracking-widest text-blue-800 uppercase select-none">
                               Status:
                            </span>{' '}
                            <span className="text-sm font-bold tracking-widest text-blue-800 italic select-none">
-                              {tarefaInfo.status}
+                              {chamadoInfo.status}
                            </span>
                         </p>
                      </div>
                   </div>
                )}
+               {/* ==================== */}
 
                {/* ===== ATENÇÃO ===== */}
                <div className="flex flex-col gap-2 rounded-lg border border-l-8 border-amber-500 bg-amber-100 p-4">
@@ -558,22 +566,25 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                         className="text-yellow-800"
                         size={20}
                      />
+                     {/* ===== */}
                      <span className="text-base font-extrabold tracking-wider text-amber-800 uppercase select-none">
                         Atenção!
                      </span>
                   </div>
+                  {/* ========== */}
                   <p className="text-sm text-yellow-700">
                      Recursos marcados poderão criar apontamentos em datas
-                     anteriores ao mês atual, apenas para a Tarefa #{tarefaId}.
-                     Esta permissão é específica e temporária.{' '}
+                     anteriores ao mês atual, apenas para o Chamado #{chamadoId}
+                     . Esta permissão é específica e temporária.{' '}
                      <strong>
                         As permissões são compartilhadas entre todos os
                         dispositivos.
                      </strong>
                   </p>
                </div>
+               {/* ==================== */}
 
-               {/* AVISO SOBRE ALTERAÇÕES PENDENTES */}
+               {/* 🆕 AVISO SOBRE ALTERAÇÕES PENDENTES */}
                {hasPendingChanges && (
                   <div className="flex flex-col gap-2 rounded-lg border border-l-8 border-orange-500 bg-orange-100 p-4">
                      <div className="flex items-center gap-3">
@@ -593,22 +604,23 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                   </div>
                )}
 
-               {/* ===== RECURSOS RESPONSÁVEIS ===== */}
+               {/* ===== RECURSO RESPONSÁVEL ===== */}
                <div className="">
                   {/* Loader */}
                   {loading || permissionsLoading ? (
                      <div className="flex flex-col items-center justify-center py-12">
                         <Loader2
-                           className="mb-4 animate-spin text-blue-600"
+                           className="mb-4 animate-spin text-purple-600"
                            size={40}
                         />
                         <p className="text-base font-bold tracking-widest text-black italic select-none">
                            {loading
-                              ? 'Carregando recursos da tarefa...'
+                              ? 'Carregando recursos do chamado...'
                               : 'Carregando permissões...'}
                         </p>
                      </div>
-                  ) : // Error
+                  ) : // ==========
+                  // Error
                   error ? (
                      <div className="flex flex-col items-center justify-center py-12">
                         <FaTimes className="mb-4 text-red-500" size={40} />
@@ -619,26 +631,27 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                            {error}
                         </p>
                         <button
-                           onClick={fetchTarefaAndResources}
-                           className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+                           onClick={fetchChamadoAndResources}
+                           className="mt-4 rounded-lg bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700"
                         >
                            Tentar Novamente
                         </button>
                      </div>
-                  ) : // Não há recursos
+                  ) : // =========
+                  // Não há recursos
                   resources.length === 0 ? (
                      <div className="flex flex-col items-center justify-center py-12">
                         <FaUsers className="mb-4 text-gray-400" size={40} />
                         <p className="text-gray-600">
-                           Nenhum recurso encontrado para esta tarefa
+                           Nenhum recurso encontrado para este chamado
                         </p>
                      </div>
                   ) : (
+                     // =========
                      // Lista de Recursos
                      <div className="flex max-h-96 flex-col gap-2 overflow-y-auto">
                         {resources.map(resource => {
-                           const resourceId =
-                              resource.cod_recurso?.toString() || '';
+                           const resourceId = resource.cod_recurso.toString();
                            const isEnabled = isResourceEnabled(resourceId);
 
                            return (
@@ -663,24 +676,25 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                                              size={20}
                                           />
                                        )}
+                                       {/* ===== */}
 
                                        {resources.length === 1 ? (
                                           <h3 className="text-base font-bold tracking-widest text-green-800 uppercase">
-                                             Recurso responsável pela tarefa
+                                             Recurso responsável pelo chamado
                                           </h3>
                                        ) : (
                                           <h3 className="text-base font-bold tracking-widest text-green-800 uppercase">
-                                             Recursos responsáveis pela tarefa
+                                             Recursos responsáveis pelo chamado
                                           </h3>
                                        )}
                                     </div>
+                                    {/* ========== */}
 
                                     <div className="flex flex-col gap-1">
                                        <p className="text-sm font-extrabold tracking-widest text-green-700 italic select-none">
                                           Recurso:{' '}
                                           <span className="font-semibold">
-                                             {resource.nome_recurso ||
-                                                'Desconhecido'}
+                                             {resource.nome_recurso}
                                           </span>
                                        </p>
                                        <p className="text-sm font-extrabold tracking-widest text-green-700 italic select-none">
@@ -691,6 +705,7 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                                        </p>
                                     </div>
                                  </div>
+                                 {/* ================== */}
 
                                  <label className="flex cursor-pointer items-center gap-3">
                                     <input
@@ -734,12 +749,12 @@ export const ModalPermitirRetroativoTarefa: React.FC<
             </div>
 
             {/* Footer */}
-            <footer className="border-t-2 border-blue-500 bg-blue-200 p-6">
+            <footer className="border-t-2 border-purple-500 bg-purple-200 p-6">
                <div className="flex items-center justify-between">
-                  <div className="text-base font-semibold tracking-wider text-blue-700 select-none">
+                  <div className="text-base font-semibold tracking-wider text-purple-700 select-none">
                      {hasActivePermissions && !hasPendingChanges && (
-                        <span className="text-base font-semibold tracking-wider text-blue-700 select-none">
-                           Permissões ativas para a Tarefa #{tarefaId}
+                        <span className="text-base font-semibold tracking-wider text-purple-700 select-none">
+                           Permissões ativas para o Chamado #{chamadoId}
                         </span>
                      )}
                      {hasPendingChanges && (
@@ -749,6 +764,7 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                         </span>
                      )}
                   </div>
+                  {/* ========== */}
 
                   <div className="flex gap-3">
                      {/* Botão Cancelar (quando há mudanças pendentes) */}
@@ -756,7 +772,6 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                         <button
                            onClick={() => {
                               setPendingPermissions({});
-                              console.log('❌ Alterações canceladas (tarefa)');
                            }}
                            disabled={savingPermissions}
                            className="cursor-pointer rounded-xl border-none bg-gray-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-gray-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
@@ -774,7 +789,7 @@ export const ModalPermitirRetroativoTarefa: React.FC<
                         className={`cursor-pointer rounded-xl border-none px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black select-none ${
                            hasPendingChanges
                               ? 'bg-green-500 transition-all hover:scale-105 hover:bg-green-700 hover:shadow-md hover:shadow-black active:scale-95'
-                              : 'bg-blue-500 transition-all hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black active:scale-95'
+                              : 'bg-purple-500 transition-all hover:scale-105 hover:bg-purple-900 hover:shadow-md hover:shadow-black active:scale-95'
                         } disabled:cursor-not-allowed disabled:opacity-50`}
                      >
                         {savingPermissions ? (
@@ -797,61 +812,130 @@ export const ModalPermitirRetroativoTarefa: React.FC<
 };
 
 // ================================================================================
-// FUNÇÕES AUXILIARES PARA INTEGRAÇÃO COM TAREFAS
+// FUNÇÕES AUXILIARES PARA INTEGRAÇÃO
 // ================================================================================
+// Cache em memória para as permissões
+const permissionsCache = new Map<
+   string,
+   {
+      hasPermission: boolean;
+      timestamp: number;
+      expiry: number;
+   }
+>();
+// ==============================
 
-// Função para verificar se o usuário atual pode usar datas retroativas para uma tarefa específica
-export const canUseBackdatedAppointmentsTarefa = (
-   userId: string,
-   tarefaId: string
-): boolean => {
-   const STORAGE_KEY = 'backdated_appointments_permissions_tarefas';
+// Tempo de cache em milissegundos (5 minutos)
+const CACHE_DURATION = 5 * 60 * 1000;
+// ==============================
 
-   if (!userId || !tarefaId) return false;
-
-   try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) return false;
-
-      const permissions = JSON.parse(stored);
-      return (
-         Array.isArray(permissions) &&
-         permissions.some(
-            (p: any) =>
-               p.resourceId === userId && p.tarefaId === tarefaId && p.enabled
-         )
-      );
-   } catch {
-      return false;
+// Função para limpar cache expirado
+const cleanExpiredCache = () => {
+   const now = Date.now();
+   for (const [key, value] of permissionsCache.entries()) {
+      if (now > value.expiry) {
+         permissionsCache.delete(key);
+      }
    }
 };
 
+// Função para verificar se o usuário atual pode usar datas retroativas para um chamado específico
+export const canUseBackdatedAppointments = (
+   userId: string,
+   chamadoId: string,
+   userObject?: any
+): boolean => {
+   if (!userId || !chamadoId) {
+      return false;
+   }
+
+   try {
+      let resourceIdToCheck = userId;
+
+      if (userObject?.recurso?.id) {
+         resourceIdToCheck = userObject.recurso.id.toString();
+      } else if (userObject?.codRecurso) {
+         resourceIdToCheck = userObject.codRecurso.toString();
+      } else {
+      }
+
+      const cacheKey = `${resourceIdToCheck}-${chamadoId}`;
+      const now = Date.now();
+
+      if (Math.random() < 0.1) {
+         cleanExpiredCache();
+      }
+
+      const cached = permissionsCache.get(cacheKey);
+      if (cached && now < cached.expiry) {
+         return cached.hasPermission;
+      }
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+         return false;
+      }
+
+      const xhr = new XMLHttpRequest();
+      xhr.open(
+         'GET',
+         `/api/permitir-os-retroativa-chamado?resourceId=${resourceIdToCheck}&chamadoId=${chamadoId}`,
+         false
+      );
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send();
+
+      if (xhr.status === 200) {
+         const permissions = JSON.parse(xhr.responseText);
+
+         const hasPermission =
+            Array.isArray(permissions) && permissions.some(p => p.enabled);
+
+         permissionsCache.set(cacheKey, {
+            hasPermission,
+            timestamp: now,
+            expiry: now + CACHE_DURATION,
+         });
+
+         return hasPermission;
+      } else {
+         return false;
+      }
+   } catch (error) {
+      console.error('[PERMISSÃO] Erro geral:', error);
+      return false;
+   }
+};
+// ==============================
+
+export const invalidatePermissionsCache = (
+   resourceId?: string,
+   chamadoId?: string
+) => {
+   if (resourceId && chamadoId) {
+      const cacheKey = `${resourceId}-${chamadoId}`;
+      permissionsCache.delete(cacheKey);
+   } else {
+      permissionsCache.clear();
+   }
+};
+// ==============================
+
 // Função helper para obter o ID do usuário atual independente do sistema usado
-export const getCurrentUserIdTarefa = (user: any): string => {
-   // Para o hook useAuth (segunda versão)
-   if (user?.recurso?.id) {
-      return user.recurso.id.toString();
-   }
-
-   // Para o AuthContext (primeira versão)
-   if (user?.codRecurso) {
-      return user.codRecurso.toString();
-   }
-
-   // Fallback para ID geral
+export const getCurrentUserId = (user: any): string => {
    if (user?.id) {
       return user.id.toString();
    }
 
    return '';
 };
+// ==============================
 
 // Função helper para verificar se é admin independente do sistema usado
-export const isUserAdminTarefa = (user: any): boolean => {
-   // Para o hook useAuth (segunda versão)
+export const isUserAdmin = (user: any): boolean => {
    if (user?.tipo === 'ADM') return true;
 
-   // Para o AuthContext (primeira versão)
    if (user?.isAdmin === true) return true;
 
    return false;

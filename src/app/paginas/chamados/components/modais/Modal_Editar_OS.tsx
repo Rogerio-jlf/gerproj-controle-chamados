@@ -1,16 +1,18 @@
 import { z } from 'zod';
 import { toast } from 'sonner';
-import React, { useState } from 'react';
+import { useState } from 'react';
 // ================================================================================
 import { ToastCustom } from '../../../../../components/Toast_Custom';
 // ================================================================================
 import { BsFillXOctagonFill } from 'react-icons/bs';
-import { IoIosSave, IoMdClock } from 'react-icons/io';
+import { IoIosSave } from 'react-icons/io';
 import { IoClose, IoDocumentText } from 'react-icons/io5';
 import { FaExclamationTriangle, FaCalendarAlt } from 'react-icons/fa';
+import { BsFillClockFill } from 'react-icons/bs';
+import { FaEdit } from 'react-icons/fa';
 
 // ================================================================================
-// INTERFACES E TIPOS
+// INTERFACES
 // ================================================================================
 interface ModalEditarOSProps {
    isOpen: boolean;
@@ -121,9 +123,10 @@ const formSchema = z
 
 type FormData = z.infer<typeof formSchema>;
 type FormErrors = Partial<Record<keyof FormData | 'root', string>>;
-// ================================================================================
 
-// ===== COMPONENTE PRINCIPAL =====
+// ================================================================================
+// COMPONENTE PRINCIPAL
+// ================================================================================
 export default function ModalEditarOS({
    isOpen,
    onClose,
@@ -323,9 +326,10 @@ export default function ModalEditarOS({
    // ====================
 
    // Função para fechar o modal
-   const handleClose = () => {
+   const handleCloseModalEditarOS = () => {
       if (!isLoading) {
          resetForm();
+         setSuccess(false);
          onClose();
       }
    };
@@ -344,31 +348,29 @@ export default function ModalEditarOS({
    if (!isOpen) return null;
 
    // ================================================================================
-   // RENDERIZAÇÃO PRINCIPAL
+   // RENDERIZAÇÃO
    // ================================================================================
-
    return (
       <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
          {/* ===== OVERLAY ===== */}
          <div
             className="absolute inset-0 bg-black/50 backdrop-blur-xl"
-            onClick={handleClose}
+            // onClick={handleCloseModalEditarOS}
          />
          {/* ========== */}
 
          <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white shadow-xl shadow-black transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
-            <header className="relative flex items-center justify-between bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 p-6 shadow-md shadow-black">
-               {/* Título do modal */}
+            <header className="relative flex items-center justify-between bg-black p-6">
                <div className="flex items-center justify-center gap-6">
-                  <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
-                     <IoMdClock className="text-black" size={36} />
-                  </div>
+                  <FaEdit className="text-white" size={60} />
+                  {/* ===== */}
                   <div className="flex flex-col">
-                     <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
+                     <h1 className="text-3xl font-extrabold tracking-wider text-white select-none">
                         Editar OS
                      </h1>
-                     <p className="text-xl font-extrabold tracking-widest text-black select-none">
+                     {/* ===== */}
+                     <p className="text-xl font-extrabold tracking-widest text-white select-none">
                         OS #{codOS}
                      </p>
                   </div>
@@ -377,7 +379,7 @@ export default function ModalEditarOS({
 
                {/* Botão fechar modal */}
                <button
-                  onClick={handleClose}
+                  onClick={handleCloseModalEditarOS}
                   disabled={isLoading}
                   className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                >
@@ -425,7 +427,7 @@ export default function ModalEditarOS({
                   {/* Horário */}
                   <FormSection
                      title="Horário"
-                     icon={<IoMdClock className="text-white" size={20} />}
+                     icon={<BsFillClockFill className="text-white" size={20} />}
                      error={errors.horaInicioOS || errors.horaFimOS}
                   >
                      <div className="grid grid-cols-2 gap-6">
@@ -568,7 +570,7 @@ export default function ModalEditarOS({
             <footer className="relative flex justify-end gap-4 border-t-4 border-red-600 p-6">
                {/* Botão cancelar */}
                <button
-                  onClick={handleClose}
+                  onClick={handleCloseModalEditarOS}
                   disabled={isLoading}
                   className="cursor-pointer rounded-xl border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
                >

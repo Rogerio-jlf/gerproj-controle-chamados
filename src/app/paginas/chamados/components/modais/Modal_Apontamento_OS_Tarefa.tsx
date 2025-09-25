@@ -15,7 +15,7 @@ import {
    ModalPermitirRetroativoTarefa,
    getCurrentUserIdTarefa,
    isUserAdminTarefa,
-} from './Modal_Permitir_Retroativo_OS_Tarefa'; // ou o caminho correto//
+} from './Modal_Permitir_OS_Retroativa_Tarefa'; // ou o caminho correto//
 //  ================================================================================
 import { BsFillXOctagonFill } from 'react-icons/bs';
 import { IoMdClock, IoIosSave } from 'react-icons/io';
