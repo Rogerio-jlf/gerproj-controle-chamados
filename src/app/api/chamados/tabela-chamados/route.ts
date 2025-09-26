@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { firebirdQuery } from '../../../lib/firebird/firebird-client';
+import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
 import jwt from 'jsonwebtoken';
 
 export async function GET(request: Request) {
@@ -33,6 +33,24 @@ export async function GET(request: Request) {
       const mesParam = searchParams.get('mes');
       const anoParam = searchParams.get('ano');
       const codChamadoQuery = searchParams.get('codChamado')?.trim();
+
+      // Pega os parâmetros de paginação (com defaults)
+      const page = parseInt(searchParams.get('page') || '1', 10);
+      const limit = parseInt(searchParams.get('limit') || '20', 10);
+
+      // Validação dos parâmetros de paginação
+      if (page < 1 || limit < 1 || limit > 100) {
+         return NextResponse.json(
+            {
+               error: 'Parâmetros de paginação inválidos. Page deve ser >= 1, limit entre 1 e 100',
+            },
+            { status: 400 }
+         );
+      }
+
+      // Calcula o range
+      const startRow = (page - 1) * limit + 1;
+      const endRow = page * limit;
 
       // Validação para mês (aceita número ou "todos")
       let mesNumber: number | null = null;
@@ -92,13 +110,13 @@ export async function GET(request: Request) {
       }
       // Se ambos forem "todos", não adiciona filtro de data
 
-      // NOVA LÓGICA: Filtro por recurso e status baseado no tipo de usuário
+      // Filtro por recurso e status baseado no tipo de usuário
       if (!isAdmin && codRecurso) {
          whereConditions.push('Chamado.COD_RECURSO = ?');
          params.push(Number(codRecurso));
       }
 
-      // ADICIONADO: Filtro de status para usuários não-admin (EXCLUIR chamados finalizados)
+      // Filtro de status para usuários não-admin (EXCLUIR chamados finalizados)
       if (!isAdmin) {
          whereConditions.push('Chamado.STATUS_CHAMADO != ?');
          params.push('FINALIZADO');
@@ -109,44 +127,58 @@ export async function GET(request: Request) {
          params.push(Number(codChamadoQuery));
       }
 
+      // Query principal com paginação
       const sql = `
-      SELECT FIRST 500
-      Chamado.COD_CHAMADO,
-      Chamado.DATA_CHAMADO,
-      (LPAD(EXTRACT(DAY FROM Chamado.DATA_CHAMADO), 2, '0') || '/' ||
-      LPAD(EXTRACT(MONTH FROM Chamado.DATA_CHAMADO), 2, '0') || '/' ||
-      EXTRACT(YEAR FROM Chamado.DATA_CHAMADO) || ' - ' ||
-      SUBSTRING(Chamado.HORA_CHAMADO FROM 1 FOR 2) || ':' ||
-      SUBSTRING(Chamado.HORA_CHAMADO FROM 3 FOR 2)
-      ) AS DATA_HORA_FORMATADA,
-      Chamado.HORA_CHAMADO,
-      Chamado.SOLICITACAO_CHAMADO,
-      Chamado.CONCLUSAO_CHAMADO,
-      Chamado.STATUS_CHAMADO,
-      Chamado.DTENVIO_CHAMADO,
-      Chamado.COD_RECURSO,
-      Chamado.CLIENTE_CHAMADO,
-      Chamado.CODTRF_CHAMADO,
-      Chamado.COD_CLIENTE,
-      Chamado.SOLICITACAO2_CHAMADO,
-      Chamado.ASSUNTO_CHAMADO,
-      Chamado.EMAIL_CHAMADO,
-      Chamado.PRIOR_CHAMADO,
-      Chamado.COD_CLASSIFICACAO,
-      Cliente.NOME_CLIENTE,
-      Recurso.NOME_RECURSO,
-      Classificacao.NOME_CLASSIFICACAO
-   FROM CHAMADO Chamado
-   LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
-   LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = Chamado.COD_RECURSO
-   LEFT JOIN CLASSIFICACAO Classificacao ON Classificacao.COD_CLASSIFICACAO = Chamado.COD_CLASSIFICACAO
-   ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
-   ORDER BY Chamado.DATA_CHAMADO DESC, Chamado.COD_CHAMADO DESC
-    `;
+         SELECT 
+            Chamado.COD_CHAMADO,
+            (LPAD(EXTRACT(DAY FROM Chamado.DATA_CHAMADO), 2, '0') || '/' ||
+             LPAD(EXTRACT(MONTH FROM Chamado.DATA_CHAMADO), 2, '0') || '/' ||
+             EXTRACT(YEAR FROM Chamado.DATA_CHAMADO) || ' - ' ||
+             SUBSTRING(Chamado.HORA_CHAMADO FROM 1 FOR 2) || ':' ||
+             SUBSTRING(Chamado.HORA_CHAMADO FROM 3 FOR 2)
+            ) AS DATA_HORA_FORMATADA,
+            Chamado.STATUS_CHAMADO,
+            Chamado.DTENVIO_CHAMADO,
+            Chamado.ASSUNTO_CHAMADO,
+            Chamado.EMAIL_CHAMADO,
+            Recurso.NOME_RECURSO
+         FROM CHAMADO Chamado
+         LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = Chamado.COD_RECURSO
+         ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
+         ORDER BY Chamado.DATA_CHAMADO DESC, Chamado.COD_CHAMADO DESC
+         ROWS ${startRow} TO ${endRow};
+      `;
 
-      const chamados = await firebirdQuery(sql, params);
+      // Query para contar o total de registros (otimizada)
+      const countSql = `
+         SELECT COUNT(*) as TOTAL
+         FROM CHAMADO Chamado
+         ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
+      `;
 
-      return NextResponse.json(chamados, { status: 200 });
+      // Executa ambas as queries
+      const [chamados, countResult] = await Promise.all([
+         firebirdQuery(sql, params),
+         firebirdQuery(countSql, params),
+      ]);
+
+      const total = countResult[0].TOTAL;
+      const totalPages = Math.ceil(total / limit);
+
+      return NextResponse.json(
+         {
+            data: chamados,
+            pagination: {
+               currentPage: page,
+               totalPages,
+               totalRecords: total,
+               recordsPerPage: limit,
+               hasNextPage: page < totalPages,
+               hasPrevPage: page > 1,
+            },
+         },
+         { status: 200 }
+      );
    } catch (error) {
       console.error('Erro ao buscar chamados abertos:', error);
       return NextResponse.json(

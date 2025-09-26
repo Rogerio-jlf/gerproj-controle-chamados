@@ -334,7 +334,7 @@ export const colunasTabelaChamados = (
 
       // Data chamado
       {
-         accessorKey: 'DATA_CHAMADO',
+         accessorKey: 'DATA_HORA_FORMATADA',
          header: () => <div className="text-center">Data</div>,
          cell: ({ getValue }) => {
             const dateString = getValue() as string;
@@ -386,12 +386,36 @@ export const colunasTabelaChamados = (
                status={row.original.STATUS_CHAMADO}
                codChamado={row.original.COD_CHAMADO}
                nomeCliente={row.original.NOME_CLIENTE ?? '-'}
-               onUpdateSuccess={() => {
-                  // Callback após sucesso
-                  // refetchData(); // Remova ou implemente refetchData se necessário
-               }}
+               onUpdateSuccess={() => {}}
             />
          ),
+      },
+
+      // Data chamado
+      {
+         accessorKey: 'DTENVIO_CHAMADO',
+         header: () => <div className="text-center">DT. Atribuição</div>,
+         cell: ({ getValue }) => {
+            const dateString = getValue() as string;
+            const dataFormatada = formatarDataParaBR(dateString);
+
+            if (
+               dataFormatada !== null &&
+               dataFormatada !== undefined &&
+               dataFormatada !== '-'
+            ) {
+               return (
+                  <div className="rounded-md bg-slate-900 p-2 text-center text-white">
+                     {dataFormatada}
+                  </div>
+               );
+            }
+            return (
+               <div className="rounded-md bg-yellow-500 p-2 text-center text-black uppercase">
+                  Não atribuído
+               </div>
+            );
+         },
       },
    ];
 

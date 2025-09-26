@@ -52,9 +52,10 @@ function getColumnWidth(columnId: string, userType?: string): string {
    if (userType === 'ADM') {
       const widthMapAdmin: Record<string, string> = {
          COD_CHAMADO: '10%',
-         DATA_CHAMADO: '10%',
-         ASSUNTO_CHAMADO: '30%',
+         DATA_HORA_FORMATADA: '10%',
+         ASSUNTO_CHAMADO: '24%',
          STATUS_CHAMADO: '18%',
+         DTENVIO_CHAMADO: '10%',
          NOME_RECURSO: '13%',
          EMAIL_CHAMADO: '12%',
          actions: '7%',
@@ -64,9 +65,11 @@ function getColumnWidth(columnId: string, userType?: string): string {
 
    const widthMap: Record<string, string> = {
       COD_CHAMADO: '10%',
-      DATA_CHAMADO: '10%',
+      DATA_HORA_FORMATADA: '10%',
       ASSUNTO_CHAMADO: '33%',
       STATUS_CHAMADO: '20%',
+      DTENVIO_CHAMADO: '15%',
+      NOME_RECURSO: '15%',
       EMAIL_CHAMADO: '20%',
       actions: '7%',
    };
@@ -123,9 +126,10 @@ export default function TabelaChamados() {
    ]);
    const [filterValues, setFilterValues] = useState({
       COD_CHAMADO: '',
-      DATA_CHAMADO: '',
+      DATA_HORA_FORMATADA: '',
       ASSUNTO_CHAMADO: '',
       STATUS_CHAMADO: '',
+      DTENVIO_CHAMADO: '',
       EMAIL_CHAMADO: '',
       NOME_RECURSO: '',
       global: '',
@@ -146,9 +150,10 @@ export default function TabelaChamados() {
       setGlobalFilter('');
       setFilterValues({
          COD_CHAMADO: '',
-         DATA_CHAMADO: '',
+         DATA_HORA_FORMATADA: '',
          ASSUNTO_CHAMADO: '',
          STATUS_CHAMADO: '',
+         DTENVIO_CHAMADO: '',
          NOME_RECURSO: '',
          EMAIL_CHAMADO: '',
          global: '',
@@ -162,9 +167,10 @@ export default function TabelaChamados() {
    useEffect(() => {
       const newFilterValues = {
          COD_CHAMADO: '',
-         DATA_CHAMADO: '',
+         DATA_HORA_FORMATADA: '',
          ASSUNTO_CHAMADO: '',
          STATUS_CHAMADO: '',
+         DTENVIO_CHAMADO: '',
          EMAIL_CHAMADO: '',
          NOME_RECURSO: '',
          global: globalFilter || '',
@@ -602,9 +608,11 @@ export default function TabelaChamados() {
                                  >
                                     {header.isPlaceholder ? null : header.column
                                          .id === 'COD_CHAMADO' ||
-                                      header.column.id === 'DATA_CHAMADO' ||
+                                      header.column.id ===
+                                         'DATA_HORA_FORMATADA' ||
                                       header.column.id === 'ASSUNTO_CHAMADO' ||
                                       header.column.id === 'STATUS_CHAMADO' ||
+                                      header.column.id === 'DTENVIO_CHAMADO' ||
                                       header.column.id === 'NOME_RECURSO' ? (
                                        <OrderTableHeader column={header.column}>
                                           {flexRender(
@@ -650,7 +658,7 @@ export default function TabelaChamados() {
                                           type="text"
                                        />
                                     )}
-                                    {column.id === 'DATA_CHAMADO' && (
+                                    {column.id === 'DATA_HORA_FORMATADA' && (
                                        <FilterInputTableHeaderDebounce
                                           value={
                                              (column.getFilterValue() as string) ??
@@ -685,6 +693,19 @@ export default function TabelaChamados() {
                                              column.setFilterValue(value)
                                           }
                                           placeholder="Status..."
+                                       />
+                                    )}
+                                    {column.id === 'DTENVIO_CHAMADO' && (
+                                       <FilterInputTableHeaderDebounce
+                                          value={
+                                             (column.getFilterValue() as string) ??
+                                             ''
+                                          }
+                                          onChange={value =>
+                                             column.setFilterValue(value)
+                                          }
+                                          placeholder="dd/mm/aaaa"
+                                          type="text"
                                        />
                                     )}
                                     {column.id === 'NOME_RECURSO' && (
