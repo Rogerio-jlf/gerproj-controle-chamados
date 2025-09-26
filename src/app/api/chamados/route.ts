@@ -113,12 +113,6 @@ export async function GET(request: Request) {
       SELECT FIRST 500
       Chamado.COD_CHAMADO,
       Chamado.DATA_CHAMADO,
-      (LPAD(EXTRACT(DAY FROM Chamado.DATA_CHAMADO), 2, '0') || '/' ||
-      LPAD(EXTRACT(MONTH FROM Chamado.DATA_CHAMADO), 2, '0') || '/' ||
-      EXTRACT(YEAR FROM Chamado.DATA_CHAMADO) || ' - ' ||
-      SUBSTRING(Chamado.HORA_CHAMADO FROM 1 FOR 2) || ':' ||
-      SUBSTRING(Chamado.HORA_CHAMADO FROM 3 FOR 2)
-      ) AS DATA_HORA_FORMATADA,
       Chamado.HORA_CHAMADO,
       Chamado.SOLICITACAO_CHAMADO,
       Chamado.CONCLUSAO_CHAMADO,

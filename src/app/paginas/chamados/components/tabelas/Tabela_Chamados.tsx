@@ -11,39 +11,54 @@ import {
    getSortedRowModel,
    ColumnFiltersState,
    getFilteredRowModel,
-   getPaginationRowModel,
 } from '@tanstack/react-table';
 // ================================================================================
 import {
    InputGlobalFilter,
    FilterInputTableHeaderDebounce,
-   IndicatorFilter,
    OrderTableHeader,
    FilterControls,
    useTableFilters,
-   getDefaultColumnDisplayName,
 } from '../TableFilters';
 // ================================================================================
 import { TabelaChamadoProps } from '../../../../../types/types';
 // ================================================================================
-import { useAuth } from '../../../../../hooks/useAuth';
-import { colunasTabelaChamados } from '../colunas/Colunas_Tabela_Chamados';
-import { useFiltersTabelaChamados } from '../../../../../contexts/Filters_Context';
-import TabelaOS from './Tabela_OS';
-import TabelaTarefas from './Tabela_Tarefas';
-import ModalApontamento from '../modais/Modal_Apontamento_OS_Tarefa';
-import { ModalVisualizarDadosChamado } from '../modais/Modal_Visualizar_Dados_Chamado';
-import { ModalAtribuirChamado } from '../modais/Modal_Atribuir_Chamado';
-// ================================================================================
 import IsError from '../Error';
 import IsLoading from '../Loading';
+import TabelaOS from './Tabela_OS';
+import TabelaTarefas from './Tabela_Tarefas';
+import TabelaOSChamado from './Tabela_OS_Chamado';
+import { useAuth } from '../../../../../hooks/useAuth';
+import ModalApontamento from '../modais/Modal_Apontamento_OS_Tarefa';
+import { ModalAtribuirChamado } from '../modais/Modal_Atribuir_Chamado';
+import { colunasTabelaChamados } from '../colunas/Colunas_Tabela_Chamados';
+import { useFiltersTabelaChamados } from '../../../../../contexts/Filters_Context';
+import { ModalVisualizarDadosChamado } from '../modais/Modal_Visualizar_Dados_Chamado';
+import DropdownHeader from '../Dropdown';
 // ================================================================================
+import { IoCall } from 'react-icons/io5';
 import { BsEraserFill } from 'react-icons/bs';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
-import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FaExclamationTriangle } from 'react-icons/fa';
-import { IoCall } from 'react-icons/io5';
+import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
+
+// ================================================================================
+// TIPOS
+// ================================================================================
+interface PaginationInfo {
+   currentPage: number;
+   totalPages: number;
+   totalRecords: number;
+   recordsPerPage: number;
+   hasNextPage: boolean;
+   hasPrevPage: boolean;
+}
+
+interface ApiResponse {
+   data: TabelaChamadoProps[];
+   pagination: PaginationInfo;
+}
 
 // ================================================================================
 // UTILITÁRIOS
@@ -52,7 +67,7 @@ function getColumnWidth(columnId: string, userType?: string): string {
    if (userType === 'ADM') {
       const widthMapAdmin: Record<string, string> = {
          COD_CHAMADO: '10%',
-         DATA_HORA_FORMATADA: '10%',
+         DATA_CHAMADO: '10%',
          ASSUNTO_CHAMADO: '24%',
          STATUS_CHAMADO: '18%',
          DTENVIO_CHAMADO: '10%',
@@ -65,7 +80,7 @@ function getColumnWidth(columnId: string, userType?: string): string {
 
    const widthMap: Record<string, string> = {
       COD_CHAMADO: '10%',
-      DATA_HORA_FORMATADA: '10%',
+      DATA_CHAMADO: '10%',
       ASSUNTO_CHAMADO: '33%',
       STATUS_CHAMADO: '20%',
       DTENVIO_CHAMADO: '15%',
@@ -103,7 +118,7 @@ export default function TabelaChamados() {
       null
    );
    const [tabelaTarefasOpen, setTabelaTarefasOpen] = useState(false);
-   const [dashboardOpen, setDashboardOpen] = useState(false);
+   const [tabelaOsOpen, setTabelaOsOpen] = useState(false);
    const [modalAtribuicaoOpen, setModalAtribuicaoOpen] = useState(false);
    const [chamadoParaAtribuir, setChamadoParaAtribuir] =
       useState<TabelaChamadoProps | null>(null);
@@ -126,7 +141,7 @@ export default function TabelaChamados() {
    ]);
    const [filterValues, setFilterValues] = useState({
       COD_CHAMADO: '',
-      DATA_HORA_FORMATADA: '',
+      DATA_CHAMADO: '',
       ASSUNTO_CHAMADO: '',
       STATUS_CHAMADO: '',
       DTENVIO_CHAMADO: '',
@@ -137,20 +152,34 @@ export default function TabelaChamados() {
    const [showFilters, setShowFilters] = useState(false);
 
    // ================================================================================
+   // ESTADOS - PAGINAÇÃO API
+   // ================================================================================
+   const [currentPage, setCurrentPage] = useState(1);
+   const [pageSize, setPageSize] = useState(20);
+   const [codChamadoFilter, setCodChamadoFilter] = useState('');
+
+   const [activeView, setActiveView] = useState<'chamados' | 'os' | 'tarefas'>(
+      'chamados'
+   );
+
+   // ================================================================================
    // FUNÇÕES DE FILTRO
    // ================================================================================
    const totalActiveFilters = useMemo(() => {
       let count = columnFilters.length;
       if (globalFilter && globalFilter.trim()) count += 1;
+      if (codChamadoFilter && codChamadoFilter.trim()) count += 1;
       return count;
-   }, [columnFilters.length, globalFilter]);
+   }, [columnFilters.length, globalFilter, codChamadoFilter]);
 
    const clearFilters = () => {
       setColumnFilters([]);
       setGlobalFilter('');
+      setCodChamadoFilter('');
+      setCurrentPage(1);
       setFilterValues({
          COD_CHAMADO: '',
-         DATA_HORA_FORMATADA: '',
+         DATA_CHAMADO: '',
          ASSUNTO_CHAMADO: '',
          STATUS_CHAMADO: '',
          DTENVIO_CHAMADO: '',
@@ -166,8 +195,8 @@ export default function TabelaChamados() {
    // Atualiza os valores locais quando os filtros mudam
    useEffect(() => {
       const newFilterValues = {
-         COD_CHAMADO: '',
-         DATA_HORA_FORMATADA: '',
+         COD_CHAMADO: codChamadoFilter,
+         DATA_CHAMADO: '',
          ASSUNTO_CHAMADO: '',
          STATUS_CHAMADO: '',
          DTENVIO_CHAMADO: '',
@@ -177,7 +206,7 @@ export default function TabelaChamados() {
       };
 
       columnFilters.forEach(filter => {
-         if (filter.id in newFilterValues) {
+         if (filter.id in newFilterValues && filter.id !== 'COD_CHAMADO') {
             newFilterValues[filter.id as keyof typeof newFilterValues] = String(
                filter.value || ''
             );
@@ -192,7 +221,7 @@ export default function TabelaChamados() {
          );
          return hasChanged ? newFilterValues : prev;
       });
-   }, [columnFilters, globalFilter]);
+   }, [columnFilters, globalFilter, codChamadoFilter]);
 
    // ================================================================================
    // API E DADOS
@@ -204,15 +233,22 @@ export default function TabelaChamados() {
       const params = new URLSearchParams({
          ano: String(ano),
          mes: String(mes),
+         page: String(currentPage),
+         limit: String(pageSize),
       });
+
+      if (codChamadoFilter && codChamadoFilter.trim()) {
+         params.append('codChamado', codChamadoFilter.trim());
+      }
+
       return params;
-   }, [ano, mes, user]);
+   }, [ano, mes, user, currentPage, pageSize, codChamadoFilter]);
 
    async function fetchChamados(
       params: URLSearchParams,
       token: string
-   ): Promise<TabelaChamadoProps[]> {
-      const res = await fetch(`/api/chamados?${params}`, {
+   ): Promise<ApiResponse> {
+      const res = await fetch(`/api/chamados/tabela-chamados?${params}`, {
          headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -224,63 +260,38 @@ export default function TabelaChamados() {
          throw new Error(errorData.error || 'Erro ao buscar chamados');
       }
 
-      const data = await res.json();
-      return Array.isArray(data) ? data : data.chamados || [];
+      const responseData = await res.json();
+
+      return {
+         data: responseData.data || [],
+         pagination: responseData.pagination || {
+            currentPage: 1,
+            totalPages: 1,
+            totalRecords: 0,
+            recordsPerPage: pageSize,
+            hasNextPage: false,
+            hasPrevPage: false,
+         },
+      };
    }
 
-   const updateAssunto = useCallback(
-      async (codChamado: number, novoAssunto: string) => {
-         try {
-            const response = await fetch(
-               `/api/atualizar-assunto-chamado/${codChamado}`,
-               {
-                  method: 'POST',
-                  headers: {
-                     Authorization: `Bearer ${token}`,
-                     'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                     assuntoChamado: novoAssunto,
-                     codChamado: codChamado.toString(),
-                  }),
-               }
-            );
-
-            if (!response.ok) {
-               const errorData = await response.json();
-               throw new Error(errorData.error || 'Erro ao atualizar assunto');
-            }
-
-            queryClient.setQueryData(
-               ['chamadosAbertos', queryParams.toString(), token],
-               (oldData: TabelaChamadoProps[] | undefined) => {
-                  if (!oldData) return oldData;
-
-                  return oldData.map(chamado =>
-                     chamado.COD_CHAMADO === codChamado
-                        ? { ...chamado, ASSUNTO_CHAMADO: novoAssunto }
-                        : chamado
-                  );
-               }
-            );
-
-            return response.json();
-         } catch (error) {
-            console.error('Erro ao atualizar assunto:', error);
-            throw error;
-         }
-      },
-      [token, queryClient, queryParams]
-   );
-
    // Query principal para buscar os chamados
-   const { data, isLoading, isError, error } = useQuery({
+   const {
+      data: apiResponse,
+      isLoading,
+      isError,
+      error,
+   } = useQuery({
       queryKey: ['chamadosAbertos', queryParams.toString(), token],
       queryFn: () => fetchChamados(queryParams, token!),
       enabled,
       staleTime: 1000 * 60 * 5,
       retry: 2,
    });
+
+   // Extrai dados e paginação da resposta da API
+   const data = useMemo(() => apiResponse?.data || [], [apiResponse]);
+   const paginationInfo = apiResponse?.pagination;
 
    // ================================================================================
    // HANDLERS E CALLBACKS
@@ -318,16 +329,6 @@ export default function TabelaChamados() {
       },
       []
    );
-
-   const handleAbrirDashboard = () => setDashboardOpen(true);
-
-   const handleFecharDashboard = () => setDashboardOpen(false);
-
-   const handleAtribuicaoSuccess = () => {
-      queryClient.invalidateQueries({ queryKey: ['chamadosAbertos'] });
-      setModalAtribuicaoOpen(false);
-      setChamadoParaAtribuir(null);
-   };
 
    const handleOpenApontamentos = useCallback(
       async (codChamado: number, newStatus: string) => {
@@ -400,18 +401,7 @@ export default function TabelaChamados() {
                throw new Error(errorData.error || 'Erro ao atualizar status');
             }
 
-            queryClient.setQueryData(
-               ['chamadosAbertos', queryParams.toString(), token],
-               (oldData: TabelaChamadoProps[] | undefined) => {
-                  if (!oldData) return oldData;
-
-                  return oldData.map(chamado =>
-                     chamado.COD_CHAMADO === codChamado
-                        ? { ...chamado, STATUS_CHAMADO: newStatus }
-                        : chamado
-                  );
-               }
-            );
+            queryClient.invalidateQueries({ queryKey: ['chamadosAbertos'] });
 
             return response.json();
          } catch (error) {
@@ -419,8 +409,20 @@ export default function TabelaChamados() {
             throw error;
          }
       },
-      [token, queryClient, queryParams]
+      [token, queryClient]
    );
+
+   // ================================================================================
+   // HANDLERS DE PAGINAÇÃO
+   // ================================================================================
+   const handlePageChange = (newPage: number) => {
+      setCurrentPage(newPage);
+   };
+
+   const handlePageSizeChange = (newSize: number) => {
+      setPageSize(newSize);
+      setCurrentPage(1);
+   };
 
    // ================================================================================
    // CONFIGURAÇÃO DA TABELA
@@ -430,10 +432,12 @@ export default function TabelaChamados() {
          colunasTabelaChamados(
             {
                onVisualizarChamado: handleVisualizarChamado,
-               onVisualizarOS: handleVisualizarOS,
+               onVisualizarOSChamado: handleVisualizarOS,
                onVisualizarTarefas: () => setTabelaTarefasOpen(true),
+               onVisualizarOS: () => {
+                  setTabelaOsOpen(true);
+               },
                onAtribuicaoInteligente: handleAbrirAtribuicaoInteligente,
-               onUpdateAssunto: updateAssunto,
                onUpdateStatus: updateStatus,
                onOpenApontamentos: handleOpenApontamentos,
                userType: user?.tipo,
@@ -444,19 +448,18 @@ export default function TabelaChamados() {
          handleVisualizarChamado,
          handleVisualizarOS,
          handleAbrirAtribuicaoInteligente,
-         updateAssunto,
          handleOpenApontamentos,
          updateStatus,
          user?.tipo,
       ]
    );
 
+   // Tabela agora usa apenas os dados da API sem paginação local
    const table = useReactTable({
       data: data ?? [],
       columns: colunas,
       getCoreRowModel: getCoreRowModel(),
       getFilteredRowModel: getFilteredRowModel(),
-      getPaginationRowModel: getPaginationRowModel(),
       getSortedRowModel: getSortedRowModel(),
       onColumnFiltersChange: setColumnFilters,
       onGlobalFilterChange: setGlobalFilter,
@@ -467,17 +470,13 @@ export default function TabelaChamados() {
          globalFilter,
          sorting,
       },
-      initialState: {
-         pagination: {
-            pageSize: 20,
-         },
-      },
       filterFns: {
          customColumnFilter: columnFilterFn,
       },
       defaultColumn: {
          filterFn: columnFilterFn,
       },
+      manualPagination: true,
    });
 
    // ================================================================================
@@ -536,427 +535,443 @@ export default function TabelaChamados() {
    // ================================================================================
    return (
       <>
-         <div className="overflow-hidden rounded-2xl bg-black shadow-xl shadow-black">
-            {/* ===== HEADER ===== */}
-            <header className="flex flex-col gap-4 bg-white/70 p-6">
-               <section className="flex items-center justify-between gap-8">
-                  <div className="flex items-center justify-center gap-6">
-                     <div className="flex items-center justify-center rounded-md bg-white/30 p-4 shadow-sm shadow-black">
-                        <IoCall className="text-black" size={28} />
+         {/* BOTÃO PARA VOLTAR AOS CHAMADOS (quando em outras views) */}
+         {activeView !== 'chamados' && (
+            <div className="mb-4">
+               <button
+                  onClick={() => setActiveView('chamados')}
+                  className="flex items-center gap-2 rounded-lg bg-gray-600 px-4 py-2 text-white transition-colors hover:bg-gray-700"
+               >
+                  <IoCall size={20} />
+                  Voltar aos Chamados
+               </button>
+            </div>
+         )}
+
+         {/* VIEW DE CHAMADOS - TODO O CONTEÚDO ATUAL DA TABELA */}
+         {activeView === 'chamados' && (
+            <div className="overflow-hidden rounded-2xl bg-black shadow-xl shadow-black">
+               {/* ===== HEADER COM DROPDOWN ===== */}
+               <header className="flex flex-col gap-4 bg-white/70 p-6">
+                  <section className="flex items-center justify-between gap-8">
+                     <div className="flex items-center justify-center gap-6">
+                        <div className="flex items-center justify-center rounded-md bg-white/30 p-4 shadow-sm shadow-black">
+                           <IoCall className="text-black" size={28} />
+                        </div>
+
+                        <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
+                           Chamados
+                        </h1>
                      </div>
 
-                     <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
-                        Chamados
-                     </h1>
-                  </div>
-
-                  <FilterControls
-                     showFilters={showFilters}
-                     setShowFilters={setShowFilters}
-                     totalActiveFilters={totalActiveFilters}
-                     clearFilters={clearFilters}
-                     dataLength={data?.length || 0}
-                  />
-               </section>
-
-               {/* ===== FILTRO GLOBAL ===== */}
-               {data && data.length > 0 && (
-                  <div className="flex items-center justify-between gap-6">
-                     {/* Input busca global */}
-                     <div className="max-w-md flex-1 font-semibold tracking-wider select-none placeholder:tracking-wider placeholder:text-black placeholder:italic placeholder:select-none">
-                        <InputGlobalFilter
-                           value={globalFilter ?? ''}
-                           onChange={value => setGlobalFilter(String(value))}
-                           placeholder="Buscar em todas as colunas..."
-                           onClear={clearFilters}
+                     {/* DROPDOWN DE MÓDULOS */}
+                     <div className="flex items-center gap-4">
+                        <DropdownHeader
+                           onOpenTabelaOS={() => setActiveView('os')}
+                           onOpenTabelaTarefas={() => setActiveView('tarefas')}
                         />
                      </div>
+                  </section>
 
-                     {/* Indicador filtros ativos */}
-                     <IndicatorFilter
-                        columnFilters={columnFilters}
-                        globalFilter={globalFilter}
-                        totalFilters={totalActiveFilters}
-                        getColumnDisplayName={getDefaultColumnDisplayName}
+                  {/* ===== FILTROS GLOBAIS ===== */}
+                  <div className="flex items-center gap-8">
+                     <InputGlobalFilter
+                        value={globalFilter ?? ''}
+                        onChange={value => setGlobalFilter(String(value))}
+                        placeholder="Buscar em todas as colunas..."
+                        onClear={() => setGlobalFilter('')}
+                     />
+
+                     <FilterControls
+                        showFilters={showFilters}
+                        setShowFilters={setShowFilters}
+                        totalActiveFilters={totalActiveFilters}
+                        clearFilters={clearFilters}
+                        dataLength={paginationInfo?.totalRecords || 0}
                      />
                   </div>
-               )}
-            </header>
+               </header>
 
-            {/* ===== CONTEÚDO DA TABELA ===== */}
-            <main className="h-full w-full overflow-hidden bg-black">
-               <div
-                  className="h-full overflow-y-auto"
-                  style={{ maxHeight: 'calc(100vh - 450px)' }}
-               >
-                  {/* ===== TABELA ===== */}
-                  <table className="w-full table-fixed border-collapse">
-                     {/* ===== CABEÇALHO DA TABELA ===== */}
-                     <thead className="sticky top-0 z-20">
-                        {table.getHeaderGroups().map(headerGroup => (
-                           <tr key={headerGroup.id}>
-                              {headerGroup.headers.map(header => (
-                                 <th
-                                    key={header.id}
-                                    className="bg-teal-700 py-6 font-extrabold tracking-wider text-white uppercase select-none"
-                                    style={{
-                                       width: getColumnWidth(
-                                          header.column.id,
-                                          user?.tipo
-                                       ),
-                                    }}
-                                 >
-                                    {header.isPlaceholder ? null : header.column
-                                         .id === 'COD_CHAMADO' ||
-                                      header.column.id ===
-                                         'DATA_HORA_FORMATADA' ||
-                                      header.column.id === 'ASSUNTO_CHAMADO' ||
-                                      header.column.id === 'STATUS_CHAMADO' ||
-                                      header.column.id === 'DTENVIO_CHAMADO' ||
-                                      header.column.id === 'NOME_RECURSO' ? (
-                                       <OrderTableHeader column={header.column}>
-                                          {flexRender(
-                                             header.column.columnDef.header,
-                                             header.getContext()
-                                          )}
-                                       </OrderTableHeader>
-                                    ) : (
-                                       flexRender(
-                                          header.column.columnDef.header,
-                                          header.getContext()
-                                       )
-                                    )}
-                                 </th>
-                              ))}
-                           </tr>
-                        ))}
-
-                        {/* ===== FILTROS DA TABELA ===== */}
-                        {showFilters && (
-                           <tr>
-                              {table.getAllColumns().map(column => (
-                                 <th
-                                    key={column.id}
-                                    className="bg-teal-700 px-3 pb-6"
-                                    style={{
-                                       width: getColumnWidth(
-                                          column.id,
-                                          user?.tipo
-                                       ),
-                                    }}
-                                 >
-                                    {column.id === 'COD_CHAMADO' && (
-                                       <FilterInputTableHeaderDebounce
-                                          value={
-                                             (column.getFilterValue() as string) ??
-                                             ''
-                                          }
-                                          onChange={value =>
-                                             column.setFilterValue(value)
-                                          }
-                                          placeholder="Código..."
-                                          type="text"
-                                       />
-                                    )}
-                                    {column.id === 'DATA_HORA_FORMATADA' && (
-                                       <FilterInputTableHeaderDebounce
-                                          value={
-                                             (column.getFilterValue() as string) ??
-                                             ''
-                                          }
-                                          onChange={value =>
-                                             column.setFilterValue(value)
-                                          }
-                                          placeholder="dd/mm/aaaa"
-                                          type="text"
-                                       />
-                                    )}
-                                    {column.id === 'ASSUNTO_CHAMADO' && (
-                                       <FilterInputTableHeaderDebounce
-                                          value={
-                                             (column.getFilterValue() as string) ??
-                                             ''
-                                          }
-                                          onChange={value =>
-                                             column.setFilterValue(value)
-                                          }
-                                          placeholder="Assunto..."
-                                       />
-                                    )}
-                                    {column.id === 'STATUS_CHAMADO' && (
-                                       <FilterInputTableHeaderDebounce
-                                          value={
-                                             (column.getFilterValue() as string) ??
-                                             ''
-                                          }
-                                          onChange={value =>
-                                             column.setFilterValue(value)
-                                          }
-                                          placeholder="Status..."
-                                       />
-                                    )}
-                                    {column.id === 'DTENVIO_CHAMADO' && (
-                                       <FilterInputTableHeaderDebounce
-                                          value={
-                                             (column.getFilterValue() as string) ??
-                                             ''
-                                          }
-                                          onChange={value =>
-                                             column.setFilterValue(value)
-                                          }
-                                          placeholder="dd/mm/aaaa"
-                                          type="text"
-                                       />
-                                    )}
-                                    {column.id === 'NOME_RECURSO' && (
-                                       <FilterInputTableHeaderDebounce
-                                          value={
-                                             (column.getFilterValue() as string) ??
-                                             ''
-                                          }
-                                          onChange={value =>
-                                             column.setFilterValue(value)
-                                          }
-                                          placeholder="Recurso..."
-                                       />
-                                    )}
-                                 </th>
-                              ))}
-                           </tr>
-                        )}
-                     </thead>
-
-                     {/* ===== CORPO DA TABELA ===== */}
-                     <tbody>
-                        {table.getRowModel().rows.length > 0 &&
-                           !isLoading &&
-                           table.getRowModel().rows.map((row, rowIndex) => (
-                              <tr
-                                 key={row.id}
-                                 className={`group border-b border-gray-600 transition-all hover:bg-amber-200 ${
-                                    rowIndex % 2 === 0
-                                       ? 'bg-stone-600'
-                                       : 'bg-stone-500'
-                                 }`}
-                              >
-                                 {row.getVisibleCells().map(cell => (
-                                    <td
-                                       key={cell.id}
-                                       className="p-2 text-sm font-semibold tracking-wider text-white select-none group-hover:text-black"
+               {/* ===== CONTEÚDO DA TABELA ===== */}
+               <main className="h-full w-full overflow-hidden bg-black">
+                  <div
+                     className="h-full overflow-y-auto"
+                     style={{ maxHeight: 'calc(100vh - 450px)' }}
+                  >
+                     {/* ===== TABELA ===== */}
+                     <table className="w-full table-fixed border-collapse">
+                        {/* ===== CABEÇALHO DA TABELA ===== */}
+                        <thead className="sticky top-0 z-20">
+                           {table.getHeaderGroups().map(headerGroup => (
+                              <tr key={headerGroup.id}>
+                                 {headerGroup.headers.map(header => (
+                                    <th
+                                       key={header.id}
+                                       className="bg-teal-700 py-6 font-extrabold tracking-wider text-white uppercase select-none"
                                        style={{
                                           width: getColumnWidth(
-                                             cell.column.id,
+                                             header.column.id,
                                              user?.tipo
                                           ),
                                        }}
                                     >
-                                       <div className="overflow-hidden">
-                                          {flexRender(
-                                             cell.column.columnDef.cell,
-                                             cell.getContext()
-                                          )}
-                                       </div>
-                                    </td>
+                                       {header.isPlaceholder ? null : header
+                                            .column.id === 'COD_CHAMADO' ||
+                                         header.column.id === 'DATA_CHAMADO' ||
+                                         header.column.id ===
+                                            'ASSUNTO_CHAMADO' ||
+                                         header.column.id ===
+                                            'STATUS_CHAMADO' ||
+                                         header.column.id ===
+                                            'DTENVIO_CHAMADO' ||
+                                         header.column.id === 'NOME_RECURSO' ? (
+                                          <OrderTableHeader
+                                             column={header.column}
+                                          >
+                                             {flexRender(
+                                                header.column.columnDef.header,
+                                                header.getContext()
+                                             )}
+                                          </OrderTableHeader>
+                                       ) : (
+                                          flexRender(
+                                             header.column.columnDef.header,
+                                             header.getContext()
+                                          )
+                                       )}
+                                    </th>
                                  ))}
                               </tr>
                            ))}
-                     </tbody>
-                  </table>
-               </div>
-            </main>
 
-            {/* ===== PAGINAÇÃO DA TABELA ===== */}
-            {Array.isArray(data) && data.length > 0 && (
-               <div className="bg-white/70 px-12 py-4">
-                  <div className="flex items-center justify-between">
-                     {/* Informações da página */}
-                     <section className="flex items-center gap-4">
-                        <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
-                           {table.getFilteredRowModel().rows.length} registro
-                           {table.getFilteredRowModel().rows.length !== 1
-                              ? 's'
-                              : ''}{' '}
-                           encontrado
-                           {table.getFilteredRowModel().rows.length !== 1
-                              ? 's'
-                              : ''}
-                        </span>
+                           {/* ===== FILTROS DA TABELA ===== */}
+                           {showFilters && (
+                              <tr>
+                                 {table.getAllColumns().map(column => (
+                                    <th
+                                       key={column.id}
+                                       className="bg-teal-700 px-3 pb-6"
+                                       style={{
+                                          width: getColumnWidth(
+                                             column.id,
+                                             user?.tipo
+                                          ),
+                                       }}
+                                    >
+                                       {column.id === 'COD_CHAMADO' && (
+                                          <FilterInputTableHeaderDebounce
+                                             value={
+                                                (column.getFilterValue() as string) ??
+                                                ''
+                                             }
+                                             onChange={value =>
+                                                column.setFilterValue(value)
+                                             }
+                                             placeholder="Chamado..."
+                                          />
+                                       )}
+                                       {column.id === 'DATA_CHAMADO' && (
+                                          <FilterInputTableHeaderDebounce
+                                             value={
+                                                (column.getFilterValue() as string) ??
+                                                ''
+                                             }
+                                             onChange={value =>
+                                                column.setFilterValue(value)
+                                             }
+                                             placeholder="dd/mm/aaaa"
+                                             type="text"
+                                          />
+                                       )}
+                                       {column.id === 'ASSUNTO_CHAMADO' && (
+                                          <FilterInputTableHeaderDebounce
+                                             value={
+                                                (column.getFilterValue() as string) ??
+                                                ''
+                                             }
+                                             onChange={value =>
+                                                column.setFilterValue(value)
+                                             }
+                                             placeholder="Assunto..."
+                                          />
+                                       )}
+                                       {column.id === 'STATUS_CHAMADO' && (
+                                          <FilterInputTableHeaderDebounce
+                                             value={
+                                                (column.getFilterValue() as string) ??
+                                                ''
+                                             }
+                                             onChange={value =>
+                                                column.setFilterValue(value)
+                                             }
+                                             placeholder="Status..."
+                                          />
+                                       )}
+                                       {column.id === 'NOME_RECURSO' && (
+                                          <FilterInputTableHeaderDebounce
+                                             value={
+                                                (column.getFilterValue() as string) ??
+                                                ''
+                                             }
+                                             onChange={value =>
+                                                column.setFilterValue(value)
+                                             }
+                                             placeholder="Recurso..."
+                                          />
+                                       )}
+                                    </th>
+                                 ))}
+                              </tr>
+                           )}
+                        </thead>
 
-                        {/* Total de registros (sem filtros) */}
-                        {totalActiveFilters > 0 && (
-                           <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
-                              de um total de {data.length}
-                           </span>
-                        )}
-                     </section>
-
-                     {/* Controles de paginação */}
-                     <section className="flex items-center gap-3">
-                        {/* Seletor de itens por página */}
-                        <div className="flex items-center gap-2">
-                           <span className="text-base font-semibold tracking-widest text-black italic select-none">
-                              Itens por página:
-                           </span>
-                           <select
-                              value={table.getState().pagination.pageSize}
-                              onChange={e =>
-                                 table.setPageSize(Number(e.target.value))
-                              }
-                              className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
-                           >
-                              {[50, 100, 200, 300, 400, 500].map(pageSize => (
-                                 <option
-                                    key={pageSize}
-                                    value={pageSize}
-                                    className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
+                        {/* ===== CORPO DA TABELA ===== */}
+                        <tbody>
+                           {table.getRowModel().rows.length > 0 &&
+                              !isLoading &&
+                              table.getRowModel().rows.map((row, rowIndex) => (
+                                 <tr
+                                    key={row.id}
+                                    className={`group border-b border-gray-600 transition-all hover:bg-amber-200 ${
+                                       rowIndex % 2 === 0
+                                          ? 'bg-stone-600'
+                                          : 'bg-stone-500'
+                                    }`}
                                  >
-                                    {pageSize}
-                                 </option>
+                                    {row.getVisibleCells().map(cell => (
+                                       <td
+                                          key={cell.id}
+                                          className="p-2 text-sm font-semibold tracking-wider text-white select-none group-hover:text-black"
+                                          style={{
+                                             width: getColumnWidth(
+                                                cell.column.id,
+                                                user?.tipo
+                                             ),
+                                          }}
+                                       >
+                                          <div className="overflow-hidden">
+                                             {flexRender(
+                                                cell.column.columnDef.cell,
+                                                cell.getContext()
+                                             )}
+                                          </div>
+                                       </td>
+                                    ))}
+                                 </tr>
                               ))}
-                           </select>
-                        </div>
+                        </tbody>
+                     </table>
+                  </div>
+               </main>
 
-                        {/* Botões de navegação */}
-                        <div className="flex items-center gap-3">
-                           <button
-                              onClick={() => table.setPageIndex(0)}
-                              disabled={!table.getCanPreviousPage()}
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                           >
-                              <FiChevronsLeft
-                                 className="text-black group-disabled:text-white"
-                                 size={24}
-                              />
-                           </button>
+               {/* ===== PAGINAÇÃO DA API ===== */}
+               {paginationInfo && paginationInfo.totalRecords > 0 && (
+                  <div className="bg-white/70 px-12 py-4">
+                     <div className="flex items-center justify-between">
+                        {/* Informações da página */}
+                        <section className="flex items-center gap-4">
+                           <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
+                              {table.getFilteredRowModel().rows.length} registro
+                              {table.getFilteredRowModel().rows.length !== 1
+                                 ? 's'
+                                 : ''}{' '}
+                              na página atual
+                           </span>
 
-                           <button
-                              onClick={() => table.previousPage()}
-                              disabled={!table.getCanPreviousPage()}
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                           >
-                              <MdChevronLeft
-                                 className="text-black group-disabled:text-white"
-                                 size={24}
-                              />
-                           </button>
+                           <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
+                              de {paginationInfo.totalRecords} total
+                              {paginationInfo.totalRecords !== 1 ? '' : ''}
+                           </span>
+                        </section>
 
-                           <div className="flex items-center justify-center gap-2">
+                        {/* Controles de paginação */}
+                        <section className="flex items-center gap-3">
+                           {/* Seletor de itens por página */}
+                           <div className="flex items-center gap-2">
                               <span className="text-base font-semibold tracking-widest text-black italic select-none">
-                                 Página{' '}
-                                 <select
-                                    value={
-                                       table.getState().pagination.pageIndex + 1
-                                    }
-                                    onChange={e => {
-                                       const page = Number(e.target.value) - 1;
-                                       table.setPageIndex(page);
-                                    }}
-                                    className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
-                                 >
-                                    {Array.from(
-                                       {
-                                          length: table.getPageCount(),
-                                       },
-                                       (_, i) => (
-                                          <option
-                                             key={i + 1}
-                                             value={i + 1}
-                                             className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
-                                          >
-                                             {i + 1}
-                                          </option>
-                                       )
-                                    )}
-                                 </select>
+                                 Itens por página:
                               </span>
-                              <span className="text-base font-semibold tracking-widest text-black italic select-none">
-                                 {' '}
-                                 de {table.getPageCount()}
-                              </span>
+                              <select
+                                 value={pageSize}
+                                 onChange={e =>
+                                    handlePageSizeChange(Number(e.target.value))
+                                 }
+                                 className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                              >
+                                 {[20, 50, 100].map(size => (
+                                    <option
+                                       key={size}
+                                       value={size}
+                                       className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
+                                    >
+                                       {size}
+                                    </option>
+                                 ))}
+                              </select>
                            </div>
 
-                           <button
-                              onClick={() => table.nextPage()}
-                              disabled={!table.getCanNextPage()}
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                           >
-                              <MdChevronRight
-                                 className="text-black group-disabled:text-white"
-                                 size={24}
-                              />
-                           </button>
+                           {/* Botões de navegação */}
+                           <div className="flex items-center gap-3">
+                              <button
+                                 onClick={() => handlePageChange(1)}
+                                 disabled={!paginationInfo.hasPrevPage}
+                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                 <FiChevronsLeft
+                                    className="text-black group-disabled:text-white"
+                                    size={24}
+                                 />
+                              </button>
 
-                           <button
-                              onClick={() =>
-                                 table.setPageIndex(table.getPageCount() - 1)
-                              }
-                              disabled={!table.getCanNextPage()}
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                           >
-                              <FiChevronsRight
-                                 className="text-black group-disabled:text-white"
-                                 size={24}
-                              />
-                           </button>
-                        </div>
-                     </section>
-                  </div>
-               </div>
-            )}
+                              <button
+                                 onClick={() =>
+                                    handlePageChange(currentPage - 1)
+                                 }
+                                 disabled={!paginationInfo.hasPrevPage}
+                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                 <MdChevronLeft
+                                    className="text-black group-disabled:text-white"
+                                    size={24}
+                                 />
+                              </button>
 
-            {/* ===== MENSAGEM QUANDO NÃO HÁ CHAMADOS ===== */}
-            {data && data.length === 0 && !isLoading && (
-               <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-20 text-center">
-                  <FaExclamationTriangle
-                     className="mx-auto text-yellow-600"
-                     size={80}
-                  />
+                              <div className="flex items-center justify-center gap-2">
+                                 <span className="text-base font-semibold tracking-widest text-black italic select-none">
+                                    Página{' '}
+                                    <select
+                                       value={currentPage}
+                                       onChange={e =>
+                                          handlePageChange(
+                                             Number(e.target.value)
+                                          )
+                                       }
+                                       className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                                    >
+                                       {Array.from(
+                                          { length: paginationInfo.totalPages },
+                                          (_, i) => (
+                                             <option
+                                                key={i + 1}
+                                                value={i + 1}
+                                                className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
+                                             >
+                                                {i + 1}
+                                             </option>
+                                          )
+                                       )}
+                                    </select>
+                                 </span>
+                                 <span className="text-base font-semibold tracking-widest text-black italic select-none">
+                                    {' '}
+                                    de {paginationInfo.totalPages}
+                                 </span>
+                              </div>
 
-                  <h3 className="text-2xl font-bold tracking-wider text-white select-none">
-                     {user?.tipo === 'ADM'
-                        ? `Nenhum Chamado foi encontrado para o Período ${mes.toString().padStart(2, '0')}/${ano}.`
-                        : `Nenhum Chamado (excluindo finalizados) foi encontrado para o Período ${mes.toString().padStart(2, '0')}/${ano}.`}
-                  </h3>
+                              <button
+                                 onClick={() =>
+                                    handlePageChange(currentPage + 1)
+                                 }
+                                 disabled={!paginationInfo.hasNextPage}
+                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                 <MdChevronRight
+                                    className="text-black group-disabled:text-white"
+                                    size={24}
+                                 />
+                              </button>
 
-                  {user?.tipo !== 'ADM' && (
-                     <p className="text-base font-semibold tracking-wider text-white italic select-none">
-                        Chamados com status "FINALIZADO" não são exibidos para
-                        seu perfil.
-                     </p>
-                  )}
-               </div>
-            )}
-
-            {/* ===== MENSAGEM QUANDO OS FILTROS NÃO RETORNAM RESULTADOS ===== */}
-            {data &&
-               data.length > 0 &&
-               table.getFilteredRowModel().rows.length === 0 && (
-                  <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-20 text-center">
-                     <FaFilterCircleXmark
-                        className="mx-auto text-red-600"
-                        size={80}
-                     />
-                     <h3 className="text-2xl font-bold tracking-wider text-white select-none">
-                        Nenhum Registro encontrado para os Filtros aplicados.
-                     </h3>
-                     <p className="text-base font-semibold tracking-wider text-white italic select-none">
-                        Tente ajustar os Filtros ou limpe-os para visualizar
-                        Registros.
-                     </p>
-
-                     {/* Botão para limpar filtros */}
-                     {totalActiveFilters > 0 && (
-                        <button
-                           onClick={clearFilters}
-                           className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-black transition-all select-none hover:-translate-y-1 hover:scale-102 hover:bg-red-800 active:scale-95"
-                        >
-                           <BsEraserFill className="text-white" size={24} />
-                           Limpar Filtros
-                        </button>
-                     )}
+                              <button
+                                 onClick={() =>
+                                    handlePageChange(paginationInfo.totalPages)
+                                 }
+                                 disabled={!paginationInfo.hasNextPage}
+                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                 <FiChevronsRight
+                                    className="text-black group-disabled:text-white"
+                                    size={24}
+                                 />
+                              </button>
+                           </div>
+                        </section>
+                     </div>
                   </div>
                )}
-         </div>
+
+               {/* ===== MENSAGEM QUANDO NÃO HÁ CHAMADOS ===== */}
+               {(!paginationInfo || paginationInfo.totalRecords === 0) &&
+                  !isLoading && (
+                     <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-20 text-center">
+                        <FaExclamationTriangle
+                           className="mx-auto text-yellow-600"
+                           size={80}
+                        />
+
+                        <h3 className="text-2xl font-bold tracking-wider text-white select-none">
+                           {user?.tipo === 'ADM'
+                              ? `Nenhum Chamado foi encontrado para o Período ${mes.toString().padStart(2, '0')}/${ano}.`
+                              : `Nenhum Chamado (excluindo finalizados) foi encontrado para o Período ${mes.toString().padStart(2, '0')}/${ano}.`}
+                        </h3>
+
+                        {user?.tipo !== 'ADM' && (
+                           <p className="text-base font-semibold tracking-wider text-white italic select-none">
+                              Chamados com status "FINALIZADO" não são exibidos
+                              para seu perfil.
+                           </p>
+                        )}
+                     </div>
+                  )}
+
+               {/* ===== MENSAGEM QUANDO OS FILTROS NÃO RETORNAM RESULTADOS ===== */}
+               {paginationInfo &&
+                  paginationInfo.totalRecords > 0 &&
+                  table.getFilteredRowModel().rows.length === 0 && (
+                     <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-20 text-center">
+                        <FaFilterCircleXmark
+                           className="mx-auto text-red-600"
+                           size={80}
+                        />
+                        <h3 className="text-2xl font-bold tracking-wider text-white select-none">
+                           Nenhum Registro encontrado para os Filtros aplicados.
+                        </h3>
+                        <p className="text-base font-semibold tracking-wider text-white italic select-none">
+                           Tente ajustar os Filtros ou limpe-os para visualizar
+                           Registros.
+                        </p>
+
+                        {/* Botão para limpar filtros */}
+                        {totalActiveFilters > 0 && (
+                           <button
+                              onClick={clearFilters}
+                              className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-black transition-all select-none hover:-translate-y-1 hover:scale-102 hover:bg-red-800 active:scale-95"
+                           >
+                              <BsEraserFill className="text-white" size={24} />
+                              Limpar Filtros
+                           </button>
+                        )}
+                     </div>
+                  )}
+            </div>
+         )}
+
+         {/* VIEW DA TABELA DE OS */}
+         {activeView === 'os' && (
+            <TabelaOS isOpen={true} onClose={() => setActiveView('chamados')} />
+         )}
+
+         {/* VIEW DA TABELA DE TAREFAS */}
+         {activeView === 'tarefas' && (
+            <TabelaTarefas
+               isOpen={true}
+               onClose={() => setActiveView('chamados')}
+            />
+         )}
+
+         <TabelaOS
+            isOpen={tabelaOsOpen}
+            onClose={() => setTabelaOsOpen(false)}
+         />
 
          {/* ===== MODAL CHAMADO ===== */}
          <ModalVisualizarDadosChamado
@@ -966,7 +981,7 @@ export default function TabelaChamados() {
          />
 
          {/* ===== TABELA OS ===== */}
-         <TabelaOS
+         <TabelaOSChamado
             isOpen={tabelaOSOpen}
             onClose={handleCloseTabelaOS}
             codChamado={selectedCodChamado}

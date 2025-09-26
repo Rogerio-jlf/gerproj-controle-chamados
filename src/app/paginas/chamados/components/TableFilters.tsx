@@ -77,14 +77,14 @@ export const InputGlobalFilter = ({
       <div className="group relative transition-all hover:-translate-y-1 hover:scale-102">
          <FaSearch
             className="absolute top-1/2 left-4 -translate-y-1/2 text-black"
-            size={20}
+            size={24}
          />
          <input
             type="text"
             value={localValue}
             onChange={handleChange}
             placeholder={isFocused ? '' : placeholder}
-            className="w-full rounded-md border-none bg-white/30 py-2 pl-14 text-base font-semibold tracking-wider text-black placeholder-black shadow-sm shadow-black select-none placeholder:text-base placeholder:font-semibold focus:ring-2 focus:ring-black focus:outline-none"
+            className="w-[500px] rounded-md border-none bg-white/30 py-2 pl-14 text-base font-semibold tracking-wider text-black placeholder-black shadow-sm shadow-black select-none placeholder:text-base placeholder:font-semibold focus:ring-2 focus:ring-black focus:outline-none"
             ref={inputRef}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
@@ -231,7 +231,7 @@ export const FilterControls = ({
          <button
             onClick={() => setShowFilters(!showFilters)}
             disabled={dataLength <= 1}
-            className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-2 text-lg font-extrabold tracking-wider italic transition-all select-none ${
+            className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-1.5 text-lg font-extrabold tracking-wider italic transition-all select-none ${
                showFilters
                   ? 'border-none bg-blue-600 text-white shadow-sm shadow-black hover:bg-blue-800'
                   : 'border-none bg-white/30 text-black shadow-sm shadow-black hover:bg-white/10'
@@ -249,7 +249,7 @@ export const FilterControls = ({
          {totalActiveFilters > 0 && (
             <button
                onClick={clearFilters}
-               className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-black transition-all select-none hover:-translate-y-1 hover:scale-102 hover:bg-red-800 active:scale-95"
+               className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-1.5 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-black transition-all select-none hover:-translate-y-1 hover:scale-102 hover:bg-red-800 active:scale-95"
             >
                <BsEraserFill className="text-white" size={24} />
                Limpar Filtros

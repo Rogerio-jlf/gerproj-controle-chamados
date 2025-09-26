@@ -25,10 +25,10 @@ import { FaDownload, FaTasks, FaBrain } from 'react-icons/fa';
 // ================================================================================
 interface AcoesTabelaChamadosProps {
    onVisualizarChamado: (codChamado: number) => void;
-   onVisualizarOS: (codChamado: number) => void;
+   onVisualizarOSChamado: (codChamado: number) => void;
+   onVisualizarOS: () => void;
    onVisualizarTarefas: () => void;
    onAtribuicaoInteligente: (chamado: TabelaChamadoProps) => void;
-   onUpdateAssunto: (codChamado: number, novoAssunto: string) => Promise<any>;
    onUpdateStatus?: (
       codChamado: number,
       newStatus: string,
@@ -96,7 +96,7 @@ const BotaoMenuCircular = ({ chamado, acoes }: BotaoCircularMenuProps) => {
       {
          icon: GrServices,
          onClick: () => {
-            acoes.onVisualizarOS(chamado.COD_CHAMADO);
+            acoes.onVisualizarOSChamado(chamado.COD_CHAMADO);
             setIsOpen(false);
          },
          tooltip: "Visualizar OS's",
@@ -334,7 +334,7 @@ export const colunasTabelaChamados = (
 
       // Data chamado
       {
-         accessorKey: 'DATA_HORA_FORMATADA',
+         accessorKey: 'DATA_CHAMADO',
          header: () => <div className="text-center">Data</div>,
          cell: ({ getValue }) => {
             const dateString = getValue() as string;

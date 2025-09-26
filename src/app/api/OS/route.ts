@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { NextResponse } from 'next/server';
-import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
+import { firebirdQuery } from '../../../lib/firebird/firebird-client';
 
 export async function GET(request: Request) {
    try {
@@ -13,9 +13,11 @@ export async function GET(request: Request) {
          );
       }
 
+      // Verifica e decodifica o token
       const token = authHeader.replace('Bearer ', '');
       let decoded: any;
 
+      // Verifica o token JWT
       try {
          decoded = jwt.verify(
             token,
@@ -25,14 +27,17 @@ export async function GET(request: Request) {
          return NextResponse.json({ error: 'Token inválido' }, { status: 401 });
       }
 
+      // Pega informações do usuário do token
       const isAdmin = decoded.tipo === 'ADM';
+      // Pega o código do recurso se existir
       const codRecurso = decoded.recurso?.id;
 
       // Pega parâmetros da query
       const { searchParams } = new URL(request.url);
       const mesParam = searchParams.get('mes');
       const anoParam = searchParams.get('ano');
-      const codChamadoQuery = searchParams.get('codChamado')?.trim();
+      const diaParam = searchParams.get('dia');
+      const codOsQuery = searchParams.get('codOs')?.trim();
 
       // Pega os parâmetros de paginação (com defaults)
       const page = parseInt(searchParams.get('page') || '1', 10);
@@ -76,6 +81,19 @@ export async function GET(request: Request) {
          }
       }
 
+      // Validação para dia (aceita número ou "todos")
+      let diaNumber: number | null = null;
+      if (diaParam && diaParam !== 'todos') {
+         diaNumber = Number(diaParam);
+         if (isNaN(diaNumber) || diaNumber < 1 || diaNumber > 31) {
+            return NextResponse.json(
+               { error: "Parâmetro 'dia' inválido" },
+               { status: 400 }
+            );
+         }
+      }
+
+      // Usuários não admin devem obrigatoriamente ter codRecurso definido
       if (!isAdmin && !codRecurso) {
          return NextResponse.json(
             { error: 'Usuário não admin precisa ter codRecurso definido' },
@@ -83,87 +101,106 @@ export async function GET(request: Request) {
          );
       }
 
+      // Monta as condições do WHERE dinamicamente
       const whereConditions: string[] = [];
+      // Array de parâmetros para a query
       const params: any[] = [];
 
-      // Filtro por data - apenas se ano e mês específicos forem fornecidos
-      if (anoNumber && mesNumber) {
-         // Ambos específicos - filtro por mês/ano
+      // Filtro por data - com suporte a ano, mês e dia
+      if (anoNumber && mesNumber && diaNumber) {
+         // Ano, mês e dia específicos - filtro por data exata
+         const dataEspecifica = new Date(anoNumber, mesNumber - 1, diaNumber);
+         const proximoDia = new Date(anoNumber, mesNumber - 1, diaNumber + 1);
+         whereConditions.push('OS.DTINI_OS >= ? AND OS.DTINI_OS < ?');
+         params.push(dataEspecifica, proximoDia);
+      } else if (anoNumber && mesNumber && !diaNumber) {
+         // Ano e mês específicos, todos os dias - filtro por mês/ano
          const dataInicio = new Date(anoNumber, mesNumber - 1, 1);
          const dataFim = new Date(anoNumber, mesNumber, 1);
-         whereConditions.push(
-            'Chamado.DATA_CHAMADO >= ? AND Chamado.DATA_CHAMADO < ?'
-         );
+         whereConditions.push('OS.DTINI_OS >= ? AND OS.DTINI_OS < ?');
          params.push(dataInicio, dataFim);
-      } else if (anoNumber && !mesNumber) {
+      } else if (anoNumber && !mesNumber && !diaNumber) {
          // Apenas ano específico - filtro por ano todo
          const dataInicio = new Date(anoNumber, 0, 1);
          const dataFim = new Date(anoNumber + 1, 0, 1);
-         whereConditions.push(
-            'Chamado.DATA_CHAMADO >= ? AND Chamado.DATA_CHAMADO < ?'
-         );
+         whereConditions.push('OS.DTINI_OS >= ? AND OS.DTINI_OS < ?');
          params.push(dataInicio, dataFim);
-      } else if (!anoNumber && mesNumber) {
-         // Apenas mês específico - filtro por mês em todos os anos (usando EXTRACT)
-         whereConditions.push('EXTRACT(MONTH FROM Chamado.DATA_CHAMADO) = ?');
+      } else if (!anoNumber && mesNumber && !diaNumber) {
+         // Apenas mês específico - filtro por mês em todos os anos
+         whereConditions.push('EXTRACT(MONTH FROM OS.DTINI_OS) = ?');
          params.push(mesNumber);
+      } else if (!anoNumber && !mesNumber && diaNumber) {
+         // Apenas dia específico - filtro por dia em todos os meses/anos
+         whereConditions.push('EXTRACT(DAY FROM OS.DTINI_OS) = ?');
+         params.push(diaNumber);
+      } else if (!anoNumber && mesNumber && diaNumber) {
+         // Mês e dia específicos, todos os anos
+         whereConditions.push(
+            'EXTRACT(MONTH FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
+         );
+         params.push(mesNumber, diaNumber);
+      } else if (anoNumber && !mesNumber && diaNumber) {
+         // Ano e dia específicos, todos os meses
+         whereConditions.push(
+            'EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
+         );
+         params.push(anoNumber, diaNumber);
       }
-      // Se ambos forem "todos", não adiciona filtro de data
 
-      // Filtro por recurso e status baseado no tipo de usuário
+      // Filtro por recurso baseado no tipo de usuário
       if (!isAdmin && codRecurso) {
-         whereConditions.push('Chamado.COD_RECURSO = ?');
+         whereConditions.push('OS.CODREC_OS = ?');
          params.push(Number(codRecurso));
       }
 
-      // Filtro de status para usuários não-admin (EXCLUIR chamados finalizados)
-      if (!isAdmin) {
-         whereConditions.push('Chamado.STATUS_CHAMADO != ?');
-         params.push('FINALIZADO');
+      // Filtro por código da OS
+      if (codOsQuery) {
+         whereConditions.push('OS.COD_OS = ?');
+         params.push(Number(codOsQuery));
       }
 
-      if (codChamadoQuery) {
-         whereConditions.push('Chamado.COD_CHAMADO = ?');
-         params.push(Number(codChamadoQuery));
-      }
-
-      // Query principal com paginação
+      // Monta a query final com paginação
       const sql = `
-         SELECT 
-            Chamado.COD_CHAMADO,
-            Chamado.DATA_CHAMADO,
-            Chamado.STATUS_CHAMADO,
-            Chamado.DTENVIO_CHAMADO,
-            Chamado.COD_RECURSO,
-            Chamado.ASSUNTO_CHAMADO,
-            Chamado.EMAIL_CHAMADO,
+         SELECT
+            os.COD_OS,
+            os.DTINI_OS,
+            os.HRINI_OS,
+            os.HRFIM_OS,
+            os.CODREC_OS,
+            os.DTINC_OS,
+            os.FATURADO_OS,
+            os.COMP_OS,
+            os.VALID_OS,
+            os.CHAMADO_OS,
             Recurso.NOME_RECURSO
-         FROM CHAMADO Chamado
-         LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = Chamado.COD_RECURSO
+         FROM OS os
+         LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = os.CODREC_OS
          ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
-         ORDER BY Chamado.DATA_CHAMADO DESC, Chamado.COD_CHAMADO DESC
+         ORDER BY os.DTINI_OS DESC, os.COD_OS DESC
          ROWS ${startRow} TO ${endRow};
       `;
 
-      // Query para contar o total de registros (otimizada)
+      // Query para contar o total de registros (sem paginação)
       const countSql = `
          SELECT COUNT(*) as TOTAL
-         FROM CHAMADO Chamado
+         FROM OS os
          ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
       `;
 
-      // Executa ambas as queries
-      const [chamados, countResult] = await Promise.all([
+      // Executa as queries em paralelo
+      const [OS, countResult] = await Promise.all([
          firebirdQuery(sql, params),
          firebirdQuery(countSql, params),
       ]);
 
+      // Calcula total de páginas
       const total = countResult[0].TOTAL;
+      // totalPages
       const totalPages = Math.ceil(total / limit);
 
       return NextResponse.json(
          {
-            data: chamados,
+            data: OS,
             pagination: {
                currentPage: page,
                totalPages,
@@ -176,7 +213,7 @@ export async function GET(request: Request) {
          { status: 200 }
       );
    } catch (error) {
-      console.error('Erro ao buscar chamados abertos:', error);
+      console.error('Erro ao buscar dados da OS:', error);
       return NextResponse.json(
          { error: 'Erro interno no servidor' },
          { status: 500 }
