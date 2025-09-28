@@ -18,7 +18,7 @@ import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorromp
 import { IoCall } from 'react-icons/io5';
 import { GrServices } from 'react-icons/gr';
 import { HiMiniSquaresPlus } from 'react-icons/hi2';
-import { FaDownload, FaTasks, FaBrain } from 'react-icons/fa';
+import { FaDownload, FaTasks, FaBrain, FaTrashAlt } from 'react-icons/fa';
 
 // ================================================================================
 // INTERFACES
@@ -36,6 +36,7 @@ interface AcoesTabelaChamadosProps {
       codTarefa?: number
    ) => Promise<void>;
    onOpenApontamentos?: (codChamado: number, newStatus: string) => void;
+   onExcluirChamado: (codChamado: number) => void;
    userType?: string;
 }
 
@@ -43,6 +44,52 @@ interface BotaoCircularMenuProps {
    chamado: TabelaChamadoProps;
    acoes: AcoesTabelaChamadosProps;
 }
+
+// ================================================================================
+// BOTÃO DELETE SEPARADO
+// ================================================================================
+const BotaoDelete = ({ chamado, acoes }: BotaoCircularMenuProps) => {
+   const [hoveredDelete, setHoveredDelete] = useState(false);
+
+   const handleDeleteClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('Delete clicked for chamado:', chamado.COD_CHAMADO); // Debug
+      acoes.onExcluirChamado(chamado.COD_CHAMADO);
+   };
+
+   return (
+      <div className="relative">
+         {/* Tooltip para o botão de delete */}
+         <motion.div
+            className={`pointer-events-none absolute -top-14 left-1/2 z-60 -translate-x-1/2 transform rounded-md border-t-4 border-red-500 bg-black px-6 py-2 text-sm font-semibold tracking-wider whitespace-nowrap text-white shadow-sm shadow-white`}
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{
+               opacity: hoveredDelete ? 1 : 0,
+               scale: hoveredDelete ? 1 : 0.8,
+               y: hoveredDelete ? 0 : 10,
+            }}
+            transition={{ duration: 0.2 }}
+         >
+            Deletar Chamado
+            <div className="absolute top-full left-1/2 h-0 w-0 -translate-x-1/2 transform border-t-4 border-r-4 border-l-4 border-transparent border-t-slate-900" />
+         </motion.div>
+
+         {/* Botão de Delete */}
+         <motion.button
+            onClick={handleDeleteClick}
+            onHoverStart={() => setHoveredDelete(true)}
+            onHoverEnd={() => setHoveredDelete(false)}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white/20 bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg shadow-red-300/50 transition-all duration-300 ease-out hover:from-red-600 hover:to-red-700 hover:ring-4 hover:shadow-red-400/60 hover:ring-red-300/40"
+         >
+            <FaTrashAlt size={14} />
+         </motion.button>
+      </div>
+   );
+};
+
 // ==============================
 
 // ================================================================================
@@ -184,7 +231,6 @@ const BotaoMenuCircular = ({ chamado, acoes }: BotaoCircularMenuProps) => {
                <motion.div
                   animate={{ rotate: isOpen ? 135 : 0 }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
-                  // className="text-white"
                >
                   {isOpen ? (
                      <span className="text-xl font-bold">×</span>
@@ -468,13 +514,23 @@ export const colunasTabelaChamados = (
          },
       },
 
-      // Ações
+      // Ações - MODIFICADO PARA INCLUIR BOTÃO DELETE (APENAS PARA ADM)
       {
          id: 'actions',
          header: () => <div className="text-center">Ações</div>,
          cell: ({ row }) => {
             const chamado = row.original;
-            return <BotaoMenuCircular chamado={chamado} acoes={acoes} />;
+            return (
+               <div className="flex items-center justify-center gap-3">
+                  {/* Botão Delete - Apenas para ADM */}
+                  {(userType === 'ADM' || acoes.userType === 'ADM') && (
+                     <BotaoDelete chamado={chamado} acoes={acoes} />
+                  )}
+
+                  {/* Menu Circular */}
+                  <BotaoMenuCircular chamado={chamado} acoes={acoes} />
+               </div>
+            );
          },
       },
    ];

@@ -561,8 +561,8 @@ export default function TabelaOS({ isOpen = true, onClose }: Props) {
                                     key={row.id}
                                     className={`group border-b border-gray-600 transition-all hover:bg-amber-200 ${
                                        rowIndex % 2 === 0
-                                          ? 'bg-stone-600'
-                                          : 'bg-stone-500'
+                                          ? 'bg-black'
+                                          : 'bg-black'
                                     }`}
                                  >
                                     {row.getVisibleCells().map(cell => (

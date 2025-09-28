@@ -58,10 +58,8 @@ export const colunasTabelaOS = (): ColumnDef<TabelaOSProps>[] => [
       cell: ({ getValue }) => {
          const hora = getValue() as string;
          return (
-            <div className="flex items-center justify-center gap-1">
-               <span className="font-mono text-white">
-                  {hora ? formatarHora(hora) : '--:--'}
-               </span>
+            <div className="flex items-center justify-center rounded-md border border-black bg-white/30 p-2 text-center font-bold text-black">
+               {hora ? formatarHora(hora) : '--:--'}
             </div>
          );
       },
@@ -74,10 +72,8 @@ export const colunasTabelaOS = (): ColumnDef<TabelaOSProps>[] => [
       cell: ({ getValue }) => {
          const hora = getValue() as string;
          return (
-            <div className="flex items-center justify-center gap-1">
-               <span className="font-mono text-white">
-                  {hora ? formatarHora(hora) : '--:--'}
-               </span>
+            <div className="flex items-center justify-center rounded-md border border-black bg-white/30 p-2 text-center font-bold text-black">
+               {hora ? formatarHora(hora) : '--:--'}
             </div>
          );
       },
@@ -142,7 +138,7 @@ export const colunasTabelaOS = (): ColumnDef<TabelaOSProps>[] => [
             return (
                <Tooltip>
                   <TooltipTrigger asChild>
-                     <div className="truncate px-2 text-white">
+                     <div className="truncate rounded-md border border-black bg-white/60 py-2 pl-6 text-left font-bold text-black">
                         {recurso.split(' ').slice(0, 2).join(' ')}
                      </div>
                   </TooltipTrigger>

@@ -42,6 +42,7 @@ import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
+import { ModalExcluirChamado } from '../modais/Modal_Deletar_Chamado';
 
 // ================================================================================
 // TIPOS
@@ -130,6 +131,9 @@ export default function TabelaChamados() {
       tarefa?: any;
       nomeCliente?: string;
    } | null>(null);
+   const [chamadoParaExcluir, setChamadoParaExcluir] = useState<number | null>(
+      null
+   );
 
    // ================================================================================
    // ESTADOS - FILTROS E ORDENAÇÃO
@@ -325,7 +329,6 @@ export default function TabelaChamados() {
    const handleAbrirAtribuicaoInteligente = useCallback(
       (chamado: TabelaChamadoProps) => {
          setChamadoParaAtribuir(chamado);
-         setModalAtribuicaoOpen(true);
       },
       []
    );
@@ -424,6 +427,14 @@ export default function TabelaChamados() {
       setCurrentPage(1);
    };
 
+   const handleOpenModalExcluirChamado = (codChamado: number) => {
+      setChamadoParaExcluir(codChamado);
+   };
+
+   const handleCloseModalExcluirChamado = () => {
+      setChamadoParaExcluir(null);
+   };
+
    // ================================================================================
    // CONFIGURAÇÃO DA TABELA
    // ================================================================================
@@ -440,6 +451,7 @@ export default function TabelaChamados() {
                onAtribuicaoInteligente: handleAbrirAtribuicaoInteligente,
                onUpdateStatus: updateStatus,
                onOpenApontamentos: handleOpenApontamentos,
+               onExcluirChamado: handleOpenModalExcluirChamado,
                userType: user?.tipo,
             },
             user?.tipo
@@ -1008,6 +1020,12 @@ export default function TabelaChamados() {
             tarefa={apontamentoData?.tarefa}
             nomeCliente={apontamentoData?.nomeCliente}
             onSuccess={handleApontamentoSuccess}
+         />
+
+         <ModalExcluirChamado
+            isOpen={!!chamadoParaExcluir}
+            onClose={handleCloseModalExcluirChamado}
+            codChamado={chamadoParaExcluir}
          />
       </>
    );
