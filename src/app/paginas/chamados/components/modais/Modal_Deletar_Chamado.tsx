@@ -7,6 +7,7 @@ import { ToastCustom } from '../../../../../components/Toast_Custom';
 // ================================================================================
 import { IoClose } from 'react-icons/io5';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
+import { formatCodChamado } from '../../../../../utils/formatters';
 
 // ================================================================================
 // INTERFACES
@@ -117,7 +118,7 @@ export function ModalExcluirChamado({
                      </h1>
                      {/* ===== */}
                      <p className="text-xl font-extrabold tracking-widest text-white select-none">
-                        Chamado #{codChamado}
+                        Chamado #{formatCodChamado(codChamado)}
                      </p>
                   </div>
                </div>
@@ -142,10 +143,10 @@ export function ModalExcluirChamado({
                         <h3 className="text-xl font-extrabold tracking-wider text-black italic select-none">
                            Você selecionou o{' '}
                            <span className="text-2xl font-bold tracking-widest text-red-600 italic select-none">
-                              Chamado #{codChamado}
+                              Chamado #{formatCodChamado(codChamado)}
                            </span>{' '}
-                           para exclusão. Caso deseje continuar com a operação,
-                           clique no botão "Excluir" abaixo.
+                           para exclusão. Se você deseja continuar com a
+                           exclusão, clique no botão abaixo.
                         </h3>
                      </div>
                   </div>

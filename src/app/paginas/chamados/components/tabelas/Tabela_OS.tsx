@@ -15,7 +15,7 @@ import {
 import {
    InputGlobalFilter,
    FilterInputTableHeaderDebounce,
-   OrderTableHeader,
+   // OrderTableHeader,
    FilterControls,
    useTableFilters,
 } from '../TableFilters';
@@ -65,17 +65,20 @@ interface Props {
 function getColumnWidth(columnId: string, userType?: string): string {
    if (userType === 'ADM') {
       const widthMapAdmin: Record<string, string> = {
-         COD_OS: '8%',
-         DTINI_OS: '10%',
-         HRINI_OS: '8%',
-         HRFIM_OS: '8%',
-         NOME_RECURSO: '15%',
-         DTINC_OS: '10%',
-         FATURADO_OS: '10%',
-         COMP_OS: '8%',
-         VALID_OS: '8%',
-         CHAMADO_OS: '10%',
-         actions: '7%',
+         COD_OS: '4%',
+         TAREFA_COMPLETA: '17%',
+         DTINI_OS: '6%',
+         HRINI_OS: '3%',
+         HRFIM_OS: '3%',
+         QTD_HR_OS: '3%',
+         DTINC_OS: '6%',
+         FATURADO_OS: '3%',
+         COMP_OS: '5%',
+         VALID_OS: '3%',
+         NOME_RECURSO: '11%',
+         NOME_CLIENTE: '10%',
+         PROJETO_COMPLETO: '17%',
+         CHAMADO_OS: '4%',
       };
       return widthMapAdmin[columnId] || 'auto';
    }
@@ -389,7 +392,7 @@ export default function TabelaOS({ isOpen = true, onClose }: Props) {
             {/* ==================== */}
 
             {/* ===== MODAL ===== */}
-            <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl shadow-xl shadow-black">
+            <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[98vw] overflow-hidden rounded-2xl shadow-xl shadow-black">
                {/* ===== HEADER ===== */}
                <header className="flex flex-col gap-4 bg-white/70 p-6">
                   <section className="flex flex-col items-start gap-4">
@@ -459,25 +462,12 @@ export default function TabelaOS({ isOpen = true, onClose }: Props) {
                                           ),
                                        }}
                                     >
-                                       {header.isPlaceholder ? null : header
-                                            .column.id === 'COD_OS' ||
-                                         header.column.id === 'DTINI_OS' ||
-                                         header.column.id === 'NOME_RECURSO' ||
-                                         header.column.id === 'CHAMADO_OS' ? (
-                                          <OrderTableHeader
-                                             column={header.column}
-                                          >
-                                             {flexRender(
-                                                header.column.columnDef.header,
-                                                header.getContext()
-                                             )}
-                                          </OrderTableHeader>
-                                       ) : (
-                                          flexRender(
-                                             header.column.columnDef.header,
-                                             header.getContext()
-                                          )
-                                       )}
+                                       {header.isPlaceholder
+                                          ? null
+                                          : flexRender(
+                                               header.column.columnDef.header,
+                                               header.getContext()
+                                            )}
                                     </th>
                                  ))}
                               </tr>

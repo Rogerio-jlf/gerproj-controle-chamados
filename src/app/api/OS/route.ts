@@ -163,6 +163,7 @@ export async function GET(request: Request) {
       const sql = `
          SELECT
             os.COD_OS,
+            os.CODTRF_OS,
             os.DTINI_OS,
             os.HRINI_OS,
             os.HRFIM_OS,
@@ -172,9 +173,32 @@ export async function GET(request: Request) {
             os.COMP_OS,
             os.VALID_OS,
             os.CHAMADO_OS,
-            Recurso.NOME_RECURSO
+            Recurso.COD_RECURSO,
+            Recurso.NOME_RECURSO,
+            Cliente.COD_CLIENTE,
+            Cliente.NOME_CLIENTE,
+            Tarefa.COD_TAREFA,
+            Tarefa.NOME_TAREFA,
+            Projeto.COD_PROJETO,
+            Projeto.NOME_PROJETO,
+            CASE 
+               WHEN Tarefa.COD_TAREFA IS NOT NULL THEN 
+                  CAST(Tarefa.COD_TAREFA AS VARCHAR(10)) || ' - ' || Tarefa.NOME_TAREFA
+               ELSE NULL
+            END AS TAREFA_COMPLETA,
+            Projeto.COD_PROJETO,
+            Projeto.NOME_PROJETO,
+            CASE 
+               WHEN Projeto.COD_PROJETO IS NOT NULL THEN 
+                  CAST(Projeto.COD_PROJETO AS VARCHAR(10)) || ' - ' || Projeto.NOME_PROJETO
+               ELSE NULL
+            END AS PROJETO_COMPLETO
          FROM OS os
          LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = os.CODREC_OS
+         LEFT JOIN CHAMADO Chamado ON Chamado.COD_CHAMADO = os.CHAMADO_OS
+         LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
+         LEFT JOIN TAREFA Tarefa ON Tarefa.COD_TAREFA = os.CODTRF_OS
+         LEFT JOIN PROJETO Projeto ON Projeto.COD_PROJETO = Tarefa.CODPRO_TAREFA
          ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
          ORDER BY os.DTINI_OS DESC, os.COD_OS DESC
          ROWS ${startRow} TO ${endRow};
@@ -188,10 +212,50 @@ export async function GET(request: Request) {
       `;
 
       // Executa as queries em paralelo
-      const [OS, countResult] = await Promise.all([
+      const [rawOsData, countResult] = await Promise.all([
          firebirdQuery(sql, params),
          firebirdQuery(countSql, params),
       ]);
+
+      // Função para calcular horas
+      const calculateHours = (
+         hrini: string | null,
+         hrfim: string | null
+      ): number | null => {
+         if (!hrini || !hrfim) return null;
+
+         try {
+            // Parse dos horários no formato HHMM (ex: "0800", "1230")
+            const parseTime = (timeStr: string) => {
+               // Remove espaços e garante que tenha 4 dígitos
+               const cleanTime = timeStr.trim().padStart(4, '0');
+               const hours = parseInt(cleanTime.substring(0, 2), 10);
+               const minutes = parseInt(cleanTime.substring(2, 4), 10);
+               return hours + minutes / 60;
+            };
+
+            const horaInicio = parseTime(hrini);
+            const horaFim = parseTime(hrfim);
+
+            let diferenca = horaFim - horaInicio;
+
+            // Se a hora final for menor que a inicial, assumimos que passou para o próximo dia
+            if (diferenca < 0) {
+               diferenca += 24;
+            }
+
+            return Math.round(diferenca * 100) / 100; // Arredonda para 2 casas decimais
+         } catch (error) {
+            console.error('Erro ao calcular horas:', error, { hrini, hrfim });
+            return null;
+         }
+      };
+
+      // Adiciona o campo calculado a cada registro
+      const osData = rawOsData.map((record: any) => ({
+         ...record,
+         QTD_HR_OS: calculateHours(record.HRINI_OS, record.HRFIM_OS),
+      }));
 
       // Calcula total de páginas
       const total = countResult[0].TOTAL;
@@ -200,7 +264,7 @@ export async function GET(request: Request) {
 
       return NextResponse.json(
          {
-            data: OS,
+            data: osData,
             pagination: {
                currentPage: page,
                totalPages,

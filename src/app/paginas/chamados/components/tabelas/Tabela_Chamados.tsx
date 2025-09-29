@@ -577,12 +577,16 @@ export default function TabelaChamados() {
                      </div>
 
                      {/* DROPDOWN DE MÓDULOS */}
-                     <div className="flex items-center gap-4">
-                        <DropdownHeader
-                           onOpenTabelaOS={() => setActiveView('os')}
-                           onOpenTabelaTarefas={() => setActiveView('tarefas')}
-                        />
-                     </div>
+                     {user.tipo === 'ADM' && (
+                        <div className="flex items-center gap-4">
+                           <DropdownHeader
+                              onOpenTabelaOS={() => setActiveView('os')}
+                              onOpenTabelaTarefas={() =>
+                                 setActiveView('tarefas')
+                              }
+                           />
+                        </div>
+                     )}
                   </section>
 
                   {/* ===== FILTROS GLOBAIS ===== */}

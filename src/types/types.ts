@@ -54,8 +54,13 @@ export interface TabelaOSProps {
    CHAMADO_OS?: string | null;
    // =====
    COD_CHAMADO: number;
+   // =====
+   COD_RECURSO: number;
+   NOME_RECURSO: string;
+   // =====
    COD_CLIENTE: number;
    NOME_CLIENTE: string;
+   // =====
    COD_TAREFA: number;
    NOME_TAREFA: string;
    // =====

@@ -12,13 +12,14 @@ import {
 import { TabelaChamadoProps } from '../../../../../types/types';
 // ================================================================================
 import { formatarDataParaBR } from '../../../../../utils/formatters';
-import StatusApontamentoChamado from '../modais/Modal_Atualizar_Status_Apontar_OS_Chamado';
 import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+import StatusApontamentoChamado from '../modais/Modal_Atualizar_Status_Apontar_OS_Chamado';
 // ================================================================================
 import { IoCall } from 'react-icons/io5';
 import { GrServices } from 'react-icons/gr';
 import { HiMiniSquaresPlus } from 'react-icons/hi2';
-import { FaDownload, FaTasks, FaBrain, FaTrashAlt } from 'react-icons/fa';
+import { RiDeleteBin5Fill } from 'react-icons/ri';
+import { FaDownload, FaTasks, FaBrain } from 'react-icons/fa';
 
 // ================================================================================
 // INTERFACES
@@ -49,43 +50,20 @@ interface BotaoCircularMenuProps {
 // BOTÃO DELETE SEPARADO
 // ================================================================================
 const BotaoDelete = ({ chamado, acoes }: BotaoCircularMenuProps) => {
-   const [hoveredDelete, setHoveredDelete] = useState(false);
-
    const handleDeleteClick = (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      console.log('Delete clicked for chamado:', chamado.COD_CHAMADO); // Debug
       acoes.onExcluirChamado(chamado.COD_CHAMADO);
    };
 
    return (
-      <div className="relative">
-         {/* Tooltip para o botão de delete */}
-         <motion.div
-            className={`pointer-events-none absolute -top-14 left-1/2 z-60 -translate-x-1/2 transform rounded-md border-t-4 border-red-500 bg-black px-6 py-2 text-sm font-semibold tracking-wider whitespace-nowrap text-white shadow-sm shadow-white`}
-            initial={{ opacity: 0, scale: 0.8, y: 10 }}
-            animate={{
-               opacity: hoveredDelete ? 1 : 0,
-               scale: hoveredDelete ? 1 : 0.8,
-               y: hoveredDelete ? 0 : 10,
-            }}
-            transition={{ duration: 0.2 }}
-         >
-            Deletar Chamado
-            <div className="absolute top-full left-1/2 h-0 w-0 -translate-x-1/2 transform border-t-4 border-r-4 border-l-4 border-transparent border-t-slate-900" />
-         </motion.div>
-
-         {/* Botão de Delete */}
-         <motion.button
+      <div className="relative flex items-center justify-center rounded-lg bg-red-600 p-2 text-center text-white">
+         <button
             onClick={handleDeleteClick}
-            onHoverStart={() => setHoveredDelete(true)}
-            onHoverEnd={() => setHoveredDelete(false)}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white/20 bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg shadow-red-300/50 transition-all duration-300 ease-out hover:from-red-600 hover:to-red-700 hover:ring-4 hover:shadow-red-400/60 hover:ring-red-300/40"
+            className="cursor-pointer transition-all hover:scale-150 focus:outline-none active:scale-95"
          >
-            <FaTrashAlt size={14} />
-         </motion.button>
+            <RiDeleteBin5Fill size={24} className="text-white" />
+         </button>
       </div>
    );
 };
@@ -221,24 +199,17 @@ const BotaoMenuCircular = ({ chamado, acoes }: BotaoCircularMenuProps) => {
    return (
       <>
          {/* Botão Principal Melhorado */}
-         <div className="relative flex items-center justify-center rounded-md bg-slate-900 p-2 text-center text-white">
-            <motion.button
+         <div className="relative flex items-center justify-center rounded-lg bg-slate-900 p-2 text-center text-white">
+            <button
                onClick={handleToggle}
-               className="cursor-pointer transition-all hover:scale-110 focus:outline-none active:scale-95"
-               whileHover={{ scale: 1.1 }}
-               whileTap={{ scale: 0.95 }}
+               className="cursor-pointer transition-all hover:scale-150 focus:outline-none active:scale-95"
             >
-               <motion.div
-                  animate={{ rotate: isOpen ? 135 : 0 }}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
-               >
-                  {isOpen ? (
-                     <span className="text-xl font-bold">×</span>
-                  ) : (
-                     <HiMiniSquaresPlus size={32} />
-                  )}
-               </motion.div>
-            </motion.button>
+               {isOpen ? (
+                  <span className="text-xl font-bold">×</span>
+               ) : (
+                  <HiMiniSquaresPlus size={24} />
+               )}
+            </button>
          </div>
 
          {/* Portal para os botões de ação */}

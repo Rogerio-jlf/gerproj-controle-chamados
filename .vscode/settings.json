@@ -50,11 +50,37 @@
    // === SPELL CHECKER ===
    "cSpell.language": "en,pt-BR", // Idiomas Inglês + Português BR
    "cSpell.words": [
+      "Acao",
       "Atribuicao",
+      "ATRIBUIDO",
+      "Botao",
       "Classificacao",
+      "CODPRO",
+      "CODREC",
+      "CODTRF",
+      "Compet",
+      "configuracoes",
+      "Configuracoes",
+      "DESLOC",
+      "diferenca",
+      "DTENVIO",
+      "DTINC",
+      "DTINI",
+      "hrfim",
+      "HRFIM",
+      "hrini",
+      "HRINI",
       "Nextjs",
+      "PERC",
+      "relatorios",
+      "Relatorios",
+      "REMDES",
+      "RESPCLI",
       "shadcn",
-      "Tailwind"
+      "Tailwind",
+      "VALIDACAO",
+      "VRHR",
+      "Xmark"
    ], // Palavras customizadas
 
    // === TAILWIND CSS ===

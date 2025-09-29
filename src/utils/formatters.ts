@@ -142,3 +142,10 @@ export const normalizeDate = (dateValue: any): string[] => {
 
    return [...new Set(formats)]; // Remove duplicatas
 };
+
+export const formatCodChamado = (num: number | null) => {
+   if (num === null) return '';
+   const str = num.toString();
+   if (str.length <= 2) return str;
+   return str.slice(0, 2) + '.' + str.slice(2);
+};

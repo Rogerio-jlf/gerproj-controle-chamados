@@ -3,29 +3,31 @@ import type { NextRequest } from 'next/server';
 import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
 
 export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ codChamado: string }> }
+   request: NextRequest,
+   context: { params: Promise<{ codChamado: string }> }
 ) {
-  try {
-    // Aguarda o params antes de desestruturar
-    const { codChamado } = await context.params;
+   try {
+      // Pega o código do chamado dos parâmetros da rota
+      const { codChamado } = await context.params;
 
-    if (!codChamado) {
-      return NextResponse.json(
-        { error: 'Parâmetro codChamado é obrigatório' },
-        { status: 400 }
-      );
-    }
+      //  Validação básica do parâmetro
+      if (!codChamado) {
+         return NextResponse.json(
+            { error: 'Parâmetro codChamado é obrigatório' },
+            { status: 400 }
+         );
+      }
 
-    // Validação básica do parâmetro
-    if (isNaN(Number(codChamado))) {
-      return NextResponse.json(
-        { error: 'Parâmetro codChamado deve ser um número válido' },
-        { status: 400 }
-      );
-    }
+      // Verifica se é um número válido
+      if (isNaN(Number(codChamado))) {
+         return NextResponse.json(
+            { error: 'Parâmetro codChamado deve ser um número válido' },
+            { status: 400 }
+         );
+      }
 
-    const sql = `
+      //  Consulta SQL para buscar as OS relacionadas ao chamado, incluindo dados do cliente
+      const sql = `
       SELECT
         OS.COD_OS,
         OS.CODTRF_OS,
@@ -60,72 +62,75 @@ export async function GET(
       WHERE OS.CHAMADO_OS = ?
     `;
 
-    const rawOsData = await firebirdQuery(sql, [Number(codChamado)]);
+      //  Executa a consulta
+      const rawOsData = await firebirdQuery(sql, [Number(codChamado)]);
 
-    // Função para calcular a diferença entre horários no formato CHAR (ex: "0800")
-    const calculateHours = (
-      hrini: string | null,
-      hrfim: string | null
-    ): number | null => {
-      if (!hrini || !hrfim) return null;
+      // Função para calcular a quantidade de horas entre HRINI_OS e HRFIM_OS
+      const calculateHours = (
+         hrini: string | null,
+         hrfim: string | null
+      ): number | null => {
+         if (!hrini || !hrfim) return null;
 
-      try {
-        // Parse dos horários no formato HHMM (ex: "0800", "1230")
-        const parseTime = (timeStr: string) => {
-          // Remove espaços e garante que tenha 4 dígitos
-          const cleanTime = timeStr.trim().padStart(4, '0');
-          const hours = parseInt(cleanTime.substring(0, 2), 10);
-          const minutes = parseInt(cleanTime.substring(2, 4), 10);
-          return hours + minutes / 60;
-        };
+         try {
+            // Parse dos horários no formato HHMM (ex: "0800", "1230")
+            const parseTime = (timeStr: string) => {
+               // Remove espaços e garante que tenha 4 dígitos
+               const cleanTime = timeStr.trim().padStart(4, '0');
+               const hours = parseInt(cleanTime.substring(0, 2), 10);
+               const minutes = parseInt(cleanTime.substring(2, 4), 10);
+               return hours + minutes / 60;
+            };
 
-        const horaInicio = parseTime(hrini);
-        const horaFim = parseTime(hrfim);
+            const horaInicio = parseTime(hrini);
+            const horaFim = parseTime(hrfim);
 
-        let diferenca = horaFim - horaInicio;
+            let diferenca = horaFim - horaInicio;
 
-        // Se a hora final for menor que a inicial, assumimos que passou para o próximo dia
-        if (diferenca < 0) {
-          diferenca += 24;
-        }
+            // Se a hora final for menor que a inicial, assumimos que passou para o próximo dia
+            if (diferenca < 0) {
+               diferenca += 24;
+            }
 
-        return Math.round(diferenca * 100) / 100; // Arredonda para 2 casas decimais
-      } catch (error) {
-        console.error('Erro ao calcular horas:', error, { hrini, hrfim });
-        return null;
+            return Math.round(diferenca * 100) / 100; // Arredonda para 2 casas decimais
+         } catch (error) {
+            console.error('Erro ao calcular horas:', error, { hrini, hrfim });
+            return null;
+         }
+      };
+
+      // Adiciona o campo calculado a cada registro
+      const osData = rawOsData.map((record: any) => ({
+         ...record,
+         QTD_HR_OS: calculateHours(record.HRINI_OS, record.HRFIM_OS),
+      }));
+
+      // Verifica se foram encontrados registros
+      if (!osData || osData.length === 0) {
+         return NextResponse.json([], { status: 200 });
       }
-    };
 
-    // Adiciona o campo calculado a cada registro
-    const osData = rawOsData.map((record: any) => ({
-      ...record,
-      QTD_HR_OS: calculateHours(record.HRINI_OS, record.HRFIM_OS),
-    }));
+      return NextResponse.json(osData, { status: 200 });
+   } catch (error) {
+      console.error('Erro ao buscar dados da OS com cliente:', error);
 
-    // Verifica se foram encontrados registros
-    if (!osData || osData.length === 0) {
-      return NextResponse.json([], { status: 200 });
-    }
+      // Tratamento mais específico de erros
+      if (error instanceof Error) {
+         return NextResponse.json(
+            {
+               error: 'Erro interno ao buscar dados da OS',
+               details:
+                  process.env.NODE_ENV === 'development'
+                     ? error.message
+                     : undefined,
+            },
+            { status: 500 }
+         );
+      }
 
-    return NextResponse.json(osData, { status: 200 });
-  } catch (error) {
-    console.error('Erro ao buscar dados da OS com cliente:', error);
-
-    // Tratamento mais específico de erros
-    if (error instanceof Error) {
       return NextResponse.json(
-        {
-          error: 'Erro interno ao buscar dados da OS',
-          details:
-            process.env.NODE_ENV === 'development' ? error.message : undefined,
-        },
-        { status: 500 }
+         { error: 'Erro interno ao buscar dados da OS' },
+         { status: 500 }
       );
-    }
-
-    return NextResponse.json(
-      { error: 'Erro interno ao buscar dados da OS' },
-      { status: 500 }
-    );
-  }
+   }
 }

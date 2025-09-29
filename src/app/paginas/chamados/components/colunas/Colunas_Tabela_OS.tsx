@@ -10,8 +10,10 @@ import { TabelaOSProps } from '../../../../../types/types';
 // ================================================================================
 import {
    formatarDataParaBR,
+   formatarDecimalParaTempo,
    formatarHora,
 } from '../../../../../utils/formatters';
+import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
 
 // ================================================================================
 // INTERFACES
@@ -24,27 +26,47 @@ interface BotoesAcaoProps {
 // COMPONENTE PRINCIPAL
 // ================================================================================
 export const colunasTabelaOS = (): ColumnDef<TabelaOSProps>[] => [
+   // Chamado
+   {
+      accessorKey: 'CHAMADO_OS',
+      header: () => <div className="text-center">Chamado</div>,
+      cell: ({ getValue }) => {
+         const chamado = getValue() as number;
+         return chamado ? (
+            <div className="rounded-md bg-teal-700 p-2 text-center font-bold text-white">
+               {chamado}
+            </div>
+         ) : (
+            <div className="rounded-md bg-gray-600 p-2 text-center text-white">
+               --
+            </div>
+         );
+      },
+   },
+   // =====
+
    // Código da OS
    {
       accessorKey: 'COD_OS',
-      header: () => <div className="text-center">CÓD. OS</div>,
+      header: () => <div className="text-center">OS</div>,
       cell: ({ getValue }) => (
          <div className="rounded-md border border-black bg-white/30 p-2 text-center font-bold text-black">
             {getValue() as string}
          </div>
       ),
    },
+   // =====
 
    // Data Início
    {
       accessorKey: 'DTINI_OS',
-      header: () => <div className="text-center">DT. Início</div>,
+      header: () => <div className="text-center">Data Início</div>,
       cell: ({ getValue }) => {
          const dateString = getValue() as string;
          const dataFormatada = formatarDataParaBR(dateString);
 
          return (
-            <div className="rounded-md border border-black bg-white/30 p-2 text-center font-bold text-black">
+            <div className="flex items-center justify-center rounded-md border border-black bg-white/30 p-2 text-center font-bold text-black">
                {dataFormatada}
             </div>
          );
@@ -54,7 +76,7 @@ export const colunasTabelaOS = (): ColumnDef<TabelaOSProps>[] => [
    // Hora Início
    {
       accessorKey: 'HRINI_OS',
-      header: () => <div className="text-center">HR. Início</div>,
+      header: () => <div className="text-center">Hora Início</div>,
       cell: ({ getValue }) => {
          const hora = getValue() as string;
          return (
@@ -68,7 +90,7 @@ export const colunasTabelaOS = (): ColumnDef<TabelaOSProps>[] => [
    // Hora Fim
    {
       accessorKey: 'HRFIM_OS',
-      header: () => <div className="text-center">HR. Fim</div>,
+      header: () => <div className="text-center">Hora Fim</div>,
       cell: ({ getValue }) => {
          const hora = getValue() as string;
          return (
@@ -79,16 +101,33 @@ export const colunasTabelaOS = (): ColumnDef<TabelaOSProps>[] => [
       },
    },
 
+   // Quantidade de horas gastas na OS
+   {
+      accessorKey: 'QTD_HR_OS',
+      header: () => <div className="text-center">Total HR's</div>,
+      cell: ({ getValue }) => {
+         const value = getValue() as number;
+         const tempoFormatado = formatarDecimalParaTempo(value);
+
+         return (
+            <div className="flex items-center justify-center rounded-md border border-black bg-white/30 p-2 text-center font-bold text-black">
+               {tempoFormatado}
+            </div>
+         );
+      },
+   },
+   // =====
+
    // Data Inclusão
    {
       accessorKey: 'DTINC_OS',
-      header: () => <div className="text-center">DT. Inclusão</div>,
+      header: () => <div className="text-center">Data Apontam.</div>,
       cell: ({ getValue }) => {
          const dateString = getValue() as string;
          const dataFormatada = formatarDataParaBR(dateString);
 
          return (
-            <div className="rounded-md border border-black bg-white/30 p-2 text-center font-bold text-black">
+            <div className="flex items-center justify-center rounded-md border border-black bg-white/30 p-2 text-center font-bold text-black">
                {dataFormatada}
             </div>
          );
@@ -98,31 +137,47 @@ export const colunasTabelaOS = (): ColumnDef<TabelaOSProps>[] => [
    // Faturado
    {
       accessorKey: 'FATURADO_OS',
-      header: () => <div className="text-center">Fatura OS</div>,
-      cell: ({ getValue }) => (
-         <div className="rounded-md border border-black bg-white/30 p-2 text-center font-bold text-black">
-            {getValue() as string}
-         </div>
-      ),
-   },
-
-   // Complemento
-   {
-      accessorKey: 'COMP_OS',
-      header: () => <div className="text-center">Competência</div>,
-      cell: ({ getValue }) => (
-         <div className="rounded-md border border-black bg-white/30 p-2 text-center font-bold text-black">
-            {getValue() as string}
-         </div>
-      ),
+      header: () => <div className="text-center">Cliente Paga</div>,
+      cell: ({ getValue }) => {
+         const value = (getValue() as string)?.toUpperCase();
+         let bgColor = 'bg-gray-400';
+         if (value === 'SIM') bgColor = 'bg-blue-600 text-white';
+         else if (value === 'NAO') bgColor = 'bg-red-600 text-white';
+         return (
+            <div
+               className={`flex items-center justify-center rounded-md border border-black ${bgColor} p-2 text-center font-bold`}
+            >
+               {value}
+            </div>
+         );
+      },
    },
 
    // Válido
    {
       accessorKey: 'VALID_OS',
-      header: () => <div className="text-center">Válida OS</div>,
+      header: () => <div className="text-center">Consultor Recebe</div>,
+      cell: ({ getValue }) => {
+         const value = (getValue() as string)?.toUpperCase();
+         let bgColor = 'bg-gray-400';
+         if (value === 'SIM') bgColor = 'bg-blue-600 text-white';
+         else if (value === 'NAO') bgColor = 'bg-red-600 text-white';
+         return (
+            <div
+               className={`flex items-center justify-center rounded-md border border-black ${bgColor} p-2 text-center font-bold`}
+            >
+               {value}
+            </div>
+         );
+      },
+   },
+
+   // Complemento
+   {
+      accessorKey: 'COMP_OS',
+      header: () => <div className="text-center">Compet.</div>,
       cell: ({ getValue }) => (
-         <div className="rounded-md border border-black bg-white/30 p-2 text-center font-bold text-black">
+         <div className="flex items-center justify-center rounded-md border border-black bg-white/30 p-2 text-center font-bold text-black">
             {getValue() as string}
          </div>
       ),
@@ -138,7 +193,7 @@ export const colunasTabelaOS = (): ColumnDef<TabelaOSProps>[] => [
             return (
                <Tooltip>
                   <TooltipTrigger asChild>
-                     <div className="truncate rounded-md border border-black bg-white/60 py-2 pl-6 text-left font-bold text-black">
+                     <div className="flex items-center justify-center rounded-md border border-black bg-white/30 p-2 text-center font-bold text-black">
                         {recurso.split(' ').slice(0, 2).join(' ')}
                      </div>
                   </TooltipTrigger>
@@ -162,21 +217,47 @@ export const colunasTabelaOS = (): ColumnDef<TabelaOSProps>[] => [
       },
    },
 
-   // Chamado
+   // Nome do Cliente
    {
-      accessorKey: 'CHAMADO_OS',
-      header: () => <div className="text-center">CÓD. Chamado</div>,
+      accessorKey: 'NOME_CLIENTE',
+      header: () => <div className="text-center">Cliente</div>,
       cell: ({ getValue }) => {
-         const chamado = getValue() as number;
-         return chamado ? (
-            <div className="rounded-md bg-teal-700 p-2 text-center font-bold text-white">
-               {chamado}
-            </div>
-         ) : (
-            <div className="rounded-md bg-gray-600 p-2 text-center text-white">
-               --
+         const value = getValue() as string;
+         const textoCorrigido = corrigirTextoCorrompido(value);
+         return (
+            <div className="flex items-center justify-center rounded-md border border-black bg-white/30 p-2 text-center font-bold text-black">
+               {textoCorrigido || '-'}
             </div>
          );
       },
    },
+
+   // Código do projeto
+   {
+      accessorKey: 'PROJETO_COMPLETO',
+      header: () => <div className="text-center">Projeto</div>,
+      cell: ({ getValue }) => {
+         const value = getValue() as string;
+         return (
+            <div className="flex items-center justify-center rounded-md border border-black bg-white/30 p-2 text-center font-bold text-black">
+               {value || '-'}
+            </div>
+         );
+      },
+   },
+   // =====
+   // Código da tarefa
+   {
+      accessorKey: 'TAREFA_COMPLETA',
+      header: () => <div className="text-center">Tarefa</div>,
+      cell: ({ getValue }) => {
+         const value = getValue() as string;
+         return (
+            <div className="flex items-center justify-center rounded-md border border-black bg-white/30 p-2 text-center font-bold text-black">
+               {value || '-'}
+            </div>
+         );
+      },
+   },
+   // =====
 ];
