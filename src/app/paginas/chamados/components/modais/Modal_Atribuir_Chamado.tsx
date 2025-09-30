@@ -9,6 +9,8 @@ import React, {
    useMemo,
    createContext,
    useContext,
+   useCallback,
+   useRef,
 } from 'react';
 // ================================================================================
 import {
@@ -356,6 +358,8 @@ export const ModalAtribuirChamado: React.FC<
       assunto: '',
    });
 
+   const toastShownRef = useRef(false);
+
    // ================================================================================
    // HOOKS E CONTEXTOS (mantidos iguais)
    // ================================================================================
@@ -510,6 +514,20 @@ export const ModalAtribuirChamado: React.FC<
       return recurso ? corrigirTextoCorrompido(recurso.NOME_RECURSO) : null;
    }, [selectedRecurso, recursosFiltrados]);
 
+   const handleLimparFormulario = useCallback(() => {
+      setFormData({
+         cliente: chamado?.COD_CLIENTE?.toString() || '',
+         enviarEmailCliente: false,
+         enviarEmailRecurso: false,
+      });
+      setErrors({});
+      setSelectedRecurso(null);
+      setSearchTerm(''); // Limpa o campo de busca
+      setFiltroRecomendacao('TODOS'); // Reseta o filtro para "Todos"
+      setShowSugestao(false); // Fecha a sugestão se estiver aberta
+      setShowDetails(null); // Limpa os detalhes se estiverem abertos
+   }, [chamado]);
+
    // E substitua seu useEffect atual por este:
    useEffect(() => {
       if (atribuirMutation.isSuccess) {
@@ -524,12 +542,20 @@ export const ModalAtribuirChamado: React.FC<
                } com sucesso.`}
             />
          ));
+
+         // Limpa o formulário
+         handleLimparFormulario();
+
+         // Fecha o modal após um pequeno delay
+         setTimeout(() => {
+            onClose();
+         }, 500);
+
+         // Reset da mutation para evitar re-execuções
+         atribuirMutation.reset();
       }
-   }, [
-      atribuirMutation.isSuccess,
-      recursoSelecionadoNome,
-      chamado?.COD_CHAMADO,
-   ]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [atribuirMutation.isSuccess]);
 
    useEffect(() => {
       if (atribuirMutation.isError) {
@@ -640,23 +666,13 @@ export const ModalAtribuirChamado: React.FC<
       });
    };
 
-   const handleLimparFormulario = () => {
-      setFormData({
-         cliente: chamado?.COD_CLIENTE?.toString() || '',
-         enviarEmailCliente: false,
-         enviarEmailRecurso: false,
-      });
-      setErrors({});
-      setSelectedRecurso(null);
-   };
-
    // ================================================================================
    // RENDERIZAÇÃO CONDICIONAL
    // ================================================================================
    if (!isOpen || !chamado) return null;
 
    // ================================================================================
-   // RENDERIZAÇÃO PRINCIPAL COM DARK MODE CONTEXT
+   // RENDERIZAÇÃO
    // ================================================================================
    return (
       <DarkModeContext.Provider value={{ isDarkMode, toggleDarkMode }}>
@@ -702,9 +718,14 @@ export const ModalAtribuirChamado: React.FC<
                         {/* ===== */}
 
                         <div className="flex items-center gap-4">
+                           {/* Botão dark mode */}
                            <DarkModeToggle />
+                           {/* Botão fechar modal */}
                            <button
-                              onClick={onClose}
+                              onClick={() => {
+                                 handleLimparFormulario();
+                                 onClose();
+                              }}
                               className="cursor-pointer rounded-full bg-red-800 p-3 text-white transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
                            >
                               <IoClose size={24} />

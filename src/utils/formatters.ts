@@ -25,6 +25,45 @@ export const formatarDataParaBR = (
       return dateString;
    }
 };
+
+export const formatarDataHoraParaBR = (
+   dateString: string | null | undefined,
+   incluirSegundos: boolean = false
+): string => {
+   if (!dateString) {
+      return '-';
+   }
+
+   try {
+      // Cria objeto Date a partir da string
+      const date = new Date(dateString);
+
+      // Verifica se é uma data válida
+      if (isNaN(date.getTime())) {
+         return dateString;
+      }
+
+      // Formata a data
+      const dia = String(date.getDate()).padStart(2, '0');
+      const mes = String(date.getMonth() + 1).padStart(2, '0');
+      const ano = date.getFullYear();
+
+      // Formata a hora
+      const horas = String(date.getHours()).padStart(2, '0');
+      const minutos = String(date.getMinutes()).padStart(2, '0');
+      const segundos = String(date.getSeconds()).padStart(2, '0');
+
+      // Retorna com ou sem segundos
+      if (incluirSegundos) {
+         return `${dia}/${mes}/${ano} ${horas}:${minutos}:${segundos}`;
+      }
+
+      return `${dia}/${mes}/${ano} ${horas}:${minutos}`;
+   } catch (error) {
+      console.error('Erro ao formatar data/hora:', error);
+      return dateString;
+   }
+};
 // ====================================================================================================
 
 // Função para converter horas de HHMM para HH:MM

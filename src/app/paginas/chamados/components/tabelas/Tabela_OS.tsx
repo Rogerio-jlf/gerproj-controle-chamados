@@ -13,9 +13,7 @@ import {
 } from '@tanstack/react-table';
 // ================================================================================
 import {
-   InputGlobalFilter,
    FilterInputTableHeaderDebounce,
-   // OrderTableHeader,
    FilterControls,
    useTableFilters,
 } from '../TableFilters';
@@ -65,20 +63,20 @@ interface Props {
 function getColumnWidth(columnId: string, userType?: string): string {
    if (userType === 'ADM') {
       const widthMapAdmin: Record<string, string> = {
-         COD_OS: '4%',
-         TAREFA_COMPLETA: '17%',
-         DTINI_OS: '6%',
-         HRINI_OS: '3%',
-         HRFIM_OS: '3%',
-         QTD_HR_OS: '3%',
-         DTINC_OS: '6%',
-         FATURADO_OS: '3%',
-         COMP_OS: '5%',
-         VALID_OS: '3%',
-         NOME_RECURSO: '11%',
-         NOME_CLIENTE: '10%',
-         PROJETO_COMPLETO: '17%',
          CHAMADO_OS: '4%',
+         COD_OS: '4%',
+         DTINI_OS: '6%',
+         HRINI_OS: '4%',
+         HRFIM_OS: '4%',
+         QTD_HR_OS: '4%',
+         DTINC_OS: '8%',
+         COMP_OS: '5%',
+         NOME_CLIENTE: '10%',
+         FATURADO_OS: '4%',
+         NOME_RECURSO: '11%',
+         VALID_OS: '4%',
+         TAREFA_COMPLETA: '16%',
+         PROJETO_COMPLETO: '16%',
       };
       return widthMapAdmin[columnId] || 'auto';
    }
@@ -125,10 +123,14 @@ export default function TabelaOS({ isOpen = true, onClose }: Props) {
       { id: 'COD_OS', desc: true },
    ]);
    const [filterValues, setFilterValues] = useState({
+      CHAMADO_OS: '',
       COD_OS: '',
       DTINI_OS: '',
+      DTINC_OS: '',
+      NOME_CLIENTE: '',
+      FATURADO_OS: '',
       NOME_RECURSO: '',
-      CHAMADO_OS: '',
+      VALID_OS: '',
       global: '',
    });
    const [showFilters, setShowFilters] = useState(false);
@@ -166,10 +168,14 @@ export default function TabelaOS({ isOpen = true, onClose }: Props) {
       setCodOsFilter('');
       setCurrentPage(1);
       setFilterValues({
+         CHAMADO_OS: '',
          COD_OS: '',
          DTINI_OS: '',
+         DTINC_OS: '',
+         NOME_CLIENTE: '',
+         FATURADO_OS: '',
          NOME_RECURSO: '',
-         CHAMADO_OS: '',
+         VALID_OS: '',
          global: '',
       });
       table.getAllColumns().forEach(column => {
@@ -180,10 +186,14 @@ export default function TabelaOS({ isOpen = true, onClose }: Props) {
    // Atualiza os valores locais quando os filtros mudam
    useEffect(() => {
       const newFilterValues = {
+         CHAMADO_OS: '',
          COD_OS: codOsFilter,
          DTINI_OS: '',
+         DTINC_OS: '',
+         NOME_CLIENTE: '',
+         FATURADO_OS: '',
          NOME_RECURSO: '',
-         CHAMADO_OS: '',
+         VALID_OS: '',
          global: globalFilter || '',
       };
 
@@ -416,25 +426,19 @@ export default function TabelaOS({ isOpen = true, onClose }: Props) {
                         </button>
                      </div>
                      {/* ========== */}
-                     <div className="flex items-center">
-                        <Filtros onFiltersChange={handleFiltersChange} />
-                     </div>
-                     {/* ========== */}
-                     <div className="flex items-center gap-6">
-                        <InputGlobalFilter
-                           value={globalFilter ?? ''}
-                           onChange={value => setGlobalFilter(String(value))}
-                           placeholder="Buscar em todas as colunas..."
-                           onClear={() => setGlobalFilter('')}
-                        />
-
-                        <FilterControls
-                           showFilters={showFilters}
-                           setShowFilters={setShowFilters}
-                           totalActiveFilters={totalActiveFilters}
-                           clearFilters={clearFilters}
-                           dataLength={paginationInfo?.totalRecords || 0}
-                        />
+                     <div className="flex w-full items-center justify-between">
+                        <div className="flex-1">
+                           <Filtros onFiltersChange={handleFiltersChange} />
+                        </div>
+                        <div className="mt-6 flex items-center gap-4">
+                           <FilterControls
+                              showFilters={showFilters}
+                              setShowFilters={setShowFilters}
+                              totalActiveFilters={totalActiveFilters}
+                              clearFilters={clearFilters}
+                              dataLength={paginationInfo?.totalRecords || 0}
+                           />
+                        </div>
                      </div>
                   </section>
                </header>
@@ -487,43 +491,6 @@ export default function TabelaOS({ isOpen = true, onClose }: Props) {
                                           ),
                                        }}
                                     >
-                                       {column.id === 'COD_OS' && (
-                                          <FilterInputTableHeaderDebounce
-                                             value={
-                                                (column.getFilterValue() as string) ??
-                                                ''
-                                             }
-                                             onChange={value =>
-                                                column.setFilterValue(value)
-                                             }
-                                             placeholder="Código OS..."
-                                          />
-                                       )}
-                                       {column.id === 'DTINI_OS' && (
-                                          <FilterInputTableHeaderDebounce
-                                             value={
-                                                (column.getFilterValue() as string) ??
-                                                ''
-                                             }
-                                             onChange={value =>
-                                                column.setFilterValue(value)
-                                             }
-                                             placeholder="dd/mm/aaaa"
-                                             type="text"
-                                          />
-                                       )}
-                                       {column.id === 'NOME_RECURSO' && (
-                                          <FilterInputTableHeaderDebounce
-                                             value={
-                                                (column.getFilterValue() as string) ??
-                                                ''
-                                             }
-                                             onChange={value =>
-                                                column.setFilterValue(value)
-                                             }
-                                             placeholder="Recurso..."
-                                          />
-                                       )}
                                        {column.id === 'CHAMADO_OS' && (
                                           <FilterInputTableHeaderDebounce
                                              value={
@@ -533,7 +500,92 @@ export default function TabelaOS({ isOpen = true, onClose }: Props) {
                                              onChange={value =>
                                                 column.setFilterValue(value)
                                              }
-                                             placeholder="Chamado..."
+                                          />
+                                       )}
+
+                                       {column.id === 'COD_OS' && (
+                                          <FilterInputTableHeaderDebounce
+                                             value={
+                                                (column.getFilterValue() as string) ??
+                                                ''
+                                             }
+                                             onChange={value =>
+                                                column.setFilterValue(value)
+                                             }
+                                          />
+                                       )}
+
+                                       {column.id === 'DTINI_OS' && (
+                                          <FilterInputTableHeaderDebounce
+                                             value={
+                                                (column.getFilterValue() as string) ??
+                                                ''
+                                             }
+                                             onChange={value =>
+                                                column.setFilterValue(value)
+                                             }
+                                             type="text"
+                                          />
+                                       )}
+
+                                       {column.id === 'DTINC_OS' && (
+                                          <FilterInputTableHeaderDebounce
+                                             value={
+                                                (column.getFilterValue() as string) ??
+                                                ''
+                                             }
+                                             onChange={value =>
+                                                column.setFilterValue(value)
+                                             }
+                                             type="text"
+                                          />
+                                       )}
+
+                                       {column.id === 'NOME_CLIENTE' && (
+                                          <FilterInputTableHeaderDebounce
+                                             value={
+                                                (column.getFilterValue() as string) ??
+                                                ''
+                                             }
+                                             onChange={value =>
+                                                column.setFilterValue(value)
+                                             }
+                                          />
+                                       )}
+
+                                       {column.id === 'FATURADO_OS' && (
+                                          <FilterInputTableHeaderDebounce
+                                             value={
+                                                (column.getFilterValue() as string) ??
+                                                ''
+                                             }
+                                             onChange={value =>
+                                                column.setFilterValue(value)
+                                             }
+                                          />
+                                       )}
+
+                                       {column.id === 'NOME_RECURSO' && (
+                                          <FilterInputTableHeaderDebounce
+                                             value={
+                                                (column.getFilterValue() as string) ??
+                                                ''
+                                             }
+                                             onChange={value =>
+                                                column.setFilterValue(value)
+                                             }
+                                          />
+                                       )}
+
+                                       {column.id === 'VALID_OS' && (
+                                          <FilterInputTableHeaderDebounce
+                                             value={
+                                                (column.getFilterValue() as string) ??
+                                                ''
+                                             }
+                                             onChange={value =>
+                                                column.setFilterValue(value)
+                                             }
                                           />
                                        )}
                                     </th>

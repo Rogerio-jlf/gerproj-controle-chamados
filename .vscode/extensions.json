@@ -17,10 +17,6 @@
       "heybourn.headwind", // Organiza classes Tailwind automaticamente
       "Prisma.prisma", // Prisma ORM
 
-      // === SPELL CHECKER ===
-      "streetsidesoftware.code-spell-checker", // Spell Checker geral
-      "streetsidesoftware.code-spell-checker-portuguese-brazilian", // Português BR
-
       // === BACKEND / API / DB ===
       "humao.rest-client", // Testar APIs REST direto do VSCode
       "rangav.vscode-thunder-client", // Thunder Client

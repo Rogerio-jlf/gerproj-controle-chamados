@@ -106,25 +106,31 @@ export async function GET(request: Request) {
       // Array de parâmetros para a query
       const params: any[] = [];
 
+      // Função auxiliar para formatar data para Firebird
+      const formatDateForFirebird = (date: Date): string => {
+         const year = date.getFullYear();
+         const month = String(date.getMonth() + 1).padStart(2, '0');
+         const day = String(date.getDate()).padStart(2, '0');
+         return `${year}-${month}-${day}`;
+      };
+
       // Filtro por data - com suporte a ano, mês e dia
       if (anoNumber && mesNumber && diaNumber) {
          // Ano, mês e dia específicos - filtro por data exata
-         const dataEspecifica = new Date(anoNumber, mesNumber - 1, diaNumber);
-         const proximoDia = new Date(anoNumber, mesNumber - 1, diaNumber + 1);
-         whereConditions.push('OS.DTINI_OS >= ? AND OS.DTINI_OS < ?');
-         params.push(dataEspecifica, proximoDia);
+         whereConditions.push(
+            'EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(MONTH FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
+         );
+         params.push(anoNumber, mesNumber, diaNumber);
       } else if (anoNumber && mesNumber && !diaNumber) {
          // Ano e mês específicos, todos os dias - filtro por mês/ano
-         const dataInicio = new Date(anoNumber, mesNumber - 1, 1);
-         const dataFim = new Date(anoNumber, mesNumber, 1);
-         whereConditions.push('OS.DTINI_OS >= ? AND OS.DTINI_OS < ?');
-         params.push(dataInicio, dataFim);
+         whereConditions.push(
+            'EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(MONTH FROM OS.DTINI_OS) = ?'
+         );
+         params.push(anoNumber, mesNumber);
       } else if (anoNumber && !mesNumber && !diaNumber) {
          // Apenas ano específico - filtro por ano todo
-         const dataInicio = new Date(anoNumber, 0, 1);
-         const dataFim = new Date(anoNumber + 1, 0, 1);
-         whereConditions.push('OS.DTINI_OS >= ? AND OS.DTINI_OS < ?');
-         params.push(dataInicio, dataFim);
+         whereConditions.push('EXTRACT(YEAR FROM OS.DTINI_OS) = ?');
+         params.push(anoNumber);
       } else if (!anoNumber && mesNumber && !diaNumber) {
          // Apenas mês específico - filtro por mês em todos os anos
          whereConditions.push('EXTRACT(MONTH FROM OS.DTINI_OS) = ?');
@@ -159,7 +165,7 @@ export async function GET(request: Request) {
          params.push(Number(codOsQuery));
       }
 
-      // Monta a query final com paginação
+      // Monta a query final com paginação - VERSÃO SIMPLIFICADA
       const sql = `
          SELECT
             os.COD_OS,
@@ -180,19 +186,7 @@ export async function GET(request: Request) {
             Tarefa.COD_TAREFA,
             Tarefa.NOME_TAREFA,
             Projeto.COD_PROJETO,
-            Projeto.NOME_PROJETO,
-            CASE 
-               WHEN Tarefa.COD_TAREFA IS NOT NULL THEN 
-                  CAST(Tarefa.COD_TAREFA AS VARCHAR(10)) || ' - ' || Tarefa.NOME_TAREFA
-               ELSE NULL
-            END AS TAREFA_COMPLETA,
-            Projeto.COD_PROJETO,
-            Projeto.NOME_PROJETO,
-            CASE 
-               WHEN Projeto.COD_PROJETO IS NOT NULL THEN 
-                  CAST(Projeto.COD_PROJETO AS VARCHAR(10)) || ' - ' || Projeto.NOME_PROJETO
-               ELSE NULL
-            END AS PROJETO_COMPLETO
+            Projeto.NOME_PROJETO
          FROM OS os
          LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = os.CODREC_OS
          LEFT JOIN CHAMADO Chamado ON Chamado.COD_CHAMADO = os.CHAMADO_OS
@@ -211,13 +205,95 @@ export async function GET(request: Request) {
          ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
       `;
 
-      // Executa as queries em paralelo
-      const [rawOsData, countResult] = await Promise.all([
-         firebirdQuery(sql, params),
-         firebirdQuery(countSql, params),
-      ]);
+      // Log para debug
+      console.log('Query SQL:', sql);
+      console.log('Parâmetros:', params);
+      console.log('Where Conditions:', whereConditions);
 
-      // Função para calcular horas
+      // Executa as queries com tratamento de erro individual
+      let rawOsData: any[] = [];
+      let countResult: any[] = [];
+
+      try {
+         // Tenta executar o COUNT primeiro (mais simples)
+         countResult = await firebirdQuery(countSql, params);
+         console.log('Count Result:', countResult);
+
+         // Se o count for 0, não precisa buscar os dados
+         if (countResult && countResult[0] && countResult[0].TOTAL > 0) {
+            console.log('Executando query principal...');
+            rawOsData = await firebirdQuery(sql, params);
+            console.log('Dados retornados:', rawOsData.length);
+         }
+      } catch (queryError) {
+         console.error('Erro específico na query:', queryError);
+         console.error('SQL que causou erro:', sql);
+         console.error('Params que causaram erro:', params);
+         console.error('GDS Code:', (queryError as any)?.gdscode);
+         console.error('Message:', (queryError as any)?.message);
+
+         // Retorna resposta vazia em caso de erro na query
+         return NextResponse.json(
+            {
+               data: [],
+               pagination: {
+                  currentPage: page,
+                  totalPages: 0,
+                  totalRecords: 0,
+                  recordsPerPage: limit,
+                  hasNextPage: false,
+                  hasPrevPage: false,
+               },
+               error: 'Erro ao buscar dados. Possível problema com dados corrompidos no banco.',
+            },
+            { status: 200 }
+         );
+      }
+
+      // ✅ CORREÇÃO: Validação robusta dos resultados
+      if (
+         !countResult ||
+         !Array.isArray(countResult) ||
+         countResult.length === 0
+      ) {
+         return NextResponse.json(
+            {
+               data: [],
+               pagination: {
+                  currentPage: page,
+                  totalPages: 0,
+                  totalRecords: 0,
+                  recordsPerPage: limit,
+                  hasNextPage: false,
+                  hasPrevPage: false,
+               },
+            },
+            { status: 200 }
+         );
+      }
+
+      const total = countResult[0]?.TOTAL || 0;
+      const totalPages = Math.ceil(total / limit);
+
+      // Se não houver registros, retorna array vazio
+      if (total === 0) {
+         return NextResponse.json(
+            {
+               data: [],
+               pagination: {
+                  currentPage: page,
+                  totalPages: 0,
+                  totalRecords: 0,
+                  recordsPerPage: limit,
+                  hasNextPage: false,
+                  hasPrevPage: false,
+               },
+            },
+            { status: 200 }
+         );
+      }
+
+      // Função para calcular horas - VERSÃO MAIS PERMISSIVA
       const calculateHours = (
          hrini: string | null,
          hrfim: string | null
@@ -225,17 +301,35 @@ export async function GET(request: Request) {
          if (!hrini || !hrfim) return null;
 
          try {
+            // Converte para string e remove espaços
+            const strHrini = String(hrini).trim();
+            const strHrfim = String(hrfim).trim();
+
+            if (!strHrini || !strHrfim) return null;
+
             // Parse dos horários no formato HHMM (ex: "0800", "1230")
             const parseTime = (timeStr: string) => {
-               // Remove espaços e garante que tenha 4 dígitos
-               const cleanTime = timeStr.trim().padStart(4, '0');
+               // Remove qualquer caractere não numérico
+               const cleanTime = timeStr
+                  .replace(/[^0-9]/g, '')
+                  .padStart(4, '0');
+
+               if (cleanTime.length < 4) return null;
+
                const hours = parseInt(cleanTime.substring(0, 2), 10);
                const minutes = parseInt(cleanTime.substring(2, 4), 10);
+
+               // Validação básica
+               if (isNaN(hours) || isNaN(minutes)) return null;
+               if (hours > 23 || minutes > 59) return null;
+
                return hours + minutes / 60;
             };
 
-            const horaInicio = parseTime(hrini);
-            const horaFim = parseTime(hrfim);
+            const horaInicio = parseTime(strHrini);
+            const horaFim = parseTime(strHrfim);
+
+            if (horaInicio === null || horaFim === null) return null;
 
             let diferenca = horaFim - horaInicio;
 
@@ -251,16 +345,26 @@ export async function GET(request: Request) {
          }
       };
 
-      // Adiciona o campo calculado a cada registro
-      const osData = rawOsData.map((record: any) => ({
-         ...record,
-         QTD_HR_OS: calculateHours(record.HRINI_OS, record.HRFIM_OS),
-      }));
+      // ✅ CORREÇÃO: Validação de rawOsData antes do map + adiciona campos calculados
+      const osData = (rawOsData || []).map((record: any) => {
+         // Adiciona os campos calculados que estavam na query anterior
+         const tarefaCompleta =
+            record.COD_TAREFA && record.NOME_TAREFA
+               ? `${record.COD_TAREFA} - ${record.NOME_TAREFA}`
+               : null;
 
-      // Calcula total de páginas
-      const total = countResult[0].TOTAL;
-      // totalPages
-      const totalPages = Math.ceil(total / limit);
+         const projetoCompleto =
+            record.COD_PROJETO && record.NOME_PROJETO
+               ? `${record.COD_PROJETO} - ${record.NOME_PROJETO}`
+               : null;
+
+         return {
+            ...record,
+            TAREFA_COMPLETA: tarefaCompleta,
+            PROJETO_COMPLETO: projetoCompleto,
+            QTD_HR_OS: calculateHours(record.HRINI_OS, record.HRFIM_OS),
+         };
+      });
 
       return NextResponse.json(
          {
@@ -278,6 +382,12 @@ export async function GET(request: Request) {
       );
    } catch (error) {
       console.error('Erro ao buscar dados da OS:', error);
+      // ✅ CORREÇÃO: Logs mais detalhados para debug
+      console.error('Detalhes do erro:', {
+         message: (error as any)?.message,
+         stack: (error as any)?.stack,
+         gdscode: (error as any)?.gdscode,
+      });
       return NextResponse.json(
          { error: 'Erro interno no servidor' },
          { status: 500 }

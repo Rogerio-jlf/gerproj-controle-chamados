@@ -329,6 +329,7 @@ export default function TabelaChamados() {
    const handleAbrirAtribuicaoInteligente = useCallback(
       (chamado: TabelaChamadoProps) => {
          setChamadoParaAtribuir(chamado);
+         setModalAtribuicaoOpen(true); // ✅ ADICIONE ESTA LINHA
       },
       []
    );
