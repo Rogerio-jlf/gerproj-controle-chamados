@@ -16,7 +16,6 @@ import {
 import {
    InputGlobalFilter,
    FilterInputTableHeaderDebounce,
-   OrderTableHeader,
    FilterControls,
    useTableFilters,
 } from '../components/TableFilters';
@@ -93,6 +92,21 @@ function getColumnWidth(columnId: string, userType?: string): string {
    return widthMap[columnId] || 'auto';
 }
 
+// Logo após os imports, antes do componente principal
+function useDebouncedValue<T>(value: T, delay: number = 500): T {
+   const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+   useEffect(() => {
+      const timer = setTimeout(() => {
+         setDebouncedValue(value);
+      }, delay);
+
+      return () => clearTimeout(timer);
+   }, [value, delay]);
+
+   return debouncedValue;
+}
+
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
@@ -138,7 +152,26 @@ export default function TabelaChamados() {
    // ================================================================================
    // ESTADOS - FILTROS E ORDENAÇÃO
    // ================================================================================
-   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+   // const [filterCodChamado, setFilterCodChamado] = useState('');
+   // const [filterDataChamado, setFilterDataChamado] = useState('');
+   // const [filterAssunto, setFilterAssunto] = useState('');
+   // const [filterStatus, setFilterStatus] = useState('');
+   // const [filterNomeRecurso, setFilterNomeRecurso] = useState('');
+
+   // Estados para valores digitados (sem delay)
+   const [inputCodChamado, setInputCodChamado] = useState('');
+   const [inputDataChamado, setInputDataChamado] = useState('');
+   const [inputAssunto, setInputAssunto] = useState('');
+   const [inputStatus, setInputStatus] = useState('');
+   const [inputNomeRecurso, setInputNomeRecurso] = useState('');
+
+   // Estados debouncados (com delay de 500ms)
+   const filterCodChamado = useDebouncedValue(inputCodChamado, 500);
+   const filterDataChamado = useDebouncedValue(inputDataChamado, 500);
+   const filterAssunto = useDebouncedValue(inputAssunto, 500);
+   const filterStatus = useDebouncedValue(inputStatus, 500);
+   const filterNomeRecurso = useDebouncedValue(inputNomeRecurso, 500);
+
    const [globalFilter, setGlobalFilter] = useState('');
    const [sorting, setSorting] = useState<SortingState>([
       { id: 'COD_CHAMADO', desc: true },
@@ -170,62 +203,47 @@ export default function TabelaChamados() {
    // FUNÇÕES DE FILTRO
    // ================================================================================
    const totalActiveFilters = useMemo(() => {
-      let count = columnFilters.length;
+      let count = 0;
       if (globalFilter && globalFilter.trim()) count += 1;
+      if (filterCodChamado && filterCodChamado.trim()) count += 1;
+      if (filterDataChamado && filterDataChamado.trim()) count += 1;
+      if (filterAssunto && filterAssunto.trim()) count += 1;
+      if (filterStatus && filterStatus.trim()) count += 1;
+      if (filterNomeRecurso && filterNomeRecurso.trim()) count += 1;
       if (codChamadoFilter && codChamadoFilter.trim()) count += 1;
       return count;
-   }, [columnFilters.length, globalFilter, codChamadoFilter]);
+   }, [
+      globalFilter,
+      filterCodChamado,
+      filterDataChamado,
+      filterAssunto,
+      filterStatus,
+      filterNomeRecurso,
+      codChamadoFilter,
+   ]);
 
    const clearFilters = () => {
-      setColumnFilters([]);
       setGlobalFilter('');
+      setInputCodChamado('');
+      setInputDataChamado('');
+      setInputAssunto('');
+      setInputStatus('');
+      setInputNomeRecurso('');
       setCodChamadoFilter('');
       setCurrentPage(1);
-      setFilterValues({
-         COD_CHAMADO: '',
-         DATA_CHAMADO: '',
-         ASSUNTO_CHAMADO: '',
-         STATUS_CHAMADO: '',
-         DTENVIO_CHAMADO: '',
-         NOME_RECURSO: '',
-         EMAIL_CHAMADO: '',
-         global: '',
-      });
-      table.getAllColumns().forEach(column => {
-         column.setFilterValue('');
-      });
    };
 
    // Atualiza os valores locais quando os filtros mudam
    useEffect(() => {
-      const newFilterValues = {
-         COD_CHAMADO: codChamadoFilter,
-         DATA_CHAMADO: '',
-         ASSUNTO_CHAMADO: '',
-         STATUS_CHAMADO: '',
-         DTENVIO_CHAMADO: '',
-         EMAIL_CHAMADO: '',
-         NOME_RECURSO: '',
-         global: globalFilter || '',
-      };
-
-      columnFilters.forEach(filter => {
-         if (filter.id in newFilterValues && filter.id !== 'COD_CHAMADO') {
-            newFilterValues[filter.id as keyof typeof newFilterValues] = String(
-               filter.value || ''
-            );
-         }
-      });
-
-      setFilterValues(prev => {
-         const hasChanged = Object.keys(newFilterValues).some(
-            key =>
-               prev[key as keyof typeof prev] !==
-               newFilterValues[key as keyof typeof newFilterValues]
-         );
-         return hasChanged ? newFilterValues : prev;
-      });
-   }, [columnFilters, globalFilter, codChamadoFilter]);
+      setCurrentPage(1);
+   }, [
+      filterCodChamado,
+      filterDataChamado,
+      filterAssunto,
+      filterStatus,
+      filterNomeRecurso,
+      globalFilter,
+   ]);
 
    // ================================================================================
    // API E DADOS
@@ -241,18 +259,51 @@ export default function TabelaChamados() {
          limit: String(pageSize),
       });
 
+      if (globalFilter && globalFilter.trim()) {
+         params.append('globalFilter', globalFilter.trim());
+      }
+
+      if (filterCodChamado && filterCodChamado.trim()) {
+         params.append('filter_COD_CHAMADO', filterCodChamado.trim());
+      }
+      if (filterDataChamado && filterDataChamado.trim()) {
+         params.append('filter_DATA_CHAMADO', filterDataChamado.trim());
+      }
+      if (filterAssunto && filterAssunto.trim()) {
+         params.append('filter_ASSUNTO_CHAMADO', filterAssunto.trim());
+      }
+      if (filterStatus && filterStatus.trim()) {
+         params.append('filter_STATUS_CHAMADO', filterStatus.trim());
+      }
+      if (filterNomeRecurso && filterNomeRecurso.trim()) {
+         params.append('filter_NOME_RECURSO', filterNomeRecurso.trim());
+      }
+
       if (codChamadoFilter && codChamadoFilter.trim()) {
          params.append('codChamado', codChamadoFilter.trim());
       }
 
       return params;
-   }, [ano, mes, user, currentPage, pageSize, codChamadoFilter]);
+   }, [
+      ano,
+      mes,
+      user,
+      currentPage,
+      pageSize,
+      globalFilter,
+      filterCodChamado,
+      filterDataChamado,
+      filterAssunto,
+      filterStatus,
+      filterNomeRecurso,
+      codChamadoFilter,
+   ]);
 
    async function fetchChamados(
       params: URLSearchParams,
       token: string
    ): Promise<ApiResponse> {
-      const res = await fetch(`/api/chamados/tabela-chamados?${params}`, {
+      const res = await fetch(`/api/chamados/tabela-chamado?${params}`, {
          headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -472,24 +523,18 @@ export default function TabelaChamados() {
       data: data ?? [],
       columns: colunas,
       getCoreRowModel: getCoreRowModel(),
-      getFilteredRowModel: getFilteredRowModel(),
       getSortedRowModel: getSortedRowModel(),
-      onColumnFiltersChange: setColumnFilters,
-      onGlobalFilterChange: setGlobalFilter,
+      // ❌ REMOVA getFilteredRowModel()
+      // ❌ REMOVA onColumnFiltersChange
+      onGlobalFilterChange: setGlobalFilter, // Manter apenas global
       onSortingChange: setSorting,
-      globalFilterFn,
       state: {
-         columnFilters,
+         // ❌ REMOVA columnFilters
          globalFilter,
          sorting,
       },
-      filterFns: {
-         customColumnFilter: columnFilterFn,
-      },
-      defaultColumn: {
-         filterFn: columnFilterFn,
-      },
       manualPagination: true,
+      manualFiltering: true, // ✅ ADICIONE
    });
 
    // ================================================================================
@@ -544,7 +589,7 @@ export default function TabelaChamados() {
    if (isError) return <IsError error={error as Error} />;
 
    // ================================================================================
-   // RENDERIZAÇÃO PRINCIPAL
+   // RENDERIZAÇÃO
    // ================================================================================
    return (
       <>
@@ -632,30 +677,12 @@ export default function TabelaChamados() {
                                           ),
                                        }}
                                     >
-                                       {header.isPlaceholder ? null : header
-                                            .column.id === 'COD_CHAMADO' ||
-                                         header.column.id === 'DATA_CHAMADO' ||
-                                         header.column.id ===
-                                            'ASSUNTO_CHAMADO' ||
-                                         header.column.id ===
-                                            'STATUS_CHAMADO' ||
-                                         header.column.id ===
-                                            'DTENVIO_CHAMADO' ||
-                                         header.column.id === 'NOME_RECURSO' ? (
-                                          <OrderTableHeader
-                                             column={header.column}
-                                          >
-                                             {flexRender(
-                                                header.column.columnDef.header,
-                                                header.getContext()
-                                             )}
-                                          </OrderTableHeader>
-                                       ) : (
-                                          flexRender(
-                                             header.column.columnDef.header,
-                                             header.getContext()
-                                          )
-                                       )}
+                                       {header.isPlaceholder
+                                          ? null
+                                          : flexRender(
+                                               header.column.columnDef.header,
+                                               header.getContext()
+                                            )}
                                     </th>
                                  ))}
                               </tr>
@@ -677,63 +704,49 @@ export default function TabelaChamados() {
                                     >
                                        {column.id === 'COD_CHAMADO' && (
                                           <FilterInputTableHeaderDebounce
-                                             value={
-                                                (column.getFilterValue() as string) ??
-                                                ''
-                                             }
+                                             value={inputCodChamado}
                                              onChange={value =>
-                                                column.setFilterValue(value)
+                                                setInputCodChamado(
+                                                   String(value)
+                                                )
                                              }
-                                             placeholder="Chamado..."
                                           />
                                        )}
                                        {column.id === 'DATA_CHAMADO' && (
                                           <FilterInputTableHeaderDebounce
-                                             value={
-                                                (column.getFilterValue() as string) ??
-                                                ''
-                                             }
+                                             value={inputDataChamado}
                                              onChange={value =>
-                                                column.setFilterValue(value)
+                                                setInputDataChamado(
+                                                   String(value)
+                                                )
                                              }
-                                             placeholder="dd/mm/aaaa"
                                              type="text"
                                           />
                                        )}
                                        {column.id === 'ASSUNTO_CHAMADO' && (
                                           <FilterInputTableHeaderDebounce
-                                             value={
-                                                (column.getFilterValue() as string) ??
-                                                ''
-                                             }
+                                             value={inputAssunto}
                                              onChange={value =>
-                                                column.setFilterValue(value)
+                                                setInputAssunto(String(value))
                                              }
-                                             placeholder="Assunto..."
                                           />
                                        )}
                                        {column.id === 'STATUS_CHAMADO' && (
                                           <FilterInputTableHeaderDebounce
-                                             value={
-                                                (column.getFilterValue() as string) ??
-                                                ''
-                                             }
+                                             value={inputStatus}
                                              onChange={value =>
-                                                column.setFilterValue(value)
+                                                setInputStatus(String(value))
                                              }
-                                             placeholder="Status..."
                                           />
                                        )}
                                        {column.id === 'NOME_RECURSO' && (
                                           <FilterInputTableHeaderDebounce
-                                             value={
-                                                (column.getFilterValue() as string) ??
-                                                ''
-                                             }
+                                             value={inputNomeRecurso}
                                              onChange={value =>
-                                                column.setFilterValue(value)
+                                                setInputNomeRecurso(
+                                                   String(value)
+                                                )
                                              }
-                                             placeholder="Recurso..."
                                           />
                                        )}
                                     </th>

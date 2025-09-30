@@ -4,7 +4,6 @@ import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
 
 export async function GET(request: Request) {
    try {
-      // Pega o token do header Authorization
       const authHeader = request.headers.get('Authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
          return NextResponse.json(
@@ -28,17 +27,23 @@ export async function GET(request: Request) {
       const isAdmin = decoded.tipo === 'ADM';
       const codRecurso = decoded.recurso?.id;
 
-      // Pega parâmetros da query
       const { searchParams } = new URL(request.url);
       const mesParam = searchParams.get('mes');
       const anoParam = searchParams.get('ano');
       const codChamadoQuery = searchParams.get('codChamado')?.trim();
 
-      // Pega os parâmetros de paginação (com defaults)
+      // Paginação
       const page = parseInt(searchParams.get('page') || '1', 10);
       const limit = parseInt(searchParams.get('limit') || '20', 10);
 
-      // Validação dos parâmetros de paginação
+      // NOVOS FILTROS DE COLUNA
+      const filterCodChamado = searchParams.get('filter_COD_CHAMADO')?.trim();
+      const filterDataChamado = searchParams.get('filter_DATA_CHAMADO')?.trim();
+      const filterAssunto = searchParams.get('filter_ASSUNTO_CHAMADO')?.trim();
+      const filterStatus = searchParams.get('filter_STATUS_CHAMADO')?.trim();
+      const filterNomeRecurso = searchParams.get('filter_NOME_RECURSO')?.trim();
+      const globalFilter = searchParams.get('globalFilter')?.trim();
+
       if (page < 1 || limit < 1 || limit > 100) {
          return NextResponse.json(
             {
@@ -48,11 +53,10 @@ export async function GET(request: Request) {
          );
       }
 
-      // Calcula o range
       const startRow = (page - 1) * limit + 1;
       const endRow = page * limit;
 
-      // Validação para mês (aceita número ou "todos")
+      // Validação mês/ano
       let mesNumber: number | null = null;
       if (mesParam && mesParam !== 'todos') {
          mesNumber = Number(mesParam);
@@ -64,7 +68,6 @@ export async function GET(request: Request) {
          }
       }
 
-      // Validação para ano (aceita número ou "todos")
       let anoNumber: number | null = null;
       if (anoParam && anoParam !== 'todos') {
          anoNumber = Number(anoParam);
@@ -86,9 +89,8 @@ export async function GET(request: Request) {
       const whereConditions: string[] = [];
       const params: any[] = [];
 
-      // Filtro por data - apenas se ano e mês específicos forem fornecidos
+      // Filtro por data
       if (anoNumber && mesNumber) {
-         // Ambos específicos - filtro por mês/ano
          const dataInicio = new Date(anoNumber, mesNumber - 1, 1);
          const dataFim = new Date(anoNumber, mesNumber, 1);
          whereConditions.push(
@@ -96,7 +98,6 @@ export async function GET(request: Request) {
          );
          params.push(dataInicio, dataFim);
       } else if (anoNumber && !mesNumber) {
-         // Apenas ano específico - filtro por ano todo
          const dataInicio = new Date(anoNumber, 0, 1);
          const dataFim = new Date(anoNumber + 1, 0, 1);
          whereConditions.push(
@@ -104,19 +105,16 @@ export async function GET(request: Request) {
          );
          params.push(dataInicio, dataFim);
       } else if (!anoNumber && mesNumber) {
-         // Apenas mês específico - filtro por mês em todos os anos (usando EXTRACT)
          whereConditions.push('EXTRACT(MONTH FROM Chamado.DATA_CHAMADO) = ?');
          params.push(mesNumber);
       }
-      // Se ambos forem "todos", não adiciona filtro de data
 
-      // Filtro por recurso e status baseado no tipo de usuário
+      // Filtro por recurso e status
       if (!isAdmin && codRecurso) {
          whereConditions.push('Chamado.COD_RECURSO = ?');
          params.push(Number(codRecurso));
       }
 
-      // Filtro de status para usuários não-admin (EXCLUIR chamados finalizados)
       if (!isAdmin) {
          whereConditions.push('Chamado.STATUS_CHAMADO != ?');
          params.push('FINALIZADO');
@@ -127,7 +125,56 @@ export async function GET(request: Request) {
          params.push(Number(codChamadoQuery));
       }
 
-      // Query principal com paginação
+      // ===== NOVOS FILTROS DE COLUNA =====
+      if (filterCodChamado) {
+         whereConditions.push(
+            'CAST(Chamado.COD_CHAMADO AS VARCHAR(20)) LIKE ?'
+         );
+         params.push(`%${filterCodChamado}%`);
+      }
+
+      if (filterDataChamado) {
+         whereConditions.push(
+            'CAST(Chamado.DATA_CHAMADO AS VARCHAR(50)) LIKE ?'
+         );
+         params.push(`%${filterDataChamado}%`);
+      }
+
+      if (filterAssunto) {
+         whereConditions.push('UPPER(Chamado.ASSUNTO_CHAMADO) LIKE ?');
+         params.push(`%${filterAssunto.toUpperCase()}%`);
+      }
+
+      if (filterStatus) {
+         whereConditions.push('UPPER(Chamado.STATUS_CHAMADO) LIKE ?');
+         params.push(`%${filterStatus.toUpperCase()}%`);
+      }
+
+      if (filterNomeRecurso) {
+         whereConditions.push('UPPER(Recurso.NOME_RECURSO) LIKE ?');
+         params.push(`%${filterNomeRecurso.toUpperCase()}%`);
+      }
+
+      // Filtro global (busca em múltiplas colunas)
+      if (globalFilter) {
+         const globalCondition = `(
+            CAST(Chamado.COD_CHAMADO AS VARCHAR(20)) LIKE ? OR
+            UPPER(Chamado.ASSUNTO_CHAMADO) LIKE ? OR
+            UPPER(Chamado.STATUS_CHAMADO) LIKE ? OR
+            UPPER(Chamado.EMAIL_CHAMADO) LIKE ? OR
+            UPPER(Recurso.NOME_RECURSO) LIKE ?
+         )`;
+         whereConditions.push(globalCondition);
+         const globalValue = `%${globalFilter.toUpperCase()}%`;
+         params.push(
+            globalValue,
+            globalValue,
+            globalValue,
+            globalValue,
+            globalValue
+         );
+      }
+
       const sql = `
          SELECT 
             Chamado.COD_CHAMADO,
@@ -145,14 +192,13 @@ export async function GET(request: Request) {
          ROWS ${startRow} TO ${endRow};
       `;
 
-      // Query para contar o total de registros (otimizada)
       const countSql = `
          SELECT COUNT(*) as TOTAL
          FROM CHAMADO Chamado
+         LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = Chamado.COD_RECURSO
          ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
       `;
 
-      // Executa ambas as queries
       const [chamados, countResult] = await Promise.all([
          firebirdQuery(sql, params),
          firebirdQuery(countSql, params),
