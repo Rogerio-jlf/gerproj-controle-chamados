@@ -8,7 +8,7 @@ import {
 // ================================================================================
 import { useFiltersTabelaChamados } from '../contexts/Filters_Context';
 import LogoutButton from './botoes/Button_Logout';
-import Filtros from '../app/paginas/chamados/components/Filtros';
+import Filtros from '../app/paginas/gerproj/chamado/Filtros_Tabela_Chamado';
 // ================================================================================
 import { LuRefreshCw } from 'react-icons/lu';
 

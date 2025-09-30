@@ -7,13 +7,13 @@ import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
-} from '../../../../../components/ui/tooltip';
+} from '../../../../components/ui/tooltip';
 // ================================================================================
-import { TabelaChamadoProps } from '../../../../../types/types';
+import { TabelaChamadoProps } from '../../../../types/types';
 // ================================================================================
-import { formatarDataParaBR } from '../../../../../utils/formatters';
-import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
-import StatusApontamentoChamado from '../modais/Modal_Atualizar_Status_Apontar_OS_Chamado';
+import { formatarDataParaBR } from '../../../../utils/formatters';
+import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
+import StatusApontamentoChamado from './Modal_Atualizar_Status_Apontar_OS_Chamado';
 // ================================================================================
 import { IoCall } from 'react-icons/io5';
 import { GrServices } from 'react-icons/gr';

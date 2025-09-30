@@ -8,17 +8,17 @@ import {
    TooltipContent,
    TooltipProvider,
    TooltipTrigger,
-} from '../../../../../components/ui/tooltip';
+} from '../../../../components/ui/tooltip';
 // ================================================================================
-import { getStylesStatus } from '../../../../../utils/formatters';
-import { ToastCustom } from '../../../../../components/Toast_Custom';
-import { useAuth } from '../../../../../hooks/useAuth';
+import { getStylesStatus } from '../../../../utils/formatters';
+import { ToastCustom } from '../../../../components/Toast_Custom';
+import { useAuth } from '../../../../hooks/useAuth';
 import {
    canUseBackdatedAppointments,
    ModalPermitirRetroativoOsChamado,
    getCurrentUserId,
    isUserAdmin,
-} from './Modal_Permitir_OS_Retroativa_Chamado';
+} from '../components/modais/Modal_Permitir_OS_Retroativa_Chamado';
 // ================================================================================
 import {
    FaExclamationTriangle,

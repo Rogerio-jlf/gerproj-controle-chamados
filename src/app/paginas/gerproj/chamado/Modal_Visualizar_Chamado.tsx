@@ -2,10 +2,10 @@
 // ================================================================================
 import { useState } from 'react';
 // ================================================================================
-import { TabelaChamadoProps } from '../../../../../types/types';
+import { TabelaChamadoProps } from '../../../../types/types';
 // ================================================================================
-import { getStylesStatus } from '../../../../../utils/formatters';
-import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+import { getStylesStatus } from '../../../../utils/formatters';
+import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 // ================================================================================
 import { MdDescription } from 'react-icons/md';
 import { IoClose, IoCall } from 'react-icons/io5';

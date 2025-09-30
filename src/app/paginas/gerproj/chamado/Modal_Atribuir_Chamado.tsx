@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ToastCustom } from '../../../../../components/Toast_Custom';
+import { ToastCustom } from '../../../../components/Toast_Custom';
 import React, {
    useState,
    useEffect,
@@ -17,12 +17,12 @@ import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
-} from '../../../../../components/ui/tooltip';
+} from '../../../../components/ui/tooltip';
 // ================================================================================
-import { TabelaChamadoProps } from '../../../../../types/types';
+import { TabelaChamadoProps } from '../../../../types/types';
 // ================================================================================
-import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
-import { useEmailAtribuirChamados } from '../../../../../hooks/useEmailAtribuirChamados';
+import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
+import { useEmailAtribuirChamados } from '../../../../hooks/useEmailAtribuirChamados';
 // ================================================================================
 import { Loader2 } from 'lucide-react';
 import { IoIosSave } from 'react-icons/io';

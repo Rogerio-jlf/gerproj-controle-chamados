@@ -19,22 +19,22 @@ import {
    OrderTableHeader,
    FilterControls,
    useTableFilters,
-} from '../TableFilters';
+} from '../components/TableFilters';
 // ================================================================================
-import { TabelaChamadoProps } from '../../../../../types/types';
+import { TabelaChamadoProps } from '../../../../types/types';
 // ================================================================================
-import IsError from '../Error';
-import IsLoading from '../Loading';
-import TabelaOS from './Tabela_OS';
-import TabelaTarefas from './Tabela_Tarefas';
-import TabelaOSChamado from './Tabela_OS_Chamado';
-import { useAuth } from '../../../../../hooks/useAuth';
-import ModalApontamento from '../modais/Modal_Apontamento_OS_Tarefa';
-import { ModalAtribuirChamado } from '../modais/Modal_Atribuir_Chamado';
-import { colunasTabelaChamados } from '../colunas/Colunas_Tabela_Chamados';
-import { useFiltersTabelaChamados } from '../../../../../contexts/Filters_Context';
-import { ModalVisualizarDadosChamado } from '../modais/Modal_Visualizar_Dados_Chamado';
-import DropdownHeader from '../Dropdown';
+import IsError from '../components/Error';
+import IsLoading from '../components/Loading';
+import TabelaOS from '../components/tabelas/Tabela_OS';
+import TabelaTarefas from '../components/tabelas/Tabela_Tarefas';
+import TabelaOSChamado from '../components/tabelas/Tabela_OS_Chamado';
+import { useAuth } from '../../../../hooks/useAuth';
+import ModalApontamento from '../components/modais/Modal_Apontamento_OS_Tarefa';
+import { ModalAtribuirChamado } from './Modal_Atribuir_Chamado';
+import { colunasTabelaChamados } from './Colunas_Tabela_Chamado';
+import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
+import { ModalVisualizarDadosChamado } from './Modal_Visualizar_Chamado';
+import DropdownHeader from './Dropdown_Tabela_Chamado';
 // ================================================================================
 import { IoCall } from 'react-icons/io5';
 import { BsEraserFill } from 'react-icons/bs';
@@ -42,7 +42,7 @@ import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
-import { ModalExcluirChamado } from '../modais/Modal_Deletar_Chamado';
+import { ModalExcluirChamado } from './Modal_Deletar_Chamado';
 
 // ================================================================================
 // TIPOS

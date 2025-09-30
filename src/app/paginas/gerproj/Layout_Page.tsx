@@ -1,6 +1,6 @@
 'use client';
 
-import TabelaChamados from './components/tabelas/Tabela_Chamados';
+import TabelaChamados from './chamado/Tabela_Chamado';
 import Header from '../../../components/Header';
 import { HiDocumentPlus } from 'react-icons/hi2';
 // ================================================================================
