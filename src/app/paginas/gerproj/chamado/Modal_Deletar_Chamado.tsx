@@ -103,9 +103,9 @@ export function ModalExcluirChamado({
          />
          {/* ========== */}
 
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white shadow-xl shadow-black transition-all duration-500 ease-out">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-slate-200 shadow-xl shadow-black transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
-            <header className="relative flex items-center justify-between bg-black p-6">
+            <header className="relative flex items-center justify-between bg-black p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
                   <RiDeleteBin5Fill className="text-white" size={60} />
                   {/* ===== */}
@@ -134,7 +134,7 @@ export function ModalExcluirChamado({
 
             {/* ===== CONTEÚDO ===== */}
             <main className="flex flex-col gap-12 px-6 py-16">
-               <div className="flex flex-col items-center justify-center gap-10 rounded-md border-l-8 border-red-600 bg-red-100 p-6 text-center shadow-sm shadow-black">
+               <div className="flex flex-col items-center justify-center gap-10 rounded-xl border border-l-8 border-red-600 bg-slate-50 p-6 text-center">
                   <div className="flex flex-col items-center justify-center">
                      <div className="flex items-center justify-center gap-3">
                         <h3 className="text-xl font-extrabold tracking-wider text-black italic select-none">
@@ -157,7 +157,7 @@ export function ModalExcluirChamado({
                <button
                   onClick={handleCloseModalExcluirChamado}
                   disabled={isLoading}
-                  className="cursor-pointer rounded-xl border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
+                  className="cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
                >
                   Cancelar
                </button>
@@ -167,7 +167,7 @@ export function ModalExcluirChamado({
                <button
                   onClick={handleSubmitExcluirChamado}
                   disabled={isLoading || !codChamado}
-                  className="cursor-pointer rounded-xl border-none bg-blue-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black active:scale-95"
+                  className="cursor-pointer rounded-sm border-none bg-blue-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black active:scale-95"
                >
                   {isLoading ? (
                      <div className="flex items-center gap-2">

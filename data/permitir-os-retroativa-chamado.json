@@ -6,5 +6,13 @@
     "enabled": true,
     "enabledAt": "2025-09-25T19:08:23.914Z",
     "enabledBy": "144"
+  },
+  {
+    "resourceId": "122",
+    "resourceName": "FERNANDO ANAPOLES GOMES",
+    "chamadoId": "13541",
+    "enabled": true,
+    "enabledAt": "2025-10-01T17:56:18.550Z",
+    "enabledBy": "144"
   }
 ]

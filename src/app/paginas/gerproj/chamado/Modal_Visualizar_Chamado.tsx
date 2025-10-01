@@ -30,7 +30,7 @@ interface ModalVisualizarChamadoProps {
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export function ModalVisualizarDadosChamado({
+export function ModalVisualizarChamado({
    isOpen,
    onClose,
    chamado,

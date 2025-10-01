@@ -1,8 +1,7 @@
 'use client';
 // ================================================================================
-import { useQuery } from '@tanstack/react-query';
-import { useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState, useCallback, useEffect } from 'react';
+// IMPORTS
+// ================================================================================
 import {
    flexRender,
    SortingState,
@@ -10,29 +9,32 @@ import {
    getCoreRowModel,
    getSortedRowModel,
 } from '@tanstack/react-table';
-// ================================================================================
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState, useCallback, useEffect } from 'react';
+
+// Components
 import {
    FilterInputTableHeaderDebounce,
    FilterControls,
 } from '../components/TableFilters';
-// ================================================================================
-import { TabelaChamadoProps } from '../../../../types/types';
-// ================================================================================
-import IsError from '../components/Error';
-import IsLoading from '../components/Loading';
-import Filtros from './Filtros_Tabela_Chamado';
-import { useAuth } from '../../../../hooks/useAuth';
-import DropdownHeader from './Dropdown_Tabela_Chamado';
-import TabelaOS from '../components/tabelas/Tabela_OS';
+import { IsError } from '../components/IsError';
+import { IsLoading } from '../components/IsLoading';
+import { FiltrosTabelaChamado } from './Filtros_Tabela_Chamado';
+import { DropdownTabelaChamado } from './Dropdown_Tabela_Chamado';
+import { TabelaOS } from '../components/tabelas/Tabela_OS';
 import { ModalExcluirChamado } from './Modal_Deletar_Chamado';
 import { ModalAtribuirChamado } from './Modal_Atribuir_Chamado';
 import { colunasTabelaChamados } from './Colunas_Tabela_Chamado';
-import TabelaTarefas from '../components/tabelas/Tabela_Tarefas';
-import TabelaOSChamado from '../components/tabelas/Tabela_OS_Chamado';
-import { ModalVisualizarDadosChamado } from './Modal_Visualizar_Chamado';
+import { TabelaTarefas } from '../components/tabelas/Tabela_Tarefas';
+import { TabelaOSChamado } from '../components/tabelas/Tabela_OS_Chamado';
+import { ModalVisualizarChamado } from './Modal_Visualizar_Chamado';
+
+// Hooks & Types
+import { useAuth } from '../../../../hooks/useAuth';
+import { TabelaChamadoProps } from '../../../../types/types';
 import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
-import ModalApontamento from '../components/modais/Modal_Apontamento_OS_Tarefa';
-// ================================================================================
+
+// Icons
 import { IoCall } from 'react-icons/io5';
 import { BsEraserFill } from 'react-icons/bs';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
@@ -41,7 +43,7 @@ import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 
 // ================================================================================
-// TIPOS
+// TIPOS E INTERFACES
 // ================================================================================
 interface PaginationInfo {
    currentPage: number;
@@ -58,7 +60,7 @@ interface ApiResponse {
 }
 
 // ================================================================================
-// UTILITÁRIOS
+// FUNÇÕES UTILITÁRIAS
 // ================================================================================
 function getColumnWidth(columnId: string, userType?: string): string {
    if (userType === 'ADM') {
@@ -76,20 +78,19 @@ function getColumnWidth(columnId: string, userType?: string): string {
    }
 
    const widthMap: Record<string, string> = {
-      COD_CHAMADO: '10%',
-      DATA_CHAMADO: '10%',
-      ASSUNTO_CHAMADO: '33%',
-      STATUS_CHAMADO: '20%',
+      COD_CHAMADO: '8%',
+      DATA_CHAMADO: '8%',
+      ASSUNTO_CHAMADO: '27%',
+      STATUS_CHAMADO: '15%',
       DTENVIO_CHAMADO: '15%',
-      NOME_RECURSO: '15%',
       EMAIL_CHAMADO: '20%',
       actions: '7%',
    };
 
    return widthMap[columnId] || 'auto';
 }
+// ==========
 
-// Hook para debouncing de valores
 function useDebouncedValue<T>(value: T, delay: number = 500): T {
    const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
@@ -107,82 +108,76 @@ function useDebouncedValue<T>(value: T, delay: number = 500): T {
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export default function TabelaChamados() {
+export function TabelaChamado() {
    // ================================================================================
    // HOOKS E CONTEXTOS
    // ================================================================================
-   const { filters, setFilters } = useFiltersTabelaChamados();
-
    const { user } = useAuth();
    const queryClient = useQueryClient();
+   const { filters, setFilters } = useFiltersTabelaChamados();
    const { ano, mes } = filters;
    const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
    // ================================================================================
-   // ESTADOS - MODAIS E COMPONENTES
+   // ESTADOS - FILTROS (INPUTS SEM DEBOUNCE)
    // ================================================================================
-   const [modalChamadosOpen, setModalChamadosOpen] = useState(false);
-   const [selectedChamado, setSelectedChamado] =
-      useState<TabelaChamadoProps | null>(null);
-   const [tabelaOSOpen, setTabelaOSOpen] = useState(false);
-   const [selectedCodChamado, setSelectedCodChamado] = useState<number | null>(
-      null
-   );
-   const [tabelaTarefasOpen, setTabelaTarefasOpen] = useState(false);
-   const [tabelaOsOpen, setTabelaOsOpen] = useState(false);
-   const [modalAtribuicaoOpen, setModalAtribuicaoOpen] = useState(false);
-   const [chamadoParaAtribuir, setChamadoParaAtribuir] =
-      useState<TabelaChamadoProps | null>(null);
-
-   const [modalApontamentosOpen, setModalApontamentosOpen] = useState(false);
-   const [apontamentoData, setApontamentoData] = useState<{
-      codChamado: number;
-      status: string;
-      tarefa?: any;
-      nomeCliente?: string;
-   } | null>(null);
-   const [chamadoParaExcluir, setChamadoParaExcluir] = useState<number | null>(
-      null
-   );
-
-   // Estados para valores digitados (sem delay)
-   const [inputCodChamado, setInputCodChamado] = useState('');
-   const [inputDataChamado, setInputDataChamado] = useState('');
-   const [inputAssunto, setInputAssunto] = useState('');
-   const [inputStatus, setInputStatus] = useState('');
-   const [inputDataEnvio, setInputDataEnvio] = useState('');
-   const [inputNomeRecurso, setInputNomeRecurso] = useState('');
-   const [inputEmail, setInputEmail] = useState('');
-
-   // Estados debouncados (com delay de 500ms)
-   const filterCodChamado = useDebouncedValue(inputCodChamado, 500);
-   const filterDataChamado = useDebouncedValue(inputDataChamado, 500);
-   const filterAssunto = useDebouncedValue(inputAssunto, 500);
-   const filterStatus = useDebouncedValue(inputStatus, 500);
-   const filterDataEnvio = useDebouncedValue(inputDataEnvio, 500);
-   const filterNomeRecurso = useDebouncedValue(inputNomeRecurso, 500);
-   const filterEmail = useDebouncedValue(inputEmail, 500);
-
+   const [inputFilterCodChamado, setInputFilterCodChamado] = useState('');
+   const [inputFilterDataChamado, setInputFilterDataChamado] = useState('');
+   const [inputFilterAssunto, setInputFilterAssunto] = useState('');
+   const [inputFilterStatus, setInputFilterStatus] = useState('');
+   const [inputFilterDataEnvio, setInputFilterDataEnvio] = useState('');
+   const [inputFilterNomeRecurso, setInputFilterNomeRecurso] = useState('');
+   const [inputFilterEmail, setInputFilterEmail] = useState('');
    const [globalFilter, setGlobalFilter] = useState('');
+   const [codChamadoFilter, setCodChamadoFilter] = useState('');
+
+   // ESTADOS - FILTROS (COM DEBOUNCE)
+   const filterCodChamado = useDebouncedValue(inputFilterCodChamado, 500);
+   const filterDataChamado = useDebouncedValue(inputFilterDataChamado, 500);
+   const filterAssunto = useDebouncedValue(inputFilterAssunto, 500);
+   const filterStatus = useDebouncedValue(inputFilterStatus, 500);
+   const filterDataEnvio = useDebouncedValue(inputFilterDataEnvio, 500);
+   const filterNomeRecurso = useDebouncedValue(inputFilterNomeRecurso, 500);
+   const filterEmail = useDebouncedValue(inputFilterEmail, 500);
+
+   // ================================================================================
+   // ESTADOS - PAGINAÇÃO
+   // ================================================================================
+   const [currentPage, setCurrentPage] = useState(1);
+   const [pageSize, setPageSize] = useState(20);
+
+   // ================================================================================
+   // ESTADOS - TABELA
+   // ================================================================================
    const [sorting, setSorting] = useState<SortingState>([
       { id: 'COD_CHAMADO', desc: true },
    ]);
    const [showFilters, setShowFilters] = useState(false);
-
-   // ================================================================================
-   // ESTADOS - PAGINAÇÃO API
-   // ================================================================================
-   const [currentPage, setCurrentPage] = useState(1);
-   const [pageSize, setPageSize] = useState(20);
-   const [codChamadoFilter, setCodChamadoFilter] = useState('');
-
    const [activeView, setActiveView] = useState<'chamados' | 'os' | 'tarefas'>(
       'chamados'
    );
 
    // ================================================================================
-   // FUNÇÕES DE FILTRO
+   // ESTADOS - MODAIS E COMPONENTES
+   // ================================================================================
+   const [openTabelaOSChamado, setOpenTabelaOSChamado] = useState(false);
+   const [openTabelaTarefa, setOpenTabelaTarefa] = useState(false);
+   const [openTabelaOs, setOpenTabelaOs] = useState(false);
+   const [OpenModalVizualizarChamado, setOpenModalVizualizarChamado] =
+      useState(false);
+   const [openModalAtribuirChamado, setOpenModalAtribuirChamado] =
+      useState(false);
+   const [selectedChamado, setSelectedChamado] =
+      useState<TabelaChamadoProps | null>(null);
+   const [selectedChamadoParaAtribuir, setSelectedChamadoParaAtribuir] =
+      useState<TabelaChamadoProps | null>(null);
+   const [selectedCodChamado, setSelectedCodChamado] = useState<number | null>(
+      null
+   );
+
+   // ================================================================================
+   // COMPUTED VALUES - FILTROS
    // ================================================================================
    const totalActiveFilters = useMemo(() => {
       let count = 0;
@@ -208,35 +203,8 @@ export default function TabelaChamados() {
       codChamadoFilter,
    ]);
 
-   const clearFilters = () => {
-      setGlobalFilter('');
-      setInputCodChamado('');
-      setInputDataChamado('');
-      setInputAssunto('');
-      setInputStatus('');
-      setInputDataEnvio('');
-      setInputNomeRecurso('');
-      setInputEmail('');
-      setCodChamadoFilter('');
-      setCurrentPage(1);
-   };
-
-   // Atualiza os valores locais quando os filtros mudam
-   useEffect(() => {
-      setCurrentPage(1);
-   }, [
-      filterCodChamado,
-      filterDataChamado,
-      filterAssunto,
-      filterStatus,
-      filterDataEnvio,
-      filterNomeRecurso,
-      filterEmail,
-      globalFilter,
-   ]);
-
    // ================================================================================
-   // API E DADOS
+   // QUERY PARAMS E API
    // ================================================================================
    const enabled = !!ano && !!mes && !!token && !!user;
 
@@ -252,7 +220,6 @@ export default function TabelaChamados() {
       if (globalFilter && globalFilter.trim()) {
          params.append('globalFilter', globalFilter.trim());
       }
-
       if (filterCodChamado && filterCodChamado.trim()) {
          params.append('filter_COD_CHAMADO', filterCodChamado.trim());
       }
@@ -271,11 +238,9 @@ export default function TabelaChamados() {
       if (filterNomeRecurso && filterNomeRecurso.trim()) {
          params.append('filter_NOME_RECURSO', filterNomeRecurso.trim());
       }
-
       if (filterEmail && filterEmail.trim()) {
          params.append('filter_EMAIL_RECURSO', filterEmail.trim());
       }
-
       if (codChamadoFilter && codChamadoFilter.trim()) {
          params.append('codChamado', codChamadoFilter.trim());
       }
@@ -297,6 +262,7 @@ export default function TabelaChamados() {
       filterEmail,
       codChamadoFilter,
    ]);
+   // ==========
 
    async function fetchChamados(
       params: URLSearchParams,
@@ -328,8 +294,8 @@ export default function TabelaChamados() {
          },
       };
    }
+   // ==========
 
-   // Query principal para buscar os chamados
    const {
       data: apiResponse,
       isLoading,
@@ -342,90 +308,138 @@ export default function TabelaChamados() {
       staleTime: 1000 * 60 * 5,
       retry: 2,
    });
+   // ==========
 
-   // Extrai dados e paginação da resposta da API
    const data = useMemo(() => apiResponse?.data || [], [apiResponse]);
    const paginationInfo = apiResponse?.pagination;
 
    // ================================================================================
-   // HANDLERS E CALLBACKS
+   // EFFECTS - FILTROS
    // ================================================================================
-   const handleCloseModalChamados = () => {
-      setModalChamadosOpen(false);
-      setSelectedChamado(null);
-   };
+   useEffect(() => {
+      setCurrentPage(1);
+   }, [
+      filterCodChamado,
+      filterDataChamado,
+      filterAssunto,
+      filterStatus,
+      filterDataEnvio,
+      filterNomeRecurso,
+      filterEmail,
+      globalFilter,
+   ]);
 
-   const handleCloseTabelaOS = () => {
-      setTabelaOSOpen(false);
-      setSelectedCodChamado(null);
-   };
+   // ================================================================================
+   // HANDLERS - FILTROS
+   // ================================================================================
+   const clearFilters = useCallback(() => {
+      setGlobalFilter('');
+      setInputFilterCodChamado('');
+      setInputFilterDataChamado('');
+      setInputFilterAssunto('');
+      setInputFilterStatus('');
+      setInputFilterDataEnvio('');
+      setInputFilterNomeRecurso('');
+      setInputFilterEmail('');
+      setCodChamadoFilter('');
+      setCurrentPage(1);
+   }, []);
+   // ==========
+
+   const handleFiltersChange = useCallback(
+      (newFilters: { ano: number | 'todos'; mes: number | 'todos' }) => {
+         setFilters(prevFilters => ({
+            ...prevFilters,
+            ...newFilters,
+         }));
+      },
+      [setFilters]
+   );
+
+   // ================================================================================
+   // HANDLERS - PAGINAÇÃO
+   // ================================================================================
+   const handlePageChange = useCallback((newPage: number) => {
+      setCurrentPage(newPage);
+   }, []);
+   // ==========
+
+   const handlePageSizeChange = useCallback((newSize: number) => {
+      setPageSize(newSize);
+      setCurrentPage(1);
+   }, []);
+
+   // ================================================================================
+   // HANDLERS - MODAIS (CHAMADO)
+   // ================================================================================
+   const handleCloseModalVisualizarChamado = useCallback(() => {
+      setOpenModalVizualizarChamado(false);
+      setSelectedChamado(null);
+   }, []);
+   // ==========
 
    const handleVisualizarChamado = useCallback(
       (codChamado: number) => {
          const chamado = data?.find(c => c.COD_CHAMADO === codChamado);
          if (chamado) {
             setSelectedChamado(chamado);
-            setModalChamadosOpen(true);
+            setOpenModalVizualizarChamado(true);
          }
       },
       [data]
    );
 
-   const handleVisualizarOS = useCallback((codChamado: number) => {
+   // ================================================================================
+   // HANDLERS - TABELA (OS CHAMADO)
+   // ================================================================================
+   const handleCloseTabelaOSChamado = useCallback(() => {
+      setOpenTabelaOSChamado(false);
+      setSelectedCodChamado(null);
+   }, []);
+   // ==========
+
+   const handleVisualizarOSChamado = useCallback((codChamado: number) => {
       setSelectedCodChamado(codChamado);
-      setTabelaOSOpen(true);
+      setOpenTabelaOSChamado(true);
    }, []);
 
-   const handleAbrirAtribuicaoInteligente = useCallback(
+   // ================================================================================
+   // HANDLERS - MODAIS (ATRIBUIR CHAMADO)
+   // ================================================================================
+   const handleOpenModalAtribuirChamado = useCallback(
       (chamado: TabelaChamadoProps) => {
-         setChamadoParaAtribuir(chamado);
-         setModalAtribuicaoOpen(true);
+         setSelectedChamadoParaAtribuir(chamado);
+         setOpenModalAtribuirChamado(true);
       },
       []
    );
 
-   const handleOpenApontamentos = useCallback(
-      async (codChamado: number, newStatus: string) => {
-         try {
-            const chamado = data?.find(c => c.COD_CHAMADO === codChamado);
-            const token = localStorage.getItem('token');
-            const response = await fetch(`/api/atribuir-tarefa/${codChamado}`, {
-               headers: {
-                  Authorization: `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-               },
-            });
-
-            if (response.ok) {
-               const tarefas = await response.json();
-               const tarefaSelecionada = tarefas[0];
-
-               setApontamentoData({
-                  codChamado,
-                  status: newStatus,
-                  tarefa: tarefaSelecionada,
-                  nomeCliente: chamado?.EMAIL_CHAMADO || 'Cliente',
-               });
-               setModalApontamentosOpen(true);
-            }
-         } catch (error) {
-            console.error('Erro ao buscar dados para apontamento:', error);
-         }
-      },
-      [data]
-   );
-
-   const handleCloseApontamentos = useCallback(() => {
-      setModalApontamentosOpen(false);
-      setApontamentoData(null);
+   // ================================================================================
+   // HANDLERS - MODAIS (EXCLUSÃO)
+   // ================================================================================
+   const handleOpenModalExcluirChamado = useCallback((codChamado: number) => {
+      setSelectedCodChamado(codChamado);
    }, []);
+   // ==========
 
-   const handleApontamentoSuccess = useCallback(() => {
+   const handleCloseModalExcluirChamado = useCallback(() => {
+      setSelectedCodChamado(null);
+   }, []);
+   // =========
+
+   const handleExcluirChamadoSuccess = useCallback(() => {
       queryClient.invalidateQueries({ queryKey: ['chamadosAbertos'] });
-      setModalApontamentosOpen(false);
-      setApontamentoData(null);
-   }, [queryClient]);
 
+      if (currentPage > 1 && data.length === 1) {
+         setCurrentPage(1);
+      }
+
+      handleCloseModalExcluirChamado();
+   }, [queryClient, currentPage, data, handleCloseModalExcluirChamado]);
+
+   // ================================================================================
+   // HANDLERS - STATUS
+   // ================================================================================
    const updateStatus = useCallback(
       async (
          codChamado: number,
@@ -466,48 +480,6 @@ export default function TabelaChamados() {
       [token, queryClient]
    );
 
-   const handleDeleteSuccess = useCallback(() => {
-      // Invalida a query para forçar refetch dos dados
-      queryClient.invalidateQueries({ queryKey: ['chamadosAbertos'] });
-
-      // Opcional: Volta para a primeira página se estava em outra
-      if (currentPage > 1 && data.length === 1) {
-         setCurrentPage(1);
-      }
-
-      handleCloseModalExcluirChamado();
-   }, [queryClient, currentPage, data]);
-
-   // ================================================================================
-   // HANDLERS DE PAGINAÇÃO
-   // ================================================================================
-   const handlePageChange = (newPage: number) => {
-      setCurrentPage(newPage);
-   };
-
-   const handlePageSizeChange = (newSize: number) => {
-      setPageSize(newSize);
-      setCurrentPage(1);
-   };
-
-   const handleOpenModalExcluirChamado = (codChamado: number) => {
-      setChamadoParaExcluir(codChamado);
-   };
-
-   const handleCloseModalExcluirChamado = () => {
-      setChamadoParaExcluir(null);
-   };
-
-   const handleFiltersChange = useCallback(
-      (newFilters: { ano: number | 'todos'; mes: number | 'todos' }) => {
-         setFilters(prevFilters => ({
-            ...prevFilters,
-            ...newFilters,
-         }));
-      },
-      [setFilters]
-   );
-
    // ================================================================================
    // CONFIGURAÇÃO DA TABELA
    // ================================================================================
@@ -516,14 +488,11 @@ export default function TabelaChamados() {
          colunasTabelaChamados(
             {
                onVisualizarChamado: handleVisualizarChamado,
-               onVisualizarOSChamado: handleVisualizarOS,
-               onVisualizarTarefas: () => setTabelaTarefasOpen(true),
-               onVisualizarOS: () => {
-                  setTabelaOsOpen(true);
-               },
-               onAtribuicaoInteligente: handleAbrirAtribuicaoInteligente,
+               onVisualizarOS: () => setOpenTabelaOs(true),
+               onVisualizarTarefa: () => setOpenTabelaTarefa(true),
+               onVisualizarOSChamado: handleVisualizarOSChamado,
+               onAtribuicaoInteligente: handleOpenModalAtribuirChamado,
                onUpdateStatus: updateStatus,
-               onOpenApontamentos: handleOpenApontamentos,
                onExcluirChamado: handleOpenModalExcluirChamado,
                userType: user?.tipo,
             },
@@ -531,15 +500,15 @@ export default function TabelaChamados() {
          ),
       [
          handleVisualizarChamado,
-         handleVisualizarOS,
-         handleAbrirAtribuicaoInteligente,
-         handleOpenApontamentos,
+         handleVisualizarOSChamado,
+         handleOpenModalAtribuirChamado,
          updateStatus,
+         handleOpenModalExcluirChamado,
          user?.tipo,
       ]
    );
+   // ==========
 
-   // Tabela agora usa apenas os dados da API sem paginação local
    const table = useReactTable({
       data: data ?? [],
       columns: colunas,
@@ -556,7 +525,7 @@ export default function TabelaChamados() {
    });
 
    // ================================================================================
-   // ESTADOS DE CARREGAMENTO E VALIDAÇÃO
+   // VALIDAÇÕES E ESTADOS DE CARREGAMENTO
    // ================================================================================
    if (!user || !token) {
       return (
@@ -565,7 +534,6 @@ export default function TabelaChamados() {
                className="animate-pulse text-red-600"
                size={120}
             />
-
             <div className="flex flex-col items-center justify-center gap-4">
                <h3 className="text-3xl font-extrabold tracking-wider text-red-600 select-none">
                   Acesso restrito!
@@ -578,12 +546,10 @@ export default function TabelaChamados() {
                   Por medida de segurança, você será redirecionado para a página
                   de login.
                </p>
-
                <div className="flex items-center justify-center gap-1">
                   <span className="text-base font-semibold tracking-wider text-red-600 italic select-none">
                      Aguarde
                   </span>
-
                   <div className="flex gap-1">
                      <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-red-600"></div>
                      <div
@@ -600,9 +566,11 @@ export default function TabelaChamados() {
          </div>
       );
    }
+   // ==========
 
    if (isLoading)
       return <IsLoading title="Carregando os dados da tabela Chamado" />;
+   // ==========
 
    if (isError) return <IsError error={error as Error} />;
 
@@ -611,26 +579,24 @@ export default function TabelaChamados() {
    // ================================================================================
    return (
       <>
-         {/* VIEW DE CHAMADOS - TODO O CONTEÚDO ATUAL DA TABELA */}
+         {/* VIEW DE CHAMADOS */}
          {activeView === 'chamados' && (
             <div className="overflow-hidden rounded-2xl bg-black shadow-xl shadow-black">
-               {/* ===== HEADER ===== */}
+               {/* HEADER */}
                <header className="flex flex-col gap-10 bg-white/70 p-6">
                   <div className="flex items-center justify-between gap-8">
                      <div className="flex items-center justify-center gap-6">
                         <div className="flex items-center justify-center rounded-md bg-white/30 p-4 shadow-sm shadow-black">
                            <IoCall className="text-black" size={28} />
                         </div>
-
                         <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
                            Chamados
                         </h1>
                      </div>
 
-                     {/* DROPDOWN */}
                      {user.tipo === 'ADM' && (
                         <div className="flex items-center gap-4">
-                           <DropdownHeader
+                           <DropdownTabelaChamado
                               onOpenTabelaOS={() => setActiveView('os')}
                               onOpenTabelaTarefas={() =>
                                  setActiveView('tarefas')
@@ -640,13 +606,13 @@ export default function TabelaChamados() {
                      )}
                   </div>
 
-                  {/* ===== FILTROS HEADER ===== */}
+                  {/* FILTROS HEADER */}
                   <div className="flex items-center gap-6">
                      <div className="flex w-[800px] items-center">
-                        <Filtros onFiltersChange={handleFiltersChange} />
+                        <FiltrosTabelaChamado
+                           onFiltersChange={handleFiltersChange}
+                        />
                      </div>
-                     {/* ========== */}
-
                      <div className="mt-6 flex items-center">
                         <FilterControls
                            showFilters={showFilters}
@@ -659,15 +625,14 @@ export default function TabelaChamados() {
                   </div>
                </header>
 
-               {/* ===== CONTEÚDO DA TABELA ===== */}
+               {/* CONTEÚDO DA TABELA */}
                <main className="h-full w-full overflow-hidden bg-black">
                   <div
                      className="h-full overflow-y-auto"
                      style={{ maxHeight: 'calc(100vh - 450px)' }}
                   >
-                     {/* ===== TABELA ===== */}
                      <table className="w-full table-fixed border-collapse">
-                        {/* ===== CABEÇALHO DA TABELA ===== */}
+                        {/* CABEÇALHO DA TABELA */}
                         <thead className="sticky top-0 z-20">
                            {table.getHeaderGroups().map(headerGroup => (
                               <tr key={headerGroup.id}>
@@ -693,7 +658,7 @@ export default function TabelaChamados() {
                               </tr>
                            ))}
 
-                           {/* ===== FILTROS TABELA ===== */}
+                           {/* FILTROS TABELA */}
                            {showFilters && (
                               <tr>
                                  {table.getAllColumns().map(column => (
@@ -709,9 +674,9 @@ export default function TabelaChamados() {
                                     >
                                        {column.id === 'COD_CHAMADO' && (
                                           <FilterInputTableHeaderDebounce
-                                             value={inputCodChamado}
+                                             value={inputFilterCodChamado}
                                              onChange={value =>
-                                                setInputCodChamado(
+                                                setInputFilterCodChamado(
                                                    String(value)
                                                 )
                                              }
@@ -719,9 +684,9 @@ export default function TabelaChamados() {
                                        )}
                                        {column.id === 'DATA_CHAMADO' && (
                                           <FilterInputTableHeaderDebounce
-                                             value={inputDataChamado}
+                                             value={inputFilterDataChamado}
                                              onChange={value =>
-                                                setInputDataChamado(
+                                                setInputFilterDataChamado(
                                                    String(value)
                                                 )
                                              }
@@ -730,33 +695,39 @@ export default function TabelaChamados() {
                                        )}
                                        {column.id === 'ASSUNTO_CHAMADO' && (
                                           <FilterInputTableHeaderDebounce
-                                             value={inputAssunto}
+                                             value={inputFilterAssunto}
                                              onChange={value =>
-                                                setInputAssunto(String(value))
+                                                setInputFilterAssunto(
+                                                   String(value)
+                                                )
                                              }
                                           />
                                        )}
                                        {column.id === 'STATUS_CHAMADO' && (
                                           <FilterInputTableHeaderDebounce
-                                             value={inputStatus}
+                                             value={inputFilterStatus}
                                              onChange={value =>
-                                                setInputStatus(String(value))
+                                                setInputFilterStatus(
+                                                   String(value)
+                                                )
                                              }
                                           />
                                        )}
                                        {column.id === 'DTENVIO_CHAMADO' && (
                                           <FilterInputTableHeaderDebounce
-                                             value={inputDataEnvio}
+                                             value={inputFilterDataEnvio}
                                              onChange={value =>
-                                                setInputDataEnvio(String(value))
+                                                setInputFilterDataEnvio(
+                                                   String(value)
+                                                )
                                              }
                                           />
                                        )}
                                        {column.id === 'NOME_RECURSO' && (
                                           <FilterInputTableHeaderDebounce
-                                             value={inputNomeRecurso}
+                                             value={inputFilterNomeRecurso}
                                              onChange={value =>
-                                                setInputNomeRecurso(
+                                                setInputFilterNomeRecurso(
                                                    String(value)
                                                 )
                                              }
@@ -764,9 +735,11 @@ export default function TabelaChamados() {
                                        )}
                                        {column.id === 'EMAIL_CHAMADO' && (
                                           <FilterInputTableHeaderDebounce
-                                             value={inputEmail}
+                                             value={inputFilterEmail}
                                              onChange={value =>
-                                                setInputEmail(String(value))
+                                                setInputFilterEmail(
+                                                   String(value)
+                                                )
                                              }
                                           />
                                        )}
@@ -776,7 +749,7 @@ export default function TabelaChamados() {
                            )}
                         </thead>
 
-                        {/* ===== CORPO DA TABELA ===== */}
+                        {/* CORPO DA TABELA */}
                         <tbody>
                            {table.getRowModel().rows.length > 0 &&
                               !isLoading &&
@@ -815,7 +788,7 @@ export default function TabelaChamados() {
                   </div>
                </main>
 
-               {/* ===== PAGINAÇÃO DA API ===== */}
+               {/* PAGINAÇÃO DA API */}
                {paginationInfo && paginationInfo.totalRecords > 0 && (
                   <div className="bg-white/70 px-12 py-4">
                      <div className="flex items-center justify-between">
@@ -828,7 +801,6 @@ export default function TabelaChamados() {
                                  : ''}{' '}
                               na página atual
                            </span>
-
                            <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
                               de {paginationInfo.totalRecords} total
                               {paginationInfo.totalRecords !== 1 ? '' : ''}
@@ -950,7 +922,7 @@ export default function TabelaChamados() {
                   </div>
                )}
 
-               {/* ===== MENSAGEM QUANDO NÃO HÁ CHAMADOS ===== */}
+               {/* MENSAGEM QUANDO NÃO HÁ CHAMADOS */}
                {(!paginationInfo || paginationInfo.totalRecords === 0) &&
                   !isLoading && (
                      <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-20 text-center">
@@ -958,13 +930,11 @@ export default function TabelaChamados() {
                            className="mx-auto text-yellow-500"
                            size={80}
                         />
-
                         <h3 className="text-2xl font-bold tracking-wider text-white select-none">
                            {user?.tipo === 'ADM'
                               ? `Nenhum Chamado foi encontrado para o Período ${mes.toString().padStart(2, '0')}/${ano}.`
                               : `Nenhum Chamado (excluindo finalizados) foi encontrado para o Período ${mes.toString().padStart(2, '0')}/${ano}.`}
                         </h3>
-
                         {user?.tipo !== 'ADM' && (
                            <p className="text-base font-semibold tracking-wider text-white italic select-none">
                               Chamados com status "FINALIZADO" não são exibidos
@@ -974,7 +944,7 @@ export default function TabelaChamados() {
                      </div>
                   )}
 
-               {/* ===== MENSAGEM QUANDO OS FILTROS NÃO RETORNAM RESULTADOS ===== */}
+               {/* MENSAGEM QUANDO OS FILTROS NÃO RETORNAM RESULTADOS */}
                {paginationInfo &&
                   paginationInfo.totalRecords > 0 &&
                   table.getFilteredRowModel().rows.length === 0 && (
@@ -990,8 +960,6 @@ export default function TabelaChamados() {
                            Tente ajustar os Filtros ou limpe-os para visualizar
                            Registros.
                         </p>
-
-                        {/* Botão para limpar filtros */}
                         {totalActiveFilters > 0 && (
                            <button
                               onClick={clearFilters}
@@ -1019,53 +987,46 @@ export default function TabelaChamados() {
             />
          )}
 
+         {/* TABELA OS SECUNDÁRIA */}
          <TabelaOS
-            isOpen={tabelaOsOpen}
-            onClose={() => setTabelaOsOpen(false)}
+            isOpen={openTabelaOs}
+            onClose={() => setOpenTabelaOs(false)}
          />
 
-         {/* ===== MODAL CHAMADO ===== */}
-         <ModalVisualizarDadosChamado
-            isOpen={modalChamadosOpen}
-            onClose={handleCloseModalChamados}
+         {/* MODAL VISUALIZAR CHAMADO */}
+         <ModalVisualizarChamado
+            isOpen={OpenModalVizualizarChamado}
+            onClose={handleCloseModalVisualizarChamado}
             chamado={selectedChamado}
          />
 
-         {/* ===== TABELA OS ===== */}
+         {/* TABELA OS CHAMADO */}
          <TabelaOSChamado
-            isOpen={tabelaOSOpen}
-            onClose={handleCloseTabelaOS}
+            isOpen={openTabelaOSChamado}
+            onClose={handleCloseTabelaOSChamado}
             codChamado={selectedCodChamado}
-            onSuccess={() => setTabelaOSOpen(false)}
+            onSuccess={() => setOpenTabelaOSChamado(false)}
          />
 
-         {/* ===== TABELA TAREFAS ===== */}
+         {/* TABELA TAREFAS */}
          <TabelaTarefas
-            isOpen={tabelaTarefasOpen}
-            onClose={() => setTabelaTarefasOpen(false)}
+            isOpen={openTabelaTarefa}
+            onClose={() => setOpenTabelaTarefa(false)}
          />
 
-         {/* ===== MODAL ATRIBUIÇÃO INTELIGENTE ===== */}
+         {/* MODAL ATRIBUIR CHAMADO */}
          <ModalAtribuirChamado
-            isOpen={modalAtribuicaoOpen}
-            onClose={() => setModalAtribuicaoOpen(false)}
-            chamado={chamadoParaAtribuir}
+            isOpen={openModalAtribuirChamado}
+            onClose={() => setOpenModalAtribuirChamado(false)}
+            chamado={selectedChamadoParaAtribuir}
          />
 
-         {/* ===== MODAL APONTAMENTO ===== */}
-         <ModalApontamento
-            isOpen={modalApontamentosOpen}
-            onClose={handleCloseApontamentos}
-            tarefa={apontamentoData?.tarefa}
-            nomeCliente={apontamentoData?.nomeCliente}
-            onSuccess={handleApontamentoSuccess}
-         />
-
+         {/* MODAL EXCLUIR CHAMADO */}
          <ModalExcluirChamado
-            isOpen={!!chamadoParaExcluir}
+            isOpen={!!selectedCodChamado}
             onClose={handleCloseModalExcluirChamado}
-            codChamado={chamadoParaExcluir}
-            onSuccess={handleDeleteSuccess}
+            codChamado={selectedCodChamado}
+            onSuccess={handleExcluirChamadoSuccess}
          />
       </>
    );

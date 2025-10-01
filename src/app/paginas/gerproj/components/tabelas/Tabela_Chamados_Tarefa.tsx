@@ -27,8 +27,8 @@ import { InputFilterTableHeaderProps } from '../../../../../types/types';
 import { useAuth } from '../../../../../hooks/useAuth';
 import { colunasTabelaChamadosTarefa } from '../colunas/Colunas_Tabela_Chamados_Tarefa';
 // ================================================================================
-import IsError from '../Error';
-import IsLoading from '../Loading';
+import { IsError } from '../IsError';
+import { IsLoading } from '../IsLoading';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
 import { RiArrowUpDownLine } from 'react-icons/ri';

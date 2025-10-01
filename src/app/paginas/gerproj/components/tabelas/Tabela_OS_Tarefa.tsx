@@ -28,8 +28,8 @@ import ModalEditarOS from '../modais/Modal_Editar_OS';
 import { ModalExcluirOS } from '../modais/Modal_Deletar_OS';
 import { colunasTabelaOSTarefa } from '../colunas/Colunas_Tabela_OS_Tarefa';
 // ================================================================================
-import IsError from '../Error';
-import IsLoading from '../Loading';
+import { IsError } from '../IsError';
+import { IsLoading } from '../IsLoading';
 // ================================================================================
 import { GrServices } from 'react-icons/gr';
 import { BsEraserFill } from 'react-icons/bs';

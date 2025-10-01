@@ -9,7 +9,7 @@ interface ErrorProps {
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export default function Erro({ error }: ErrorProps) {
+export function IsError({ error }: ErrorProps) {
    const mensagem = error.message || 'Erro desconhecido';
 
    // ================================================================================

@@ -10,7 +10,10 @@ import {
    TooltipTrigger,
 } from '../../../../components/ui/tooltip';
 // ================================================================================
-import { getStylesStatus } from '../../../../utils/formatters';
+import {
+   formatCodChamado,
+   getStylesStatus,
+} from '../../../../utils/formatters';
 import { ToastCustom } from '../../../../components/Toast_Custom';
 import { useAuth } from '../../../../hooks/useAuth';
 import {
@@ -91,7 +94,7 @@ const Modal = ({
 
    return (
       <div
-         className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xl"
+         className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
          onClick={onClose}
       >
          <div
@@ -118,103 +121,128 @@ const statusOptions = [
 ];
 
 // Schema de validação com Zod para apontamentos
-const apontamentoSchema = z
-   .object({
-      dataInicioOS: z
-         .string()
-         .min(1, 'Data é obrigatória')
-         .refine(dateString => {
-            const date = new Date(dateString);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            return date <= today;
-         }, 'Data não pode ser maior que hoje')
-         .refine(dateString => {
-            const selectedDate = new Date(dateString);
-            const today = new Date();
+// Schema de validação com Zod para apontamentos - CORRIGIDO
+const createApontamentoSchema = (canUseBackdated: boolean) =>
+   z
+      .object({
+         dataInicioOS: z
+            .string()
+            .min(1, 'Data é obrigatória')
+            .refine(dateString => {
+               const date = new Date(dateString + 'T00:00:00');
+               const today = new Date();
+               today.setHours(0, 0, 0, 0);
 
-            // Verificar se a data selecionada está no mês atual ou posterior
-            const selectedYear = selectedDate.getFullYear();
-            const selectedMonth = selectedDate.getMonth();
-            const currentYear = today.getFullYear();
-            const currentMonth = today.getMonth();
+               console.log('🔍 [ZOD] Validando data:', {
+                  selecionada: date.toISOString(),
+                  hoje: today.toISOString(),
+                  selecionadaUTC: date.getTime(),
+                  hojeUTC: today.getTime(),
+               });
 
-            // Se o ano for menor que o atual, é retroativo
-            if (selectedYear < currentYear) return false;
+               return date <= today;
+            }, 'Data não pode ser maior que hoje')
+            .refine(dateString => {
+               // ✅ CORREÇÃO: Usar o parâmetro da função
+               if (canUseBackdated) {
+                  return true;
+               }
 
-            // Se o ano for igual mas o mês for menor, é retroativo
-            if (selectedYear === currentYear && selectedMonth < currentMonth)
-               return false;
+               const selectedDate = new Date(dateString + 'T00:00:00');
+               const today = new Date();
 
-            return true;
-         }, 'Não é possível selecionar datas de meses anteriores ao atual'),
+               // Verificar se a data selecionada está no mês atual ou posterior
+               const selectedYear = selectedDate.getFullYear();
+               const selectedMonth = selectedDate.getMonth();
+               const currentYear = today.getFullYear();
+               const currentMonth = today.getMonth();
 
-      horaInicioOS: z
-         .string()
-         .min(1, 'Hora Início é obrigatória')
-         .regex(
-            /^([01]?\d|2[0-3]):(00|15|30|45)$/,
-            'A hora deve ser em intervalos de 15 minutos'
-         ),
+               console.log('🔍 [ZOD] Validando mês:', {
+                  selecionada: { selectedYear, selectedMonth },
+                  atual: { currentYear, currentMonth },
+               });
 
-      horaFimOS: z
-         .string()
-         .min(1, 'Hora Fim é obrigatória')
-         .regex(
-            /^([01]?\d|2[0-3]):(00|15|30|45)$/,
-            'A hora deve ser em intervalos de 15 minutos'
-         ),
+               // Se o ano for menor que o atual, é retroativo
+               if (selectedYear < currentYear) return false;
 
-      observacaoOS: z
-         .string()
-         .min(10, 'Observação deve ter pelo menos 10 caracteres')
-         .max(200, 'Observação deve ter no máximo 200 caracteres')
-         .refine(
-            val => val.trim().length > 0,
-            'Observação não pode ser apenas espaços'
-         ),
-   })
-   .refine(
-      data => {
-         if (!data.horaInicioOS || !data.horaFimOS) return true;
+               // Se o ano for igual mas o mês for menor, é retroativo
+               if (selectedYear === currentYear && selectedMonth < currentMonth)
+                  return false;
 
-         const [startHours, startMinutes] = data.horaInicioOS
-            .split(':')
-            .map(Number);
-         const [endHours, endMinutes] = data.horaFimOS.split(':').map(Number);
+               return true;
+            }, 'Não é possível selecionar datas de meses anteriores ao atual'),
 
-         const startTimeInMinutes = startHours * 60 + startMinutes;
-         const endTimeInMinutes = endHours * 60 + endMinutes;
+         horaInicioOS: z
+            .string()
+            .min(1, 'Hora Início é obrigatória')
+            .regex(
+               /^([01]?\d|2[0-3]):(00|15|30|45)$/,
+               'A hora deve ser em intervalos de 15 minutos'
+            ),
 
-         return endTimeInMinutes > startTimeInMinutes;
-      },
-      {
-         message: 'Hora Fim deve ser maior que hora Início',
-         path: ['horaFimOS'],
-      }
-   )
-   .refine(
-      data => {
-         if (!data.horaInicioOS || !data.horaFimOS) return true;
+         horaFimOS: z
+            .string()
+            .min(1, 'Hora Fim é obrigatória')
+            .regex(
+               /^([01]?\d|2[0-3]):(00|15|30|45)$/,
+               'A hora deve ser em intervalos de 15 minutos'
+            ),
 
-         const [startHours, startMinutes] = data.horaInicioOS
-            .split(':')
-            .map(Number);
-         const [endHours, endMinutes] = data.horaFimOS.split(':').map(Number);
+         observacaoOS: z
+            .string()
+            .min(10, 'Observação deve ter pelo menos 10 caracteres')
+            .max(200, 'Observação deve ter no máximo 200 caracteres')
+            .refine(
+               val => val.trim().length > 0,
+               'Observação não pode ser apenas espaços'
+            ),
+      })
+      .refine(
+         data => {
+            if (!data.horaInicioOS || !data.horaFimOS) return true;
 
-         const startTimeInMinutes = startHours * 60 + startMinutes;
-         const endTimeInMinutes = endHours * 60 + endMinutes;
-         const diffInMinutes = endTimeInMinutes - startTimeInMinutes;
+            const [startHours, startMinutes] = data.horaInicioOS
+               .split(':')
+               .map(Number);
+            const [endHours, endMinutes] = data.horaFimOS
+               .split(':')
+               .map(Number);
 
-         return diffInMinutes >= 15;
-      },
-      {
-         message: 'Diferença mínima entre horários deve ser de 15 minutos',
-         path: ['horaFimOS'],
-      }
-   );
+            const startTimeInMinutes = startHours * 60 + startMinutes;
+            const endTimeInMinutes = endHours * 60 + endMinutes;
 
-type ApontamentoFormData = z.infer<typeof apontamentoSchema>;
+            return endTimeInMinutes > startTimeInMinutes;
+         },
+         {
+            message: 'Hora Fim deve ser maior que hora Início',
+            path: ['horaFimOS'],
+         }
+      )
+      .refine(
+         data => {
+            if (!data.horaInicioOS || !data.horaFimOS) return true;
+
+            const [startHours, startMinutes] = data.horaInicioOS
+               .split(':')
+               .map(Number);
+            const [endHours, endMinutes] = data.horaFimOS
+               .split(':')
+               .map(Number);
+
+            const startTimeInMinutes = startHours * 60 + startMinutes;
+            const endTimeInMinutes = endHours * 60 + endMinutes;
+            const diffInMinutes = endTimeInMinutes - startTimeInMinutes;
+
+            return diffInMinutes >= 15;
+         },
+         {
+            message: 'Diferença mínima entre horários deve ser de 15 minutos',
+            path: ['horaFimOS'],
+         }
+      );
+
+type ApontamentoFormData = z.infer<ReturnType<typeof createApontamentoSchema>>;
+
 type ApontamentoFormErrors = Partial<
    Record<keyof ApontamentoFormData | 'root', string>
 >;
@@ -275,7 +303,7 @@ const removerAcentos = (texto: string): string => {
 // COMPONENTE PRINCIPAL
 // ================================================================================
 
-export default function StatusCellUnified({
+export function ModalAtualizarStatusApontarOsChamado({
    status: initialStatus,
    codChamado,
    onUpdateSuccess,
@@ -314,6 +342,7 @@ export default function StatusCellUnified({
    const [selectedTarefa, setSelectedTarefa] = useState<number | null>(null);
    const [loadingClassificacoes, setLoadingClassificacoes] = useState(false);
    const [loadingTarefas, setLoadingTarefas] = useState(false);
+   const [isLoading, setIsLoading] = useState(false);
 
    // ================================================================================
    // ESTADOS - APONTAMENTO
@@ -429,6 +458,7 @@ export default function StatusCellUnified({
    // ====================
 
    // Função para verificar se uma data é de um mês anterior ao atual
+   // Função para verificar se uma data é de um mês anterior ao atual - CORRIGIDA
    const isDateFromPreviousMonth = useCallback(
       (dateString: string): boolean => {
          // ✅ CORREÇÃO: Se o usuário tem permissão especial, SEMPRE permitir
@@ -439,15 +469,27 @@ export default function StatusCellUnified({
          // Lógica original apenas para usuários sem permissão
          const [year, month, day] = dateString.split('-').map(Number);
          const today = new Date();
-         const currentYear = today.getFullYear();
-         const currentMonth = today.getMonth() + 1;
+
+         // ✅ CORREÇÃO: Ajustar para o fuso horário local
+         const todayLocal = new Date(
+            today.getTime() - today.getTimezoneOffset() * 60000
+         );
+         const currentYear = todayLocal.getFullYear();
+         const currentMonth = todayLocal.getMonth() + 1; // Janeiro é 0
+
+         console.log('🔍 [DEBUG] Data selecionada:', { year, month, day });
+         console.log('🔍 [DEBUG] Data atual:', {
+            currentYear,
+            currentMonth,
+            day: todayLocal.getDate(),
+         });
 
          if (year < currentYear) return true;
          if (year === currentYear && month < currentMonth) return true;
 
          return false;
       },
-      [canUseBackdatedDates] // ✅ Importante: dependência do canUseBackdatedDates
+      [canUseBackdatedDates]
    );
    // ====================
 
@@ -713,11 +755,14 @@ export default function StatusCellUnified({
    // ====================
 
    // Validação do formulário de apontamento
+   // Validação do formulário de apontamento - CORRIGIDA
    const validateApontamentoForm = (): boolean => {
       if (!needsApontamento) return true;
 
       try {
-         apontamentoSchema.parse(apontamentoData);
+         // ✅ CORREÇÃO: Passar a variável canUseBackdatedDates para o schema
+         const schema = createApontamentoSchema(canUseBackdatedDates);
+         schema.parse(apontamentoData);
          setApontamentoErrors({});
          return true;
       } catch (error) {
@@ -857,7 +902,7 @@ export default function StatusCellUnified({
             />
          ));
 
-         handleCloseModal();
+         handleCloseModalAtualizarStatusApontarOsChamado();
 
          if (onUpdateSuccess) {
             onUpdateSuccess();
@@ -895,7 +940,7 @@ export default function StatusCellUnified({
    // ====================
 
    // Handler para fechar o modal
-   const handleCloseModal = () => {
+   const handleCloseModalAtualizarStatusApontarOsChamado = () => {
       if (!isUpdating) {
          handleCancelChange();
       }
@@ -951,59 +996,73 @@ export default function StatusCellUnified({
    // ====================
 
    // useEffect para validar horários sempre que mudarem
-   // useEffect(() => {
-   //    if (!needsApontamento) return;
+   useEffect(() => {
+      if (!needsApontamento) return;
 
-   //    // Validar horários quando ambos estão preenchidos
-   //    if (apontamentoData.horaInicioOS && apontamentoData.horaFimOS) {
-   //       const [startHours, startMinutes] = apontamentoData.horaInicioOS
-   //          .split(':')
-   //          .map(Number);
-   //       const [endHours, endMinutes] = apontamentoData.horaFimOS
-   //          .split(':')
-   //          .map(Number);
+      // Validar horários quando ambos estão preenchidos
+      if (apontamentoData.horaInicioOS && apontamentoData.horaFimOS) {
+         const [startHours, startMinutes] = apontamentoData.horaInicioOS
+            .split(':')
+            .map(Number);
+         const [endHours, endMinutes] = apontamentoData.horaFimOS
+            .split(':')
+            .map(Number);
 
-   //       const startTimeInMinutes = startHours * 60 + startMinutes;
-   //       const endTimeInMinutes = endHours * 60 + endMinutes;
+         const startTimeInMinutes = startHours * 60 + startMinutes;
+         const endTimeInMinutes = endHours * 60 + endMinutes;
 
-   //       if (endTimeInMinutes <= startTimeInMinutes) {
-   //          setApontamentoErrors((prev: ApontamentoFormErrors) => ({
-   //             ...prev,
-   //             horaFimOS: 'Hora de fim deve ser maior que hora de início',
-   //          }));
-   //       } else if (endTimeInMinutes - startTimeInMinutes < 15) {
-   //          setApontamentoErrors((prev: ApontamentoFormErrors) => ({
-   //             ...prev,
-   //             horaFimOS:
-   //                'Diferença mínima entre horários deve ser de 15 minutos',
-   //          }));
-   //       } else {
-   //          // Limpar erros de horário se estiver válido
-   //          setApontamentoErrors((prev: ApontamentoFormErrors) => ({
-   //             ...prev,
-   //             horaInicioOS: undefined,
-   //             horaFimOS: undefined,
-   //          }));
-   //       }
-   //    }
-   // }, [
-   //    apontamentoData.horaInicioOS,
-   //    apontamentoData.horaFimOS,
-   //    needsApontamento,
-   // ]);
+         if (endTimeInMinutes <= startTimeInMinutes) {
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               horaFimOS: 'Hora de fim deve ser maior que hora de início',
+            }));
+         } else if (endTimeInMinutes - startTimeInMinutes < 15) {
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               horaFimOS:
+                  'Diferença mínima entre horários deve ser de 15 minutos',
+            }));
+         } else {
+            // Limpar erros de horário se estiver válido
+            setApontamentoErrors((prev: ApontamentoFormErrors) => ({
+               ...prev,
+               horaInicioOS: undefined,
+               horaFimOS: undefined,
+            }));
+         }
+      }
+   }, [
+      apontamentoData.horaInicioOS,
+      apontamentoData.horaFimOS,
+      needsApontamento,
+   ]);
    // ====================
 
    // useEffect para validar data sempre que mudar
+   // useEffect para validar data sempre que mudar - COM DEBUG
    useEffect(() => {
       if (!needsApontamento) return;
 
       if (apontamentoData.dataInicioOS) {
-         const selectedDate = new Date(apontamentoData.dataInicioOS);
+         console.log(
+            '🔍 [EFFECT] Validando data:',
+            apontamentoData.dataInicioOS
+         );
+
+         const selectedDate = new Date(
+            apontamentoData.dataInicioOS + 'T00:00:00'
+         );
          const today = new Date();
          today.setHours(0, 0, 0, 0);
 
+         console.log('🔍 [EFFECT] Datas comparadas:', {
+            selecionada: selectedDate.toISOString(),
+            hoje: today.toISOString(),
+         });
+
          // Primeira validação: data não pode ser maior que hoje
          if (selectedDate > today) {
+            console.log('❌ [EFFECT] Data maior que hoje');
             setApontamentoErrors((prev: ApontamentoFormErrors) => ({
                ...prev,
                dataInicioOS: 'Data não pode ser maior que hoje',
@@ -1011,6 +1070,7 @@ export default function StatusCellUnified({
          }
          // Segunda validação: data não pode ser de mês anterior
          else if (isDateFromPreviousMonth(apontamentoData.dataInicioOS)) {
+            console.log('❌ [EFFECT] Data de mês anterior');
             setApontamentoErrors((prev: ApontamentoFormErrors) => ({
                ...prev,
                dataInicioOS:
@@ -1019,6 +1079,7 @@ export default function StatusCellUnified({
          }
          // Se passou em todas as validações, limpar erro
          else {
+            console.log('✅ [EFFECT] Data válida');
             setApontamentoErrors((prev: ApontamentoFormErrors) => ({
                ...prev,
                dataInicioOS: undefined,
@@ -1037,20 +1098,35 @@ export default function StatusCellUnified({
    // ================================================================================
 
    const isFormValid = () => {
+      console.log('🔍 [DEBUG] Validando formulário...');
+
       // Verificar seleções obrigatórias
-      if (shouldShowClassificacao && !selectedClassificacao) return false;
-      if (shouldShowTarefa && !selectedTarefa) return false;
+      if (shouldShowClassificacao && !selectedClassificacao) {
+         console.log('❌ [DEBUG] Classificação não selecionada');
+         return false;
+      }
+      if (shouldShowTarefa && !selectedTarefa) {
+         console.log('❌ [DEBUG] Tarefa não selecionada');
+         return false;
+      }
 
       // Se precisa de apontamento, validar também o formulário
       if (needsApontamento) {
+         console.log('🔍 [DEBUG] Validando apontamento...', apontamentoData);
+
          try {
-            apontamentoSchema.parse(apontamentoData);
+            // ✅ CORREÇÃO: Usar o schema dinâmico aqui também
+            const schema = createApontamentoSchema(canUseBackdatedDates);
+            schema.parse(apontamentoData);
+            console.log('✅ [DEBUG] Apontamento válido');
             return true;
-         } catch {
+         } catch (error) {
+            console.log('❌ [DEBUG] Erro na validação do apontamento:', error);
             return false;
          }
       }
 
+      console.log('✅ [DEBUG] Formulário válido');
       return true;
    };
    // ====================
@@ -1155,11 +1231,11 @@ export default function StatusCellUnified({
          {/* ===== MODAL UNIFICADO ===== */}
          <Modal
             isOpen={showUnifiedModal}
-            onClose={handleCloseModal}
+            onClose={handleCloseModalAtualizarStatusApontarOsChamado}
             needsApontamento={!!needsApontamento}
          >
             <div
-               className={`animate-in slide-in-from-bottom-4 ${needsApontamento ? 'w-[1500px]' : 'w-[750px]'} relative z-10 max-h-[100vh] overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out`}
+               className={`animate-in slide-in-from-bottom-4 ${needsApontamento ? 'w-[1500px]' : 'w-[750px]'} relative z-10 max-h-[100vh] overflow-hidden rounded-2xl border-0 bg-slate-200 transition-all duration-500 ease-out`}
             >
                {/* ===== OVERLAY LOADING ===== */}
                {(loadingClassificacoes || loadingTarefas) && (
@@ -1179,25 +1255,23 @@ export default function StatusCellUnified({
                {/* ============================== */}
 
                {/* ===== HEADER ===== */}
-               <header className="relative flex items-center justify-between bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 p-6 shadow-md shadow-black">
+               <header className="relative flex items-center justify-between bg-black p-6 shadow-md shadow-black">
                   <div className="flex items-center justify-center gap-6">
-                     <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
-                        {needsApontamento ? (
-                           <FaUserClock className="text-black" size={36} />
-                        ) : (
-                           <FaSync className="text-black" size={36} />
-                        )}
-                     </div>
+                     {needsApontamento ? (
+                        <FaUserClock className="text-white" size={60} />
+                     ) : (
+                        <FaSync className="text-white" size={60} />
+                     )}
                      {/* ========== */}
                      <div className="flex flex-col">
-                        <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
+                        <h1 className="text-3xl font-extrabold tracking-wider text-white select-none">
                            {needsApontamento
                               ? 'Alterar Status / Realizar Apontamento '
                               : 'Alterar Status'}
                         </h1>
                         {/* ===== */}
-                        <p className="text-xl font-bold tracking-widest text-black italic select-none">
-                           Chamado - #{codChamado}
+                        <p className="text-xl font-extrabold tracking-widest text-white select-none">
+                           Chamado - #{formatCodChamado(codChamado)}
                         </p>
                      </div>
                   </div>
@@ -1228,26 +1302,16 @@ export default function StatusCellUnified({
                      )}
                      {/* ========== */}
 
-                     {/* Botão Fechar Modal */}
-                     <Tooltip>
-                        <TooltipTrigger asChild>
-                           <button
-                              onClick={handleCloseModal}
-                              disabled={isUpdating}
-                              className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                           >
-                              <IoClose size={24} />
-                           </button>
-                        </TooltipTrigger>
-                        <TooltipContent
-                           side="top"
-                           align="center"
-                           sideOffset={8}
-                           className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black select-none"
-                        >
-                           Sair
-                        </TooltipContent>
-                     </Tooltip>
+                     {/* Botão fechar modal */}
+                     <button
+                        onClick={
+                           handleCloseModalAtualizarStatusApontarOsChamado
+                        }
+                        disabled={isLoading}
+                        className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                     >
+                        <IoClose size={24} />
+                     </button>
                   </div>
                </header>
                {/* ============================== */}
@@ -1265,20 +1329,18 @@ export default function StatusCellUnified({
                         <div className="absolute top-8 bottom-8 left-1/2 z-10 w-px -translate-x-1/2 transform bg-black"></div>
                      )}
                      {/* ===== COLUNA STATUS ===== */}
-                     <div className="flex flex-col gap-4 rounded-xl border-t-2 border-slate-300 bg-white p-6 shadow-md shadow-black">
+                     <div className="flex flex-col gap-4 rounded-xl border-t-2 border-slate-200 bg-slate-100 p-6 shadow-md shadow-black">
                         <h2 className="text-2xl font-extrabold tracking-wider text-black select-none">
                            Alteração de Status
                         </h2>
                         {/* ========== */}
                         <section className="flex flex-col gap-16">
                            {/* ===== CARD STATUS ATUAL E PENDENTE ===== */}
-                           <div className="flex flex-col items-center justify-center gap-6 rounded-lg border-l-8 border-blue-600 bg-white p-6 text-center shadow-sm shadow-black">
-                              <div className="flex flex-col items-center justify-center">
-                                 {/* ===== */}
-                                 <p className="text-3xl font-extrabold tracking-widest text-black italic select-none">
-                                    Chamado - #{codChamado}
-                                 </p>
-                              </div>
+                           <div className="flex flex-col items-center justify-center gap-6 rounded-xl border border-l-8 border-black bg-slate-50 p-6 text-center">
+                              {/* ===== */}
+                              <p className="text-3xl font-extrabold tracking-widest text-black italic select-none">
+                                 Chamado - #{formatCodChamado(codChamado)}
+                              </p>
                               {/* ========== */}
 
                               <div className="flex items-center justify-center gap-8">
@@ -1288,7 +1350,7 @@ export default function StatusCellUnified({
                                     </p>
                                     {/* ===== */}
                                     <div
-                                       className={`inline-block rounded-md px-6 py-2 text-lg font-extrabold tracking-widest select-none ${getStylesStatus(status)}`}
+                                       className={`inline-block rounded-sm px-6 py-2 text-lg font-extrabold tracking-widest italic shadow-sm shadow-black select-none ${getStylesStatus(status)}`}
                                     >
                                        {getStatusDisplayName(status)}
                                     </div>
@@ -1309,7 +1371,7 @@ export default function StatusCellUnified({
                                     </p>
                                     {/* ===== */}
                                     <div
-                                       className={`inline-block rounded-md border-none px-6 py-2 text-lg font-extrabold tracking-widest select-none ${getStylesStatus(pendingStatus || '')}`}
+                                       className={`inline-block rounded-sm px-6 py-2 text-lg font-extrabold tracking-widest italic shadow-sm shadow-black select-none ${getStylesStatus(pendingStatus || '')}`}
                                     >
                                        {pendingStatus
                                           ? getStatusDisplayName(pendingStatus)
@@ -1342,7 +1404,7 @@ export default function StatusCellUnified({
                                                 Number(e.target.value) || null
                                              )
                                           }
-                                          className="w-full cursor-pointer rounded-md border-t-0 border-slate-300 bg-white px-4 py-2 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                          className="w-full cursor-pointer rounded-sm border-t-2 border-slate-200 bg-white px-4 py-2 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                           required
                                           disabled={isUpdating}
                                        >
@@ -1370,8 +1432,8 @@ export default function StatusCellUnified({
                                        </select>
                                        {!selectedClassificacao && (
                                           <div className="flex items-center gap-2">
-                                             <div className="h-2 w-2 rounded-full bg-red-700"></div>
-                                             <span className="text-sm font-semibold tracking-widest text-red-700 italic select-none">
+                                             <div className="h-2 w-2 rounded-full bg-black"></div>
+                                             <span className="text-sm font-semibold tracking-widest text-black italic select-none">
                                                 Campo obrigatório
                                              </span>
                                           </div>
@@ -1434,8 +1496,8 @@ export default function StatusCellUnified({
                                        </select>
                                        {!selectedTarefa && (
                                           <div className="flex items-center gap-2">
-                                             <div className="h-2 w-2 rounded-full bg-red-700"></div>
-                                             <span className="text-sm font-semibold tracking-widest text-red-700 italic select-none">
+                                             <div className="h-2 w-2 rounded-full bg-black"></div>
+                                             <span className="text-sm font-semibold tracking-widest text-black italic select-none">
                                                 Campo obrigatório
                                              </span>
                                           </div>
@@ -1456,16 +1518,16 @@ export default function StatusCellUnified({
 
                            {/* ===== AVISO DE CONFIRMAÇÃO ===== */}
                            {(selectedClassificacao || selectedTarefa) && (
-                              <div className="rounded-lg border-l-8 border-yellow-500 bg-slate-900 px-6 py-3 shadow-sm shadow-black">
+                              <div className="rounded-xl border border-l-8 border-black bg-slate-50 px-6 py-3">
                                  <div className="flex items-center gap-6">
                                     <FaExclamationTriangle
-                                       className="text-yellow-500"
+                                       className="text-black"
                                        size={40}
                                     />
                                     <div className="flex flex-col gap-1">
                                        <div className="flex items-center gap-2">
-                                          <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-                                          <p className="text-sm font-semibold tracking-widest text-yellow-500 italic select-none">
+                                          <div className="h-2 w-2 rounded-full bg-black"></div>
+                                          <p className="text-sm font-semibold tracking-widest text-black italic select-none">
                                              Essa alteração será salva
                                              permanentemente no sistema.
                                           </p>
@@ -1473,8 +1535,8 @@ export default function StatusCellUnified({
                                        <div className="flex items-center gap-2">
                                           {needsApontamento && (
                                              <>
-                                                <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-                                                <p className="mt-1 text-sm font-semibold tracking-widest text-yellow-500 italic select-none">
+                                                <div className="h-2 w-2 rounded-full bg-black"></div>
+                                                <p className="mt-1 text-sm font-semibold tracking-widest text-black italic select-none">
                                                    Uma OS será criada com os
                                                    dados do apontamento.
                                                 </p>
@@ -1492,7 +1554,7 @@ export default function StatusCellUnified({
 
                      {/* ===== COLUNA APONTAMENTO ===== */}
                      {needsApontamento && (
-                        <section className="flex flex-col gap-4 rounded-xl border-t-2 border-slate-300 bg-white p-6 shadow-md shadow-black">
+                        <section className="flex flex-col gap-4 rounded-xl border-t-2 border-slate-200 bg-slate-100 p-6 shadow-md shadow-black">
                            <h2 className="text-2xl font-extrabold tracking-wider text-black select-none">
                               Dados do Apontamento
                            </h2>
@@ -1526,7 +1588,7 @@ export default function StatusCellUnified({
                                  } // ✅ CORREÇÃO
                                  max={new Date().toISOString().split('T')[0]}
                                  disabled={isUpdating}
-                                 className={`w-full cursor-pointer rounded-md border-t-0 border-slate-300 bg-white px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                                 className={`w-full cursor-pointer rounded-sm border-t-2 border-slate-200 bg-white px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
                                     apontamentoErrors.dataInicioOS
                                        ? 'border-red-500 ring-2 ring-red-600'
                                        : ''
@@ -1574,7 +1636,7 @@ export default function StatusCellUnified({
                                        onChange={handleApontamentoInputChange}
                                        onBlur={handleTimeBlur}
                                        disabled={isUpdating}
-                                       className={`w-full cursor-pointer rounded-md border-t-0 border-slate-300 px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
+                                       className={`w-full cursor-pointer rounded-sm border-t-2 border-slate-200 px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
                                           apontamentoErrors.horaInicioOS
                                              ? 'border-red-500 bg-red-50 ring-2 ring-red-600'
                                              : !apontamentoData.horaInicioOS
@@ -1619,7 +1681,7 @@ export default function StatusCellUnified({
                                        onChange={handleApontamentoInputChange}
                                        onBlur={handleTimeBlur}
                                        disabled={isUpdating}
-                                       className={`w-full cursor-pointer rounded-md border-t-0 border-slate-300 px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
+                                       className={`w-full cursor-pointer rounded-sm border-t-2 border-slate-200 px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
                                           apontamentoErrors.horaFimOS
                                              ? 'border-red-500 bg-red-50 ring-2 ring-red-600'
                                              : !apontamentoData.horaFimOS
@@ -1677,7 +1739,7 @@ export default function StatusCellUnified({
                                  rows={4}
                                  maxLength={200}
                                  placeholder="Descreva detalhadamente o serviço realizado..."
-                                 className={`w-full cursor-pointer resize-none rounded-md border-t-0 border-slate-300 px-4 pt-3 text-base font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all placeholder:text-sm hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
+                                 className={`w-full cursor-pointer resize-none rounded-sm border-t-2 border-slate-200 px-4 pt-3 text-base font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all placeholder:text-sm hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
                                     apontamentoErrors.observacaoOS
                                        ? 'border-red-500 bg-red-50 ring-2 ring-red-600'
                                        : !apontamentoData.observacaoOS.trim()
@@ -1795,7 +1857,7 @@ export default function StatusCellUnified({
                   <button
                      onClick={handleCancelChange}
                      disabled={isUpdating}
-                     className="cursor-pointer rounded-xl border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
+                     className="cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
                   >
                      Cancelar
                   </button>
@@ -1804,7 +1866,7 @@ export default function StatusCellUnified({
                   <button
                      onClick={handleSubmitSave}
                      disabled={isUpdating || !isFormValid()}
-                     className={`cursor-pointer rounded-xl border-none bg-blue-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black select-none ${
+                     className={`cursor-pointer rounded-sm border-none bg-blue-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black select-none ${
                         isUpdating || !isFormValid()
                            ? 'disabled:cursor-not-allowed disabled:opacity-50'
                            : 'transition-all hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black active:scale-95'
@@ -1875,8 +1937,8 @@ const FormSection = ({
    // Cores para cada estado
    const colors = {
       error: {
-         header: 'bg-red-600',
-         border: 'ring-1 ring-red-600',
+         header: 'bg-black',
+         border: 'ring-1 ring-black',
       },
       empty: {
          header: 'bg-black',
@@ -1890,9 +1952,11 @@ const FormSection = ({
 
    return (
       <div
-         className={`overflow-hidden rounded-md bg-white ${colors[state].border}`}
+         className={`overflow-hidden rounded-xl bg-slate-50 ${colors[state].border}`}
       >
-         <div className={`px-4 py-2 ${colors[state].header}`}>
+         <div
+            className={`px-4 py-2 shadow-sm shadow-black ${colors[state].header}`}
+         >
             <h3 className="flex items-center gap-3 text-lg font-bold tracking-wider text-white select-none">
                {icon}
                {title}

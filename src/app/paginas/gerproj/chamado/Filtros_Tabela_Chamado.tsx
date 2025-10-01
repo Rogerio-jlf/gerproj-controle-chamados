@@ -23,7 +23,7 @@ interface FiltrosProps {
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export default function Filtros({ onFiltersChange }: FiltrosProps) {
+export function FiltrosTabelaChamado({ onFiltersChange }: FiltrosProps) {
    const hoje = new Date();
    const { filters, setFilters } = useFiltersTabelaChamados();
 

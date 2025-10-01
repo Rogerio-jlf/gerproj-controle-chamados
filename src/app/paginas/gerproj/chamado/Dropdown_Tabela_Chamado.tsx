@@ -28,7 +28,7 @@ interface DropdownHeaderProps {
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export default function DropdownHeader({
+export function DropdownTabelaChamado({
    onOpenTabelaOS,
    onOpenTabelaTarefas,
 }: DropdownHeaderProps) {

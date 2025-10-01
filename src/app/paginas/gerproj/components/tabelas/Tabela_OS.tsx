@@ -20,8 +20,8 @@ import {
 // ================================================================================
 import { TabelaOSProps } from '../../../../../types/types';
 // ================================================================================
-import IsError from '../Error';
-import IsLoading from '../Loading';
+import { IsError } from '../IsError';
+import { IsLoading } from '../IsLoading';
 import Filtros from '../Filtros_Completo';
 import { useAuth } from '../../../../../hooks/useAuth';
 import { colunasTabelaOS } from '../colunas/Colunas_Tabela_OS';
@@ -101,7 +101,7 @@ function getColumnWidth(columnId: string, userType?: string): string {
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export default function TabelaOS({ isOpen = true, onClose }: Props) {
+export function TabelaOS({ isOpen = true, onClose }: Props) {
    // ================================================================================
    // HOOKS E CONTEXTOS
    // ================================================================================

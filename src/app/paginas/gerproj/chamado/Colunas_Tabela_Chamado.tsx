@@ -16,7 +16,7 @@ import {
    formatCodChamado,
 } from '../../../../utils/formatters';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
-import StatusApontamentoChamado from './Modal_Atualizar_Status_Apontar_Os_Chamado';
+import { ModalAtualizarStatusApontarOsChamado } from './Modal_Atualizar_Status_Apontar_Os_Chamado';
 // ================================================================================
 import { IoCall } from 'react-icons/io5';
 import { GrServices } from 'react-icons/gr';
@@ -31,7 +31,7 @@ interface AcoesTabelaChamadosProps {
    onVisualizarChamado: (codChamado: number) => void;
    onVisualizarOSChamado: (codChamado: number) => void;
    onVisualizarOS: () => void;
-   onVisualizarTarefas: () => void;
+   onVisualizarTarefa: () => void;
    onAtribuicaoInteligente: (chamado: TabelaChamadoProps) => void;
    onUpdateStatus?: (
       codChamado: number,
@@ -138,7 +138,7 @@ const BotaoMenuCircular = ({ chamado, acoes }: BotaoCircularMenuProps) => {
       {
          icon: FaTasks,
          onClick: () => {
-            acoes.onVisualizarTarefas();
+            acoes.onVisualizarTarefa();
             setIsOpen(false);
          },
          tooltip: 'Visualizar Tarefas',
@@ -400,7 +400,7 @@ export const colunasTabelaChamados = (
          accessorKey: 'STATUS_CHAMADO',
          header: () => <div className="text-center">Status</div>,
          cell: ({ row }) => (
-            <StatusApontamentoChamado
+            <ModalAtualizarStatusApontarOsChamado
                status={row.original.STATUS_CHAMADO}
                codChamado={row.original.COD_CHAMADO}
                nomeCliente={row.original.NOME_CLIENTE ?? '-'}

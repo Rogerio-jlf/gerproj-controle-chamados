@@ -192,7 +192,7 @@ type FormErrors = Partial<Record<keyof FormData | 'root', string>>;
 // COMPONENTE PRINCIPAL
 // ================================================================================
 
-export default function ModalApontamentoOSTarefa({
+export function ModalApontamentoOSTarefa({
    isOpen,
    onClose,
    tarefa,

@@ -31,8 +31,8 @@ import {
    OSTarefaProps,
 } from '../colunas/Colunas_Tabela_OS_Chamado';
 // ================================================================================
-import IsError from '../Error';
-import IsLoading from '../Loading';
+import { IsError } from '../IsError';
+import { IsLoading } from '../IsLoading';
 // ================================================================================
 import { GrServices } from 'react-icons/gr';
 import { BsEraserFill } from 'react-icons/bs';
@@ -289,7 +289,7 @@ function getColumnWidth(columnId: string): string {
 // COMPONENTE PRINCIPAL
 // ================================================================================
 
-export default function TabelaOSChamado({
+export function TabelaOSChamado({
    isOpen,
    onClose,
    onSuccess,

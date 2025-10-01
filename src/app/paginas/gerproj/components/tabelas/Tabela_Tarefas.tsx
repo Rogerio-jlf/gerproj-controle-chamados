@@ -27,10 +27,10 @@ import { InputFilterTableHeaderProps } from '../../../../../types/types';
 import { useAuth } from '../../../../../hooks/useAuth';
 import { colunasTabelaTarefa } from '../colunas/Colunas_Tabela_Tarefas';
 // ================================================================================
-import IsError from '../Error';
-import IsLoading from '../Loading';
+import { IsError } from '../IsError';
+import { IsLoading } from '../IsLoading';
 import TabelaOSTarefa from './Tabela_OS_Tarefa';
-import ModalApontamentoOSTarefa from '../modais/Modal_Apontamento_OS_Tarefa';
+import { ModalApontamentoOSTarefa } from '../modais/Modal_Apontamento_OS_Tarefa';
 import TabelaChamadosTarefa from './Tabela_Chamados_Tarefa';
 // ================================================================================
 import { BsEraserFill } from 'react-icons/bs';
@@ -250,7 +250,7 @@ const getColumnDisplayName = (columnId: string): string => {
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export default function TabelaTarefas({ isOpen, onClose }: Props) {
+export function TabelaTarefas({ isOpen, onClose }: Props) {
    const { user } = useAuth();
    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
    const [globalFilter, setGlobalFilter] = useState('');
