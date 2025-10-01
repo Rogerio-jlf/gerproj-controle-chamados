@@ -1,14 +1,10 @@
-import { useCallback } from 'react';
-// ================================================================================
 import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
 } from '../components/ui/tooltip';
 // ================================================================================
-import { useFiltersTabelaChamados } from '../contexts/Filters_Context';
 import LogoutButton from './botoes/Button_Logout';
-import Filtros from '../app/paginas/gerproj/chamado/Filtros_Tabela_Chamado';
 // ================================================================================
 import { LuRefreshCw } from 'react-icons/lu';
 
@@ -25,26 +21,14 @@ interface HeaderProps {
 // COMPONENTE PRINCIPAL
 // ================================================================================
 export default function Header({ titulo, subtitulo, icon }: HeaderProps) {
-   const { setFilters } = useFiltersTabelaChamados();
-
-   const handleFiltersChange = useCallback(
-      (newFilters: { ano: number | 'todos'; mes: number | 'todos' }) => {
-         setFilters(prevFilters => ({
-            ...prevFilters,
-            ...newFilters,
-         }));
-      },
-      [setFilters]
-   );
-
    // ================================================================================
-   // RENDERIZAÇÃO PRINCIPAL
+   // RENDERIZAÇÃO
    // ================================================================================
    return (
       <header>
-         <div className="grid grid-cols-[30%_40%_30%] border-b-4 border-red-500 bg-gray-100 pb-6">
+         <div className="flex items-center justify-between border-b-4 border-red-500 bg-gray-100 pb-6">
             {/* ===== ITENS DA ESQUERDA ===== */}
-            <section className="flex items-center gap-4">
+            <div className="flex items-center gap-4">
                <div
                   className="w-fit bg-gradient-to-br from-purple-950 via-blue-500 to-purple-950 p-4 text-2xl text-white shadow-md shadow-black"
                   style={{
@@ -67,17 +51,11 @@ export default function Header({ titulo, subtitulo, icon }: HeaderProps) {
                      </h2>
                   )}
                </div>
-            </section>
-            {/* ========== */}
-
-            {/* ===== FILTROS ===== */}
-            <section>
-               <Filtros onFiltersChange={handleFiltersChange} />
-            </section>
+            </div>
             {/* ========== */}
 
             {/* ===== ITENS DA DIREITA ===== */}
-            <section className="flex items-center justify-end gap-4">
+            <div className="flex items-center gap-4">
                <div className="flex items-center gap-4">
                   <div className="text-right">
                      <h2 className="text-sm font-bold tracking-widest text-black italic select-none">
@@ -119,7 +97,7 @@ export default function Header({ titulo, subtitulo, icon }: HeaderProps) {
 
                {/* Botão logout */}
                <LogoutButton />
-            </section>
+            </div>
          </div>
       </header>
    );

@@ -1080,14 +1080,14 @@ export default function StatusCellUnified({
                         setEditing(false);
                      }
                   }}
-                  className={`w-[300px] min-w-[160px] rounded-md px-6 py-2 font-semibold ${getStylesStatus(status)}`}
+                  className={`w-[300px] min-w-[260px] rounded-sm border-2 border-slate-900 px-6 py-2 ${getStylesStatus(status)}`}
                   disabled={isUpdating}
                >
                   {!availableStatusOptions.includes(status) && (
                      <option
                         key={status}
                         value={status}
-                        className="bg-white text-black"
+                        className="bg-white font-bold tracking-wider text-black italic select-none"
                      >
                         {getStatusDisplayName(status)}
                      </option>
@@ -1096,7 +1096,7 @@ export default function StatusCellUnified({
                      <option
                         key={opt}
                         value={opt}
-                        className="bg-white text-black"
+                        className="bg-white font-bold tracking-wider text-black italic select-none"
                      >
                         {getStatusDisplayName(opt)}
                      </option>
@@ -1108,9 +1108,9 @@ export default function StatusCellUnified({
                   <Tooltip>
                      <TooltipTrigger asChild>
                         <div
-                           className={`group relative rounded-md px-6 py-2 font-semibold transition-all ${
+                           className={`group relative rounded-full border-2 border-slate-900 px-6 py-2 transition-all ${
                               isStatusEditable
-                                 ? 'cursor-pointer hover:scale-105 hover:shadow-lg hover:shadow-black'
+                                 ? 'cursor-pointer hover:scale-110 hover:border-2 hover:border-slate-900'
                                  : 'cursor-not-allowed opacity-75'
                            } ${getStylesStatus(status)} ${
                               isUpdating ? 'cursor-wait opacity-50' : ''
@@ -1118,7 +1118,7 @@ export default function StatusCellUnified({
                            onClick={handleStatusCellClick}
                         >
                            <div className="flex items-center justify-center gap-4">
-                              <span className="font-semibold">
+                              <span className="font-semibold tracking-wider select-none">
                                  {status ?? 'Sem status'}
                               </span>
                               {isStatusEditable && (

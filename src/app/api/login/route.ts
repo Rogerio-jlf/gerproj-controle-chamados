@@ -57,7 +57,7 @@ export async function POST(request: Request) {
             },
          },
          process.env.JWT_SECRET || 'minha_chave_secreta',
-         { expiresIn: '1h' }
+         { expiresIn: '3h' }
       );
 
       const isAdmin = user.TIPO_USUARIO === 'ADM';

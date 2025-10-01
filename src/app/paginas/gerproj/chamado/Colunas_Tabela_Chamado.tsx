@@ -11,9 +11,12 @@ import {
 // ================================================================================
 import { TabelaChamadoProps } from '../../../../types/types';
 // ================================================================================
-import { formatarDataParaBR } from '../../../../utils/formatters';
+import {
+   formatarDataParaBR,
+   formatCodChamado,
+} from '../../../../utils/formatters';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
-import StatusApontamentoChamado from './Modal_Atualizar_Status_Apontar_OS_Chamado';
+import StatusApontamentoChamado from './Modal_Atualizar_Status_Apontar_Os_Chamado';
 // ================================================================================
 import { IoCall } from 'react-icons/io5';
 import { GrServices } from 'react-icons/gr';
@@ -338,63 +341,61 @@ export const colunasTabelaChamados = (
 ): ColumnDef<TabelaChamadoProps>[] => {
    // Array base de colunas (sem a coluna de recurso)
    const baseColumns: ColumnDef<TabelaChamadoProps>[] = [
-      // Código chamado
+      // Chamado
       {
          accessorKey: 'COD_CHAMADO',
          header: () => <div className="text-center">Chamado</div>,
-         cell: ({ getValue }) => (
-            <div className="rounded-md bg-slate-900 p-2 text-center text-white">
-               {getValue() as string}
-            </div>
-         ),
-      },
-
-      // Data chamado
-      {
-         accessorKey: 'DATA_CHAMADO',
-         header: () => <div className="text-center">Data</div>,
          cell: ({ getValue }) => {
-            const dateString = getValue() as string;
-            const dataFormatada = formatarDataParaBR(dateString);
-
+            const value = getValue() as number;
             return (
-               <div className="rounded-md bg-slate-900 p-2 text-center text-white">
-                  {dataFormatada}
+               <div className="flex items-center justify-center rounded-sm border border-white/40 bg-slate-950 py-2 text-center font-bold text-white">
+                  {formatCodChamado(value) || '-----'}
                </div>
             );
          },
       },
+      // ==========
 
-      // Assunto chamado (editável)
+      // Data chamado
       {
-         accessorKey: 'ASSUNTO_CHAMADO',
-         header: () => <div className="text-center">Assunto</div>,
-         cell: ({ row }) => {
-            const assunto = row.original.ASSUNTO_CHAMADO || '-';
-            return (
-               <Tooltip>
-                  <TooltipTrigger asChild>
-                     <div className="truncate px-2">
-                        {corrigirTextoCorrompido(assunto)}
-                     </div>
-                  </TooltipTrigger>
+         accessorKey: 'DATA_CHAMADO',
+         header: () => <div className="text-center">DT. Chamado</div>,
+         cell: ({ getValue }) => {
+            const value = getValue() as string;
+            const dataFormatada = formatarDataParaBR(value);
 
-                  <TooltipContent
-                     side="left"
-                     align="end"
-                     sideOffset={8}
-                     className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
-                  >
-                     <div className="max-w-xs break-words">
-                        {corrigirTextoCorrompido(assunto)}
-                     </div>
-                  </TooltipContent>
-               </Tooltip>
+            return (
+               <div className="flex items-center justify-center rounded-sm border border-white/40 bg-slate-950 py-2 text-center font-bold text-white">
+                  {dataFormatada || '----------'}
+               </div>
             );
          },
       },
+      // ==========
 
-      // Status chamado (clicável)
+      // Assunto
+      {
+         accessorKey: 'ASSUNTO_CHAMADO',
+         header: () => <div className="text-center">Assunto</div>,
+         cell: ({ getValue }) => {
+            const value = getValue() as string;
+            const isEmpty = !value;
+            return (
+               <div
+                  className={`flex items-center rounded-sm border border-white/40 bg-slate-950 py-2 font-bold text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-6 text-left'}`}
+               >
+                  {isEmpty ? (
+                     '------------------------------'
+                  ) : (
+                     <span className="block w-full truncate">{value}</span>
+                  )}
+               </div>
+            );
+         },
+      },
+      // ==========
+
+      // Status (clicável)
       {
          accessorKey: 'STATUS_CHAMADO',
          header: () => <div className="text-center">Status</div>,
@@ -407,14 +408,15 @@ export const colunasTabelaChamados = (
             />
          ),
       },
+      // ==========
 
-      // Data chamado
+      // Data Atribuição
       {
          accessorKey: 'DTENVIO_CHAMADO',
          header: () => <div className="text-center">DT. Atribuição</div>,
          cell: ({ getValue }) => {
-            const dateString = getValue() as string;
-            const dataFormatada = formatarDataParaBR(dateString);
+            const value = getValue() as string;
+            const dataFormatada = formatarDataParaBR(value);
 
             if (
                dataFormatada !== null &&
@@ -422,31 +424,32 @@ export const colunasTabelaChamados = (
                dataFormatada !== '-'
             ) {
                return (
-                  <div className="rounded-md bg-slate-900 p-2 text-center text-white">
+                  <div className="flex items-center justify-center rounded-sm border border-white/40 bg-slate-900 py-2 text-center font-bold text-white">
                      {dataFormatada}
                   </div>
                );
             }
             return (
-               <div className="rounded-md bg-yellow-500 p-2 text-center text-black uppercase">
+               <div className="flex items-center justify-center rounded-sm border border-slate-900 bg-yellow-500 py-2 text-center font-bold text-black uppercase">
                   Não atribuído
                </div>
             );
          },
       },
    ];
+   // ==========
 
-   // Coluna de recurso
+   // Coluna
    const recursoColumn: ColumnDef<TabelaChamadoProps> = {
       accessorKey: 'NOME_RECURSO',
-      header: () => <div className="text-center">Recurso</div>,
+      header: () => <div className="text-center">Consultor</div>,
       cell: ({ row }) => {
          const recurso = row.original.NOME_RECURSO;
          const codRecurso = row.original.COD_RECURSO;
 
          if (codRecurso !== null && codRecurso !== undefined && recurso) {
             return (
-               <div className="rounded-md bg-slate-900 p-2 text-center text-white">
+               <div className="flex items-center rounded-sm border border-white/40 bg-slate-900 py-2 pl-6 text-left font-bold text-white">
                   {corrigirTextoCorrompido(
                      recurso.split(' ').slice(0, 2).join(' ')
                   )}
@@ -455,8 +458,8 @@ export const colunasTabelaChamados = (
          }
 
          return (
-            <div className="rounded-md bg-yellow-500 p-2 text-center text-black">
-               <span className="uppercase">Não atribuído</span>
+            <div className="flex items-center justify-center rounded-sm border border-slate-900 bg-yellow-500 py-2 text-center font-bold text-black uppercase">
+               Não atribuído
             </div>
          );
       },
@@ -464,26 +467,29 @@ export const colunasTabelaChamados = (
 
    // Colunas finais
    const finalColumns: ColumnDef<TabelaChamadoProps>[] = [
-      // Email chamado
+      // Email
       {
          accessorKey: 'EMAIL_CHAMADO',
          header: () => <div className="text-center">Email</div>,
          cell: ({ getValue }) => {
             const value = getValue() as string;
+            const isEmpty = !value;
 
             return (
-               <div>
-                  {value ? (
-                     <Link href={`mailto:${value}`} className="hover:underline">
-                        <div className="">{value}</div>
-                     </Link>
+               <Link
+                  href={`mailto:${value}`}
+                  className={`flex items-center rounded-sm border border-white/40 bg-slate-900 py-2 font-bold text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-6 text-left'}`}
+               >
+                  {isEmpty ? (
+                     '------------------------------'
                   ) : (
-                     <div className="text-center">-</div>
+                     <span className="block w-full truncate">{value}</span>
                   )}
-               </div>
+               </Link>
             );
          },
       },
+      // ==========
 
       // Ações - MODIFICADO PARA INCLUIR BOTÃO DELETE (APENAS PARA ADM)
       {
