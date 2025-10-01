@@ -24,7 +24,7 @@ export default function SelectDia({
    // ================================================================================
    return (
       <div className="group flex w-full flex-col gap-1">
-         <label className="flex items-center gap-2 text-base font-extrabold tracking-widest text-black select-none">
+         <label className="flex items-center gap-2 text-base font-extrabold tracking-widest text-black uppercase select-none">
             <FaFilter className="text-black" size={16} />
             Dia
          </label>

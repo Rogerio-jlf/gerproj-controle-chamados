@@ -36,12 +36,18 @@ export async function GET(request: Request) {
       const page = parseInt(searchParams.get('page') || '1', 10);
       const limit = parseInt(searchParams.get('limit') || '20', 10);
 
-      // NOVOS FILTROS DE COLUNA
+      // FILTROS DE COLUNA
       const filterCodChamado = searchParams.get('filter_COD_CHAMADO')?.trim();
       const filterDataChamado = searchParams.get('filter_DATA_CHAMADO')?.trim();
       const filterAssunto = searchParams.get('filter_ASSUNTO_CHAMADO')?.trim();
       const filterStatus = searchParams.get('filter_STATUS_CHAMADO')?.trim();
+      const filterDataEnvio = searchParams
+         .get('filter_DTENVIO_CHAMADO')
+         ?.trim();
       const filterNomeRecurso = searchParams.get('filter_NOME_RECURSO')?.trim();
+      const filterEmailRecurso = searchParams
+         .get('filter_EMAIL_RECURSO')
+         ?.trim();
       const globalFilter = searchParams.get('globalFilter')?.trim();
 
       if (page < 1 || limit < 1 || limit > 100) {
@@ -125,7 +131,8 @@ export async function GET(request: Request) {
          params.push(Number(codChamadoQuery));
       }
 
-      // ===== NOVOS FILTROS DE COLUNA =====
+      // ===== FILTROS DE COLUNA ROBUSTOS =====
+
       if (filterCodChamado) {
          whereConditions.push(
             'CAST(Chamado.COD_CHAMADO AS VARCHAR(20)) LIKE ?'
@@ -133,11 +140,88 @@ export async function GET(request: Request) {
          params.push(`%${filterCodChamado}%`);
       }
 
+      // FILTRO DATA_CHAMADO (tipo DATE no banco - formato 25.09.2025 00:00)
+      // FILTRO DATA_CHAMADO (tipo DATE no banco - formato 25.09.2025 00:00)
+      // FILTRO DATA_CHAMADO (tipo DATE no banco - formato 25.09.2025 00:00)
+      // FILTRO DATA_CHAMADO (tipo DATE no banco)
       if (filterDataChamado) {
-         whereConditions.push(
-            'CAST(Chamado.DATA_CHAMADO AS VARCHAR(50)) LIKE ?'
-         );
-         params.push(`%${filterDataChamado}%`);
+         let searchValue = filterDataChamado.trim().replace(/\//g, '.');
+
+         // Se só tem números, formata com pontos
+         if (/^\d+$/.test(searchValue)) {
+            if (searchValue.length === 2) {
+               // Apenas dia: 26
+               searchValue = searchValue;
+            } else if (searchValue.length === 4) {
+               // DDMM: 2609 -> 26.09
+               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}`;
+            } else if (searchValue.length === 8) {
+               // DDMMYYYY: 26092025 -> 26.09.2025
+               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}.${searchValue.substring(4, 8)}`;
+            }
+         }
+
+         const parts = searchValue.split('.');
+
+         if (parts.length === 1 && /^\d{1,2}$/.test(parts[0])) {
+            // Apenas dia (ex: 26)
+            whereConditions.push('EXTRACT(DAY FROM Chamado.DATA_CHAMADO) = ?');
+            params.push(parseInt(parts[0]));
+         } else if (
+            parts.length === 2 &&
+            /^\d{1,2}$/.test(parts[0]) &&
+            /^\d{1,2}$/.test(parts[1])
+         ) {
+            // Dia e mês (ex: 26.09)
+            whereConditions.push(
+               '(EXTRACT(DAY FROM Chamado.DATA_CHAMADO) = ? AND EXTRACT(MONTH FROM Chamado.DATA_CHAMADO) = ?)'
+            );
+            params.push(parseInt(parts[0]), parseInt(parts[1]));
+         } else if (
+            parts.length === 3 &&
+            /^\d{1,2}$/.test(parts[0]) &&
+            /^\d{1,2}$/.test(parts[1]) &&
+            /^\d{4}$/.test(parts[2])
+         ) {
+            // Dia, mês e ano (ex: 26.09.2025)
+            whereConditions.push(
+               '(EXTRACT(DAY FROM Chamado.DATA_CHAMADO) = ? AND EXTRACT(MONTH FROM Chamado.DATA_CHAMADO) = ? AND EXTRACT(YEAR FROM Chamado.DATA_CHAMADO) = ?)'
+            );
+            params.push(
+               parseInt(parts[0]),
+               parseInt(parts[1]),
+               parseInt(parts[2])
+            );
+         } else {
+            // Fallback: busca no formato YYYY-MM-DD
+            whereConditions.push(
+               `CAST(Chamado.DATA_CHAMADO AS VARCHAR(50)) LIKE ?`
+            );
+            params.push(`%${searchValue}%`);
+         }
+      }
+
+      // FILTRO DTENVIO_CHAMADO (tipo VARCHAR no banco - formato 25/09/2025 - 15:30)
+      // FILTRO DTENVIO_CHAMADO (tipo VARCHAR no banco - formato 25/09/2025 - 15:30)
+      if (filterDataEnvio) {
+         let searchValue = filterDataEnvio.trim().replace(/\//g, '/');
+
+         // Se só tem números, formata com barras
+         if (/^\d+$/.test(searchValue)) {
+            if (searchValue.length === 2) {
+               // Apenas dia: 30 -> busca "30/"
+               searchValue = searchValue + '/';
+            } else if (searchValue.length === 4) {
+               // DDMM: 3009 -> 30/09
+               searchValue = `${searchValue.substring(0, 2)}/${searchValue.substring(2, 4)}`;
+            } else if (searchValue.length === 8) {
+               // DDMMYYYY: 30092025 -> 30/09/2025
+               searchValue = `${searchValue.substring(0, 2)}/${searchValue.substring(2, 4)}/${searchValue.substring(4, 8)}`;
+            }
+         }
+
+         whereConditions.push('Chamado.DTENVIO_CHAMADO LIKE ?');
+         params.push(`${searchValue}%`); // Removido o % do início
       }
 
       if (filterAssunto) {
@@ -153,6 +237,12 @@ export async function GET(request: Request) {
       if (filterNomeRecurso) {
          whereConditions.push('UPPER(Recurso.NOME_RECURSO) LIKE ?');
          params.push(`%${filterNomeRecurso.toUpperCase()}%`);
+      }
+
+      // FILTRO EMAIL_RECURSO (adicionado)
+      if (filterEmailRecurso) {
+         whereConditions.push('UPPER(Chamado.EMAIL_CHAMADO) LIKE ?');
+         params.push(`%${filterEmailRecurso.toUpperCase()}%`);
       }
 
       // Filtro global (busca em múltiplas colunas)
@@ -206,6 +296,20 @@ export async function GET(request: Request) {
 
       const total = countResult[0].TOTAL;
       const totalPages = Math.ceil(total / limit);
+
+      // TEMPORÁRIO - PARA DEBUG
+      if (filterDataChamado) {
+         const debugSql = `
+      SELECT FIRST 5
+         Chamado.COD_CHAMADO,
+         Chamado.DATA_CHAMADO,
+         CAST(Chamado.DATA_CHAMADO AS VARCHAR(50)) as DATA_FORMATADA
+      FROM CHAMADO Chamado
+      ORDER BY Chamado.COD_CHAMADO DESC
+   `;
+         const debugResult = await firebirdQuery(debugSql, []);
+         console.log('DEBUG - Formato das datas:', debugResult);
+      }
 
       return NextResponse.json(
          {

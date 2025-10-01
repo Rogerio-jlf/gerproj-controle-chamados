@@ -51,12 +51,9 @@ export function ModalExcluirChamado({
       setError(null);
 
       try {
-         const response = await fetch(
-            `/api/apontamentos-tarefa/delete/${codChamado}`,
-            {
-               method: 'DELETE',
-            }
-         );
+         const response = await fetch(`/api/chamados/delete/${codChamado}`, {
+            method: 'DELETE',
+         });
 
          if (!response.ok) {
             const errorData = await response.json();
@@ -101,7 +98,7 @@ export function ModalExcluirChamado({
       <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
          {/* ===== OVERLAY ===== */}
          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-xl"
+            className="absolute inset-0 bg-black/40"
             // onClick={handleCloseModalExcluirOS}
          />
          {/* ========== */}
@@ -146,7 +143,7 @@ export function ModalExcluirChamado({
                               Chamado #{formatCodChamado(codChamado)}
                            </span>{' '}
                            para exclusão. Se você deseja continuar com a
-                           exclusão, clique no botão abaixo.
+                           operação, clique no botão excluir, abaixo.
                         </h3>
                      </div>
                   </div>

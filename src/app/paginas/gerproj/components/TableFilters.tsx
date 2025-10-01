@@ -234,7 +234,7 @@ export const FilterControls = ({
             className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-1.5 text-lg font-extrabold tracking-wider italic transition-all select-none ${
                showFilters
                   ? 'border-none bg-blue-600 text-white shadow-sm shadow-black hover:bg-blue-800'
-                  : 'border-none bg-white/30 text-black shadow-sm shadow-black hover:bg-white/10'
+                  : 'border-none bg-white text-black shadow-sm shadow-black'
             } ${
                dataLength <= 1
                   ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
@@ -242,7 +242,7 @@ export const FilterControls = ({
             }`}
          >
             {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
-            {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+            {showFilters ? 'Ocultar Filtros' : 'Mostrar + Filtros'}
          </button>
 
          {/* Botão limpar filtros */}

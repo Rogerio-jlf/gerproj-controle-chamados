@@ -28,7 +28,7 @@ export default function Header({ titulo, subtitulo, icon }: HeaderProps) {
       <header>
          <div className="flex items-center justify-between border-b-4 border-red-500 bg-gray-100 pb-6">
             {/* ===== ITENS DA ESQUERDA ===== */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
                <div
                   className="w-fit bg-gradient-to-br from-purple-950 via-blue-500 to-purple-950 p-4 text-2xl text-white shadow-md shadow-black"
                   style={{
@@ -41,12 +41,12 @@ export default function Header({ titulo, subtitulo, icon }: HeaderProps) {
                {/* ===== */}
 
                <div className="flex flex-col">
-                  <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
+                  <h1 className="text-5xl font-extrabold tracking-widest text-black uppercase select-none">
                      {titulo}
                   </h1>
                   {/* ===== */}
                   {subtitulo && (
-                     <h2 className="text-base font-bold tracking-wider text-black italic select-none">
+                     <h2 className="text-lg font-bold tracking-widest text-black italic select-none">
                         {subtitulo}
                      </h2>
                   )}

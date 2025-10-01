@@ -466,6 +466,18 @@ export default function TabelaChamados() {
       [token, queryClient]
    );
 
+   const handleDeleteSuccess = useCallback(() => {
+      // Invalida a query para forçar refetch dos dados
+      queryClient.invalidateQueries({ queryKey: ['chamadosAbertos'] });
+
+      // Opcional: Volta para a primeira página se estava em outra
+      if (currentPage > 1 && data.length === 1) {
+         setCurrentPage(1);
+      }
+
+      handleCloseModalExcluirChamado();
+   }, [queryClient, currentPage, data]);
+
    // ================================================================================
    // HANDLERS DE PAGINAÇÃO
    // ================================================================================
@@ -603,7 +615,7 @@ export default function TabelaChamados() {
          {activeView === 'chamados' && (
             <div className="overflow-hidden rounded-2xl bg-black shadow-xl shadow-black">
                {/* ===== HEADER ===== */}
-               <header className="flex flex-col gap-4 bg-white/70 p-6">
+               <header className="flex flex-col gap-10 bg-white/70 p-6">
                   <div className="flex items-center justify-between gap-8">
                      <div className="flex items-center justify-center gap-6">
                         <div className="flex items-center justify-center rounded-md bg-white/30 p-4 shadow-sm shadow-black">
@@ -630,7 +642,7 @@ export default function TabelaChamados() {
 
                   {/* ===== FILTROS HEADER ===== */}
                   <div className="flex items-center gap-6">
-                     <div className="flex items-center">
+                     <div className="flex w-[800px] items-center">
                         <Filtros onFiltersChange={handleFiltersChange} />
                      </div>
                      {/* ========== */}
@@ -943,7 +955,7 @@ export default function TabelaChamados() {
                   !isLoading && (
                      <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-20 text-center">
                         <FaExclamationTriangle
-                           className="mx-auto text-yellow-600"
+                           className="mx-auto text-yellow-500"
                            size={80}
                         />
 
@@ -1053,6 +1065,7 @@ export default function TabelaChamados() {
             isOpen={!!chamadoParaExcluir}
             onClose={handleCloseModalExcluirChamado}
             codChamado={chamadoParaExcluir}
+            onSuccess={handleDeleteSuccess}
          />
       </>
    );
