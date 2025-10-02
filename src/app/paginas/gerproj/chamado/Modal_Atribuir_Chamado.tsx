@@ -47,6 +47,7 @@ import {
    FaMoon,
    FaSun,
 } from 'react-icons/fa';
+import { formatCodChamado } from '../../../../utils/formatters';
 
 // ================================================================================
 // INTERFACES E TIPOS (mantidas iguais)
@@ -64,7 +65,7 @@ interface RecursoStats {
 }
 // ==========
 
-interface ModalAtribuicaoInteligenteProps {
+interface ModalAtribuirChamadoProps {
    isOpen: boolean;
    onClose: () => void;
    chamado: TabelaChamadoProps | null;
@@ -302,9 +303,12 @@ const getRecomendacaoColor = (recomendacao: string) => {
 // COMPONENTE PRINCIPAL
 // ================================================================================
 
-export const ModalAtribuirChamado: React.FC<
-   ModalAtribuicaoInteligenteProps
-> = ({ isOpen, onClose, chamado, initialDarkMode = true }) => {
+export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
+   isOpen,
+   onClose,
+   chamado,
+   initialDarkMode = true,
+}) => {
    // ================================================================================
    // DARK MODE STATE
    // ================================================================================
@@ -358,8 +362,6 @@ export const ModalAtribuirChamado: React.FC<
       assunto: '',
    });
 
-   const toastShownRef = useRef(false);
-
    // ================================================================================
    // HOOKS E CONTEXTOS (mantidos iguais)
    // ================================================================================
@@ -391,9 +393,12 @@ export const ModalAtribuirChamado: React.FC<
       queryKey: ['dashboard-recursos'],
       queryFn: async () => {
          try {
-            const response = await fetch('/api/atribuir-chamado/recursos', {
-               headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await fetch(
+               '/api/chamados/atribuir-chamado/recursos',
+               {
+                  headers: { Authorization: `Bearer ${token}` },
+               }
+            );
             if (!response.ok) throw new Error('Erro ao buscar recursos');
             return response.json();
          } catch (error) {
@@ -412,7 +417,7 @@ export const ModalAtribuirChamado: React.FC<
    const { data: clientes = [], isLoading: loadingClientes } = useQuery({
       queryKey: ['clientes'],
       queryFn: async () => {
-         const response = await fetch('/api/clientes', {
+         const response = await fetch('/api/chamados/clientes', {
             headers: { Authorization: `Bearer ${token}` },
          });
          if (!response.ok) throw new Error('Erro ao buscar clientes');
@@ -425,7 +430,7 @@ export const ModalAtribuirChamado: React.FC<
       queryKey: ['sugestao-recurso', novoChamado],
       queryFn: async () => {
          const response = await fetch(
-            '/api/atribuir-chamado/sugestao-recurso',
+            '/api/chamados/atribuir-chamado/sugestao-recurso',
             {
                method: 'POST',
                headers: {
@@ -450,7 +455,7 @@ export const ModalAtribuirChamado: React.FC<
       queryFn: async () => {
          try {
             const response = await fetch(
-               `/api/atribuir-chamado/recurso/${selectedRecurso}`,
+               `/api/chamados/atribuir-chamado/recurso/${selectedRecurso}`,
                {
                   headers: { Authorization: `Bearer ${token}` },
                }
@@ -535,7 +540,7 @@ export const ModalAtribuirChamado: React.FC<
             <ToastCustom
                type="success"
                title="Operação realizada com sucesso!"
-               description={`Chamado #${chamado?.COD_CHAMADO} atribuído${
+               description={`Chamado #${formatCodChamado(chamado?.COD_CHAMADO)} atribuído${
                   recursoSelecionadoNome
                      ? ` para ${recursoSelecionadoNome}`
                      : ''

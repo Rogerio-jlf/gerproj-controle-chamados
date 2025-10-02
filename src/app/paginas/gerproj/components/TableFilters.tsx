@@ -233,34 +233,36 @@ export const FilterControls = ({
             <FaPlus className="text-black" size={16} /> Filtros
          </label>
 
-         {/* Botão mostrar/ocultar filtros */}
-         <button
-            onClick={() => setShowFilters(!showFilters)}
-            disabled={dataLength <= 1}
-            className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-1.5 text-lg font-extrabold tracking-wider italic transition-all select-none ${
-               showFilters
-                  ? 'border-none bg-blue-600 text-white shadow-sm shadow-black hover:bg-blue-800'
-                  : 'border-none bg-white text-black shadow-sm shadow-black'
-            } ${
-               dataLength <= 1
-                  ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
-                  : 'hover:-translate-y-1 hover:scale-102 active:scale-95'
-            }`}
-         >
-            {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
-            {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
-         </button>
-
-         {/* Botão limpar filtros */}
-         {totalActiveFilters > 0 && (
+         <div className="flex items-center gap-6">
+            {/* Botão mostrar/ocultar filtros */}
             <button
-               onClick={clearFilters}
-               className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-1.5 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-black transition-all select-none hover:-translate-y-1 hover:scale-102 hover:bg-red-800 active:scale-95"
+               onClick={() => setShowFilters(!showFilters)}
+               disabled={dataLength <= 1}
+               className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-1.5 text-lg font-extrabold tracking-wider italic transition-all select-none ${
+                  showFilters
+                     ? 'border-none bg-blue-600 text-white shadow-sm shadow-black hover:bg-blue-800'
+                     : 'border-none bg-white text-black shadow-sm shadow-black'
+               } ${
+                  dataLength <= 1
+                     ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
+                     : 'hover:-translate-y-1 hover:scale-102 active:scale-95'
+               }`}
             >
-               <BsEraserFill className="text-white" size={24} />
-               Limpar Filtros
+               {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
+               {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
             </button>
-         )}
+
+            {/* Botão limpar filtros */}
+            {totalActiveFilters > 0 && (
+               <button
+                  onClick={clearFilters}
+                  className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-1.5 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-black transition-all select-none hover:-translate-y-1 hover:scale-102 hover:bg-red-800 active:scale-95"
+               >
+                  <BsEraserFill className="text-white" size={24} />
+                  Limpar Filtros
+               </button>
+            )}
+         </div>
       </div>
    );
 };

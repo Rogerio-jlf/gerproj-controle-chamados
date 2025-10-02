@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { firebirdQuery } from '../../../lib/firebird/firebird-client';
+import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
 
 export async function GET() {
    try {

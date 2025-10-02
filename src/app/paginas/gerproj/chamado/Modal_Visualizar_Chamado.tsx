@@ -1,7 +1,5 @@
 'use client';
 // ================================================================================
-import { useState } from 'react';
-// ================================================================================
 import { TabelaChamadoProps } from '../../../../types/types';
 // ================================================================================
 import {
@@ -40,13 +38,10 @@ export function ModalVisualizarChamado({
    onClose,
    chamado,
 }: ModalVisualizarChamadoProps) {
-   const [isLoading] = useState(false);
    // ==========
 
    const handleCloseModalVisualizarChamado = () => {
-      if (!isLoading) {
-         onClose();
-      }
+      onClose();
    };
    // ==========
 
@@ -85,7 +80,6 @@ export function ModalVisualizarChamado({
                {/* Botão fechar modal */}
                <button
                   onClick={handleCloseModalVisualizarChamado}
-                  disabled={isLoading}
                   className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                >
                   <IoClose size={24} />

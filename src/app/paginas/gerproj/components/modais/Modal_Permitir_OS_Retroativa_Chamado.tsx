@@ -78,7 +78,7 @@ export const useBackdatedPermissions = () => {
       }
 
       const response = await fetch(
-         '/api/permitir-os-retroativa-chamado',
+         '/api/chamados/permitir-os-retroativa-chamado',
          options
       );
 
@@ -94,7 +94,7 @@ export const useBackdatedPermissions = () => {
       async (resourceId?: string, chamadoId?: string) => {
          setLoading(true);
          try {
-            let url = '/api/permitir-os-retroativa-chamado';
+            let url = '/api/chamados/permitir-os-retroativa-chamado';
             const params = new URLSearchParams();
 
             if (resourceId) params.append('resourceId', resourceId);
@@ -879,7 +879,7 @@ export const canUseBackdatedAppointments = (
       const xhr = new XMLHttpRequest();
       xhr.open(
          'GET',
-         `/api/permitir-os-retroativa-chamado?resourceId=${resourceIdToCheck}&chamadoId=${chamadoId}`,
+         `/api/chamados/permitir-os-retroativa-chamado?resourceId=${resourceIdToCheck}&chamadoId=${chamadoId}`,
          false
       );
       xhr.setRequestHeader('Authorization', `Bearer ${token}`);

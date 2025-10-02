@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import transporter from '@/lib/email/transporter';
-import { firebirdQuery } from '../../../lib/firebird/firebird-client';
+import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
 import { gerarTemplateEmailChamado } from '@/lib/templates/email_atribuir_chamados';
 import { whatsappClient } from '@/lib/whatsapp/client';
 import { gerarMensagemWhatsApp } from '@/lib/whatsapp/template';

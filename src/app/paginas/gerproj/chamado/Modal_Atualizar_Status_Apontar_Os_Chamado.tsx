@@ -53,7 +53,7 @@ interface Tarefa {
    NOME_TAREFA: string;
 }
 
-interface Props {
+interface ModalAtualizarStatusApontarOsChamadoProps {
    status: string;
    codChamado: number;
    nomeCliente?: string;
@@ -68,39 +68,27 @@ interface ModalProps {
    needsApontamento?: boolean;
 }
 
-const Modal = ({
-   isOpen,
-   // onClose,
-   children,
-   needsApontamento = false,
-}: ModalProps) => {
+const Modal = ({ isOpen, children, needsApontamento = false }: ModalProps) => {
    useEffect(() => {
-      const handleEscape = (e: KeyboardEvent) => {
-         if (e.key === 'Escape') {
-            // onClose();
-         }
-      };
-
       if (isOpen) {
-         document.addEventListener('keydown', handleEscape);
+         // Bloqueia scroll da página enquanto modal está aberto
          document.body.style.overflow = 'hidden';
       }
 
       return () => {
-         document.removeEventListener('keydown', handleEscape);
+         // Restaura scroll quando modal fecha
          document.body.style.overflow = 'unset';
       };
-   }, [isOpen /* onClose */]);
+   }, [isOpen]);
 
    if (!isOpen) return null;
 
    return (
-      <div
-         className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-         onClick={/* onClose */ () => {}}
-      >
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
          <div
-            className={`relative max-h-[100vh] ${needsApontamento ? 'w-[1500px]' : 'w-[750px]'} overflow-hidden`}
+            className={`relative max-h-[100vh] ${
+               needsApontamento ? 'w-[1500px]' : 'w-[750px]'
+            } overflow-hidden`}
             onClick={e => e.stopPropagation()}
          >
             {children}
@@ -123,7 +111,6 @@ const statusOptions = [
 ];
 
 // Schema de validação com Zod para apontamentos
-// Schema de validação com Zod para apontamentos - CORRIGIDO
 const createApontamentoSchema = (canUseBackdated: boolean) =>
    z
       .object({
@@ -138,7 +125,6 @@ const createApontamentoSchema = (canUseBackdated: boolean) =>
                return date <= today;
             }, 'Data não pode ser maior que hoje')
             .refine(dateString => {
-               // ✅ CORREÇÃO: Usar o parâmetro da função
                if (canUseBackdated) {
                   return true;
                }
@@ -146,16 +132,13 @@ const createApontamentoSchema = (canUseBackdated: boolean) =>
                const selectedDate = new Date(dateString + 'T00:00:00');
                const today = new Date();
 
-               // Verificar se a data selecionada está no mês atual ou posterior
                const selectedYear = selectedDate.getFullYear();
                const selectedMonth = selectedDate.getMonth();
                const currentYear = today.getFullYear();
                const currentMonth = today.getMonth();
 
-               // Se o ano for menor que o atual, é retroativo
                if (selectedYear < currentYear) return false;
 
-               // Se o ano for igual mas o mês for menor, é retroativo
                if (selectedYear === currentYear && selectedMonth < currentMonth)
                   return false;
 
@@ -297,7 +280,7 @@ export function ModalAtualizarStatusApontarOsChamado({
    status: initialStatus,
    codChamado,
    onUpdateSuccess,
-}: Props) {
+}: ModalAtualizarStatusApontarOsChamadoProps) {
    const { user } = useAuth();
 
    // ================================================================================
@@ -376,7 +359,7 @@ export function ModalAtualizarStatusApontarOsChamado({
    const fetchClassificacoes = async () => {
       setLoadingClassificacoes(true);
       try {
-         const response = await fetch('/api/atribuir-classificacao');
+         const response = await fetch('/api/chamados/atribuir-classificacao');
          if (response.ok) {
             const data = await response.json();
             setClassificacoes(data);
@@ -395,7 +378,9 @@ export function ModalAtualizarStatusApontarOsChamado({
    const fetchTarefas = async () => {
       setLoadingTarefas(true);
       try {
-         const response = await fetch(`/api/atribuir-tarefa/${codChamado}`);
+         const response = await fetch(
+            `/api/chamados/atribuir-tarefa/${codChamado}`
+         );
          if (response.ok) {
             const data = await response.json();
             setTarefas(data);
@@ -820,7 +805,9 @@ export function ModalAtualizarStatusApontarOsChamado({
                dataInicioOS: apontamentoData.dataInicioOS,
                horaInicioOS: apontamentoData.horaInicioOS,
                horaFimOS: apontamentoData.horaFimOS,
-               observacaoOS: apontamentoData.observacaoOS.trim(),
+               observacaoOS: removerAcentos(
+                  apontamentoData.observacaoOS.trim()
+               ),
                recurso: user?.recurso?.id?.toString() || '',
             };
             // ❌ REMOVER: payload.codTarefa = selectedClassificacao;
@@ -829,7 +816,7 @@ export function ModalAtualizarStatusApontarOsChamado({
          const start = Date.now();
 
          const response = await fetch(
-            `/api/status-apontamento-chamado/${codChamado}`,
+            `/api/chamados/status-apontamento-chamado/${codChamado}`,
             {
                method: 'POST',
                headers: { 'Content-Type': 'application/json' },
@@ -838,6 +825,7 @@ export function ModalAtualizarStatusApontarOsChamado({
          );
 
          const responseData = await response.json();
+         console.log('Response Data:', responseData);
 
          if (!response.ok) {
             throw new Error(
@@ -853,9 +841,9 @@ export function ModalAtualizarStatusApontarOsChamado({
          setStatus(pendingStatus);
 
          // Mensagem de sucesso
-         let successMessage = `Status do Chamado #${codChamado} atualizado com sucesso.`;
+         let successMessage = `Status do Chamado #${formatCodChamado(codChamado)} atualizado com sucesso.`;
          if (responseData.os) {
-            successMessage += ` OS #${responseData.os.NUM_OS} criada e associada ao chamado.`;
+            successMessage += ` OS #${formatCodChamado(responseData.os.COD_OS)} criada e associada ao chamado.`;
          }
          if (responseData.warning) {
             successMessage += ` Atenção: ${responseData.warning}`;

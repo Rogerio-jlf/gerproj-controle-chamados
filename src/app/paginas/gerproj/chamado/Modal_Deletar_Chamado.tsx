@@ -3,11 +3,11 @@
 import { toast } from 'sonner';
 import { useState } from 'react';
 // ================================================================================
+import { formatCodChamado } from '../../../../utils/formatters';
 import { ToastCustom } from '../../../../components/Toast_Custom';
 // ================================================================================
 import { IoClose } from 'react-icons/io5';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
-import { formatCodChamado } from '../../../../utils/formatters';
 
 // ================================================================================
 // INTERFACES
@@ -28,27 +28,30 @@ export function ModalExcluirChamado({
    codChamado,
    onSuccess,
 }: ModalExcluirChamadoProps) {
-   const [error, setError] = useState<string | null>(null);
-   const [success, setSuccess] = useState(false);
    const [isLoading, setIsLoading] = useState(false);
-   // ====================
 
    // Função para fechar o modal
    const handleCloseModalExcluirChamado = () => {
       if (!isLoading) {
-         setError(null);
-         setSuccess(false);
          onClose();
       }
    };
-   // ====================
 
    // Função para excluir Chamado
    const handleSubmitExcluirChamado = async () => {
-      if (!codChamado) return;
+      if (!codChamado || !codChamado) {
+         console.error('COD_CHAMADO não encontrado:', codChamado);
+         toast.custom(t => (
+            <ToastCustom
+               type="error"
+               title="Erro"
+               description="Código do chamado inválido"
+            />
+         ));
+         return;
+      }
 
       setIsLoading(true);
-      setError(null);
 
       try {
          const response = await fetch(`/api/chamados/delete/${codChamado}`, {
@@ -57,14 +60,14 @@ export function ModalExcluirChamado({
 
          if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error || 'Erro ao excluir OS');
+            throw new Error(errorData.error || 'Erro ao excluir chamado');
          }
 
          toast.custom(t => (
             <ToastCustom
                type="success"
                title="Sucesso!"
-               description={`O Chamado #${codChamado} foi deletado com sucesso!!!`}
+               description={`O Chamado #${formatCodChamado(codChamado)} foi deletado com sucesso!!!`}
             />
          ));
 
@@ -74,22 +77,21 @@ export function ModalExcluirChamado({
             onSuccess();
          }
       } catch (error) {
-         console.error('Erro ao deletar OS:', error);
+         console.error('Erro ao deletar chamado:', error);
 
          toast.custom(t => (
             <ToastCustom
                type="error"
                title="Erro"
-               description={`Não foi possível deletar o Chamado #${codChamado}.`}
+               description={`Não foi possível deletar o Chamado #${formatCodChamado(codChamado)}.`}
             />
          ));
       } finally {
          setIsLoading(false);
       }
    };
-   // ====================
 
-   if (!isOpen) return null;
+   if (!isOpen || !codChamado) return null;
 
    // ================================================================================
    // RENDERIZAÇÃO
@@ -97,29 +99,24 @@ export function ModalExcluirChamado({
    return (
       <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
          {/* ===== OVERLAY ===== */}
-         <div
-            className="absolute inset-0 bg-black/60"
-            // onClick={handleCloseModalExcluirOS}
-         />
-         {/* ========== */}
+         <div className="absolute inset-0 bg-black/60" />
 
          <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-slate-200 shadow-xl shadow-black transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-black p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
                   <RiDeleteBin5Fill className="text-white" size={60} />
-                  {/* ===== */}
+
                   <div className="flex flex-col">
                      <h1 className="text-3xl font-extrabold tracking-wider text-white select-none">
                         Excluir Chamado
                      </h1>
-                     {/* ===== */}
+
                      <p className="text-xl font-extrabold tracking-widest text-white select-none">
                         Chamado #{formatCodChamado(codChamado)}
                      </p>
                   </div>
                </div>
-               {/* ========== */}
 
                {/* Botão fechar modal */}
                <button
@@ -130,7 +127,6 @@ export function ModalExcluirChamado({
                   <IoClose size={24} />
                </button>
             </header>
-            {/* ==================== */}
 
             {/* ===== CONTEÚDO ===== */}
             <main className="flex flex-col gap-12 px-6 py-16">
@@ -149,7 +145,6 @@ export function ModalExcluirChamado({
                   </div>
                </div>
             </main>
-            {/* ==================== */}
 
             {/* ===== FOOTER ===== */}
             <footer className="relative flex justify-end gap-8 border-t-4 border-red-600 p-6">
@@ -157,17 +152,16 @@ export function ModalExcluirChamado({
                <button
                   onClick={handleCloseModalExcluirChamado}
                   disabled={isLoading}
-                  className="cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
+                  className="cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                >
                   Cancelar
                </button>
-               {/* ===== */}
 
                {/* Botão excluir */}
                <button
                   onClick={handleSubmitExcluirChamado}
                   disabled={isLoading || !codChamado}
-                  className="cursor-pointer rounded-sm border-none bg-blue-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black active:scale-95"
+                  className="cursor-pointer rounded-sm border-none bg-blue-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                >
                   {isLoading ? (
                      <div className="flex items-center gap-2">
