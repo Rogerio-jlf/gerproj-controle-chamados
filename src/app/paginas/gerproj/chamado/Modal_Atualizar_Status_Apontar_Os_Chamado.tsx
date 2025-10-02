@@ -30,12 +30,14 @@ import {
    FaCalendarAlt,
    FaUserClock,
    FaUserCog,
+   FaClock,
 } from 'react-icons/fa';
-import { FaArrowRightLong } from 'react-icons/fa6';
-import { IoClose, IoDocumentText } from 'react-icons/io5';
-import { IoMdClock, IoIosSave } from 'react-icons/io';
-import { BsFillXOctagonFill } from 'react-icons/bs';
 import { Loader2 } from 'lucide-react';
+import { IoClose } from 'react-icons/io5';
+import { IoIosSave } from 'react-icons/io';
+import { MdSubject } from 'react-icons/md';
+import { FaArrowRightLong } from 'react-icons/fa6';
+import { BsFillXOctagonFill } from 'react-icons/bs';
 
 // ================================================================================
 // INTERFACES E TIPOS
@@ -61,21 +63,21 @@ interface Props {
 // Modal Component
 interface ModalProps {
    isOpen: boolean;
-   onClose: () => void;
+   // onClose: () => void;
    children: React.ReactNode;
-   needsApontamento?: boolean; // NOVA PROP
+   needsApontamento?: boolean;
 }
 
 const Modal = ({
    isOpen,
-   onClose,
+   // onClose,
    children,
    needsApontamento = false,
 }: ModalProps) => {
    useEffect(() => {
       const handleEscape = (e: KeyboardEvent) => {
          if (e.key === 'Escape') {
-            onClose();
+            // onClose();
          }
       };
 
@@ -88,14 +90,14 @@ const Modal = ({
          document.removeEventListener('keydown', handleEscape);
          document.body.style.overflow = 'unset';
       };
-   }, [isOpen, onClose]);
+   }, [isOpen /* onClose */]);
 
    if (!isOpen) return null;
 
    return (
       <div
-         className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-         onClick={onClose}
+         className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+         onClick={/* onClose */ () => {}}
       >
          <div
             className={`relative max-h-[100vh] ${needsApontamento ? 'w-[1500px]' : 'w-[750px]'} overflow-hidden`}
@@ -133,13 +135,6 @@ const createApontamentoSchema = (canUseBackdated: boolean) =>
                const today = new Date();
                today.setHours(0, 0, 0, 0);
 
-               console.log('🔍 [ZOD] Validando data:', {
-                  selecionada: date.toISOString(),
-                  hoje: today.toISOString(),
-                  selecionadaUTC: date.getTime(),
-                  hojeUTC: today.getTime(),
-               });
-
                return date <= today;
             }, 'Data não pode ser maior que hoje')
             .refine(dateString => {
@@ -156,11 +151,6 @@ const createApontamentoSchema = (canUseBackdated: boolean) =>
                const selectedMonth = selectedDate.getMonth();
                const currentYear = today.getFullYear();
                const currentMonth = today.getMonth();
-
-               console.log('🔍 [ZOD] Validando mês:', {
-                  selecionada: { selectedYear, selectedMonth },
-                  atual: { currentYear, currentMonth },
-               });
 
                // Se o ano for menor que o atual, é retroativo
                if (selectedYear < currentYear) return false;
@@ -311,14 +301,6 @@ export function ModalAtualizarStatusApontarOsChamado({
    const { user } = useAuth();
 
    // ================================================================================
-   // DEBUG - Adicione estas linhas
-   // ================================================================================
-   console.log('🔍 [DEBUG] User object:', user);
-   console.log('🔍 [DEBUG] Current userId:', getCurrentUserId(user));
-   console.log('🔍 [DEBUG] Is user admin:', isUserAdmin(user));
-   console.log('🔍 [DEBUG] Chamado ID:', codChamado);
-
-   // ================================================================================
    // ESTADOS - CONTROLES DE EDIÇÃO
    // ================================================================================
    const [editing, setEditing] = useState(false);
@@ -385,8 +367,6 @@ export function ModalAtualizarStatusApontarOsChamado({
       codChamado.toString(),
       user // ✅ Objeto user completo
    );
-
-   console.log('🔍 [DEBUG] canUseBackdatedDates:', canUseBackdatedDates);
 
    // ================================================================================
    // API E FUNÇÕES DE DADOS
@@ -476,13 +456,6 @@ export function ModalAtualizarStatusApontarOsChamado({
          );
          const currentYear = todayLocal.getFullYear();
          const currentMonth = todayLocal.getMonth() + 1; // Janeiro é 0
-
-         console.log('🔍 [DEBUG] Data selecionada:', { year, month, day });
-         console.log('🔍 [DEBUG] Data atual:', {
-            currentYear,
-            currentMonth,
-            day: todayLocal.getDate(),
-         });
 
          if (year < currentYear) return true;
          if (year === currentYear && month < currentMonth) return true;
@@ -654,9 +627,7 @@ export function ModalAtualizarStatusApontarOsChamado({
          ) {
             try {
                dateInputRef.current.showPicker();
-            } catch (e) {
-               console.log('showPicker não suportado neste browser');
-            }
+            } catch (e) {}
          }
       }
    };
@@ -855,8 +826,6 @@ export function ModalAtualizarStatusApontarOsChamado({
             // ❌ REMOVER: payload.codTarefa = selectedClassificacao;
          }
 
-         console.log('Payload enviado:', JSON.stringify(payload, null, 2));
-
          const start = Date.now();
 
          const response = await fetch(
@@ -869,8 +838,6 @@ export function ModalAtualizarStatusApontarOsChamado({
          );
 
          const responseData = await response.json();
-
-         console.log('Resposta da API:', responseData);
 
          if (!response.ok) {
             throw new Error(
@@ -1044,25 +1011,14 @@ export function ModalAtualizarStatusApontarOsChamado({
       if (!needsApontamento) return;
 
       if (apontamentoData.dataInicioOS) {
-         console.log(
-            '🔍 [EFFECT] Validando data:',
-            apontamentoData.dataInicioOS
-         );
-
          const selectedDate = new Date(
             apontamentoData.dataInicioOS + 'T00:00:00'
          );
          const today = new Date();
          today.setHours(0, 0, 0, 0);
 
-         console.log('🔍 [EFFECT] Datas comparadas:', {
-            selecionada: selectedDate.toISOString(),
-            hoje: today.toISOString(),
-         });
-
          // Primeira validação: data não pode ser maior que hoje
          if (selectedDate > today) {
-            console.log('❌ [EFFECT] Data maior que hoje');
             setApontamentoErrors((prev: ApontamentoFormErrors) => ({
                ...prev,
                dataInicioOS: 'Data não pode ser maior que hoje',
@@ -1070,7 +1026,6 @@ export function ModalAtualizarStatusApontarOsChamado({
          }
          // Segunda validação: data não pode ser de mês anterior
          else if (isDateFromPreviousMonth(apontamentoData.dataInicioOS)) {
-            console.log('❌ [EFFECT] Data de mês anterior');
             setApontamentoErrors((prev: ApontamentoFormErrors) => ({
                ...prev,
                dataInicioOS:
@@ -1079,7 +1034,6 @@ export function ModalAtualizarStatusApontarOsChamado({
          }
          // Se passou em todas as validações, limpar erro
          else {
-            console.log('✅ [EFFECT] Data válida');
             setApontamentoErrors((prev: ApontamentoFormErrors) => ({
                ...prev,
                dataInicioOS: undefined,
@@ -1098,35 +1052,26 @@ export function ModalAtualizarStatusApontarOsChamado({
    // ================================================================================
 
    const isFormValid = () => {
-      console.log('🔍 [DEBUG] Validando formulário...');
-
       // Verificar seleções obrigatórias
       if (shouldShowClassificacao && !selectedClassificacao) {
-         console.log('❌ [DEBUG] Classificação não selecionada');
          return false;
       }
       if (shouldShowTarefa && !selectedTarefa) {
-         console.log('❌ [DEBUG] Tarefa não selecionada');
          return false;
       }
 
       // Se precisa de apontamento, validar também o formulário
       if (needsApontamento) {
-         console.log('🔍 [DEBUG] Validando apontamento...', apontamentoData);
-
          try {
             // ✅ CORREÇÃO: Usar o schema dinâmico aqui também
             const schema = createApontamentoSchema(canUseBackdatedDates);
             schema.parse(apontamentoData);
-            console.log('✅ [DEBUG] Apontamento válido');
             return true;
          } catch (error) {
-            console.log('❌ [DEBUG] Erro na validação do apontamento:', error);
             return false;
          }
       }
 
-      console.log('✅ [DEBUG] Formulário válido');
       return true;
    };
    // ====================
@@ -1231,15 +1176,15 @@ export function ModalAtualizarStatusApontarOsChamado({
          {/* ===== MODAL UNIFICADO ===== */}
          <Modal
             isOpen={showUnifiedModal}
-            onClose={handleCloseModalAtualizarStatusApontarOsChamado}
             needsApontamento={!!needsApontamento}
+            // onClose={handleCloseModalAtualizarStatusApontarOsChamado}
          >
             <div
                className={`animate-in slide-in-from-bottom-4 ${needsApontamento ? 'w-[1500px]' : 'w-[750px]'} relative z-10 max-h-[100vh] overflow-hidden rounded-2xl border-0 bg-slate-200 transition-all duration-500 ease-out`}
             >
                {/* ===== OVERLAY LOADING ===== */}
                {(loadingClassificacoes || loadingTarefas) && (
-                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-lg">
+                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80">
                      <div className="flex flex-col items-center gap-4">
                         <Loader2
                            className="animate-spin text-white"
@@ -1258,19 +1203,19 @@ export function ModalAtualizarStatusApontarOsChamado({
                <header className="relative flex items-center justify-between bg-black p-6 shadow-md shadow-black">
                   <div className="flex items-center justify-center gap-6">
                      {needsApontamento ? (
-                        <FaUserClock className="text-white" size={60} />
+                        <FaUserClock className="text-orange-300" size={60} />
                      ) : (
-                        <FaSync className="text-white" size={60} />
+                        <FaSync className="text-orange-300" size={60} />
                      )}
                      {/* ========== */}
                      <div className="flex flex-col">
-                        <h1 className="text-3xl font-extrabold tracking-wider text-white select-none">
+                        <h1 className="text-3xl font-extrabold tracking-wider text-orange-300 select-none">
                            {needsApontamento
                               ? 'Alterar Status / Realizar Apontamento '
                               : 'Alterar Status'}
                         </h1>
                         {/* ===== */}
-                        <p className="text-xl font-extrabold tracking-widest text-white select-none">
+                        <p className="text-xl font-extrabold tracking-widest text-orange-300 italic select-none">
                            Chamado - #{formatCodChamado(codChamado)}
                         </p>
                      </div>
@@ -1518,16 +1463,16 @@ export function ModalAtualizarStatusApontarOsChamado({
 
                            {/* ===== AVISO DE CONFIRMAÇÃO ===== */}
                            {(selectedClassificacao || selectedTarefa) && (
-                              <div className="rounded-xl border border-l-8 border-black bg-slate-50 px-6 py-3">
+                              <div className="rounded-xl border border-l-8 border-red-600 bg-slate-50 px-6 py-3">
                                  <div className="flex items-center gap-6">
                                     <FaExclamationTriangle
-                                       className="text-black"
+                                       className="text-red-600"
                                        size={40}
                                     />
                                     <div className="flex flex-col gap-1">
                                        <div className="flex items-center gap-2">
-                                          <div className="h-2 w-2 rounded-full bg-black"></div>
-                                          <p className="text-sm font-semibold tracking-widest text-black italic select-none">
+                                          <div className="h-2 w-2 rounded-full bg-red-600"></div>
+                                          <p className="text-sm font-semibold tracking-widest text-red-600 italic select-none">
                                              Essa alteração será salva
                                              permanentemente no sistema.
                                           </p>
@@ -1535,8 +1480,8 @@ export function ModalAtualizarStatusApontarOsChamado({
                                        <div className="flex items-center gap-2">
                                           {needsApontamento && (
                                              <>
-                                                <div className="h-2 w-2 rounded-full bg-black"></div>
-                                                <p className="mt-1 text-sm font-semibold tracking-widest text-black italic select-none">
+                                                <div className="h-2 w-2 rounded-full bg-red-600"></div>
+                                                <p className="mt-1 text-sm font-semibold tracking-widest text-red-600 italic select-none">
                                                    Uma OS será criada com os
                                                    dados do apontamento.
                                                 </p>
@@ -1612,7 +1557,7 @@ export function ModalAtualizarStatusApontarOsChamado({
                            <FormSection
                               title="Horários do Apontamento"
                               icon={
-                                 <IoMdClock className="text-white" size={20} />
+                                 <FaClock className="text-white" size={20} />
                               }
                               error={
                                  apontamentoErrors.horaInicioOS ||
@@ -1722,10 +1667,7 @@ export function ModalAtualizarStatusApontarOsChamado({
                            <FormSection
                               title="Observação do Apontamento"
                               icon={
-                                 <IoDocumentText
-                                    className="text-white"
-                                    size={20}
-                                 />
+                                 <MdSubject className="text-white" size={20} />
                               }
                               error={apontamentoErrors.observacaoOS}
                               isEmpty={!apontamentoData.observacaoOS.trim()}

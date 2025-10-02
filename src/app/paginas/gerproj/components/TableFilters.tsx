@@ -19,6 +19,8 @@ import { RiArrowUpDownLine } from 'react-icons/ri';
 import { LuFilter, LuFilterX } from 'react-icons/lu';
 import { FaSearch } from 'react-icons/fa';
 import { IoArrowUp, IoArrowDown } from 'react-icons/io5';
+import { FaFilter } from 'react-icons/fa6';
+import { FaPlus } from 'react-icons/fa';
 
 // ================================================================================
 // INTERFACE PARA PROPS DOS COMPONENTES
@@ -226,7 +228,11 @@ export const FilterControls = ({
    dataLength,
 }: FilterControlsProps) => {
    return (
-      <div className="flex items-center gap-6">
+      <div className="group flex w-full flex-col gap-1">
+         <label className="flex items-center gap-2 text-base font-extrabold tracking-widest text-black uppercase select-none">
+            <FaPlus className="text-black" size={16} /> Filtros
+         </label>
+
          {/* Botão mostrar/ocultar filtros */}
          <button
             onClick={() => setShowFilters(!showFilters)}
@@ -242,7 +248,7 @@ export const FilterControls = ({
             }`}
          >
             {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
-            {showFilters ? 'Ocultar Filtros' : 'Mostrar + Filtros'}
+            {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
          </button>
 
          {/* Botão limpar filtros */}

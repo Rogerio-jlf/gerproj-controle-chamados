@@ -16,13 +16,21 @@ export interface TabelaChamadoProps {
    PRIOR_CHAMADO: number;
    COD_CLASSIFICACAO: number;
    // =====
+   DATA_HORA_CHAMADO?: string | null;
+   // =====
    NOME_RECURSO?: string | null;
    // =====
    NOME_CLIENTE?: string | null;
    // =====
+   NOME_CLASSIFICACAO?: string | null;
+   // =====
    NOME_TAREFA?: string | null;
    // =====
-   NOME_CLASSIFICACAO?: string | null;
+   TAREFA_COMPLETA?: string | null;
+   // =====
+   NOME_PROJETO?: string | null;
+   // ======
+   PROJETO_COMPLETO?: string | null;
 }
 
 // ================================================================================

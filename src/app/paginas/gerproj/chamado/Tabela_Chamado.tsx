@@ -613,7 +613,7 @@ export function TabelaChamado() {
                            onFiltersChange={handleFiltersChange}
                         />
                      </div>
-                     <div className="mt-6 flex items-center">
+                     <div className="flex items-center">
                         <FilterControls
                            showFilters={showFilters}
                            setShowFilters={setShowFilters}
@@ -625,7 +625,7 @@ export function TabelaChamado() {
                   </div>
                </header>
 
-               {/* CONTEÚDO DA TABELA */}
+               {/* ===== TABELA ===== */}
                <main className="h-full w-full overflow-hidden bg-black">
                   <div
                      className="h-full overflow-y-auto"
@@ -799,11 +799,12 @@ export function TabelaChamado() {
                               {table.getFilteredRowModel().rows.length !== 1
                                  ? 's'
                                  : ''}{' '}
-                              na página atual
+                              na página atual,
                            </span>
                            <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
-                              de {paginationInfo.totalRecords} total
-                              {paginationInfo.totalRecords !== 1 ? '' : ''}
+                              {paginationInfo.totalRecords > 1
+                                 ? `de ${paginationInfo.totalRecords} encontrados no total.`
+                                 : `de 1 encontrado no total.`}
                            </span>
                         </section>
 

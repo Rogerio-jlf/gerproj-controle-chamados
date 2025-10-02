@@ -4,11 +4,12 @@ import { useState } from 'react';
 // ================================================================================
 import { TabelaChamadoProps } from '../../../../types/types';
 // ================================================================================
-import { getStylesStatus } from '../../../../utils/formatters';
+import {
+   formatCodChamado,
+   getStylesStatus,
+} from '../../../../utils/formatters';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 // ================================================================================
-import { MdDescription } from 'react-icons/md';
-import { IoClose, IoCall } from 'react-icons/io5';
 import {
    FaCalendarAlt,
    FaUser,
@@ -16,7 +17,11 @@ import {
    FaTag,
    FaUserTie,
    FaDatabase,
+   FaTasks,
 } from 'react-icons/fa';
+import { IoClose } from 'react-icons/io5';
+import { FaDiagramProject } from 'react-icons/fa6';
+import { MdSubject, MdPriorityHigh, MdEmail } from 'react-icons/md';
 
 // ================================================================================
 // INTERFACES
@@ -38,27 +43,10 @@ export function ModalVisualizarChamado({
    const [isLoading] = useState(false);
    // ==========
 
-   const handleCloseModalVisualizarDadosChamado = () => {
+   const handleCloseModalVisualizarChamado = () => {
       if (!isLoading) {
          onClose();
       }
-   };
-   // ==========
-
-   const formateDateISO = (dataISO: string | null) => {
-      if (!dataISO) return '-';
-      const data = new Date(dataISO);
-      if (isNaN(data.getTime())) return '-';
-
-      return data.toLocaleDateString('pt-BR');
-   };
-   // ==========
-
-   const formateTime = (horario: number | string) => {
-      const horarioFormatado = horario.toString().padStart(4, '0');
-      const horas = horarioFormatado.slice(0, 2);
-      const minutos = horarioFormatado.slice(2, 4);
-      return `${horas}:${minutos}`;
    };
    // ==========
 
@@ -66,38 +54,29 @@ export function ModalVisualizarChamado({
    // ==========
 
    // ================================================================================
-   // RENDERIZAÇÃO PRINCIPAL
+   // RENDERIZAÇÃO
    // ================================================================================
    return (
       <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
          {/* ===== OVERLAY ===== */}
          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-xl"
-            onClick={handleCloseModalVisualizarDadosChamado}
+            className="absolute inset-0 bg-black/60"
+            // onClick={handleCloseModalVisualizarChamado}
          />
          {/* ========== */}
 
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white shadow-xl shadow-black transition-all duration-500 ease-out">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-slate-200 shadow-xl shadow-black transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
-            <header className="relative flex items-center justify-between bg-gradient-to-r from-indigo-500 via-indigo-600 to-indigo-700 p-6 shadow-md shadow-black">
+            <header className="relative flex items-center justify-between bg-black p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
-                  <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
-                     <FaDatabase className="text-black" size={36} />
-                  </div>
+                  <FaDatabase className="text-orange-300" size={60} />
                   {/* ===== */}
-
-                  <div className="rounded-md border-none bg-white/10 p-3 shadow-md shadow-black">
-                     <IoCall className="text-black" size={36} />
-                  </div>
-                  {/* ===== */}
-
-                  <div className="flex flex-col items-start justify-center">
-                     <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
-                        Dados Chamado
+                  <div className="flex flex-col">
+                     <h1 className="text-3xl font-extrabold tracking-wider text-orange-300 select-none">
+                        Dados do Chamado
                      </h1>
-                     {/* ===== */}
-                     <p className="text-xl font-extrabold tracking-widest text-black select-none">
-                        Chamado #{chamado.COD_CHAMADO}
+                     <p className="text-xl font-extrabold tracking-widest text-orange-300 italic select-none">
+                        Chamado #{formatCodChamado(chamado.COD_CHAMADO)}
                      </p>
                   </div>
                </div>
@@ -105,7 +84,7 @@ export function ModalVisualizarChamado({
 
                {/* Botão fechar modal */}
                <button
-                  onClick={handleCloseModalVisualizarDadosChamado}
+                  onClick={handleCloseModalVisualizarChamado}
                   disabled={isLoading}
                   className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                >
@@ -117,241 +96,209 @@ export function ModalVisualizarChamado({
             {/* ===== CONTEÚDO ===== */}
             <main className="flex h-full overflow-hidden">
                {/* ===== DADOS DO CHAMADO ===== */}
-               <section className="w-full overflow-y-auto bg-gray-50">
-                  <div className="p-6">
-                     {/* ===== CARDS DADOS INFORMATIVOS ===== */}
-                     <div className="mb-8 grid grid-cols-3 gap-4">
-                        {/* Card data e hora */}
-                        <div className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md shadow-black">
-                           <div className="border-0 bg-gradient-to-r from-blue-100 to-blue-200 p-4 shadow-xs shadow-black">
-                              <div className="flex items-center gap-3">
-                                 <FaCalendarAlt
-                                    className="text-blue-600"
-                                    size={20}
-                                 />
-                                 {/* ===== */}
-                                 <h3 className="text-lg font-extrabold tracking-wider text-black select-none">
-                                    Data & Hora
-                                 </h3>
-                              </div>
-                           </div>
-                           {/* ===== */}
-
-                           <div className="p-4">
-                              <div className="space-y-2">
-                                 <div className="flex flex-col">
-                                    <p className="text-sm font-semibold tracking-wider text-black italic select-none">
-                                       Data:
-                                    </p>
-                                    {/* ===== */}
-                                    <p className="text-lg font-bold tracking-wider text-black select-none">
-                                       {formateDateISO(chamado.DATA_CHAMADO)}
-                                    </p>
-                                 </div>
-                                 {/* ===== */}
-
-                                 <div className="flex flex-col">
-                                    <p className="text-sm font-semibold tracking-wider text-black italic select-none">
-                                       Horário:
-                                    </p>
-                                    {/* ===== */}
-                                    <p className="text-lg font-bold tracking-wider text-black select-none">
-                                       {chamado.HORA_CHAMADO !== undefined &&
-                                       chamado.HORA_CHAMADO !== null
-                                          ? formateTime(chamado.HORA_CHAMADO)
-                                          : '-'}
-                                    </p>
-                                 </div>
-                              </div>
-                           </div>
-                        </div>
-                        {/* =============== */}
-
-                        {/* Card status */}
-                        <div className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md shadow-black">
-                           <div className="border-0 bg-gradient-to-r from-blue-100 to-blue-200 p-4 shadow-xs shadow-black">
-                              <div className="flex items-center gap-3">
-                                 <FaClock className="text-blue-600" size={20} />
-                                 {/* ===== */}
-                                 <h3 className="text-lg font-extrabold tracking-wider text-black select-none">
-                                    Status
-                                 </h3>
-                              </div>
-                           </div>
-                           {/* ===== */}
-
-                           <div className="p-4">
-                              <div className="space-y-2">
-                                 <div className="flex flex-col">
-                                    <p className="text-sm font-semibold tracking-wider text-black italic select-none">
-                                       Status:
-                                    </p>
-                                    {/* ===== */}
-                                    <p
-                                       className={`inline-block rounded-full px-3 py-1 text-lg font-bold tracking-wider text-black select-none ${getStylesStatus(
-                                          chamado.STATUS_CHAMADO
-                                       )}`}
-                                    >
-                                       {chamado.STATUS_CHAMADO ?? '-'}
-                                    </p>
-                                 </div>
-                                 {/* ===== */}
-
-                                 <div className="flex flex-col">
-                                    <p className="text-sm font-semibold tracking-wider text-black italic select-none">
-                                       Prioridade:
-                                    </p>
-                                    {/* ===== */}
-                                    <p className="inline-block rounded-full bg-gray-200 px-3 py-1 text-lg font-bold tracking-wider text-black select-none">
-                                       {chamado.PRIOR_CHAMADO ?? '-'}
-                                    </p>
-                                 </div>
-                              </div>
-                           </div>
+               <section className="w-full overflow-y-auto bg-gray-50 p-6">
+                  <div className="space-y-0 overflow-hidden rounded-xl border-t-2 border-gray-200 bg-white shadow-md shadow-black">
+                     {/* Data */}
+                     <div className="group flex items-center gap-4 border-b border-gray-200 px-6 py-3">
+                        <div className="flex w-16 items-center justify-center rounded-md border-r border-gray-200 bg-blue-200 p-3">
+                           <FaCalendarAlt className="text-blue-600" size={24} />
                         </div>
                         {/* ===== */}
+                        <div className="flex flex-1 items-center justify-between">
+                           <span className="text-sm font-semibold tracking-wider text-black select-none">
+                              Data & Hora Abertura
+                           </span>
+                           <span className="text-lg font-bold tracking-wider text-black italic select-none">
+                              {chamado.DATA_HORA_CHAMADO ?? '-'}
+                           </span>
+                        </div>
+                     </div>
+                     {/* ========== */}
 
-                        {/* Card identificação */}
-                        <div className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md shadow-black">
-                           <div className="border-0 bg-gradient-to-r from-blue-100 to-blue-200 p-4 shadow-xs shadow-black">
-                              <div className="flex items-center gap-3">
-                                 <FaTag className="text-blue-600" size={20} />
-                                 {/* ===== */}
-                                 <h3 className="text-lg font-extrabold tracking-wider text-black select-none">
-                                    Identificação
-                                 </h3>
-                              </div>
-                           </div>
-                           {/* ===== */}
-
-                           <div className="p-4">
-                              <div className="space-y-2">
-                                 <div className="flex flex-col">
-                                    <p className="text-sm font-semibold tracking-wider text-black italic select-none">
-                                       Cód. Tarefa:
-                                    </p>
-                                    {/* ===== */}
-                                    <p className="text-lg font-bold tracking-wider text-black select-none">
-                                       {chamado.CODTRF_CHAMADO ?? '-'}
-                                    </p>
-                                 </div>
-                                 {/* ===== */}
-
-                                 <div className="flex flex-col">
-                                    <p className="text-sm font-semibold tracking-wider text-black italic select-none">
-                                       Classificação:
-                                    </p>
-                                    {/* ===== */}
-                                    <p className="text-lg font-bold tracking-wider text-black select-none">
-                                       {chamado.NOME_CLASSIFICACAO ?? '-'}
-                                    </p>
-                                 </div>
-                              </div>
-                           </div>
+                     {/* Status */}
+                     <div className="group flex items-center gap-4 border-b border-gray-200 px-6 py-3">
+                        <div className="flex w-16 items-center justify-center rounded-md border-r border-gray-200 bg-blue-200 p-3">
+                           <FaClock className="text-blue-600" size={24} />
                         </div>
                         {/* ===== */}
+                        <div className="flex flex-1 items-center justify-between">
+                           <span className="text-sm font-semibold tracking-wider text-black select-none">
+                              Status
+                           </span>
+                           <span
+                              className={`inline-block rounded-full px-6 py-1 text-base font-bold tracking-wider italic select-none ${getStylesStatus(
+                                 chamado.STATUS_CHAMADO
+                              )}`}
+                           >
+                              {chamado.STATUS_CHAMADO ?? '-'}
+                           </span>
+                        </div>
+                     </div>
+                     {/* ========== */}
 
-                        {/* Card cliente */}
-                        <div className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md shadow-black">
-                           <div className="border-0 bg-gradient-to-r from-blue-100 to-blue-200 p-4 shadow-xs shadow-black">
-                              <div className="flex items-center gap-3">
-                                 <FaUserTie
-                                    className="text-blue-600"
-                                    size={20}
-                                 />
-                                 {/* ===== */}
-                                 <h3 className="text-lg font-extrabold tracking-wider text-black select-none">
-                                    Cliente
-                                 </h3>
-                              </div>
-                           </div>
-                           {/* ===== */}
-
-                           <div className="p-4">
-                              <div className="space-y-2">
-                                 <div className="flex flex-col">
-                                    <p className="text-sm font-semibold tracking-wider text-black italic select-none">
-                                       Nome:
-                                    </p>
-                                    {/* ===== */}
-                                    <p className="text-lg font-bold tracking-wider text-black select-none">
-                                       {chamado.NOME_CLIENTE ?? '-'}
-                                    </p>
-                                 </div>
-                                 {/* ===== */}
-
-                                 <div className="flex flex-col">
-                                    <p className="text-sm font-semibold tracking-wider text-black italic select-none">
-                                       Email:
-                                    </p>
-                                    {/* ===== */}
-                                    <p className="truncate text-sm font-semibold tracking-wider text-blue-600 select-none">
-                                       {chamado.EMAIL_CHAMADO ?? '-'}
-                                    </p>
-                                 </div>
-                              </div>
-                           </div>
+                     {/* Data Atribuição */}
+                     <div className="group flex items-center gap-4 border-b border-gray-200 px-6 py-3">
+                        <div className="flex w-16 items-center justify-center rounded-md border-r border-gray-200 bg-blue-200 p-3">
+                           <FaCalendarAlt className="text-blue-600" size={24} />
                         </div>
                         {/* ===== */}
+                        <div className="flex flex-1 items-center justify-between">
+                           <span className="text-sm font-semibold tracking-wider text-black select-none">
+                              Data & Hora Atribuição
+                           </span>
+                           <span className="text-lg font-bold tracking-wider text-black italic select-none">
+                              {chamado.DTENVIO_CHAMADO ?? '-'}
+                           </span>
+                        </div>
+                     </div>
+                     {/* ========== */}
 
-                        {/* Card recurso */}
-                        <div className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md shadow-black">
-                           <div className="border-0 bg-gradient-to-r from-blue-100 to-blue-200 p-4 shadow-xs shadow-black">
-                              <div className="flex items-center gap-3">
-                                 <FaUser className="text-blue-600" size={20} />
-                                 {/* ===== */}
-                                 <h3 className="text-lg font-extrabold tracking-wider text-black select-none">
-                                    Recurso
-                                 </h3>
-                              </div>
-                           </div>
-                           {/* ===== */}
-
-                           <div className="p-4">
-                              <div className="space-y-2">
-                                 <div className="flex flex-col">
-                                    <p className="text-sm font-semibold tracking-wider text-black italic select-none">
-                                       Responsável:
-                                    </p>
-                                    {/* ===== */}
-                                    <p className="text-lg font-bold tracking-wider text-black select-none">
-                                       {corrigirTextoCorrompido(
-                                          chamado.NOME_RECURSO ?? ''
-                                       ) ?? '-'}
-                                    </p>
-                                 </div>
-                              </div>
-                           </div>
+                     {/* Consultor */}
+                     <div className="group flex items-center gap-4 border-b border-gray-200 px-6 py-3">
+                        <div className="flex w-16 items-center justify-center rounded-md border-r border-gray-200 bg-blue-200 p-3">
+                           <FaUser className="text-blue-600" size={24} />
                         </div>
                         {/* ===== */}
+                        <div className="flex flex-1 items-center justify-between">
+                           <span className="text-sm font-semibold tracking-wider text-black select-none">
+                              Consultor
+                           </span>
+                           <span className="text-lg font-bold tracking-wider text-black italic select-none">
+                              {corrigirTextoCorrompido(
+                                 chamado.NOME_RECURSO?.split(' ')
+                                    .slice(0, 2)
+                                    .join(' ') ?? ''
+                              ) ?? '-'}
+                           </span>
+                        </div>
+                     </div>
+                     {/* ========== */}
 
-                        {/* Card assunto */}
-                        <div className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md shadow-black md:col-span-2 lg:col-span-3">
-                           <div className="border-0 bg-gradient-to-r from-blue-100 to-blue-200 p-4 shadow-xs shadow-black">
-                              <div className="flex items-center gap-3">
-                                 <MdDescription
-                                    className="text-blue-600"
-                                    size={20}
-                                 />
-                                 {/* ===== */}
-                                 <h3 className="text-lg font-extrabold tracking-wider text-black select-none">
-                                    Assunto
-                                 </h3>
-                              </div>
-                           </div>
-                           {/* ===== */}
+                     {/* Tarefa */}
+                     <div className="group flex items-center gap-4 border-b border-gray-200 px-6 py-3">
+                        <div className="flex w-16 items-center justify-center rounded-md border-r border-gray-200 bg-blue-200 p-3">
+                           <FaTasks className="text-blue-600" size={24} />
+                        </div>
+                        {/* ===== */}
+                        <div className="flex flex-1 items-center justify-between">
+                           <span className="text-sm font-semibold tracking-wider text-black select-none">
+                              Tarefa
+                           </span>
+                           <span className="text-lg font-bold tracking-wider text-black italic select-none">
+                              {chamado.TAREFA_COMPLETA ?? '-'}
+                           </span>
+                        </div>
+                     </div>
+                     {/* ========== */}
 
-                           <div className="p-4">
-                              <div className="space-y-2">
-                                 <div className="flex flex-col">
-                                    <p className="text-lg font-bold tracking-wider text-black select-none">
-                                       {corrigirTextoCorrompido(
-                                          chamado.ASSUNTO_CHAMADO ?? ''
-                                       ) ?? '-'}
-                                    </p>
-                                 </div>
-                              </div>
-                           </div>
+                     {/* Projeto */}
+                     <div className="group flex items-center gap-4 border-b border-gray-200 px-6 py-3">
+                        <div className="flex w-16 items-center justify-center rounded-md border-r border-gray-200 bg-blue-200 p-3">
+                           <FaDiagramProject
+                              className="text-blue-600"
+                              size={24}
+                           />
+                        </div>
+                        {/* ===== */}
+                        <div className="flex flex-1 items-center justify-between">
+                           <span className="text-sm font-semibold tracking-wider text-black select-none">
+                              Projeto
+                           </span>
+                           <span className="text-lg font-bold tracking-wider text-black italic select-none">
+                              {chamado.PROJETO_COMPLETO ?? '-'}
+                           </span>
+                        </div>
+                     </div>
+                     {/* ========== */}
+
+                     {/* Cliente */}
+                     <div className="group flex items-center gap-4 border-b border-gray-200 px-6 py-3">
+                        <div className="flex w-16 items-center justify-center rounded-md border-r border-gray-200 bg-blue-200 p-3">
+                           <FaUserTie className="text-blue-600" size={24} />
+                        </div>
+                        {/* ===== */}
+                        <div className="flex flex-1 items-center justify-between">
+                           <span className="text-sm font-semibold tracking-wider text-black select-none">
+                              Cliente
+                           </span>
+                           <span className="text-lg font-bold tracking-wider text-black italic select-none">
+                              {chamado.NOME_CLIENTE?.split(' ')
+                                 .slice(0, 2)
+                                 .join(' ') ?? '-'}
+                           </span>
+                        </div>
+                     </div>
+                     {/* ========== */}
+
+                     {/* Assunto */}
+                     <div className="group flex items-center gap-4 border-b border-gray-200 px-6 py-3">
+                        <div className="flex w-16 items-center justify-center rounded-md border-r border-gray-200 bg-blue-200 p-3">
+                           <MdSubject className="text-blue-600" size={24} />
+                        </div>
+                        {/* ===== */}
+                        <div className="flex flex-1 items-center justify-between">
+                           <span className="text-sm font-semibold tracking-wider text-black select-none">
+                              Assunto
+                           </span>
+                           <span className="text-lg font-bold tracking-wider text-black italic select-none">
+                              {corrigirTextoCorrompido(
+                                 chamado.ASSUNTO_CHAMADO ?? ''
+                              ) ?? '-'}
+                           </span>
+                        </div>
+                     </div>
+                     {/* ========== */}
+
+                     {/* Email */}
+                     <div className="group flex items-center gap-4 border-b border-gray-200 px-6 py-3">
+                        <div className="flex w-16 items-center justify-center rounded-md border-r border-gray-200 bg-blue-200 p-3">
+                           <MdEmail className="text-blue-600" size={24} />
+                        </div>
+                        {/* ===== */}
+                        <div className="flex flex-1 items-center justify-between">
+                           <span className="text-sm font-semibold tracking-wider text-black select-none">
+                              Email
+                           </span>
+                           <span className="text-lg font-bold tracking-wider text-black italic select-none">
+                              {chamado.EMAIL_CHAMADO ?? '-'}
+                           </span>
+                        </div>
+                     </div>
+                     {/* ========== */}
+
+                     {/* Prioridade */}
+                     <div className="group flex items-center gap-4 border-b border-gray-200 px-6 py-3">
+                        <div className="flex w-16 items-center justify-center rounded-md border-r border-gray-200 bg-blue-200 p-3">
+                           <MdPriorityHigh
+                              className="text-blue-600"
+                              size={24}
+                           />
+                        </div>
+                        {/* ===== */}
+                        <div className="flex flex-1 items-center justify-between">
+                           <span className="text-sm font-semibold tracking-wider text-black select-none">
+                              Prioridade
+                           </span>
+                           <span className="inline-block rounded-full bg-gray-300 px-6 py-1 text-base font-bold tracking-wider text-black italic select-none">
+                              {chamado.PRIOR_CHAMADO ?? '-'}
+                           </span>
+                        </div>
+                     </div>
+                     {/* ========== */}
+
+                     {/* Classificação */}
+                     <div className="group flex items-center gap-4 border-b border-gray-200 px-6 py-3">
+                        <div className="flex w-16 items-center justify-center rounded-md border-r border-gray-200 bg-blue-200 p-3">
+                           <FaTag className="text-blue-600" size={24} />
+                        </div>
+                        {/* ===== */}
+                        <div className="flex flex-1 items-center justify-between">
+                           <span className="text-sm font-semibold tracking-wider text-black select-none">
+                              Classificação
+                           </span>
+                           <span className="text-lg font-bold tracking-wider text-black italic select-none">
+                              {chamado.NOME_CLASSIFICACAO ?? '-'}
+                           </span>
                         </div>
                      </div>
                   </div>

@@ -359,7 +359,7 @@ export const colunasTabelaChamados = (
       // Data chamado
       {
          accessorKey: 'DATA_CHAMADO',
-         header: () => <div className="text-center">DT. Chamado</div>,
+         header: () => <div className="text-center">Data</div>,
          cell: ({ getValue }) => {
             const value = getValue() as string;
             const dataFormatada = formatarDataParaBR(value);

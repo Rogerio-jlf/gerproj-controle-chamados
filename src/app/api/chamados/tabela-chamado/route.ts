@@ -140,23 +140,16 @@ export async function GET(request: Request) {
          params.push(`%${filterCodChamado}%`);
       }
 
-      // FILTRO DATA_CHAMADO (tipo DATE no banco - formato 25.09.2025 00:00)
-      // FILTRO DATA_CHAMADO (tipo DATE no banco - formato 25.09.2025 00:00)
-      // FILTRO DATA_CHAMADO (tipo DATE no banco - formato 25.09.2025 00:00)
-      // FILTRO DATA_CHAMADO (tipo DATE no banco)
       if (filterDataChamado) {
          let searchValue = filterDataChamado.trim().replace(/\//g, '.');
 
          // Se só tem números, formata com pontos
          if (/^\d+$/.test(searchValue)) {
             if (searchValue.length === 2) {
-               // Apenas dia: 26
                searchValue = searchValue;
             } else if (searchValue.length === 4) {
-               // DDMM: 2609 -> 26.09
                searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}`;
             } else if (searchValue.length === 8) {
-               // DDMMYYYY: 26092025 -> 26.09.2025
                searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}.${searchValue.substring(4, 8)}`;
             }
          }
@@ -164,7 +157,6 @@ export async function GET(request: Request) {
          const parts = searchValue.split('.');
 
          if (parts.length === 1 && /^\d{1,2}$/.test(parts[0])) {
-            // Apenas dia (ex: 26)
             whereConditions.push('EXTRACT(DAY FROM Chamado.DATA_CHAMADO) = ?');
             params.push(parseInt(parts[0]));
          } else if (
@@ -172,7 +164,6 @@ export async function GET(request: Request) {
             /^\d{1,2}$/.test(parts[0]) &&
             /^\d{1,2}$/.test(parts[1])
          ) {
-            // Dia e mês (ex: 26.09)
             whereConditions.push(
                '(EXTRACT(DAY FROM Chamado.DATA_CHAMADO) = ? AND EXTRACT(MONTH FROM Chamado.DATA_CHAMADO) = ?)'
             );
@@ -183,7 +174,6 @@ export async function GET(request: Request) {
             /^\d{1,2}$/.test(parts[1]) &&
             /^\d{4}$/.test(parts[2])
          ) {
-            // Dia, mês e ano (ex: 26.09.2025)
             whereConditions.push(
                '(EXTRACT(DAY FROM Chamado.DATA_CHAMADO) = ? AND EXTRACT(MONTH FROM Chamado.DATA_CHAMADO) = ? AND EXTRACT(YEAR FROM Chamado.DATA_CHAMADO) = ?)'
             );
@@ -193,7 +183,6 @@ export async function GET(request: Request) {
                parseInt(parts[2])
             );
          } else {
-            // Fallback: busca no formato YYYY-MM-DD
             whereConditions.push(
                `CAST(Chamado.DATA_CHAMADO AS VARCHAR(50)) LIKE ?`
             );
@@ -201,27 +190,21 @@ export async function GET(request: Request) {
          }
       }
 
-      // FILTRO DTENVIO_CHAMADO (tipo VARCHAR no banco - formato 25/09/2025 - 15:30)
-      // FILTRO DTENVIO_CHAMADO (tipo VARCHAR no banco - formato 25/09/2025 - 15:30)
       if (filterDataEnvio) {
          let searchValue = filterDataEnvio.trim().replace(/\//g, '/');
 
-         // Se só tem números, formata com barras
          if (/^\d+$/.test(searchValue)) {
             if (searchValue.length === 2) {
-               // Apenas dia: 30 -> busca "30/"
                searchValue = searchValue + '/';
             } else if (searchValue.length === 4) {
-               // DDMM: 3009 -> 30/09
                searchValue = `${searchValue.substring(0, 2)}/${searchValue.substring(2, 4)}`;
             } else if (searchValue.length === 8) {
-               // DDMMYYYY: 30092025 -> 30/09/2025
                searchValue = `${searchValue.substring(0, 2)}/${searchValue.substring(2, 4)}/${searchValue.substring(4, 8)}`;
             }
          }
 
          whereConditions.push('Chamado.DTENVIO_CHAMADO LIKE ?');
-         params.push(`${searchValue}%`); // Removido o % do início
+         params.push(`${searchValue}%`);
       }
 
       if (filterAssunto) {
@@ -239,13 +222,12 @@ export async function GET(request: Request) {
          params.push(`%${filterNomeRecurso.toUpperCase()}%`);
       }
 
-      // FILTRO EMAIL_RECURSO (adicionado)
       if (filterEmailRecurso) {
          whereConditions.push('UPPER(Chamado.EMAIL_CHAMADO) LIKE ?');
          params.push(`%${filterEmailRecurso.toUpperCase()}%`);
       }
 
-      // Filtro global (busca em múltiplas colunas)
+      // Filtro global
       if (globalFilter) {
          const globalCondition = `(
             CAST(Chamado.COD_CHAMADO AS VARCHAR(20)) LIKE ? OR
@@ -269,14 +251,29 @@ export async function GET(request: Request) {
          SELECT 
             Chamado.COD_CHAMADO,
             Chamado.DATA_CHAMADO,
+            Chamado.HORA_CHAMADO,
             Chamado.STATUS_CHAMADO,
             Chamado.DTENVIO_CHAMADO,
             Chamado.COD_RECURSO,
+            Chamado.CODTRF_CHAMADO,
+            Chamado.COD_CLIENTE,
             Chamado.ASSUNTO_CHAMADO,
             Chamado.EMAIL_CHAMADO,
-            Recurso.NOME_RECURSO
+            Chamado.PRIOR_CHAMADO,
+            Chamado.COD_CLASSIFICACAO,
+            Recurso.NOME_RECURSO,
+            Cliente.NOME_CLIENTE,
+            Classificacao.NOME_CLASSIFICACAO,
+            Tarefa.COD_TAREFA,
+            Tarefa.NOME_TAREFA,
+            Projeto.COD_PROJETO,
+            Projeto.NOME_PROJETO
          FROM CHAMADO Chamado
          LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = Chamado.COD_RECURSO
+         LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
+         LEFT JOIN CLASSIFICACAO Classificacao ON Classificacao.COD_CLASSIFICACAO = Chamado.COD_CLASSIFICACAO
+         LEFT JOIN TAREFA Tarefa ON Tarefa.COD_TAREFA = Chamado.CODTRF_CHAMADO
+         LEFT JOIN PROJETO Projeto ON Projeto.COD_PROJETO = Tarefa.CODPRO_TAREFA
          ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
          ORDER BY Chamado.DATA_CHAMADO DESC, Chamado.COD_CHAMADO DESC
          ROWS ${startRow} TO ${endRow};
@@ -289,27 +286,59 @@ export async function GET(request: Request) {
          ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
       `;
 
-      const [chamados, countResult] = await Promise.all([
+      const [rawChamados, countResult] = await Promise.all([
          firebirdQuery(sql, params),
          firebirdQuery(countSql, params),
       ]);
 
+      function formatHora(hora: string | number | null): string | null {
+         if (!hora) return null;
+
+         const str = hora.toString().padStart(4, '0');
+         const hh = str.substring(0, 2);
+         const mm = str.substring(2, 4);
+
+         return `${hh}:${mm}`;
+      }
+
+      // Adiciona os campos calculados
+      const chamados = (rawChamados || []).map((record: any) => {
+         const tarefaCompleta =
+            record.COD_TAREFA && record.NOME_TAREFA
+               ? `${record.COD_TAREFA} - ${record.NOME_TAREFA}`
+               : null;
+
+         const projetoCompleto =
+            record.COD_PROJETO && record.NOME_PROJETO
+               ? `${record.COD_PROJETO} - ${record.NOME_PROJETO}`
+               : null;
+
+         // Formata DATA_HORA combinando DATA_CHAMADO e HORA_CHAMADO
+         let dataHora = null;
+         if (record.DATA_CHAMADO) {
+            const data = new Date(record.DATA_CHAMADO);
+            const dia = String(data.getDate()).padStart(2, '0');
+            const mes = String(data.getMonth() + 1).padStart(2, '0');
+            const ano = data.getFullYear();
+            const dataFormatada = `${dia}/${mes}/${ano}`;
+
+            const horaFormatada = formatHora(record.HORA_CHAMADO);
+
+            dataHora = horaFormatada
+               ? `${dataFormatada} - ${horaFormatada}`
+               : dataFormatada;
+         }
+
+         return {
+            ...record,
+            TAREFA_COMPLETA: tarefaCompleta,
+            PROJETO_COMPLETO: projetoCompleto,
+            DATA_HORA_CHAMADO: dataHora,
+         };
+      });
+
       const total = countResult[0].TOTAL;
       const totalPages = Math.ceil(total / limit);
-
-      // TEMPORÁRIO - PARA DEBUG
-      if (filterDataChamado) {
-         const debugSql = `
-      SELECT FIRST 5
-         Chamado.COD_CHAMADO,
-         Chamado.DATA_CHAMADO,
-         CAST(Chamado.DATA_CHAMADO AS VARCHAR(50)) as DATA_FORMATADA
-      FROM CHAMADO Chamado
-      ORDER BY Chamado.COD_CHAMADO DESC
-   `;
-         const debugResult = await firebirdQuery(debugSql, []);
-         console.log('DEBUG - Formato das datas:', debugResult);
-      }
 
       return NextResponse.json(
          {

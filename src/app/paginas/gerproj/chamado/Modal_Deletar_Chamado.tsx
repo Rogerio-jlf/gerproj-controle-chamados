@@ -98,7 +98,7 @@ export function ModalExcluirChamado({
       <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
          {/* ===== OVERLAY ===== */}
          <div
-            className="absolute inset-0 bg-black/40"
+            className="absolute inset-0 bg-black/60"
             // onClick={handleCloseModalExcluirOS}
          />
          {/* ========== */}
