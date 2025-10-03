@@ -417,7 +417,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
    const { data: clientes = [], isLoading: loadingClientes } = useQuery({
       queryKey: ['clientes'],
       queryFn: async () => {
-         const response = await fetch('/api/chamados/clientes', {
+         const response = await fetch('/api/clientes', {
             headers: { Authorization: `Bearer ${token}` },
          });
          if (!response.ok) throw new Error('Erro ao buscar clientes');
@@ -1744,7 +1744,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                  <button
                                     onClick={handleLimparFormulario}
                                     disabled={atribuirMutation.isPending}
-                                    className="cursor-pointer rounded-xl border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
+                                    className="cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                                  >
                                     Limpar
                                  </button>

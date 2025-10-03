@@ -39,7 +39,7 @@ export function ModalExcluirChamado({
 
    // Função para excluir Chamado
    const handleSubmitExcluirChamado = async () => {
-      if (!codChamado || !codChamado) {
+      if (!codChamado) {
          console.error('COD_CHAMADO não encontrado:', codChamado);
          toast.custom(t => (
             <ToastCustom
@@ -67,7 +67,7 @@ export function ModalExcluirChamado({
             <ToastCustom
                type="success"
                title="Sucesso!"
-               description={`O Chamado #${formatCodChamado(codChamado)} foi deletado com sucesso!!!`}
+               description={`O Chamado #${formatCodChamado(codChamado)} foi excluído com sucesso!!!`}
             />
          ));
 
@@ -91,6 +91,7 @@ export function ModalExcluirChamado({
       }
    };
 
+   // Se o modal não estiver aberto ou o chamado for nulo, não renderiza nada
    if (!isOpen || !codChamado) return null;
 
    // ================================================================================
@@ -106,13 +107,13 @@ export function ModalExcluirChamado({
             <header className="relative flex items-center justify-between bg-black p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
                   <RiDeleteBin5Fill className="text-white" size={60} />
-
+                  {/* ===== */}
                   <div className="flex flex-col">
                      <h1 className="text-3xl font-extrabold tracking-wider text-white select-none">
                         Excluir Chamado
                      </h1>
 
-                     <p className="text-xl font-extrabold tracking-widest text-white select-none">
+                     <p className="text-xl font-extrabold tracking-widest text-white italic select-none">
                         Chamado #{formatCodChamado(codChamado)}
                      </p>
                   </div>

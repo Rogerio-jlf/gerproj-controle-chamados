@@ -1,7 +1,8 @@
 'use client';
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { toast } from 'sonner';
+// ================================================================================
 import { z } from 'zod';
+import { toast } from 'sonner';
+import { useState, useRef, useEffect, useCallback } from 'react';
 // ================================================================================
 import {
    Tooltip,
@@ -14,7 +15,6 @@ import {
    formatCodChamado,
    getStylesStatus,
 } from '../../../../utils/formatters';
-import { ToastCustom } from '../../../../components/Toast_Custom';
 import { useAuth } from '../../../../hooks/useAuth';
 import {
    canUseBackdatedAppointments,
@@ -22,6 +22,7 @@ import {
    getCurrentUserId,
    isUserAdmin,
 } from '../components/modais/Modal_Permitir_OS_Retroativa_Chamado';
+import { ToastCustom } from '../../../../components/Toast_Custom';
 // ================================================================================
 import {
    FaExclamationTriangle,
@@ -42,16 +43,17 @@ import { BsFillXOctagonFill } from 'react-icons/bs';
 // ================================================================================
 // INTERFACES E TIPOS
 // ================================================================================
-
 interface Classificacao {
    COD_CLASSIFICACAO: number;
    NOME_CLASSIFICACAO: string;
 }
+// ==========
 
 interface Tarefa {
    COD_TAREFA: number;
    NOME_TAREFA: string;
 }
+// ==========
 
 interface ModalAtualizarStatusApontarOsChamadoProps {
    status: string;
@@ -59,14 +61,14 @@ interface ModalAtualizarStatusApontarOsChamadoProps {
    nomeCliente?: string;
    onUpdateSuccess?: () => void;
 }
+// ==========
 
-// Modal Component
 interface ModalProps {
    isOpen: boolean;
-   // onClose: () => void;
    children: React.ReactNode;
    needsApontamento?: boolean;
 }
+// ================================================================================
 
 const Modal = ({ isOpen, children, needsApontamento = false }: ModalProps) => {
    useEffect(() => {
@@ -111,7 +113,7 @@ const statusOptions = [
 ];
 
 // Schema de validação com Zod para apontamentos
-const createApontamentoSchema = (canUseBackdated: boolean) =>
+const ApontamentoSchema = (canUseBackdated: boolean) =>
    z
       .object({
          dataInicioOS: z
@@ -214,7 +216,7 @@ const createApontamentoSchema = (canUseBackdated: boolean) =>
          }
       );
 
-type ApontamentoFormData = z.infer<ReturnType<typeof createApontamentoSchema>>;
+type ApontamentoFormData = z.infer<ReturnType<typeof ApontamentoSchema>>;
 
 type ApontamentoFormErrors = Partial<
    Record<keyof ApontamentoFormData | 'root', string>
@@ -261,12 +263,6 @@ const ajustaParaIntervalo = (value: string) => {
 };
 // ====================
 
-// Função utilitária para extrair o primeiro nome
-const getPrimeiroNome = (nomeCompleto: string): string => {
-   return nomeCompleto.trim().split(' ')[0];
-};
-// ====================
-
 // Função utilitária para remover acentos, mantendo espaços
 const removerAcentos = (texto: string): string => {
    return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -289,7 +285,7 @@ export function ModalAtualizarStatusApontarOsChamado({
    const [editing, setEditing] = useState(false);
    const [status, setStatus] = useState(initialStatus);
    const [pendingStatus, setPendingStatus] = useState<string | null>(null);
-   const [isUpdating, setIsUpdating] = useState(false);
+   const [isLoading, setIsUpdating] = useState(false);
 
    // ================================================================================
    // ESTADOS - MODAIS E DIÁLOGOS
@@ -307,7 +303,6 @@ export function ModalAtualizarStatusApontarOsChamado({
    const [selectedTarefa, setSelectedTarefa] = useState<number | null>(null);
    const [loadingClassificacoes, setLoadingClassificacoes] = useState(false);
    const [loadingTarefas, setLoadingTarefas] = useState(false);
-   const [isLoading, setIsLoading] = useState(false);
 
    // ================================================================================
    // ESTADOS - APONTAMENTO
@@ -344,11 +339,10 @@ export function ModalAtualizarStatusApontarOsChamado({
    const currentUserId = getCurrentUserId(user);
    const isAdmin = isUserAdmin(user);
 
-   // ✅ CORREÇÃO: Passar o objeto user completo para a função
    const canUseBackdatedDates = canUseBackdatedAppointments(
       currentUserId,
       codChamado.toString(),
-      user // ✅ Objeto user completo
+      user
    );
 
    // ================================================================================
@@ -423,24 +417,20 @@ export function ModalAtualizarStatusApontarOsChamado({
    // ====================
 
    // Função para verificar se uma data é de um mês anterior ao atual
-   // Função para verificar se uma data é de um mês anterior ao atual - CORRIGIDA
    const isDateFromPreviousMonth = useCallback(
       (dateString: string): boolean => {
-         // ✅ CORREÇÃO: Se o usuário tem permissão especial, SEMPRE permitir
          if (canUseBackdatedDates) {
-            return false; // Sempre permitir para usuários com permissão especial
+            return false;
          }
 
-         // Lógica original apenas para usuários sem permissão
-         const [year, month, day] = dateString.split('-').map(Number);
+         const [year, month, _day] = dateString.split('-').map(Number);
          const today = new Date();
 
-         // ✅ CORREÇÃO: Ajustar para o fuso horário local
          const todayLocal = new Date(
             today.getTime() - today.getTimezoneOffset() * 60000
          );
          const currentYear = todayLocal.getFullYear();
-         const currentMonth = todayLocal.getMonth() + 1; // Janeiro é 0
+         const currentMonth = todayLocal.getMonth() + 1;
 
          if (year < currentYear) return true;
          if (year === currentYear && month < currentMonth) return true;
@@ -459,6 +449,7 @@ export function ModalAtualizarStatusApontarOsChamado({
 
       let newValue = value;
 
+      // Se for campo de observação, capitalizar a primeira letra e evitar espaços iniciais
       if (name === 'observacaoOS') {
          newValue = newValue.trimStart();
          if (newValue.length > 0) {
@@ -466,13 +457,12 @@ export function ModalAtualizarStatusApontarOsChamado({
          }
       }
 
-      // Atualizar o estado primeiro
       setApontamentoData(prev => ({
          ...prev,
          [name]: newValue,
       }));
 
-      // ✅ VALIDAÇÃO EM TEMPO REAL PARA DATA (mantém como está)
+      // Se for campo de data, validar imediatamente
       if (name === 'dataInicioOS' && newValue) {
          const selectedDate = new Date(newValue);
          const today = new Date();
@@ -484,11 +474,10 @@ export function ModalAtualizarStatusApontarOsChamado({
                dataInicioOS: 'Data não pode ser maior que hoje',
             }));
          } else if (isDateFromPreviousMonth(newValue)) {
-            // ✅ CORREÇÃO: Só mostrar erro se o usuário NÃO tiver permissão
             setApontamentoErrors((prev: ApontamentoFormErrors) => ({
                ...prev,
                dataInicioOS: canUseBackdatedDates
-                  ? undefined // ✅ Permite se tiver permissão
+                  ? undefined
                   : 'Não é possível selecionar datas de meses anteriores ao atual',
             }));
          } else {
@@ -499,9 +488,8 @@ export function ModalAtualizarStatusApontarOsChamado({
          }
       }
 
-      // ✅ VALIDAÇÃO EM TEMPO REAL PARA HORÁRIOS
+      // Se for campo de hora, validar formato e relação
       if (name === 'horaInicioOS' || name === 'horaFimOS') {
-         // Validação individual do campo
          if (!newValue || newValue.trim() === '') {
             setApontamentoErrors((prev: ApontamentoFormErrors) => ({
                ...prev,
@@ -511,7 +499,6 @@ export function ModalAtualizarStatusApontarOsChamado({
                      : 'Hora Fim é obrigatória',
             }));
          } else {
-            // Verificar formato (intervalos de 15 minutos)
             const regex = /^([01]?\d|2[0-3]):(00|15|30|45)$/;
             if (!regex.test(newValue)) {
                setApontamentoErrors((prev: ApontamentoFormErrors) => ({
@@ -519,13 +506,11 @@ export function ModalAtualizarStatusApontarOsChamado({
                   [name]: 'A hora deve ser em intervalos de 15 minutos',
                }));
             } else {
-               // Campo individual válido, limpar seu erro
                setApontamentoErrors((prev: ApontamentoFormErrors) => ({
                   ...prev,
                   [name]: undefined,
                }));
 
-               // Validar relação entre horários apenas se ambos estão preenchidos
                setTimeout(() => {
                   const updatedData = { ...apontamentoData, [name]: newValue };
                   if (updatedData.horaInicioOS && updatedData.horaFimOS) {
@@ -536,10 +521,9 @@ export function ModalAtualizarStatusApontarOsChamado({
          }
       }
 
-      // ✅ VALIDAÇÃO EM TEMPO REAL PARA OBSERVAÇÃO
+      // Se for campo de observação, capitalizar a primeira letra e evitar espaços iniciais
       if (name === 'observacaoOS') {
          if (newValue.trim().length === 0) {
-            // Campo vazio - não mostrar erro ainda (só no blur)
             setApontamentoErrors((prev: ApontamentoFormErrors) => ({
                ...prev,
                observacaoOS: undefined,
@@ -564,6 +548,7 @@ export function ModalAtualizarStatusApontarOsChamado({
    };
    // ====================
 
+   // Validação em tempo real da relação entre hora início e hora fim
    const validateTimeRelationRealTime = (data: ApontamentoFormData) => {
       const [startHours, startMinutes] = data.horaInicioOS
          .split(':')
@@ -584,7 +569,6 @@ export function ModalAtualizarStatusApontarOsChamado({
             horaFimOS: 'Diferença mínima entre horários deve ser de 15 minutos',
          }));
       } else {
-         // Relação válida - limpar apenas erros relacionais, manter outros
          setApontamentoErrors((prev: ApontamentoFormErrors) => {
             const newErrors = { ...prev };
             if (
@@ -694,8 +678,6 @@ export function ModalAtualizarStatusApontarOsChamado({
       // Para observação, validar se está vazio no blur
       if (name === 'observacaoOS') {
          if (value.trim().length === 0) {
-            // No blur, se estiver vazio, não é obrigatório ainda
-            // Mas se tiver conteúdo, deve ter pelo menos 10 caracteres
             setApontamentoErrors((prev: ApontamentoFormErrors) => ({
                ...prev,
                observacaoOS: undefined,
@@ -711,13 +693,11 @@ export function ModalAtualizarStatusApontarOsChamado({
    // ====================
 
    // Validação do formulário de apontamento
-   // Validação do formulário de apontamento - CORRIGIDA
    const validateApontamentoForm = (): boolean => {
       if (!needsApontamento) return true;
 
       try {
-         // ✅ CORREÇÃO: Passar a variável canUseBackdatedDates para o schema
-         const schema = createApontamentoSchema(canUseBackdatedDates);
+         const schema = ApontamentoSchema(canUseBackdatedDates);
          schema.parse(apontamentoData);
          setApontamentoErrors({});
          return true;
@@ -738,7 +718,7 @@ export function ModalAtualizarStatusApontarOsChamado({
    // ====================
 
    // Handler para confirmar a mudança (UNIFICADO) - CORRIGIDO
-   const handleSubmitSave = async () => {
+   const handleSubmitAtualizarApontarOsChamado = async () => {
       if (!pendingStatus) return;
 
       // Validações básicas
@@ -783,7 +763,6 @@ export function ModalAtualizarStatusApontarOsChamado({
       setIsUpdating(true);
 
       try {
-         // ✅ PAYLOAD SIMPLIFICADO - A API usará CODTRF_CHAMADO automaticamente
          const payload: any = {
             statusChamado: pendingStatus,
          };
@@ -798,7 +777,6 @@ export function ModalAtualizarStatusApontarOsChamado({
             payload.codTarefa = selectedTarefa;
          }
 
-         // ✅ DADOS DE OS SIMPLIFICADOS - API usará CODTRF_CHAMADO
          if (needsApontamento) {
             payload.criarOS = true;
             payload.dadosOS = {
@@ -810,7 +788,6 @@ export function ModalAtualizarStatusApontarOsChamado({
                ),
                recurso: user?.recurso?.id?.toString() || '',
             };
-            // ❌ REMOVER: payload.codTarefa = selectedClassificacao;
          }
 
          const start = Date.now();
@@ -825,7 +802,6 @@ export function ModalAtualizarStatusApontarOsChamado({
          );
 
          const responseData = await response.json();
-         console.log('Response Data:', responseData);
 
          if (!response.ok) {
             throw new Error(
@@ -843,10 +819,10 @@ export function ModalAtualizarStatusApontarOsChamado({
          // Mensagem de sucesso
          let successMessage = `Status do Chamado #${formatCodChamado(codChamado)} atualizado com sucesso.`;
          if (responseData.os) {
-            successMessage += ` OS #${formatCodChamado(responseData.os.COD_OS)} criada e associada ao chamado.`;
+            successMessage += `\nOS #${formatCodChamado(responseData.os.COD_OS)} criada e associada ao chamado.`;
          }
          if (responseData.warning) {
-            successMessage += ` Atenção: ${responseData.warning}`;
+            successMessage += `\nAtenção: ${responseData.warning}`;
          }
 
          toast.custom(t => (
@@ -896,7 +872,7 @@ export function ModalAtualizarStatusApontarOsChamado({
 
    // Handler para fechar o modal
    const handleCloseModalAtualizarStatusApontarOsChamado = () => {
-      if (!isUpdating) {
+      if (!isLoading) {
          handleCancelChange();
       }
    };
@@ -904,7 +880,7 @@ export function ModalAtualizarStatusApontarOsChamado({
 
    // Handler para clique na célula de status
    const handleStatusCellClick = () => {
-      if (!isStatusEditable || isUpdating) {
+      if (!isStatusEditable || isLoading) {
          return;
       }
       setEditing(true);
@@ -914,13 +890,11 @@ export function ModalAtualizarStatusApontarOsChamado({
    // Para melhorar a UX, você pode também definir o atributo 'min' no input de data:
    const getCurrentMonthFirstDay = (): string => {
       if (canUseBackdatedDates) {
-         // Permitir datas de até 1 ano atrás para usuários com permissão especial
          const oneYearAgo = new Date();
          oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
          return oneYearAgo.toISOString().split('T')[0];
       }
 
-      // Lógica original para usuários sem permissão
       const today = new Date();
       const year = today.getFullYear();
       const month = today.getMonth();
@@ -994,7 +968,6 @@ export function ModalAtualizarStatusApontarOsChamado({
    // ====================
 
    // useEffect para validar data sempre que mudar
-   // useEffect para validar data sempre que mudar - COM DEBUG
    useEffect(() => {
       if (!needsApontamento) return;
 
@@ -1052,7 +1025,7 @@ export function ModalAtualizarStatusApontarOsChamado({
       if (needsApontamento) {
          try {
             // ✅ CORREÇÃO: Usar o schema dinâmico aqui também
-            const schema = createApontamentoSchema(canUseBackdatedDates);
+            const schema = ApontamentoSchema(canUseBackdatedDates);
             schema.parse(apontamentoData);
             return true;
          } catch (error) {
@@ -1069,7 +1042,7 @@ export function ModalAtualizarStatusApontarOsChamado({
    // ================================================================================
    return (
       <>
-         {/* ===== CÉLULA DE STATUS ===== */}
+         {/* ===== SELECT STATUS ===== */}
          <div className="text-center">
             {editing && isStatusEditable ? (
                // ===== MODO DE EDIÇÃO - SELECT =====
@@ -1090,7 +1063,7 @@ export function ModalAtualizarStatusApontarOsChamado({
                      }
                   }}
                   className={`w-[300px] min-w-[260px] rounded-sm border-2 border-slate-900 px-6 py-2 ${getStylesStatus(status)}`}
-                  disabled={isUpdating}
+                  disabled={isLoading}
                >
                   {!availableStatusOptions.includes(status) && (
                      <option
@@ -1122,7 +1095,7 @@ export function ModalAtualizarStatusApontarOsChamado({
                                  ? 'cursor-pointer hover:scale-110 hover:border-2 hover:border-slate-900'
                                  : 'cursor-not-allowed opacity-75'
                            } ${getStylesStatus(status)} ${
-                              isUpdating ? 'cursor-wait opacity-50' : ''
+                              isLoading ? 'cursor-wait opacity-50' : ''
                            }`}
                            onClick={handleStatusCellClick}
                         >
@@ -1146,7 +1119,7 @@ export function ModalAtualizarStatusApontarOsChamado({
                         className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
                      >
                         <div className="text-sm font-semibold tracking-wider text-black italic select-none">
-                           {isUpdating
+                           {isLoading
                               ? 'Aguarde...'
                               : !isStatusEditable
                                 ? 'Esse chamado, só pode ser "ATRIBUIDO", via Atribuir Chamado'
@@ -1162,11 +1135,7 @@ export function ModalAtualizarStatusApontarOsChamado({
          {/* ============================== */}
 
          {/* ===== MODAL UNIFICADO ===== */}
-         <Modal
-            isOpen={showUnifiedModal}
-            needsApontamento={!!needsApontamento}
-            // onClose={handleCloseModalAtualizarStatusApontarOsChamado}
-         >
+         <Modal isOpen={showUnifiedModal} needsApontamento={!!needsApontamento}>
             <div
                className={`animate-in slide-in-from-bottom-4 ${needsApontamento ? 'w-[1500px]' : 'w-[750px]'} relative z-10 max-h-[100vh] overflow-hidden rounded-2xl border-0 bg-slate-200 transition-all duration-500 ease-out`}
             >
@@ -1180,7 +1149,7 @@ export function ModalAtualizarStatusApontarOsChamado({
                         />
                         {/* ===== */}
                         <span className="text-2xl font-extrabold tracking-widest text-white italic select-none">
-                           Carregando dados...
+                           Carregando os dados...
                         </span>
                      </div>
                   </div>
@@ -1339,7 +1308,7 @@ export function ModalAtualizarStatusApontarOsChamado({
                                           }
                                           className="w-full cursor-pointer rounded-sm border-t-2 border-slate-200 bg-white px-4 py-2 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                           required
-                                          disabled={isUpdating}
+                                          disabled={isLoading}
                                        >
                                           <option
                                              value=""
@@ -1409,7 +1378,7 @@ export function ModalAtualizarStatusApontarOsChamado({
                                           }
                                           className="w-full cursor-pointer rounded-md border-t-0 border-slate-300 bg-white px-4 py-2 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                           required
-                                          disabled={isUpdating}
+                                          disabled={isLoading}
                                        >
                                           <option
                                              value=""
@@ -1520,12 +1489,12 @@ export function ModalAtualizarStatusApontarOsChamado({
                                        : getCurrentMonthFirstDay()
                                  } // ✅ CORREÇÃO
                                  max={new Date().toISOString().split('T')[0]}
-                                 disabled={isUpdating}
+                                 disabled={isLoading}
                                  className={`w-full cursor-pointer rounded-sm border-t-2 border-slate-200 bg-white px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
                                     apontamentoErrors.dataInicioOS
                                        ? 'border-red-500 ring-2 ring-red-600'
                                        : ''
-                                 } ${isUpdating ? 'cursor-not-allowed opacity-50' : ''}`}
+                                 } ${isLoading ? 'cursor-not-allowed opacity-50' : ''}`}
                               />
                               {apontamentoErrors.dataInicioOS && (
                                  <div className="mt-2 flex items-center gap-2">
@@ -1568,7 +1537,7 @@ export function ModalAtualizarStatusApontarOsChamado({
                                        value={apontamentoData.horaInicioOS}
                                        onChange={handleApontamentoInputChange}
                                        onBlur={handleTimeBlur}
-                                       disabled={isUpdating}
+                                       disabled={isLoading}
                                        className={`w-full cursor-pointer rounded-sm border-t-2 border-slate-200 px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
                                           apontamentoErrors.horaInicioOS
                                              ? 'border-red-500 bg-red-50 ring-2 ring-red-600'
@@ -1613,7 +1582,7 @@ export function ModalAtualizarStatusApontarOsChamado({
                                        value={apontamentoData.horaFimOS}
                                        onChange={handleApontamentoInputChange}
                                        onBlur={handleTimeBlur}
-                                       disabled={isUpdating}
+                                       disabled={isLoading}
                                        className={`w-full cursor-pointer rounded-sm border-t-2 border-slate-200 px-4 py-1 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
                                           apontamentoErrors.horaFimOS
                                              ? 'border-red-500 bg-red-50 ring-2 ring-red-600'
@@ -1665,7 +1634,7 @@ export function ModalAtualizarStatusApontarOsChamado({
                                  value={apontamentoData.observacaoOS}
                                  onChange={handleApontamentoInputChange}
                                  onBlur={handleFieldBlur}
-                                 disabled={isUpdating}
+                                 disabled={isLoading}
                                  rows={4}
                                  maxLength={200}
                                  placeholder="Descreva detalhadamente o serviço realizado..."
@@ -1786,23 +1755,23 @@ export function ModalAtualizarStatusApontarOsChamado({
                <footer className="relative flex justify-end gap-6 pr-6 pb-6">
                   <button
                      onClick={handleCancelChange}
-                     disabled={isUpdating}
-                     className="cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
+                     disabled={isLoading}
+                     className="cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                      Cancelar
                   </button>
                   {/* ===== */}
 
                   <button
-                     onClick={handleSubmitSave}
-                     disabled={isUpdating || !isFormValid()}
+                     onClick={handleSubmitAtualizarApontarOsChamado}
+                     disabled={isLoading || !isFormValid()}
                      className={`cursor-pointer rounded-sm border-none bg-blue-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black select-none ${
-                        isUpdating || !isFormValid()
+                        isLoading || !isFormValid()
                            ? 'disabled:cursor-not-allowed disabled:opacity-50'
                            : 'transition-all hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black active:scale-95'
                      }`}
                   >
-                     {isUpdating ? (
+                     {isLoading ? (
                         <div className="flex items-center gap-2">
                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                            {/* ===== */}

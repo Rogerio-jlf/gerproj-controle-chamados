@@ -40,13 +40,14 @@ export function ModalVisualizarChamado({
 }: ModalVisualizarChamadoProps) {
    // ==========
 
+   // Função para fechar o modal
    const handleCloseModalVisualizarChamado = () => {
       onClose();
    };
    // ==========
 
+   // Se o modal não estiver aberto ou o chamado for nulo, não renderiza nada
    if (!isOpen || !chamado) return null;
-   // ==========
 
    // ================================================================================
    // RENDERIZAÇÃO
@@ -54,10 +55,7 @@ export function ModalVisualizarChamado({
    return (
       <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
          {/* ===== OVERLAY ===== */}
-         <div
-            className="absolute inset-0 bg-black/60"
-            // onClick={handleCloseModalVisualizarChamado}
-         />
+         <div className="absolute inset-0 bg-black/60" />
          {/* ========== */}
 
          <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-slate-200 shadow-xl shadow-black transition-all duration-500 ease-out">
