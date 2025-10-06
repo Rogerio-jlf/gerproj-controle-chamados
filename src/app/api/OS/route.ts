@@ -4,7 +4,6 @@ import { firebirdQuery } from '../../../lib/firebird/firebird-client';
 
 export async function GET(request: Request) {
    try {
-      // Pega o token do header Authorization
       const authHeader = request.headers.get('Authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
          return NextResponse.json(
@@ -13,11 +12,9 @@ export async function GET(request: Request) {
          );
       }
 
-      // Verifica e decodifica o token
       const token = authHeader.replace('Bearer ', '');
       let decoded: any;
 
-      // Verifica o token JWT
       try {
          decoded = jwt.verify(
             token,
@@ -27,23 +24,33 @@ export async function GET(request: Request) {
          return NextResponse.json({ error: 'Token inválido' }, { status: 401 });
       }
 
-      // Pega informações do usuário do token
       const isAdmin = decoded.tipo === 'ADM';
-      // Pega o código do recurso se existir
       const codRecurso = decoded.recurso?.id;
 
-      // Pega parâmetros da query
       const { searchParams } = new URL(request.url);
       const mesParam = searchParams.get('mes');
       const anoParam = searchParams.get('ano');
       const diaParam = searchParams.get('dia');
       const codOsQuery = searchParams.get('codOs')?.trim();
 
-      // Pega os parâmetros de paginação (com defaults)
+      // Paginação
       const page = parseInt(searchParams.get('page') || '1', 10);
       const limit = parseInt(searchParams.get('limit') || '20', 10);
 
-      // Validação dos parâmetros de paginação
+      // ===== FILTROS DE COLUNA =====
+
+      const filterChamadoOs = searchParams.get('filter_CHAMADO_OS')?.trim();
+      const filterCodOs = searchParams.get('filter_COD_OS')?.trim();
+      const filterDtiniOs = searchParams.get('filter_DTINI_OS')?.trim();
+      const filterDtincOs = searchParams.get('filter_DTINC_OS')?.trim();
+      const filterCompOs = searchParams.get('filter_COMP_OS')?.trim();
+      const filterNomeCliente = searchParams.get('filter_NOME_CLIENTE')?.trim();
+      const filterFaturadoOs = searchParams.get('filter_FATURADO_OS')?.trim();
+      const filterNomeRecurso = searchParams.get('filter_NOME_RECURSO')?.trim();
+      const filterValidOs = searchParams.get('filter_VALID_OS')?.trim();
+      const filterNomeTarefa = searchParams.get('filter_NOME_TAREFA')?.trim();
+      const filterNomeProjeto = searchParams.get('filter_NOME_PROJETO')?.trim();
+
       if (page < 1 || limit < 1 || limit > 100) {
          return NextResponse.json(
             {
@@ -53,11 +60,10 @@ export async function GET(request: Request) {
          );
       }
 
-      // Calcula o range
       const startRow = (page - 1) * limit + 1;
       const endRow = page * limit;
 
-      // Validação para mês (aceita número ou "todos")
+      // Validação mês/ano/dia
       let mesNumber: number | null = null;
       if (mesParam && mesParam !== 'todos') {
          mesNumber = Number(mesParam);
@@ -69,7 +75,6 @@ export async function GET(request: Request) {
          }
       }
 
-      // Validação para ano (aceita número ou "todos")
       let anoNumber: number | null = null;
       if (anoParam && anoParam !== 'todos') {
          anoNumber = Number(anoParam);
@@ -81,7 +86,6 @@ export async function GET(request: Request) {
          }
       }
 
-      // Validação para dia (aceita número ou "todos")
       let diaNumber: number | null = null;
       if (diaParam && diaParam !== 'todos') {
          diaNumber = Number(diaParam);
@@ -93,7 +97,6 @@ export async function GET(request: Request) {
          }
       }
 
-      // Usuários não admin devem obrigatoriamente ter codRecurso definido
       if (!isAdmin && !codRecurso) {
          return NextResponse.json(
             { error: 'Usuário não admin precisa ter codRecurso definido' },
@@ -101,59 +104,42 @@ export async function GET(request: Request) {
          );
       }
 
-      // Monta as condições do WHERE dinamicamente
       const whereConditions: string[] = [];
-      // Array de parâmetros para a query
       const params: any[] = [];
 
-      // Função auxiliar para formatar data para Firebird
-      const formatDateForFirebird = (date: Date): string => {
-         const year = date.getFullYear();
-         const month = String(date.getMonth() + 1).padStart(2, '0');
-         const day = String(date.getDate()).padStart(2, '0');
-         return `${year}-${month}-${day}`;
-      };
-
-      // Filtro por data - com suporte a ano, mês e dia
+      // Filtro por data (ano, mês, dia)
       if (anoNumber && mesNumber && diaNumber) {
-         // Ano, mês e dia específicos - filtro por data exata
          whereConditions.push(
             'EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(MONTH FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
          );
          params.push(anoNumber, mesNumber, diaNumber);
       } else if (anoNumber && mesNumber && !diaNumber) {
-         // Ano e mês específicos, todos os dias - filtro por mês/ano
          whereConditions.push(
             'EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(MONTH FROM OS.DTINI_OS) = ?'
          );
          params.push(anoNumber, mesNumber);
       } else if (anoNumber && !mesNumber && !diaNumber) {
-         // Apenas ano específico - filtro por ano todo
          whereConditions.push('EXTRACT(YEAR FROM OS.DTINI_OS) = ?');
          params.push(anoNumber);
       } else if (!anoNumber && mesNumber && !diaNumber) {
-         // Apenas mês específico - filtro por mês em todos os anos
          whereConditions.push('EXTRACT(MONTH FROM OS.DTINI_OS) = ?');
          params.push(mesNumber);
       } else if (!anoNumber && !mesNumber && diaNumber) {
-         // Apenas dia específico - filtro por dia em todos os meses/anos
          whereConditions.push('EXTRACT(DAY FROM OS.DTINI_OS) = ?');
          params.push(diaNumber);
       } else if (!anoNumber && mesNumber && diaNumber) {
-         // Mês e dia específicos, todos os anos
          whereConditions.push(
             'EXTRACT(MONTH FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
          );
          params.push(mesNumber, diaNumber);
       } else if (anoNumber && !mesNumber && diaNumber) {
-         // Ano e dia específicos, todos os meses
          whereConditions.push(
             'EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
          );
          params.push(anoNumber, diaNumber);
       }
 
-      // Filtro por recurso baseado no tipo de usuário
+      // Filtro por recurso
       if (!isAdmin && codRecurso) {
          whereConditions.push('OS.CODREC_OS = ?');
          params.push(Number(codRecurso));
@@ -165,7 +151,187 @@ export async function GET(request: Request) {
          params.push(Number(codOsQuery));
       }
 
-      // Monta a query final com paginação - VERSÃO SIMPLIFICADA
+      // ===== FILTROS DE COLUNA ROBUSTOS =====
+      if (filterChamadoOs) {
+         whereConditions.push('UPPER(OS.CHAMADO_OS) LIKE ?');
+         params.push(`%${filterChamadoOs.toUpperCase()}%`);
+      }
+
+      if (filterCodOs) {
+         whereConditions.push('CAST(OS.COD_OS AS VARCHAR(20)) LIKE ?');
+         params.push(`%${filterCodOs}%`);
+      }
+
+      if (filterDtiniOs) {
+         let searchValue = filterDtiniOs.trim().replace(/\//g, '.');
+
+         // Se só tem números, formata com pontos
+         if (/^\d+$/.test(searchValue)) {
+            if (searchValue.length === 2) {
+               searchValue = searchValue;
+            } else if (searchValue.length === 4) {
+               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}`;
+            } else if (searchValue.length === 8) {
+               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}.${searchValue.substring(4, 8)}`;
+            }
+         }
+
+         const parts = searchValue.split('.');
+
+         if (parts.length === 1 && /^\d{1,2}$/.test(parts[0])) {
+            whereConditions.push('EXTRACT(DAY FROM OS.DTINI_OS) = ?');
+            params.push(parseInt(parts[0]));
+         } else if (
+            parts.length === 2 &&
+            /^\d{1,2}$/.test(parts[0]) &&
+            /^\d{1,2}$/.test(parts[1])
+         ) {
+            whereConditions.push(
+               '(EXTRACT(DAY FROM OS.DTINI_OS) = ? AND EXTRACT(MONTH FROM OS.DTINI_OS) = ?)'
+            );
+            params.push(parseInt(parts[0]), parseInt(parts[1]));
+         } else if (
+            parts.length === 3 &&
+            /^\d{1,2}$/.test(parts[0]) &&
+            /^\d{1,2}$/.test(parts[1]) &&
+            /^\d{4}$/.test(parts[2])
+         ) {
+            whereConditions.push(
+               '(EXTRACT(DAY FROM OS.DTINI_OS) = ? AND EXTRACT(MONTH FROM OS.DTINI_OS) = ? AND EXTRACT(YEAR FROM OS.DTINI_OS) = ?)'
+            );
+            params.push(
+               parseInt(parts[0]),
+               parseInt(parts[1]),
+               parseInt(parts[2])
+            );
+         } else {
+            whereConditions.push(`CAST(OS.DTINI_OS AS VARCHAR(50)) LIKE ?`);
+            params.push(`%${searchValue}%`);
+         }
+      }
+
+      if (filterDtincOs) {
+         let searchValue = filterDtincOs.trim().replace(/\//g, '.');
+         // Se só tem números, formata com pontos
+         if (/^\d+$/.test(searchValue)) {
+            if (searchValue.length === 2) {
+               searchValue = searchValue;
+            } else if (searchValue.length === 4) {
+               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}`;
+            } else if (searchValue.length === 8) {
+               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}.${searchValue.substring(4, 8)}`;
+            } else if (searchValue.length === 10) {
+               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}.${searchValue.substring(4, 8)}`;
+            }
+         }
+
+         const parts = searchValue.split('.');
+
+         if (parts.length === 1 && /^\d{1,2}$/.test(parts[0])) {
+            whereConditions.push('EXTRACT(DAY FROM OS.DTINC_OS) = ?');
+            params.push(parseInt(parts[0]));
+         } else if (
+            parts.length === 2 &&
+            /^\d{1,2}$/.test(parts[0]) &&
+            /^\d{1,2}$/.test(parts[1])
+         ) {
+            whereConditions.push(
+               '(EXTRACT(DAY FROM OS.DTINC_OS) = ? AND EXTRACT(MONTH FROM OS.DTINC_OS) = ?)'
+            );
+            params.push(parseInt(parts[0]), parseInt(parts[1]));
+         } else if (
+            parts.length === 3 &&
+            /^\d{1,2}$/.test(parts[0]) &&
+            /^\d{1,2}$/.test(parts[1]) &&
+            /^\d{4}$/.test(parts[2])
+         ) {
+            whereConditions.push(
+               '(EXTRACT(DAY FROM OS.DTINC_OS) = ? AND EXTRACT(MONTH FROM OS.DTINC_OS) = ? AND EXTRACT(YEAR FROM OS.DTINC_OS) = ?)'
+            );
+            params.push(
+               parseInt(parts[0]),
+               parseInt(parts[1]),
+               parseInt(parts[2])
+            );
+         } else {
+            whereConditions.push(`CAST(OS.DTINC_OS AS VARCHAR(50)) LIKE ?`);
+            params.push(`%${searchValue}%`);
+         }
+      }
+
+      if (filterCompOs) {
+         whereConditions.push('UPPER(OS.COMP_OS) LIKE ?');
+         params.push(`%${filterCompOs.toUpperCase()}%`);
+      }
+
+      if (filterNomeCliente) {
+         whereConditions.push('UPPER(Cliente.NOME_CLIENTE) LIKE ?');
+         params.push(`%${filterNomeCliente.toUpperCase()}%`);
+      }
+
+      if (filterFaturadoOs) {
+         let faturadoValue = filterFaturadoOs.toUpperCase().trim();
+
+         // Normaliza valores comuns
+         if (faturadoValue === 'SIM' || faturadoValue === 'S') {
+            faturadoValue = 'SIM';
+         } else if (
+            faturadoValue === 'NAO' ||
+            faturadoValue === 'NÃO' ||
+            faturadoValue === 'N'
+         ) {
+            faturadoValue = 'NAO';
+         }
+
+         // Usa comparação exata para evitar problemas com CHAR
+         if (faturadoValue === 'SIM' || faturadoValue === 'NAO') {
+            whereConditions.push('TRIM(UPPER(OS.FATURADO_OS)) = ?');
+            params.push(faturadoValue);
+         } else {
+            whereConditions.push('TRIM(UPPER(OS.FATURADO_OS)) LIKE ?');
+            params.push(`%${faturadoValue}%`);
+         }
+      }
+
+      if (filterNomeRecurso) {
+         whereConditions.push('UPPER(Recurso.NOME_RECURSO) LIKE ?');
+         params.push(`%${filterNomeRecurso.toUpperCase()}%`);
+      }
+
+      if (filterValidOs) {
+         let validValue = filterValidOs.toUpperCase().trim();
+
+         // Normaliza valores comuns
+         if (validValue === 'SIM' || validValue === 'S') {
+            validValue = 'SIM';
+         } else if (
+            validValue === 'NAO' ||
+            validValue === 'NÃO' ||
+            validValue === 'N'
+         ) {
+            validValue = 'NAO';
+         }
+
+         // Usa comparação exata para evitar problemas com CHAR
+         if (validValue === 'SIM' || validValue === 'NAO') {
+            whereConditions.push('TRIM(UPPER(OS.VALID_OS)) = ?');
+            params.push(validValue);
+         } else {
+            whereConditions.push('TRIM(UPPER(OS.VALID_OS)) LIKE ?');
+            params.push(`%${validValue}%`);
+         }
+      }
+
+      if (filterNomeTarefa) {
+         whereConditions.push('UPPER(Tarefa.NOME_TAREFA) LIKE ?');
+         params.push(`%${filterNomeTarefa.toUpperCase()}%`);
+      }
+
+      if (filterNomeProjeto) {
+         whereConditions.push('UPPER(Projeto.NOME_PROJETO) LIKE ?');
+         params.push(`%${filterNomeProjeto.toUpperCase()}%`);
+      }
+
       const sql = `
          SELECT
             os.COD_OS,
@@ -198,102 +364,22 @@ export async function GET(request: Request) {
          ROWS ${startRow} TO ${endRow};
       `;
 
-      // Query para contar o total de registros (sem paginação)
       const countSql = `
          SELECT COUNT(*) as TOTAL
          FROM OS os
+         LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = os.CODREC_OS
+         LEFT JOIN CHAMADO Chamado ON Chamado.COD_CHAMADO = os.CHAMADO_OS
+         LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
+         LEFT JOIN TAREFA Tarefa ON Tarefa.COD_TAREFA = os.CODTRF_OS
+         LEFT JOIN PROJETO Projeto ON Projeto.COD_PROJETO = Tarefa.CODPRO_TAREFA
          ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
       `;
 
-      // Log para debug
-      console.log('Query SQL:', sql);
-      console.log('Parâmetros:', params);
-      console.log('Where Conditions:', whereConditions);
+      const [rawOsData, countResult] = await Promise.all([
+         firebirdQuery(sql, params),
+         firebirdQuery(countSql, params),
+      ]);
 
-      // Executa as queries com tratamento de erro individual
-      let rawOsData: any[] = [];
-      let countResult: any[] = [];
-
-      try {
-         // Tenta executar o COUNT primeiro (mais simples)
-         countResult = await firebirdQuery(countSql, params);
-         console.log('Count Result:', countResult);
-
-         // Se o count for 0, não precisa buscar os dados
-         if (countResult && countResult[0] && countResult[0].TOTAL > 0) {
-            console.log('Executando query principal...');
-            rawOsData = await firebirdQuery(sql, params);
-            console.log('Dados retornados:', rawOsData.length);
-         }
-      } catch (queryError) {
-         console.error('Erro específico na query:', queryError);
-         console.error('SQL que causou erro:', sql);
-         console.error('Params que causaram erro:', params);
-         console.error('GDS Code:', (queryError as any)?.gdscode);
-         console.error('Message:', (queryError as any)?.message);
-
-         // Retorna resposta vazia em caso de erro na query
-         return NextResponse.json(
-            {
-               data: [],
-               pagination: {
-                  currentPage: page,
-                  totalPages: 0,
-                  totalRecords: 0,
-                  recordsPerPage: limit,
-                  hasNextPage: false,
-                  hasPrevPage: false,
-               },
-               error: 'Erro ao buscar dados. Possível problema com dados corrompidos no banco.',
-            },
-            { status: 200 }
-         );
-      }
-
-      // ✅ CORREÇÃO: Validação robusta dos resultados
-      if (
-         !countResult ||
-         !Array.isArray(countResult) ||
-         countResult.length === 0
-      ) {
-         return NextResponse.json(
-            {
-               data: [],
-               pagination: {
-                  currentPage: page,
-                  totalPages: 0,
-                  totalRecords: 0,
-                  recordsPerPage: limit,
-                  hasNextPage: false,
-                  hasPrevPage: false,
-               },
-            },
-            { status: 200 }
-         );
-      }
-
-      const total = countResult[0]?.TOTAL || 0;
-      const totalPages = Math.ceil(total / limit);
-
-      // Se não houver registros, retorna array vazio
-      if (total === 0) {
-         return NextResponse.json(
-            {
-               data: [],
-               pagination: {
-                  currentPage: page,
-                  totalPages: 0,
-                  totalRecords: 0,
-                  recordsPerPage: limit,
-                  hasNextPage: false,
-                  hasPrevPage: false,
-               },
-            },
-            { status: 200 }
-         );
-      }
-
-      // Função para calcular horas - VERSÃO MAIS PERMISSIVA
       const calculateHours = (
          hrini: string | null,
          hrfim: string | null
@@ -301,15 +387,12 @@ export async function GET(request: Request) {
          if (!hrini || !hrfim) return null;
 
          try {
-            // Converte para string e remove espaços
             const strHrini = String(hrini).trim();
             const strHrfim = String(hrfim).trim();
 
             if (!strHrini || !strHrfim) return null;
 
-            // Parse dos horários no formato HHMM (ex: "0800", "1230")
             const parseTime = (timeStr: string) => {
-               // Remove qualquer caractere não numérico
                const cleanTime = timeStr
                   .replace(/[^0-9]/g, '')
                   .padStart(4, '0');
@@ -319,7 +402,6 @@ export async function GET(request: Request) {
                const hours = parseInt(cleanTime.substring(0, 2), 10);
                const minutes = parseInt(cleanTime.substring(2, 4), 10);
 
-               // Validação básica
                if (isNaN(hours) || isNaN(minutes)) return null;
                if (hours > 23 || minutes > 59) return null;
 
@@ -333,21 +415,18 @@ export async function GET(request: Request) {
 
             let diferenca = horaFim - horaInicio;
 
-            // Se a hora final for menor que a inicial, assumimos que passou para o próximo dia
             if (diferenca < 0) {
                diferenca += 24;
             }
 
-            return Math.round(diferenca * 100) / 100; // Arredonda para 2 casas decimais
+            return Math.round(diferenca * 100) / 100;
          } catch (error) {
             console.error('Erro ao calcular horas:', error, { hrini, hrfim });
             return null;
          }
       };
 
-      // ✅ CORREÇÃO: Validação de rawOsData antes do map + adiciona campos calculados
       const osData = (rawOsData || []).map((record: any) => {
-         // Adiciona os campos calculados que estavam na query anterior
          const tarefaCompleta =
             record.COD_TAREFA && record.NOME_TAREFA
                ? `${record.COD_TAREFA} - ${record.NOME_TAREFA}`
@@ -366,6 +445,9 @@ export async function GET(request: Request) {
          };
       });
 
+      const total = countResult[0].TOTAL;
+      const totalPages = Math.ceil(total / limit);
+
       return NextResponse.json(
          {
             data: osData,
@@ -382,12 +464,6 @@ export async function GET(request: Request) {
       );
    } catch (error) {
       console.error('Erro ao buscar dados da OS:', error);
-      // ✅ CORREÇÃO: Logs mais detalhados para debug
-      console.error('Detalhes do erro:', {
-         message: (error as any)?.message,
-         stack: (error as any)?.stack,
-         gdscode: (error as any)?.gdscode,
-      });
       return NextResponse.json(
          { error: 'Erro interno no servidor' },
          { status: 500 }

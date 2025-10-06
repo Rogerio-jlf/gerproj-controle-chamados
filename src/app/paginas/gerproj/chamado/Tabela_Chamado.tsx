@@ -21,7 +21,7 @@ import { IsError } from '../components/IsError';
 import { IsLoading } from '../components/IsLoading';
 import { FiltrosTabelaChamado } from './Filtros_Tabela_Chamado';
 import { DropdownTabelaChamado } from './Dropdown_Tabela_Chamado';
-import { TabelaOS } from '../components/tabelas/Tabela_OS';
+import { TabelaOS } from '../ordem-servico/Tabela_OS';
 import { ModalExcluirChamado } from './Modal_Deletar_Chamado';
 import { ModalAtribuirChamado } from './Modal_Atribuir_Chamado';
 import { colunasTabelaChamados } from './Colunas_Tabela_Chamado';
@@ -639,7 +639,7 @@ export function TabelaChamado() {
                                  {headerGroup.headers.map(header => (
                                     <th
                                        key={header.id}
-                                       className="bg-teal-800 py-6 font-extrabold tracking-wider text-white uppercase select-none"
+                                       className="bg-teal-700 py-6 font-extrabold tracking-wider text-white uppercase select-none"
                                        style={{
                                           width: getColumnWidth(
                                              header.column.id,
@@ -664,7 +664,7 @@ export function TabelaChamado() {
                                  {table.getAllColumns().map(column => (
                                     <th
                                        key={column.id}
-                                       className="bg-teal-800 px-3 pb-6"
+                                       className="bg-teal-700 px-3 pb-6"
                                        style={{
                                           width: getColumnWidth(
                                              column.id,
@@ -756,10 +756,10 @@ export function TabelaChamado() {
                               table.getRowModel().rows.map((row, rowIndex) => (
                                  <tr
                                     key={row.id}
-                                    className={`group transition-all hover:bg-amber-200 ${
+                                    className={`group border-b border-slate-500 transition-all hover:bg-amber-200 ${
                                        rowIndex % 2 === 0
-                                          ? 'bg-white/40'
-                                          : 'bg-white/40'
+                                          ? 'bg-white/10'
+                                          : 'bg-white/20'
                                     }`}
                                  >
                                     {row.getVisibleCells().map(cell => (
