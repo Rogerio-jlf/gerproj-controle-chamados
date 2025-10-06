@@ -62,13 +62,13 @@ export function ModalVisualizarChamado({
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-black p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
-                  <FaDatabase className="text-orange-300" size={60} />
+                  <FaDatabase className="text-orange-400" size={60} />
                   {/* ===== */}
                   <div className="flex flex-col">
-                     <h1 className="text-3xl font-extrabold tracking-wider text-orange-300 select-none">
+                     <h1 className="text-3xl font-extrabold tracking-wider text-orange-400 select-none">
                         Dados do Chamado
                      </h1>
-                     <p className="text-xl font-extrabold tracking-widest text-orange-300 italic select-none">
+                     <p className="text-xl font-extrabold tracking-widest text-orange-400 italic select-none">
                         Chamado #{formatCodChamado(chamado.COD_CHAMADO)}
                      </p>
                   </div>

@@ -106,14 +106,14 @@ export function ModalExcluirChamado({
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-black p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
-                  <RiDeleteBin5Fill className="text-white" size={60} />
+                  <RiDeleteBin5Fill className="text-orange-400" size={60} />
                   {/* ===== */}
                   <div className="flex flex-col">
-                     <h1 className="text-3xl font-extrabold tracking-wider text-white select-none">
+                     <h1 className="text-3xl font-extrabold tracking-wider text-orange-400 select-none">
                         Excluir Chamado
                      </h1>
 
-                     <p className="text-xl font-extrabold tracking-widest text-white italic select-none">
+                     <p className="text-xl font-extrabold tracking-widest text-orange-400 italic select-none">
                         Chamado #{formatCodChamado(codChamado)}
                      </p>
                   </div>

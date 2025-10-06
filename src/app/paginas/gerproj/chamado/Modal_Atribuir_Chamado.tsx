@@ -48,6 +48,12 @@ import { formatCodChamado } from '../../../../utils/formatters';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
 import { FcClearFilters } from 'react-icons/fc';
 import { FaEraser } from 'react-icons/fa';
+import { IoIosSearch } from 'react-icons/io';
+import { CiFilter } from 'react-icons/ci';
+import { MdRecordVoiceOver } from 'react-icons/md';
+import { FaUserTie } from 'react-icons/fa6';
+import { TbListDetails } from 'react-icons/tb';
+import { BsEraserFill } from 'react-icons/bs';
 
 // ================================================================================
 // INTERFACES E TIPOS
@@ -592,14 +598,14 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-black p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
-                  <RiDeleteBin5Fill className="text-white" size={60} />
+                  <RiDeleteBin5Fill className="text-orange-400" size={60} />
                   {/* ===== */}
                   <div className="flex flex-col">
-                     <h1 className="text-3xl font-extrabold tracking-wider text-white select-none">
+                     <h1 className="text-3xl font-extrabold tracking-wider text-orange-400 select-none">
                         Atribuir Chamado
                      </h1>
 
-                     <p className="text-xl font-extrabold tracking-widest text-white italic select-none">
+                     <p className="text-xl font-extrabold tracking-widest text-orange-400 italic select-none">
                         Chamado #{formatCodChamado(chamado.COD_CHAMADO)}
                      </p>
                   </div>
@@ -621,211 +627,218 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
             {/* ===== COLUNAS ===== */}
             <div className="flex h-full flex-1 gap-6 overflow-hidden p-6">
                {/* ===== COLUNA RECURSOS ===== */}
-               <section className="flex-[0_0_40%] overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                  {/* Cabeçalho e filtros */}
-                  <div className="flex flex-col gap-6 bg-slate-400 p-6 shadow-sm shadow-black">
-                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-6">
-                           <FaUsers className="text-black" size={40} />
-                           <h2 className="text-2xl font-extrabold tracking-wider text-black select-none">
-                              Consultores do Sistema
-                           </h2>
-                        </div>
-                        {/* ===== */}
-
-                        {/* Botão limpar filtros */}
-                        <button
-                           onClick={handleLimparFiltros}
-                           className="group cursor-pointer rounded-md bg-green-600 p-2 shadow-md shadow-black transition-all hover:-translate-y-1 hover:scale-105 hover:bg-green-800 active:scale-95"
-                        >
-                           <FaEraser
-                              size={24}
-                              className="text-white group-hover:scale-125"
-                           />
-                        </button>
-                     </div>
-                     {/* ===== */}
-
-                     {/* Filtros */}
-                     <div className="flex items-center gap-6">
-                        {/* Input busca */}
-                        <div className="group relative flex-1 transition-all hover:-translate-y-1 hover:scale-102">
-                           <FaSearch
-                              className="absolute top-1/2 left-4 -translate-y-1/2 text-slate-500"
-                              size={20}
-                           />
-                           <input
-                              type="text"
-                              placeholder={
-                                 searchTerm === '' &&
-                                 !document.activeElement?.matches(
-                                    '.input-busca-recurso'
-                                 )
-                                    ? 'Buscar recurso...'
-                                    : ''
-                              }
-                              value={searchTerm}
-                              onChange={e => setSearchTerm(e.target.value)}
-                              onFocus={e => (e.target.placeholder = '')}
-                              onBlur={e => {
-                                 if (e.target.value === '')
-                                    e.target.placeholder = 'Buscar recurso...';
-                              }}
-                              className="input-busca-recurso w-full rounded-md border-none bg-white/50 py-1.5 pl-12 text-base font-semibold tracking-wider text-black placeholder-slate-500 shadow-xs shadow-black select-none focus:ring-2 focus:outline-none"
-                           />
-                        </div>
-                        {/* ===== */}
-
-                        {/* Select filtro */}
-                        <div className="group relative w-[300px] transition-all hover:-translate-y-1 hover:scale-102">
-                           <FaFilter
-                              className="absolute top-1/2 left-4 -translate-y-1/2 text-slate-500"
-                              size={16}
-                           />
-                           <select
-                              value={filtroRecomendacao}
-                              onChange={e =>
-                                 setFiltroRecomendacao(e.target.value)
-                              }
-                              className="input-busca-recurso w-full cursor-pointer rounded-md border-none bg-white/50 py-2 pl-10 text-base font-semibold tracking-wider placeholder-slate-500 shadow-xs shadow-black select-none focus:ring-2 focus:outline-none"
-                           >
-                              <option
-                                 className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
-                                 value="TODOS"
-                              >
-                                 Todos
-                              </option>
-                              <option
-                                 className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
-                                 value="DISPONÍVEL"
-                              >
-                                 Disponível
-                              </option>
-                              <option
-                                 className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
-                                 value="MODERADO"
-                              >
-                                 Moderado
-                              </option>
-                              <option
-                                 className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
-                                 value="SOBRECARREGADO"
-                              >
-                                 Sobrecarregado
-                              </option>
-                              <option
-                                 className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
-                                 value="CRÍTICO"
-                              >
-                                 Crítico
-                              </option>
-                           </select>
-                        </div>
-                     </div>
-                  </div>
-                  {/* ===== */}
-
-                  {/* Lista de recursos */}
-                  <div className="flex h-[calc(100vh-548px)] flex-col gap-6 overflow-y-auto p-6">
-                     {recursosFiltrados.map((recurso: RecursoStats) => (
-                        <div
-                           key={recurso.COD_RECURSO}
-                           className="flex cursor-pointer flex-col gap-4 rounded-lg bg-black/10 p-5 shadow-xs shadow-black transition-all outline-none hover:-translate-y-1 hover:scale-102 active:scale-95"
-                           onClick={() =>
-                              handleSelectRecurso(recurso.COD_RECURSO)
-                           }
-                        >
+               <section className="flex-[0_0_40%] overflow-hidden rounded-xl border-[1px] border-black/20 bg-slate-50 p-6 shadow-lg shadow-black">
+                  <div className="flex flex-col gap-10">
+                     <div className="flex flex-col gap-10">
+                        {/* Header */}
+                        <div className="flex items-center justify-between">
                            <div className="flex items-center gap-4">
-                              <FaUser size={24} className={theme.primaryText} />
-                              <div className="flex w-full items-center justify-between">
-                                 <h3 className="text-lg font-bold tracking-widest text-black italic select-none">
-                                    {corrigirTextoCorrompido(
-                                       recurso.NOME_RECURSO
-                                    )}
-                                 </h3>
-                                 <div
-                                    className={`inline-flex items-center rounded-full ${getRecomendacaoColor(recurso.RECOMENDACAO)} px-6 py-1 text-sm font-semibold tracking-widest italic shadow-sm shadow-black select-none`}
-                                 >
-                                    <span>{recurso.RECOMENDACAO}</span>
-                                 </div>
+                              <div className="rounded-lg border-[1px] border-blue-700 bg-blue-600 p-2 shadow-md shadow-black">
+                                 <FaUsers className="text-white" size={24} />
                               </div>
+                              <h2 className="text-2xl font-extrabold tracking-widest text-black uppercase">
+                                 Consultores do Sistema
+                              </h2>
                            </div>
                            {/* ===== */}
 
-                           <div className="grid grid-cols-3 gap-4">
-                              {[
-                                 {
-                                    label: 'Ativos',
-                                    value: recurso.TOTAL_CHAMADOS_ATIVOS,
-                                    bg: 'bg-blue-200',
-                                 },
-                                 {
-                                    label: 'Alta Prioridade',
-                                    value: recurso.CHAMADOS_ALTA_PRIORIDADE,
-                                    bg: 'bg-yellow-200',
-                                 },
-                                 {
-                                    label: 'Críticos',
-                                    value: recurso.CHAMADOS_CRITICOS,
-                                    bg: 'bg-red-200',
-                                 },
-                              ].map((metric, idx) => (
-                                 <div
-                                    key={idx}
-                                    className={`rounded-md ${metric.bg} p-2 text-center shadow-xs shadow-black`}
+                           {/* Botão limpar filtros */}
+                           <button
+                              onClick={handleLimparFiltros}
+                              className="group cursor-pointer rounded-lg border-[1px] border-blue-700 bg-blue-600 p-2 shadow-md shadow-black transition-all hover:-translate-y-1 hover:scale-105 hover:bg-blue-800 active:scale-95"
+                           >
+                              <FaEraser
+                                 size={24}
+                                 className="text-white group-hover:scale-125"
+                              />
+                           </button>
+                        </div>
+                        {/* ===== */}
+
+                        {/* Filtros */}
+                        <div className="flex items-center gap-6">
+                           {/* Input de busca */}
+                           <div className="group relative flex-1 transition-all hover:-translate-y-1 hover:scale-102">
+                              <IoIosSearch
+                                 className="absolute top-1/2 left-4 -translate-y-1/2 text-black"
+                                 size={24}
+                              />
+                              <input
+                                 type="text"
+                                 placeholder={
+                                    searchTerm === '' &&
+                                    !document.activeElement?.matches(
+                                       '.input-busca-recurso'
+                                    )
+                                       ? 'Buscar recurso...'
+                                       : ''
+                                 }
+                                 value={searchTerm}
+                                 onChange={e => setSearchTerm(e.target.value)}
+                                 onFocus={e => (e.target.placeholder = '')}
+                                 onBlur={e => {
+                                    if (e.target.value === '')
+                                       e.target.placeholder =
+                                          'Buscar recurso...';
+                                 }}
+                                 className="input-busca-recurso w-full rounded-md border-[1px] border-black/20 bg-black/10 py-1.5 pl-12 text-base font-semibold tracking-wider text-black shadow-md shadow-black select-none placeholder:text-black placeholder:italic focus:ring-2 focus:outline-none"
+                              />
+                           </div>
+                           {/* ===== */}
+
+                           {/* Select de filtro */}
+                           <div className="group relative w-[300px] transition-all hover:-translate-y-1 hover:scale-102">
+                              <CiFilter
+                                 className="absolute top-1/2 left-4 -translate-y-1/2 text-black"
+                                 size={24}
+                              />
+                              <select
+                                 value={filtroRecomendacao}
+                                 onChange={e =>
+                                    setFiltroRecomendacao(e.target.value)
+                                 }
+                                 className="input-busca-recurso w-full cursor-pointer rounded-md border-[1px] border-black/20 bg-black/10 py-2 pl-11 text-base font-semibold tracking-wider text-black italic shadow-md shadow-black select-none focus:ring-2 focus:outline-none"
+                              >
+                                 <option
+                                    className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
+                                    value="TODOS"
                                  >
-                                    <p className="text-sm font-semibold tracking-widest text-black italic select-none">
-                                       {metric.label}
-                                    </p>
-                                    <p className="text-xl font-extrabold tracking-wider text-black italic select-none">
-                                       {metric.value}
-                                    </p>
-                                 </div>
-                              ))}
+                                    Todos
+                                 </option>
+                                 <option
+                                    className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
+                                    value="DISPONÍVEL"
+                                 >
+                                    Disponível
+                                 </option>
+                                 <option
+                                    className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
+                                    value="MODERADO"
+                                 >
+                                    Moderado
+                                 </option>
+                                 <option
+                                    className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
+                                    value="SOBRECARREGADO"
+                                 >
+                                    Sobrecarregado
+                                 </option>
+                                 <option
+                                    className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
+                                    value="CRÍTICO"
+                                 >
+                                    Crítico
+                                 </option>
+                              </select>
                            </div>
                         </div>
-                     ))}
+                        {/* ===== */}
+                     </div>
+
+                     {/* Lista de recursos */}
+                     <div className="flex h-[calc(100vh-548px)] flex-col gap-6 overflow-y-auto p-6">
+                        {recursosFiltrados.map((recurso: RecursoStats) => (
+                           <div
+                              key={recurso.COD_RECURSO}
+                              className="flex cursor-pointer flex-col gap-4 rounded-lg border-[1px] border-black bg-white p-4 shadow-md shadow-black transition-all outline-none hover:-translate-y-1 hover:scale-102 active:scale-95"
+                              onClick={() =>
+                                 handleSelectRecurso(recurso.COD_RECURSO)
+                              }
+                           >
+                              <div className="flex items-center gap-4">
+                                 <FaUser size={24} className="text-black" />
+                                 <div className="flex w-full items-center justify-between">
+                                    <h3 className="text-lg font-bold tracking-widest text-black italic select-none">
+                                       {corrigirTextoCorrompido(
+                                          recurso.NOME_RECURSO
+                                       )}
+                                    </h3>
+                                    <div
+                                       className={`inline-flex items-center rounded-full ${getRecomendacaoColor(recurso.RECOMENDACAO)} px-6 py-1 text-sm font-semibold tracking-widest italic shadow-sm shadow-black select-none`}
+                                    >
+                                       <span>{recurso.RECOMENDACAO}</span>
+                                    </div>
+                                 </div>
+                              </div>
+                              {/* ===== */}
+
+                              <div className="grid grid-cols-3 gap-4">
+                                 {[
+                                    {
+                                       label: 'Ativos',
+                                       value: recurso.TOTAL_CHAMADOS_ATIVOS,
+                                       bg: 'bg-blue-500/70',
+                                       border: 'border-[1px] border-blue-600',
+                                    },
+                                    {
+                                       label: 'Alta Prioridade',
+                                       value: recurso.CHAMADOS_ALTA_PRIORIDADE,
+                                       bg: 'bg-yellow-500/70',
+                                       border: 'border-[1px] border-yellow-600',
+                                    },
+                                    {
+                                       label: 'Críticos',
+                                       value: recurso.CHAMADOS_CRITICOS,
+                                       bg: 'bg-red-500/70',
+                                       border: 'border-[1px] border-red-600',
+                                    },
+                                 ].map((metric, idx) => (
+                                    <div
+                                       key={idx}
+                                       className={`rounded-md ${metric.bg} p-1.5 text-center shadow-md shadow-black ${metric.border}`}
+                                    >
+                                       <p
+                                          className={`text-sm font-bold tracking-widest text-black italic select-none`}
+                                       >
+                                          {metric.label}
+                                       </p>
+                                       <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
+                                          {metric.value}
+                                       </p>
+                                    </div>
+                                 ))}
+                              </div>
+                           </div>
+                        ))}
+                     </div>
                   </div>
                </section>
                {/* ==================== */}
 
                {/* ===== COLUNA DETALHES/SUGESTÃO ===== */}
-               <section className="flex-[0_0_25%] overflow-hidden rounded-xl bg-slate-400 p-6 shadow-md shadow-black">
-                  <div className="mb-6 flex items-center justify-between">
+               <section className="flex-[0_0_25%] overflow-hidden rounded-xl border-[1px] border-black/20 bg-slate-50 p-6 shadow-lg shadow-black">
+                  <div className="flex flex-col gap-10">
                      {/* Botão sugestão consultor */}
-                     <button
-                        onClick={() => setShowSugestao(!showSugestao)}
-                        className="group cursor-pointer rounded-md bg-green-600 p-2 shadow-md shadow-black transition-all hover:-translate-y-1 hover:scale-105 hover:bg-green-800 active:scale-95"
-                     >
-                        <ImTarget
-                           size={24}
-                           className="text-white group-hover:scale-125"
-                        />
-                     </button>
-                     {showSugestao && (
-                        <h3 className="text-2xl font-extrabold tracking-wider text-black select-none">
-                           Sugestão de Recurso
-                        </h3>
-                     )}
-                  </div>
-                  {/* ===== */}
+                     <div className="flex items-center gap-4">
+                        <button
+                           onClick={() => setShowSugestao(!showSugestao)}
+                           className="group cursor-pointer rounded-lg border-[1px] border-blue-700 bg-blue-600 p-2 shadow-md shadow-black transition-all hover:-translate-y-1 hover:scale-105 hover:bg-blue-800 active:scale-95"
+                        >
+                           <ImTarget
+                              size={24}
+                              className="text-white group-hover:scale-125 hover:text-white"
+                           />
+                        </button>
+                        {showSugestao && (
+                           <h3 className="text-2xl font-extrabold tracking-widest text-black uppercase select-none">
+                              Sugestão de Consultor
+                           </h3>
+                        )}
+                     </div>
+                     {/* ===== */}
 
-                  {showSugestao ? (
-                     // ===== SUGESTÕES DE RECURSO =====
-                     <div className="flex flex-col gap-8">
-                        {/* Seleção de cliente para sugestão */}
-                        <div className="flex flex-col gap-6">
+                     {/* ===== SUGESTÕES DE RECURSO ===== */}
+                     {showSugestao ? (
+                        <div className="flex flex-col gap-10">
+                           {/* Seleção de cliente para sugestão */}
                            <div className="flex flex-col gap-1">
-                              <label
-                                 className={`text-sm font-semibold tracking-wider ${theme.primaryText} select-none`}
-                              >
+                              <label className="text-lg font-extrabold tracking-widest text-black italic select-none">
                                  Cliente
                               </label>
-
-                              <div className="group relative w-full transition-all hover:-translate-y-1 hover:scale-102">
-                                 <FaFilter
-                                    className="absolute top-1/2 left-4 -translate-y-1/2 text-slate-500"
-                                    size={16}
+                              <div className="group relative flex w-full transition-all hover:-translate-y-1 hover:scale-102">
+                                 <CiFilter
+                                    className="absolute top-1/2 left-4 -translate-y-1/2 text-black"
+                                    size={24}
                                  />
 
                                  <select
@@ -836,11 +849,11 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                           codCliente: e.target.value,
                                        }))
                                     }
-                                    className="input-busca-recurso w-full cursor-pointer rounded-md border-none bg-white/50 py-2 pl-10 text-base font-semibold tracking-wider placeholder-slate-500 shadow-xs shadow-black select-none focus:ring-2 focus:outline-none"
+                                    className="input-busca-recurso w-full cursor-pointer rounded-md border-[1px] border-black/20 bg-black/10 py-2 pl-12 text-base font-semibold tracking-wider text-black italic shadow-md shadow-black select-none focus:ring-2 focus:outline-none"
                                  >
                                     <option
                                        value=""
-                                       className="cursor-pointer font-semibold tracking-wider text-black italic select-none"
+                                       className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
                                     >
                                        Selecione um cliente
                                     </option>
@@ -852,7 +865,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                           <option
                                              key={cliente.cod_cliente}
                                              value={cliente.cod_cliente}
-                                             className="cursor-pointer font-semibold tracking-wider text-black italic select-none"
+                                             className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
                                           >
                                              {corrigirTextoCorrompido(
                                                 cliente.nome_cliente
@@ -863,72 +876,253 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                  </select>
                               </div>
                            </div>
-                        </div>
+                           {/* ===== */}
 
-                        {/* Loading sugestão */}
-                        {loadingSugestao && (
-                           <LoadingSpinner text="Buscando melhor recurso..." />
-                        )}
+                           {/* Loading sugestão */}
+                           {loadingSugestao && (
+                              <LoadingSpinner text="Buscando melhor recurso..." />
+                           )}
+                           {/* ===== */}
 
-                        {/* Resultado da sugestão */}
-                        {sugestaoData?.sugestao?.recursoRecomendado && (
-                           <div
-                              className={`flex flex-col gap-4 rounded-md p-4 ${theme.sugestao} ${theme.cardShadow}`}
-                           >
-                              <div className="flex items-center gap-4">
-                                 <div
-                                    className={`rounded-xl p-2 ${theme.cardShadow} ${theme.sugestao}`}
-                                 >
-                                    <BsAwardFill
-                                       className="text-white"
-                                       size={24}
-                                    />
+                           {/* Resultado da sugestão */}
+                           {sugestaoData?.sugestao?.recursoRecomendado && (
+                              <div className="flex flex-col gap-10 rounded-xl border-[1px] border-green-700 bg-green-600/70 p-6 text-black shadow-md shadow-black">
+                                 <div className="flex items-center gap-4">
+                                    <div className="rounded-lg border-[1px] border-green-700 bg-green-600 p-2 shadow-md shadow-black">
+                                       <BsAwardFill
+                                          className="text-black"
+                                          size={24}
+                                       />
+                                    </div>
+                                    <h4 className="text-2xl font-extrabold tracking-widest text-black select-none">
+                                       Melhor Opção
+                                    </h4>
                                  </div>
-                                 <h4 className="text-xl font-extrabold tracking-wider text-white select-none">
-                                    Melhor Opção
-                                 </h4>
-                              </div>
+                                 {/* ===== */}
 
-                              <div className="flex flex-col gap-6">
-                                 <div className="flex flex-col items-center gap-3">
-                                    <p className="text-center text-lg font-bold tracking-wider text-white select-none">
-                                       {
-                                          sugestaoData.sugestao
-                                             .recursoRecomendado.NOME_RECURSO
-                                       }
-                                    </p>
-                                 </div>
-
-                                 <div
-                                    className={`rounded-md ${theme.overlayBg} p-2 ${theme.cardShadow}`}
-                                 >
-                                    <p className="text-center text-base font-semibold tracking-wider text-white uppercase italic select-none">
-                                       {
-                                          sugestaoData.sugestao
-                                             .recursoRecomendado.RECOMENDACAO
-                                       }
-                                    </p>
-                                 </div>
-
-                                 {sugestaoData.sugestao.recursoRecomendado
-                                    .VANTAGENS?.length > 0 && (
+                                 <div className="flex flex-col gap-14">
                                     <div className="flex flex-col gap-2">
-                                       <p className="text-base font-bold tracking-wider text-white select-none">
-                                          Vantagens:
+                                       <p className="text-center text-lg font-extrabold tracking-widest text-black select-none">
+                                          {
+                                             sugestaoData.sugestao
+                                                .recursoRecomendado.NOME_RECURSO
+                                          }
                                        </p>
-                                       <div className="flex flex-col gap-2">
-                                          {sugestaoData.sugestao.recursoRecomendado.VANTAGENS.map(
+
+                                       <div className="rounded-md border-[1px] border-green-700 bg-green-600 p-2 shadow-md shadow-black">
+                                          <p className="text-center text-base font-bold tracking-wider text-white uppercase italic select-none">
+                                             {
+                                                sugestaoData.sugestao
+                                                   .recursoRecomendado
+                                                   .RECOMENDACAO
+                                             }
+                                          </p>
+                                       </div>
+                                    </div>
+                                    {/* ===== */}
+
+                                    {sugestaoData.sugestao.recursoRecomendado
+                                       .VANTAGENS?.length > 0 && (
+                                       <div className="flex flex-col gap-1">
+                                          <p className="text-sm font-extrabold tracking-widest text-black uppercase italic select-none">
+                                             Vantagens:
+                                          </p>
+                                          <div className="flex flex-col gap-1">
+                                             {sugestaoData.sugestao.recursoRecomendado.VANTAGENS.map(
+                                                (
+                                                   vantagem: string,
+                                                   index: number
+                                                ) => (
+                                                   <div
+                                                      key={index}
+                                                      className="flex items-center gap-3"
+                                                   >
+                                                      <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-black"></div>
+                                                      <p className="text-sm font-bold tracking-widest text-black italic select-none">
+                                                         {vantagem}.
+                                                      </p>
+                                                   </div>
+                                                )
+                                             )}
+                                          </div>
+                                       </div>
+                                    )}
+                                 </div>
+                              </div>
+                           )}
+                        </div>
+                     ) : // ===== DETALHES DO RECURSO =====
+                     selectedRecurso ? (
+                        <div className="flex flex-col gap-6">
+                           {/* Header */}
+                           <div className="flex items-center gap-4">
+                              <div className="rounded-lg border-[1px] border-orange-700 bg-orange-600 p-2 shadow-md shadow-black">
+                                 <TbListDetails
+                                    className="text-black"
+                                    size={24}
+                                 />
+                              </div>
+                              <h3 className="text-2xl font-extrabold tracking-widest text-black uppercase select-none">
+                                 Detalhes do Recurso
+                              </h3>
+                           </div>
+
+                           {/* Conteúdo */}
+                           {loadingDetalhe ? (
+                              <LoadingSpinner text="Carregando detalhes..." />
+                           ) : errorDetalhe ? (
+                              <ErrorDisplay onRetry={() => refetchRecursos()} />
+                           ) : recursoDetalhado ? (
+                              <div className="flex flex-col gap-6">
+                                 {/* Nome e email do recurso */}
+                                 <div className="rounded-lg border-[1px] border-black/20 bg-black/10 p-4 shadow-md shadow-black">
+                                    <div className="flex items-center gap-3">
+                                       <div className="rounded-md border-[1px] border-black/20 bg-black/10 p-2 shadow-md shadow-black">
+                                          <FaUser
+                                             className="text-black"
+                                             size={24}
+                                          />
+                                       </div>
+                                       <div className="flex flex-col">
+                                          <h5 className="text-2xl font-extrabold tracking-widest text-black italic select-none">
+                                             {corrigirTextoCorrompido(
+                                                recursoDetalhado.recurso
+                                                   .NOME_RECURSO
+                                             )}
+                                          </h5>
+                                          <p className="text-xs font-semibold tracking-widest select-none">
+                                             {
+                                                recursoDetalhado.recurso
+                                                   .EMAIL_RECURSO
+                                             }
+                                          </p>
+                                       </div>
+                                    </div>
+                                 </div>
+                                 {/* ===== */}
+
+                                 {/* Resumo da carga */}
+                                 <div className="flex flex-col gap-6 rounded-lg border-[1px] border-teal-700 bg-teal-600/70 p-4 shadow-md shadow-black">
+                                    <div className="flex items-center gap-3">
+                                       <div className="rounded-md border-[1px] border-teal-700 bg-black/10 p-2 shadow-md shadow-black">
+                                          <IoBarChart
+                                             className="text-black"
+                                             size={24}
+                                          />
+                                       </div>
+                                       <h5 className="text-2xl font-extrabold tracking-widest text-black italic select-none">
+                                          Resumo da Carga
+                                       </h5>
+                                    </div>
+                                    {/* ===== */}
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                       {[
+                                          {
+                                             label: 'Chamados Ativos',
+                                             value: recursoDetalhado.resumo
+                                                .totalChamadosAtivos,
+                                             color: 'text-cyan-500',
+                                          },
+                                          {
+                                             label: 'Críticos',
+                                             value: recursoDetalhado.resumo
+                                                .chamadosCriticos,
+                                             color: 'text-red-500',
+                                          },
+                                          {
+                                             label: 'Atrasados',
+                                             value: recursoDetalhado.resumo
+                                                .chamadosAtrasados,
+                                             color: 'text-yellow-500',
+                                          },
+                                          {
+                                             label: 'Status',
+                                             value: recursoDetalhado.resumo
+                                                .statusCarga,
+                                             color:
+                                                recursoDetalhado.resumo
+                                                   .statusCarga === 'LEVE'
+                                                   ? 'text-green-500'
+                                                   : recursoDetalhado.resumo
+                                                          .statusCarga ===
+                                                       'MODERADA'
+                                                     ? 'text-yellow-500'
+                                                     : recursoDetalhado.resumo
+                                                            .statusCarga ===
+                                                         'PESADA'
+                                                       ? 'text-orange-500'
+                                                       : 'text-red-500',
+                                          },
+                                       ].map((metric, idx) => (
+                                          <div
+                                             key={idx}
+                                             className="rounded-md border-[1px] border-teal-700 bg-black/10 p-2 text-center shadow-md shadow-black"
+                                          >
+                                             <p className="text-sm font-bold tracking-widest text-black italic select-none">
+                                                {metric.label}
+                                             </p>
+                                             <p className="text-xl font-extrabold tracking-widest text-black select-none">
+                                                {metric.value}
+                                             </p>
+                                          </div>
+                                       ))}
+                                    </div>
+                                 </div>
+                                 {/* ===== */}
+
+                                 {/* Recomendação */}
+                                 <div className="flex flex-col gap-6 rounded-lg border-[1px] border-blue-700 bg-blue-600/70 p-4 shadow-md shadow-black">
+                                    <div className="flex items-center gap-3">
+                                       <div className="rounded-md border-[1px] border-blue-700 bg-black/10 p-2 shadow-md shadow-black">
+                                          <MdRecordVoiceOver
+                                             className="text-black"
+                                             size={24}
+                                          />
+                                       </div>
+                                       <h5 className="text-xl font-extrabold tracking-widest text-black italic select-none">
+                                          Recomendação
+                                       </h5>
+                                    </div>
+
+                                    <div className="flex items-center gap-3 pl-5">
+                                       <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-black"></div>
+                                       <p className="text-sm font-bold tracking-widest text-black italic select-none">
+                                          {recursoDetalhado.resumo.recomendacao}
+                                          .
+                                       </p>
+                                    </div>
+                                 </div>
+                                 {/* ===== */}
+
+                                 {/* Alertas */}
+                                 {recursoDetalhado.alertas?.length > 0 && (
+                                    <div className="flex flex-col gap-6 rounded-lg border-[1px] border-red-700 bg-red-600/70 p-4 shadow-md shadow-black">
+                                       <div className="flex items-center gap-3">
+                                          <div className="rounded-md border-[1px] border-red-700 bg-black/10 p-2 shadow-md shadow-black">
+                                             <FaExclamationTriangle
+                                                className="text-black"
+                                                size={24}
+                                             />
+                                          </div>
+                                          <h5 className="text-xl font-extrabold tracking-widest text-black italic select-none">
+                                             Alertas
+                                          </h5>
+                                       </div>
+
+                                       <div className="flex flex-col gap-1">
+                                          {recursoDetalhado.alertas.map(
                                              (
-                                                vantagem: string,
+                                                alerta: string,
                                                 index: number
                                              ) => (
                                                 <div
                                                    key={index}
-                                                   className="flex items-center gap-2"
+                                                   className="flex items-center gap-3 pl-5"
                                                 >
-                                                   <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-white"></div>
-                                                   <p className="text-sm font-semibold tracking-wider text-white italic select-none">
-                                                      {vantagem}
+                                                   <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-black"></div>
+                                                   <p className="text-sm font-bold tracking-widest text-black italic select-none">
+                                                      {alerta}.
                                                    </p>
                                                 </div>
                                              )
@@ -937,460 +1131,213 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                     </div>
                                  )}
                               </div>
-                           </div>
-                        )}
-
-                        {/* Recomendações gerais */}
-                        {sugestaoData?.recomendacoesGerais?.length > 0 && (
-                           <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-6 backdrop-blur-xl">
-                              <div className="mb-3 flex items-center space-x-3">
-                                 <div className="rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 p-2">
-                                    <BiSolidZap
-                                       className="text-white"
-                                       size={16}
-                                    />
-                                 </div>
-                                 <h4 className="font-bold text-amber-200">
-                                    Recomendações Gerais
-                                 </h4>
-                              </div>
-                              <div className="space-y-2">
-                                 {sugestaoData.recomendacoesGerais.map(
-                                    (rec: string, index: number) => (
-                                       <div
-                                          key={index}
-                                          className="flex items-start space-x-2"
-                                       >
-                                          <div className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-400"></div>
-                                          <p className="text-sm text-amber-100">
-                                             {rec}
-                                          </p>
-                                       </div>
-                                    )
-                                 )}
-                              </div>
-                           </div>
-                        )}
-                     </div>
-                  ) : selectedRecurso ? (
-                     // ===== DETALHES DO RECURSO =====
-                     <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-4">
-                           <div
-                              className={`rounded-md bg-blue-600 p-2 ${theme.cardShadow}`}
-                           >
-                              <FaUser className="text-white" size={24} />
-                           </div>
-                           <h3
-                              className={`text-xl font-extrabold tracking-wider ${theme.primaryText} select-none`}
-                           >
-                              Detalhes do Recurso
-                           </h3>
+                           ) : null}
                         </div>
-
-                        {loadingDetalhe ? (
-                           <LoadingSpinner text="Carregando detalhes..." />
-                        ) : errorDetalhe ? (
-                           <ErrorDisplay onRetry={() => refetchRecursos()} />
-                        ) : recursoDetalhado ? (
-                           <div className="space-y-6">
-                              {/* Nome e email do recurso */}
-                              <div className="flex flex-col">
-                                 <h4
-                                    className={`text-xl font-bold tracking-wider ${theme.primaryText} italic select-none`}
-                                 >
-                                    {corrigirTextoCorrompido(
-                                       recursoDetalhado.recurso.NOME_RECURSO
-                                    )}
-                                 </h4>
-                                 <p
-                                    className={`text-sm font-semibold tracking-wider ${theme.secondaryText} italic select-none`}
-                                 >
-                                    {recursoDetalhado.recurso.EMAIL_RECURSO}
+                     ) : (
+                        // ===== MENSAGEM PADRÃO =====
+                        <div className="p-6">
+                           <div className="flex flex-col items-center justify-center gap-10">
+                              <ImUsers
+                                 size={100}
+                                 className={theme.primaryText}
+                              />
+                              <div className="flex flex-col items-center gap-4">
+                                 <p className="text-2xl font-extrabold tracking-widest text-black italic select-none">
+                                    Selecione um Consultor
+                                 </p>
+                                 <p className="text-sm font-extrabold tracking-widest text-black italic select-none">
+                                    Clique em um Consultor para ver os detalhes.
                                  </p>
                               </div>
-
-                              {/* Resumo da carga */}
-                              <div
-                                 className={`space-y-4 rounded-md ${theme.cardBg} p-4 ${theme.cardShadow}`}
-                              >
-                                 <div className="flex items-center gap-3">
-                                    <IoBarChart
-                                       className={theme.primaryText}
-                                       size={24}
-                                    />
-                                    <h5
-                                       className={`text-lg font-bold tracking-wider ${theme.primaryText} select-none`}
-                                    >
-                                       Resumo da Carga
-                                    </h5>
-                                 </div>
-                                 <div className="grid grid-cols-2 gap-4">
-                                    {[
-                                       {
-                                          label: 'Chamados Ativos',
-                                          value: recursoDetalhado.resumo
-                                             .totalChamadosAtivos,
-                                          color: 'text-cyan-500',
-                                       },
-                                       {
-                                          label: 'Críticos',
-                                          value: recursoDetalhado.resumo
-                                             .chamadosCriticos,
-                                          color: 'text-red-500',
-                                       },
-                                       {
-                                          label: 'Atrasados',
-                                          value: recursoDetalhado.resumo
-                                             .chamadosAtrasados,
-                                          color: 'text-yellow-500',
-                                       },
-                                       {
-                                          label: 'Status',
-                                          value: recursoDetalhado.resumo
-                                             .statusCarga,
-                                          color:
-                                             recursoDetalhado.resumo
-                                                .statusCarga === 'LEVE'
-                                                ? 'text-green-500'
-                                                : recursoDetalhado.resumo
-                                                       .statusCarga ===
-                                                    'MODERADA'
-                                                  ? 'text-yellow-500'
-                                                  : recursoDetalhado.resumo
-                                                         .statusCarga ===
-                                                      'PESADA'
-                                                    ? 'text-orange-500'
-                                                    : 'text-red-500',
-                                       },
-                                    ].map((metric, idx) => (
-                                       <div
-                                          key={idx}
-                                          className={`rounded-md ${theme.cardShadow} ${theme.overlayBg} p-2 text-center`}
-                                       >
-                                          <p
-                                             className={`text-sm font-semibold tracking-wider ${theme.primaryText} italic select-none`}
-                                          >
-                                             {metric.label}
-                                          </p>
-                                          <p
-                                             className={`text-xl font-bold tracking-wider select-none ${metric.color}`}
-                                          >
-                                             {metric.value}
-                                          </p>
-                                       </div>
-                                    ))}
-                                 </div>
-                              </div>
-
-                              {/* Recomendação */}
-                              <div
-                                 className={`flex flex-col gap-3 rounded-md p-4 ${theme.cardShadow} ${theme.recomendacao}`}
-                              >
-                                 <div className="flex items-center gap-4">
-                                    <FaShield
-                                       className="text-white"
-                                       size={18}
-                                    />
-                                    <h5 className="text-base font-bold tracking-wider text-white select-none">
-                                       Recomendação
-                                    </h5>
-                                 </div>
-                                 <div className="flex items-center gap-2">
-                                    <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-white"></div>
-                                    <p className="text-sm font-semibold tracking-wider text-white italic select-none">
-                                       {recursoDetalhado.resumo.recomendacao}
-                                    </p>
-                                 </div>
-                              </div>
-
-                              {/* Alertas */}
-                              {recursoDetalhado.alertas?.length > 0 && (
-                                 <div
-                                    className={`flex flex-col gap-3 rounded-md p-4 ${theme.cardShadow} ${theme.alerta}`}
-                                 >
-                                    <div className="flex items-center gap-3">
-                                       <FaExclamationTriangle
-                                          className="text-white"
-                                          size={18}
-                                       />
-                                       <h5 className="text-base font-bold tracking-wider text-white select-none">
-                                          Alertas
-                                       </h5>
-                                    </div>
-                                    <div className="flex flex-col gap-3">
-                                       {recursoDetalhado.alertas.map(
-                                          (alerta: string, index: number) => (
-                                             <div
-                                                key={index}
-                                                className="flex items-center gap-2"
-                                             >
-                                                <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-white"></div>
-                                                <p className="text-sm font-semibold tracking-wider text-white italic select-none">
-                                                   {alerta}
-                                                </p>
-                                             </div>
-                                          )
-                                       )}
-                                    </div>
-                                 </div>
-                              )}
-                           </div>
-                        ) : null}
-                     </div>
-                  ) : (
-                     // ===== MENSAGEM PADRÃO =====
-                     <div className="p-6">
-                        <div className="flex flex-col items-center justify-center gap-6">
-                           <ImUsers size={80} className={theme.primaryText} />
-                           <div className="flex flex-col items-center gap-4">
-                              <p
-                                 className={`text-xl font-extrabold tracking-wider ${theme.primaryText} select-none`}
-                              >
-                                 Selecione um recurso
-                              </p>
-                              <p
-                                 className={`text-center text-sm font-semibold tracking-wider ${theme.secondaryText} italic select-none`}
-                              >
-                                 Clique em um recurso para ver os detalhes
-                              </p>
                            </div>
                         </div>
-                     </div>
-                  )}
+                     )}
+                  </div>
                </section>
                {/* ==================== */}
 
                {/* ===== COLUNA FORMULÁRIO ===== */}
-               <section
-                  className={`flex-[0_0_32.5%] overflow-y-auto rounded-xl ${theme.sectionBorder} ${theme.sectionBg} ${theme.cardShadow} p-6`}
-               >
-                  <div className="flex flex-col gap-6">
-                     {/* Cabeçalho formulário */}
+               <section className="flex-[0_0_32.5%] overflow-hidden rounded-xl border-[1px] border-black/20 bg-slate-50 p-6 shadow-lg shadow-black">
+                  <div className="flex flex-col gap-10">
+                     {/* Header do formulário */}
                      <div className="flex items-center gap-4">
-                        <div
-                           className={`rounded-md bg-blue-600 p-2 ${theme.cardShadow}`}
-                        >
+                        <div className="rounded-lg border-[1px] border-blue-700 bg-blue-600 p-2 shadow-md shadow-black">
                            <BsFillSendFill className="text-white" size={24} />
                         </div>
-                        <p
-                           className={`text-xl font-extrabold tracking-wider ${theme.primaryText} select-none`}
-                        >
+                        <p className="text-2xl font-extrabold tracking-widest text-black uppercase select-none">
                            Formulário de Atribuição
                         </p>
                      </div>
+                     {/* ===== */}
 
-                     {/* Alerta sucesso formulário */}
-                     {success && (
-                        <div
-                           className={`mb-4 rounded-lg ${theme.successBorder} ${theme.successBg} p-4`}
-                        >
-                           <div className="flex items-center gap-3">
-                              <FaCheckCircle
-                                 className="text-green-400"
-                                 size={20}
-                              />
-                              <p className={theme.successText}>
-                                 Chamado atribuído com sucesso!
-                              </p>
-                           </div>
-                        </div>
-                     )}
-                     {/* Alerta erro formulário */}
-                     {errors.root && (
-                        <div
-                           className={`mb-4 rounded-lg ${theme.errorBorder} ${theme.errorBg} p-4`}
-                        >
-                           <div className="flex items-center gap-3">
-                              <FaExclamationTriangle
-                                 className="text-red-400"
-                                 size={20}
-                              />
-                              <p className={theme.errorText}>{errors.root}</p>
-                           </div>
-                        </div>
-                     )}
-
-                     {/* Formulário */}
-                     <div className="flex flex-col gap-6">
+                     {/* ===== FORMULÁRIO ===== */}
+                     <div className="flex flex-col gap-10">
                         {/* Recurso selecionado */}
-                        <div
-                           className={`flex flex-col gap-3 rounded-md ${theme.overlayBg} p-4 ${theme.cardShadow}`}
-                        >
-                           <label
-                              className={`text-lg font-extrabold tracking-wider ${theme.primaryText} select-none`}
-                           >
-                              Recurso Selecionado
+                        <div className="flex flex-col gap-1">
+                           <label className="text-lg font-extrabold tracking-widest text-black italic select-none">
+                              Consultor Selecionado
                            </label>
-                           {selectedRecurso ? (
-                              <div className="flex items-center gap-3">
-                                 <FaUser
-                                    size={16}
-                                    className={theme.accentText}
-                                 />
-                                 <span
-                                    className={`text-lg font-bold tracking-wider ${theme.accentText} italic select-none`}
-                                 >
-                                    {corrigirTextoCorrompido(
-                                       recursosFiltrados.find(
-                                          (r: RecursoStats) =>
-                                             r.COD_RECURSO === selectedRecurso
-                                       )?.NOME_RECURSO || 'Recurso selecionado'
-                                    )}
-                                 </span>
-                              </div>
-                           ) : (
-                              <div className="flex items-center gap-2">
-                                 <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-gray-600"></div>
-                                 <p
-                                    className={`text-sm font-semibold tracking-wider ${theme.primaryText} italic select-none`}
-                                 >
-                                    Selecione um recurso na lista à esquerda.
-                                 </p>
-                              </div>
-                           )}
+                           <div className="flex flex-col rounded-md border-[1px] border-black/20 bg-black/10 p-4 shadow-md shadow-black">
+                              {selectedRecurso ? (
+                                 <div className="flex items-center gap-3">
+                                    <FaUser size={24} className="text-black" />
+                                    <span className="text-xl font-extrabold tracking-widest text-black select-none">
+                                       {corrigirTextoCorrompido(
+                                          recursosFiltrados.find(
+                                             (r: RecursoStats) =>
+                                                r.COD_RECURSO ===
+                                                selectedRecurso
+                                          )?.NOME_RECURSO ||
+                                             'Recurso selecionado'
+                                       )}
+                                    </span>
+                                 </div>
+                              ) : (
+                                 <div className="flex items-center gap-3">
+                                    <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-black"></div>
+                                    <p className="text-sm font-extrabold tracking-widest text-black select-none">
+                                       Selecione um Consultor na lista de
+                                       consultores do sistema.
+                                    </p>
+                                 </div>
+                              )}
+                           </div>
                         </div>
+                        {/* ===== */}
 
                         {/* Select cliente formulário */}
                         <div className="flex flex-col gap-1">
-                           <label
-                              className={`text-sm font-semibold tracking-wider ${theme.primaryText} select-none`}
-                           >
+                           <label className="text-lg font-extrabold tracking-widest text-black italic select-none">
                               Cliente
                            </label>
-                           <select
-                              value={formData.cliente}
-                              onChange={e =>
-                                 handleInputChange('cliente', e.target.value)
-                              }
-                              className={`w-full cursor-pointer rounded-md ${theme.inputBg} px-4 py-2 text-base font-semibold tracking-wider ${theme.primaryText} ${theme.cardShadow} transition-all select-none hover:-translate-y-1 hover:scale-102 ${theme.focus} focus:ring-2 focus:outline-none`}
-                           >
-                              <option
-                                 value=""
-                                 className="cursor-pointer font-semibold tracking-wider text-black italic select-none"
-                              >
-                                 Selecione um cliente
-                              </option>
-                              {clientes.map(
-                                 (cliente: {
-                                    cod_cliente: number;
-                                    nome_cliente: string;
-                                 }) => (
-                                    <option
-                                       key={cliente.cod_cliente}
-                                       value={cliente.cod_cliente}
-                                       className="cursor-pointer font-semibold tracking-wider text-black italic select-none"
-                                    >
-                                       {corrigirTextoCorrompido(
-                                          cliente.nome_cliente
-                                       )}
-                                    </option>
-                                 )
-                              )}
-                           </select>
-                        </div>
-
-                        {/* Notificações por email */}
-                        <div
-                           className={`flex flex-col gap-4 rounded-md ${theme.overlayBg} p-4 ${theme.cardShadow}`}
-                        >
-                           <div className="flex items-center gap-3">
-                              <MdEmail
-                                 className={theme.primaryText}
+                           <div className="group relative flex w-full transition-all hover:-translate-y-1 hover:scale-102">
+                              <CiFilter
+                                 className="absolute top-1/2 left-4 -translate-y-1/2 text-black"
                                  size={24}
                               />
-                              <h4
-                                 className={`text-lg font-bold tracking-wider ${theme.primaryText} select-none`}
+
+                              <select
+                                 value={formData.cliente}
+                                 onChange={e =>
+                                    handleInputChange('cliente', e.target.value)
+                                 }
+                                 className="input-busca-recurso w-full cursor-pointer rounded-md border-[1px] border-black/20 bg-black/10 py-2 pl-12 text-base font-semibold tracking-wider text-black italic shadow-md shadow-black select-none focus:ring-2 focus:outline-none"
                               >
-                                 Notificações por Email
-                              </h4>
+                                 <option
+                                    value=""
+                                    className="cursor-pointer font-semibold tracking-wider text-black italic select-none"
+                                 >
+                                    Selecione um cliente
+                                 </option>
+                                 {clientes.map(
+                                    (cliente: {
+                                       cod_cliente: number;
+                                       nome_cliente: string;
+                                    }) => (
+                                       <option
+                                          key={cliente.cod_cliente}
+                                          value={cliente.cod_cliente}
+                                          className="cursor-pointer font-semibold tracking-wider text-black italic select-none"
+                                       >
+                                          {corrigirTextoCorrompido(
+                                             cliente.nome_cliente
+                                          )}
+                                       </option>
+                                    )
+                                 )}
+                              </select>
                            </div>
-                           <div className="flex flex-col gap-2 px-6">
-                              <label className="flex items-start gap-3">
-                                 <input
-                                    type="checkbox"
-                                    checked={formData.enviarEmailCliente}
-                                    onChange={e =>
-                                       handleInputChange(
-                                          'enviarEmailCliente',
-                                          e.target.checked
-                                       )
-                                    }
-                                    className="mt-1 h-4 w-4 cursor-pointer rounded border-slate-700 bg-white text-blue-600"
-                                 />
-                                 <div>
-                                    <span
-                                       className={`cursor-pointer text-base font-semibold tracking-wider ${theme.primaryText} select-none`}
-                                    >
-                                       Enviar email para o cliente
-                                    </span>
-                                    <p
-                                       className={`text-sm font-semibold tracking-wider ${theme.secondaryText} italic select-none`}
-                                    >
-                                       O cliente receberá uma notificação sobre
-                                       a atribuição.
-                                    </p>
-                                 </div>
-                              </label>
-
-                              <label className="flex cursor-pointer items-start space-x-3">
-                                 <input
-                                    type="checkbox"
-                                    checked={formData.enviarEmailRecurso}
-                                    onChange={e =>
-                                       handleInputChange(
-                                          'enviarEmailRecurso',
-                                          e.target.checked
-                                       )
-                                    }
-                                    className="mt-1 h-4 w-4 cursor-pointer rounded border-slate-700 bg-white text-blue-600"
-                                 />
-                                 <div>
-                                    <span
-                                       className={`cursor-pointer text-base font-semibold tracking-wider ${theme.primaryText} select-none`}
-                                    >
-                                       Enviar email para o recurso
-                                    </span>
-                                    <p
-                                       className={`text-sm font-semibold tracking-wider ${theme.secondaryText} italic select-none`}
-                                    >
-                                       O recurso receberá uma notificação sobre
-                                       o chamado.
-                                    </p>
-                                 </div>
-                              </label>
-                           </div>
-                           {errors.root && (
-                              <div className="flex items-center gap-2">
-                                 <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-red-400"></div>
-                                 <p className="text-sm font-semibold tracking-wider text-red-400 italic select-none">
-                                    {errors.root}
-                                 </p>
-                              </div>
-                           )}
                         </div>
+                        {/* ===== */}
 
-                        {/* Botões formulário */}
-                        <div
-                           className={`flex items-center justify-end gap-6 border-t-4 ${theme.sectionBorder} pt-6`}
-                        >
+                        {/* Notificações por email */}
+                        <div className="flex flex-col gap-1">
+                           <label className="text-lg font-extrabold tracking-widest text-black italic select-none">
+                              Notificações por Email
+                           </label>
+                           <div className="flex flex-col gap-6 rounded-md border-[1px] border-black/20 bg-black/10 p-4 shadow-md shadow-black">
+                              <div className="flex flex-col gap-4">
+                                 {/* Input enviar email cliente */}
+                                 <label className="flex items-start gap-4">
+                                    <input
+                                       type="checkbox"
+                                       checked={formData.enviarEmailCliente}
+                                       onChange={e =>
+                                          handleInputChange(
+                                             'enviarEmailCliente',
+                                             e.target.checked
+                                          )
+                                       }
+                                       className="mt-1 h-4 w-4 cursor-pointer bg-white text-blue-600 shadow-sm shadow-black"
+                                    />
+                                    <div>
+                                       <span className="cursor-pointer text-base font-semibold tracking-widest text-black italic select-none">
+                                          Enviar email para o Cliente.
+                                       </span>
+                                       <p className="text-sm font-semibold tracking-wider text-slate-500 select-none">
+                                          O Cliente receberá uma notificação
+                                          sobre a atribuição.
+                                       </p>
+                                    </div>
+                                 </label>
+                                 {/*  */}
+
+                                 {/* Input enviar email consultor */}
+                                 <label className="flex items-start gap-4">
+                                    <input
+                                       type="checkbox"
+                                       checked={formData.enviarEmailRecurso}
+                                       onChange={e =>
+                                          handleInputChange(
+                                             'enviarEmailRecurso',
+                                             e.target.checked
+                                          )
+                                       }
+                                       className="mt-1 h-4 w-4 cursor-pointer bg-white text-blue-600 shadow-sm shadow-black"
+                                    />
+                                    <div>
+                                       <span className="cursor-pointer text-base font-semibold tracking-widest text-black italic select-none">
+                                          Enviar email para o Consultor.
+                                       </span>
+                                       <p className="text-sm font-semibold tracking-wider text-slate-500 select-none">
+                                          O Consultor receberá uma notificação
+                                          sobre a atribuição.
+                                       </p>
+                                    </div>
+                                 </label>
+                              </div>
+                              {/* ===== */}
+                           </div>
+                           {/* ===== */}
+                        </div>
+                        {/* ===== */}
+
+                        {/* ===== FOOTER ===== */}
+                        <footer className="flex items-center justify-end gap-8">
+                           {/* Botão limpar formulário */}
                            <button
                               onClick={handleLimparFormulario}
                               disabled={atribuirMutation.isPending}
-                              className="cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="flex cursor-pointer items-center gap-2 rounded-md border-[1px] border-red-600 bg-red-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-110 hover:border-none hover:bg-red-900 active:scale-95"
                            >
+                              <BsEraserFill
+                                 className="mr-2 inline-block"
+                                 size={20}
+                              />
                               Limpar
                            </button>
+                           {/* ===== */}
 
+                           {/* Botão submit */}
                            <button
                               onClick={handleAtribuir}
                               disabled={
                                  !isFormValid() || atribuirMutation.isPending
                               }
-                              className={`cursor-pointer rounded-xl border-none bg-blue-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black select-none ${
+                              className={`cursor-pointer rounded-md border-[1px] border-blue-600 bg-blue-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black ${
                                  atribuirMutation.isPending || !isFormValid()
                                     ? 'disabled:cursor-not-allowed disabled:opacity-50'
-                                    : 'transition-all hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black active:scale-95'
+                                    : 'transition-all hover:scale-110 hover:border-none hover:bg-blue-900 active:scale-95'
                               }`}
                            >
                               {atribuirMutation.isPending ? (
@@ -1399,7 +1346,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                     <span>Salvando...</span>
                                  </div>
                               ) : (
-                                 <div className="flex items-center gap-1">
+                                 <div className="flex items-center gap-2">
                                     <IoIosSave
                                        className="mr-2 inline-block"
                                        size={20}
@@ -1408,34 +1355,12 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                  </div>
                               )}
                            </button>
-                        </div>
-
-                        {/* Informações importantes */}
-                        <div
-                           className={`flex flex-col gap-3 rounded-md ${theme.warningBg} p-4 ${theme.cardShadow}`}
-                        >
-                           <h5
-                              className={`text-lg font-semibold tracking-wider text-black select-none`}
-                           >
-                              Informações importantes:
-                           </h5>
-                           <ul
-                              className={`pl-4 text-sm font-semibold tracking-wider ${theme.warningText} italic select-none`}
-                           >
-                              <li className="flex items-start gap-2">
-                                 <span className={theme.warningText}>•</span>
-                                 Selecione um recurso da lista para continuar
-                              </li>
-                              <li className="flex items-start gap-2">
-                                 <span className={theme.warningText}>•</span>
-                                 Pelo menos uma opção de email deve ser
-                                 selecionada
-                              </li>
-                           </ul>
-                        </div>
+                        </footer>
+                        {/* ===== */}
                      </div>
                   </div>
                </section>
+               {/* ==================== */}
             </div>
          </div>
       </div>
