@@ -11,12 +11,13 @@ import {
    getCoreRowModel,
    getSortedRowModel,
 } from '@tanstack/react-table';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Components
 import {
-   FilterInputTableHeaderDebounce,
+   FiltrosHeaderTabelaOs,
    FilterControls,
-} from '../components/TableFilters';
+} from './Filtros_Header_Tabela_OS';
 import { IsError } from '../components/IsError';
 import { IsLoading } from '../components/IsLoading';
 import Filtros from './Filtros_Completo';
@@ -35,6 +36,7 @@ import { FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { IoClose } from 'react-icons/io5';
+import { FilterNotFoundMessage, NoPeriodDataMessage } from './FilterMessages';
 
 // ================================================================================
 // TIPOS E INTERFACES
@@ -64,8 +66,8 @@ interface Props {
 function getColumnWidth(columnId: string, userType?: string): string {
    if (userType === 'ADM') {
       const widthMapAdmin: Record<string, string> = {
-         CHAMADO_OS: '4%',
-         COD_OS: '4%',
+         CHAMADO_OS: '5%',
+         COD_OS: '5%',
          DTINI_OS: '6%',
          HRINI_OS: '4%',
          HRFIM_OS: '4%',
@@ -76,8 +78,8 @@ function getColumnWidth(columnId: string, userType?: string): string {
          FATURADO_OS: '4%',
          NOME_RECURSO: '11%',
          VALID_OS: '4%',
-         TAREFA_COMPLETA: '16%',
-         PROJETO_COMPLETO: '16%',
+         TAREFA_COMPLETA: '15%',
+         PROJETO_COMPLETO: '15%',
       };
       return widthMapAdmin[columnId] || 'auto';
    }
@@ -99,7 +101,7 @@ function getColumnWidth(columnId: string, userType?: string): string {
    return widthMap[columnId] || 'auto';
 }
 
-function useDebouncedValue<T>(value: T, delay: number = 500): T {
+function useDebouncedValue<T>(value: T, delay: number = 800): T {
    const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
    useEffect(() => {
@@ -121,6 +123,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
    // HOOKS E CONTEXTOS
    // ================================================================================
    const { user } = useAuth();
+   const queryClient = useQueryClient();
    const { filters, setFilters } = useFiltersTabelaOs();
    const { ano, mes, dia } = filters;
    const token =
@@ -138,21 +141,29 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
    const [inputFilterFaturadoOs, setInputFilterFaturadoOs] = useState('');
    const [inputFilterNomeRecurso, setInputFilterNomeRecurso] = useState('');
    const [inputFilterValidOs, setInputFilterValidOs] = useState('');
-   const [inputFilterNomeTarefa, setInputFilterNomeTarefa] = useState('');
-   const [inputFilterNomeProjeto, setInputFilterNomeProjeto] = useState('');
+   const [inputFilterTarefaCompleta, setInputFilterTarefaCompleta] =
+      useState('');
+   const [inputFilterProjetoCompleto, setInputFilterProjetoCompleto] =
+      useState('');
 
    // ESTADOS - FILTROS (COM DEBOUNCE)
-   const filterChamadoOs = useDebouncedValue(inputFilterChamadoOs, 500);
-   const filterCodOs = useDebouncedValue(inputFilterCodOs, 500);
-   const filterDtiniOs = useDebouncedValue(inputFilterDtiniOs, 500);
-   const filterDtincOs = useDebouncedValue(inputFilterDtincOs, 500);
-   const filterCompOs = useDebouncedValue(inputFilterCompOs, 500);
-   const filterNomeCliente = useDebouncedValue(inputFilterNomeCliente, 500);
-   const filterFaturadoOs = useDebouncedValue(inputFilterFaturadoOs, 500);
-   const filterNomeRecurso = useDebouncedValue(inputFilterNomeRecurso, 500);
-   const filterValidOs = useDebouncedValue(inputFilterValidOs, 500);
-   const filterNomeTarefa = useDebouncedValue(inputFilterNomeTarefa, 500);
-   const filterNomeProjeto = useDebouncedValue(inputFilterNomeProjeto, 500);
+   const filterChamadoOs = useDebouncedValue(inputFilterChamadoOs, 800);
+   const filterCodOs = useDebouncedValue(inputFilterCodOs, 800);
+   const filterDtiniOs = useDebouncedValue(inputFilterDtiniOs, 800);
+   const filterDtincOs = useDebouncedValue(inputFilterDtincOs, 800);
+   const filterCompOs = useDebouncedValue(inputFilterCompOs, 800);
+   const filterNomeCliente = useDebouncedValue(inputFilterNomeCliente, 800);
+   const filterFaturadoOs = useDebouncedValue(inputFilterFaturadoOs, 800);
+   const filterNomeRecurso = useDebouncedValue(inputFilterNomeRecurso, 800);
+   const filterValidOs = useDebouncedValue(inputFilterValidOs, 800);
+   const filterTarefaCompleta = useDebouncedValue(
+      inputFilterTarefaCompleta,
+      800
+   );
+   const filterProjetoCompleto = useDebouncedValue(
+      inputFilterProjetoCompleto,
+      800
+   );
 
    // ================================================================================
    // ESTADOS - PAGINAÇÃO
@@ -182,8 +193,8 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
       if (filterFaturadoOs && filterFaturadoOs.trim()) count += 1;
       if (filterNomeRecurso && filterNomeRecurso.trim()) count += 1;
       if (filterValidOs && filterValidOs.trim()) count += 1;
-      if (filterNomeTarefa && filterNomeTarefa.trim()) count += 1;
-      if (filterNomeProjeto && filterNomeProjeto.trim()) count += 1;
+      if (filterTarefaCompleta && filterTarefaCompleta.trim()) count += 1;
+      if (filterProjetoCompleto && filterProjetoCompleto.trim()) count += 1;
       return count;
    }, [
       filterChamadoOs,
@@ -195,8 +206,8 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
       filterFaturadoOs,
       filterNomeRecurso,
       filterValidOs,
-      filterNomeTarefa,
-      filterNomeProjeto,
+      filterTarefaCompleta,
+      filterProjetoCompleto,
    ]);
 
    // ================================================================================
@@ -215,7 +226,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
       });
 
       if (filterChamadoOs && filterChamadoOs.trim()) {
-         params.append('filter_COD_CHAMADO', filterChamadoOs.trim());
+         params.append('filter_CHAMADO_OS', filterChamadoOs.trim());
       }
       if (filterCodOs && filterCodOs.trim()) {
          params.append('filter_COD_OS', filterCodOs.trim());
@@ -241,11 +252,11 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
       if (filterValidOs && filterValidOs.trim()) {
          params.append('filter_VALID_OS', filterValidOs.trim());
       }
-      if (filterNomeTarefa && filterNomeTarefa.trim()) {
-         params.append('filter_NOME_TAREFA', filterNomeTarefa.trim());
+      if (filterTarefaCompleta && filterTarefaCompleta.trim()) {
+         params.append('filter_NOME_TAREFA', filterTarefaCompleta.trim());
       }
-      if (filterNomeProjeto && filterNomeProjeto.trim()) {
-         params.append('filter_NOME_PROJETO', filterNomeProjeto.trim());
+      if (filterProjetoCompleto && filterProjetoCompleto.trim()) {
+         params.append('filter_NOME_PROJETO', filterProjetoCompleto.trim());
       }
 
       return params;
@@ -265,8 +276,8 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
       filterFaturadoOs,
       filterNomeRecurso,
       filterValidOs,
-      filterNomeTarefa,
-      filterNomeProjeto,
+      filterTarefaCompleta,
+      filterProjetoCompleto,
    ]);
 
    async function fetchOS(
@@ -331,8 +342,8 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
       filterFaturadoOs,
       filterNomeRecurso,
       filterValidOs,
-      filterNomeTarefa,
-      filterNomeProjeto,
+      filterTarefaCompleta,
+      filterProjetoCompleto,
    ]);
 
    // ================================================================================
@@ -340,6 +351,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
    // ================================================================================
    const clearFilters = useCallback(() => {
       setInputFilterChamadoOs('');
+      setInputFilterCodOs('');
       setInputFilterDtiniOs('');
       setInputFilterDtincOs('');
       setInputFilterCompOs('');
@@ -347,8 +359,8 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
       setInputFilterFaturadoOs('');
       setInputFilterNomeRecurso('');
       setInputFilterValidOs('');
-      setInputFilterNomeTarefa('');
-      setInputFilterNomeProjeto('');
+      setInputFilterTarefaCompleta('');
+      setInputFilterProjetoCompleto('');
       setCurrentPage(1);
    }, []);
 
@@ -377,11 +389,47 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
       setPageSize(newSize);
       setCurrentPage(1);
    }, []);
+   // ================================================================================
+
+   const handleUpdateField = useCallback(
+      async (codOs: number, field: string, value: any) => {
+         if (!token) {
+            throw new Error('Token não disponível');
+         }
+
+         const response = await fetch('/api/OS/update', {
+            method: 'PATCH',
+            headers: {
+               Authorization: `Bearer ${token}`,
+               'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+               codOs,
+               field,
+               value,
+            }),
+         });
+
+         if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Erro ao atualizar campo');
+         }
+
+         // Invalida o cache para recarregar os dados
+         queryClient.invalidateQueries({ queryKey: ['osData'] });
+
+         return response.json();
+      },
+      [token, queryClient]
+   );
 
    // ================================================================================
    // CONFIGURAÇÃO DA TABELA
    // ================================================================================
-   const colunas = useMemo(() => colunasTabelaOS(), []);
+   const colunas = useMemo(
+      () => colunasTabelaOS({ handleUpdateField }),
+      [handleUpdateField]
+   );
 
    const table = useReactTable({
       data: data ?? [],
@@ -497,8 +545,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                   </div>
                </div>
             </header>
-
-            {/* TABELA */}
+            {/* ===== TABELA ===== */}
             <main className="h-full w-full overflow-hidden bg-black">
                <div
                   className="h-full overflow-y-auto"
@@ -546,7 +593,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                                     }}
                                  >
                                     {column.id === 'CHAMADO_OS' && (
-                                       <FilterInputTableHeaderDebounce
+                                       <FiltrosHeaderTabelaOs
                                           value={inputFilterChamadoOs}
                                           onChange={value =>
                                              setInputFilterChamadoOs(
@@ -557,7 +604,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                                     )}
                                     {/* ===== */}
                                     {column.id === 'COD_OS' && (
-                                       <FilterInputTableHeaderDebounce
+                                       <FiltrosHeaderTabelaOs
                                           value={inputFilterCodOs}
                                           onChange={value =>
                                              setInputFilterCodOs(String(value))
@@ -566,7 +613,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                                     )}
                                     {/* ===== */}
                                     {column.id === 'DTINI_OS' && (
-                                       <FilterInputTableHeaderDebounce
+                                       <FiltrosHeaderTabelaOs
                                           value={inputFilterDtiniOs}
                                           onChange={value =>
                                              setInputFilterDtiniOs(
@@ -578,7 +625,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                                     )}
                                     {/* ===== */}
                                     {column.id === 'DTINC_OS' && (
-                                       <FilterInputTableHeaderDebounce
+                                       <FiltrosHeaderTabelaOs
                                           value={inputFilterDtincOs}
                                           onChange={value =>
                                              setInputFilterDtincOs(
@@ -590,7 +637,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                                     )}
                                     {/* ===== */}
                                     {column.id === 'COMP_OS' && (
-                                       <FilterInputTableHeaderDebounce
+                                       <FiltrosHeaderTabelaOs
                                           value={inputFilterCompOs}
                                           onChange={value =>
                                              setInputFilterCompOs(String(value))
@@ -599,7 +646,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                                     )}
                                     {/* ===== */}
                                     {column.id === 'NOME_CLIENTE' && (
-                                       <FilterInputTableHeaderDebounce
+                                       <FiltrosHeaderTabelaOs
                                           value={inputFilterNomeCliente}
                                           onChange={value =>
                                              setInputFilterNomeCliente(
@@ -610,7 +657,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                                     )}
                                     {/* ===== */}
                                     {column.id === 'FATURADO_OS' && (
-                                       <FilterInputTableHeaderDebounce
+                                       <FiltrosHeaderTabelaOs
                                           value={inputFilterFaturadoOs}
                                           onChange={value =>
                                              setInputFilterFaturadoOs(
@@ -621,7 +668,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                                     )}
                                     {/* ===== */}
                                     {column.id === 'NOME_RECURSO' && (
-                                       <FilterInputTableHeaderDebounce
+                                       <FiltrosHeaderTabelaOs
                                           value={inputFilterNomeRecurso}
                                           onChange={value =>
                                              setInputFilterNomeRecurso(
@@ -632,7 +679,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                                     )}
                                     {/* ===== */}
                                     {column.id === 'VALID_OS' && (
-                                       <FilterInputTableHeaderDebounce
+                                       <FiltrosHeaderTabelaOs
                                           value={inputFilterValidOs}
                                           onChange={value =>
                                              setInputFilterValidOs(
@@ -643,10 +690,10 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                                     )}
                                     {/* ===== */}
                                     {column.id === 'TAREFA_COMPLETA' && (
-                                       <FilterInputTableHeaderDebounce
-                                          value={inputFilterNomeTarefa}
+                                       <FiltrosHeaderTabelaOs
+                                          value={inputFilterTarefaCompleta}
                                           onChange={value =>
-                                             setInputFilterNomeTarefa(
+                                             setInputFilterTarefaCompleta(
                                                 String(value)
                                              )
                                           }
@@ -654,10 +701,10 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                                     )}
                                     {/* ===== */}
                                     {column.id === 'PROJETO_COMPLETO' && (
-                                       <FilterInputTableHeaderDebounce
-                                          value={inputFilterNomeProjeto}
+                                       <FiltrosHeaderTabelaOs
+                                          value={inputFilterProjetoCompleto}
                                           onChange={value =>
-                                             setInputFilterNomeProjeto(
+                                             setInputFilterProjetoCompleto(
                                                 String(value)
                                              )
                                           }
@@ -680,7 +727,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                                  className={`group border-b border-slate-500 transition-all hover:bg-amber-200 ${
                                     rowIndex % 2 === 0
                                        ? 'bg-white/10'
-                                       : 'bg-white/20'
+                                       : 'bg-white/10'
                                  }`}
                               >
                                  {row.getVisibleCells().map(cell => (
@@ -708,7 +755,6 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                   </table>
                </div>
             </main>
-
             {/* PAGINAÇÃO DA API */}
             {paginationInfo && paginationInfo.totalRecords > 0 && (
                <div className="bg-white/70 px-12 py-4">
@@ -837,53 +883,37 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                   </div>
                </div>
             )}
-
-            {/* MENSAGEM QUANDO NÃO HÁ OS */}
+            {/* MENSAGEM QUANDO NÃO HÁ OS NO PERÍODO (sem filtros de tabela) */}
             {(!paginationInfo || paginationInfo.totalRecords === 0) &&
-               !isLoading && (
-                  <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-20 text-center">
-                     <FaExclamationTriangle
-                        className="mx-auto text-yellow-500"
-                        size={80}
-                     />
-                     <h3 className="text-2xl font-bold tracking-wider text-white select-none">
-                        Nenhuma OS foi encontrada para o Período{' '}
-                        {dia !== 'todos' &&
-                           `${dia.toString().padStart(2, '0')}/`}
-                        {mes !== 'todos' &&
-                           `${mes.toString().padStart(2, '0')}/`}
-                        {ano !== 'todos' && ano}.
-                     </h3>
-                  </div>
+               !isLoading &&
+               totalActiveFilters === 0 && (
+                  <NoPeriodDataMessage ano={ano} mes={mes} dia={dia} />
                )}
-
-            {/* MENSAGEM QUANDO OS FILTROS NÃO RETORNAM RESULTADOS */}
+            {/* MENSAGEM QUANDO OS FILTROS DA TABELA NÃO RETORNAM RESULTADOS */}
             {paginationInfo &&
-               paginationInfo.totalRecords > 0 &&
-               table.getFilteredRowModel().rows.length === 0 && (
-                  <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-20 text-center">
-                     <FaFilterCircleXmark
-                        className="mx-auto text-red-600"
-                        size={80}
-                     />
-                     <h3 className="text-2xl font-bold tracking-wider text-white select-none">
-                        Nenhum Registro encontrado para os Filtros aplicados.
-                     </h3>
-                     <p className="text-base font-semibold tracking-wider text-white italic select-none">
-                        Tente ajustar os Filtros ou limpe-os para visualizar
-                        Registros.
-                     </p>
-                     {totalActiveFilters > 0 && (
-                        <button
-                           onClick={clearFilters}
-                           className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-black transition-all select-none hover:-translate-y-1 hover:scale-102 hover:bg-red-800 active:scale-95"
-                        >
-                           <BsEraserFill className="text-white" size={24} />
-                           Limpar Filtros
-                        </button>
-                     )}
-                  </div>
-               )}
+               paginationInfo.totalRecords === 0 &&
+               !isLoading &&
+               totalActiveFilters > 0 && (
+                  <FilterNotFoundMessage
+                     filters={{
+                        filterChamadoOs,
+                        filterCodOs,
+                        filterDtiniOs,
+                        filterDtincOs,
+                        filterCompOs,
+                        filterNomeCliente,
+                        filterFaturadoOs,
+                        filterNomeRecurso,
+                        filterValidOs,
+                        filterTarefaCompleta,
+                        filterProjetoCompleto,
+                     }}
+                     clearFilters={clearFilters}
+                     ano={ano}
+                     mes={mes}
+                     dia={dia}
+                  />
+               )}{' '}
          </div>
       </div>
    );

@@ -153,13 +153,17 @@ export async function GET(request: Request) {
 
       // ===== FILTROS DE COLUNA ROBUSTOS =====
       if (filterChamadoOs) {
+         // Remove pontos e outros caracteres não numéricos para facilitar a busca
+         const cleanChamado = filterChamadoOs.replace(/[^\w\s]/g, '');
          whereConditions.push('UPPER(OS.CHAMADO_OS) LIKE ?');
-         params.push(`%${filterChamadoOs.toUpperCase()}%`);
+         params.push(`%${cleanChamado.toUpperCase()}%`);
       }
 
       if (filterCodOs) {
+         // Remove pontos e outros caracteres não numéricos para facilitar a busca
+         const cleanCodOs = filterCodOs.replace(/[^\d]/g, '');
          whereConditions.push('CAST(OS.COD_OS AS VARCHAR(20)) LIKE ?');
-         params.push(`%${filterCodOs}%`);
+         params.push(`%${cleanCodOs}%`);
       }
 
       if (filterDtiniOs) {
@@ -260,8 +264,27 @@ export async function GET(request: Request) {
       }
 
       if (filterCompOs) {
-         whereConditions.push('UPPER(OS.COMP_OS) LIKE ?');
-         params.push(`%${filterCompOs.toUpperCase()}%`);
+         let searchValue = filterCompOs.trim();
+
+         // Remove barras e espaços para facilitar a busca
+         const cleanValue = searchValue.replace(/[\/\s]/g, '');
+
+         // Se contém apenas números (ex: "10", "102025", "2025")
+         if (/^\d+$/.test(cleanValue)) {
+            // Se tem 6 ou mais dígitos, pode ser MM/YYYY junto (ex: "102025")
+            if (cleanValue.length >= 6) {
+               // Tenta formatar como MM/YYYY
+               const mes = cleanValue.substring(0, 2);
+               const ano = cleanValue.substring(2);
+               searchValue = `${mes}/${ano}`;
+            }
+         }
+
+         // Remove caracteres especiais do campo no banco para comparação
+         whereConditions.push(
+            "REPLACE(REPLACE(UPPER(OS.COMP_OS), '/', ''), ' ', '') LIKE ?"
+         );
+         params.push(`%${cleanValue.toUpperCase()}%`);
       }
 
       if (filterNomeCliente) {
@@ -323,13 +346,25 @@ export async function GET(request: Request) {
       }
 
       if (filterNomeTarefa) {
-         whereConditions.push('UPPER(Tarefa.NOME_TAREFA) LIKE ?');
-         params.push(`%${filterNomeTarefa.toUpperCase()}%`);
+         // Busca tanto no código quanto no nome da tarefa
+         whereConditions.push(
+            '(UPPER(Tarefa.NOME_TAREFA) LIKE ? OR CAST(Tarefa.COD_TAREFA AS VARCHAR(20)) LIKE ?)'
+         );
+         params.push(
+            `%${filterNomeTarefa.toUpperCase()}%`,
+            `%${filterNomeTarefa}%`
+         );
       }
 
       if (filterNomeProjeto) {
-         whereConditions.push('UPPER(Projeto.NOME_PROJETO) LIKE ?');
-         params.push(`%${filterNomeProjeto.toUpperCase()}%`);
+         // Busca tanto no código quanto no nome do projeto
+         whereConditions.push(
+            '(UPPER(Projeto.NOME_PROJETO) LIKE ? OR CAST(Projeto.COD_PROJETO AS VARCHAR(20)) LIKE ?)'
+         );
+         params.push(
+            `%${filterNomeProjeto.toUpperCase()}%`,
+            `%${filterNomeProjeto}%`
+         );
       }
 
       const sql = `

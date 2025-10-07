@@ -24,7 +24,7 @@ interface FilterControlsProps {
 // ================================================================================
 // COMPONENTE INPUT FILTRO POR COLUNA COM DEBOUNCE
 // ================================================================================
-export const FilterInputTableHeaderDebounce = ({
+export const FiltrosHeaderTabelaOs = ({
    value,
    onChange,
    placeholder,
@@ -124,19 +124,24 @@ export const useTableFilters = () => {
 
          const searchValue = filterValue.toLowerCase().trim();
          const searchableColumns = [
-            'COD_CHAMADO',
-            'DATA_CHAMADO',
-            'ASSUNTO_CHAMADO',
-            'STATUS_CHAMADO',
+            'CHAMADO_OS',
+            'COD_OS',
+            'DTINI_OS',
+            'DTINC_OS',
+            'COMP_OS',
+            'NOME_CLIENTE',
+            'FATURADO_OS',
             'NOME_RECURSO',
-            'EMAIL_CHAMADO',
+            'VALID_OS',
+            'TAREFA_COMPLETA',
+            'PROJETO_COMPLETO',
          ];
 
          return searchableColumns.some(colId => {
             const cellValue = row.getValue(colId);
 
             // Para campos de data, usar normalização
-            if (colId === 'DATA_CHAMADO') {
+            if (colId === 'DTINI_OS' || colId === 'DTINC_OS') {
                const dateFormats = normalizeDate(cellValue);
                return dateFormats.some(dateFormat =>
                   dateFormat.toLowerCase().includes(searchValue)
@@ -159,7 +164,7 @@ export const useTableFilters = () => {
          const filterString = String(filterValue).toLowerCase().trim();
 
          // Tratamento especial para campos de data
-         if (columnId === 'DATA_CHAMADO') {
+         if (columnId === 'DTINI_OS' || columnId === 'DTINC_OS') {
             const dateFormats = normalizeDate(cellValue);
             return dateFormats.some(dateFormat =>
                dateFormat.toLowerCase().includes(filterString)
@@ -167,7 +172,7 @@ export const useTableFilters = () => {
          }
 
          // Para campos numéricos (como código do chamado)
-         if (columnId === 'COD_CHAMADO') {
+         if (columnId === 'COD_OS' || columnId === 'CHAMADO_OS') {
             const cellString = String(cellValue || '');
             return cellString.includes(filterString);
          }
@@ -187,12 +192,17 @@ export const useTableFilters = () => {
 // ================================================================================
 export const getDefaultColumnDisplayName = (columnId: string): string => {
    const displayNames: Record<string, string> = {
-      COD_CHAMADO: 'Código',
-      DATA_CHAMADO: 'Data',
-      ASSUNTO_CHAMADO: 'Assunto',
-      STATUS_CHAMADO: 'Status',
-      NOME_RECURSO: 'Recurso',
-      EMAIL_CHAMADO: 'Email',
+      CHAMADO_OS: 'Chamado',
+      COD_OS: 'Cód. OS',
+      DTINI_OS: 'Data Início',
+      DTINC_OS: 'Data Término',
+      COMP_OS: 'Componente',
+      NOME_CLIENTE: 'Nome Cliente',
+      FATURADO_OS: 'Faturado',
+      NOME_RECURSO: 'Nome Recurso',
+      VALID_OS: 'Válido',
+      TAREFA_COMPLETA: 'Tarefa Completa',
+      PROJETO_COMPLETO: 'Projeto Completo',
    };
    return displayNames[columnId] || columnId;
 };
