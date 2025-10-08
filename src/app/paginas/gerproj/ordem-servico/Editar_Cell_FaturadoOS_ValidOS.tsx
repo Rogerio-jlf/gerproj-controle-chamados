@@ -114,7 +114,7 @@ function ConfirmModal({
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export function CellEditorSimNao({
+export function EditarCellFaturadoOSValidOS({
    value,
    fieldName,
    codOs,

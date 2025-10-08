@@ -117,7 +117,7 @@ export const FilterControls = ({
 // ================================================================================
 // HOOK PERSONALIZADO PARA FUNÇÕES DE FILTRO
 // ================================================================================
-export const useTableFilters = () => {
+export const useFiltrosHeaderTabelaOSy = () => {
    const globalFilterFn = useCallback(
       (row: any, columnId: string, filterValue: string) => {
          if (!filterValue) return true;

@@ -20,7 +20,7 @@ import {
 } from './Filtros_Header_Tabela_OS';
 import { IsError } from '../components/IsError';
 import { IsLoading } from '../components/IsLoading';
-import Filtros from './Filtros_Completo';
+import { FiltrosTabelaOS } from './Filtros_Tabela_OS';
 import { colunasTabelaOS } from './Colunas_Tabela_OS';
 
 // Hooks & Types
@@ -36,7 +36,10 @@ import { FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { IoClose } from 'react-icons/io5';
-import { FilterNotFoundMessage, NoPeriodDataMessage } from './FilterMessages';
+import {
+   MensagemFiltroNaoEncontrado,
+   MensagemDadosSemPeriodo,
+} from './Mensagens_Filtros';
 
 // ================================================================================
 // TIPOS E INTERFACES
@@ -532,7 +535,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                {/* FILTROS HEADER */}
                <div className="flex items-center gap-6">
                   <div className="flex w-[800px] items-center">
-                     <Filtros onFiltersChange={handleFiltersChange} />
+                     <FiltrosTabelaOS onFiltersChange={handleFiltersChange} />
                   </div>
                   <div className="flex items-center">
                      <FilterControls
@@ -887,14 +890,14 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
             {(!paginationInfo || paginationInfo.totalRecords === 0) &&
                !isLoading &&
                totalActiveFilters === 0 && (
-                  <NoPeriodDataMessage ano={ano} mes={mes} dia={dia} />
+                  <MensagemDadosSemPeriodo ano={ano} mes={mes} dia={dia} />
                )}
             {/* MENSAGEM QUANDO OS FILTROS DA TABELA NÃO RETORNAM RESULTADOS */}
             {paginationInfo &&
                paginationInfo.totalRecords === 0 &&
                !isLoading &&
                totalActiveFilters > 0 && (
-                  <FilterNotFoundMessage
+                  <MensagemFiltroNaoEncontrado
                      filters={{
                         filterChamadoOs,
                         filterCodOs,

@@ -5,7 +5,7 @@ import { BsEraserFill } from 'react-icons/bs';
 import { formatCodChamado } from '../../../../utils/formatters';
 
 // Componente para gerar mensagens personalizadas de filtro
-export function FilterNotFoundMessage({
+export function MensagemFiltroNaoEncontrado({
    filters,
    clearFilters,
    ano,
@@ -173,7 +173,7 @@ export function FilterNotFoundMessage({
 }
 
 // Componente para quando não há OS no período (sem filtros de tabela)
-export function NoPeriodDataMessage({
+export function MensagemDadosSemPeriodo({
    ano,
    mes,
    dia,
@@ -202,7 +202,7 @@ export function NoPeriodDataMessage({
 }
 
 // Exemplo de uso no componente principal
-function ExampleUsage() {
+export function ExampleUsage() {
    const [filters, setFilters] = React.useState({
       filterChamadoOs: '',
       filterCodOs: '13555',
@@ -270,11 +270,11 @@ function ExampleUsage() {
             </div>
 
             {scenario === 1 && (
-               <NoPeriodDataMessage ano={2024} mes={10} dia={15} />
+               <MensagemDadosSemPeriodo ano={2024} mes={10} dia={15} />
             )}
 
             {scenario === 2 && (
-               <FilterNotFoundMessage
+               <MensagemFiltroNaoEncontrado
                   filters={{
                      ...filters,
                      filterCodOs: '13555',
@@ -288,7 +288,7 @@ function ExampleUsage() {
             )}
 
             {scenario === 3 && (
-               <FilterNotFoundMessage
+               <MensagemFiltroNaoEncontrado
                   filters={{
                      ...filters,
                      filterCodOs: '13555',
@@ -302,7 +302,7 @@ function ExampleUsage() {
             )}
 
             {scenario === 4 && (
-               <FilterNotFoundMessage
+               <MensagemFiltroNaoEncontrado
                   filters={filters}
                   clearFilters={clearFilters}
                   ano="todos"
@@ -314,5 +314,3 @@ function ExampleUsage() {
       </div>
    );
 }
-
-export default ExampleUsage;

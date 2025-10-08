@@ -7,7 +7,7 @@ import {
 } from '../../../../components/ui/tooltip';
 // ================================================================================
 import { TabelaOSProps } from '../../../../types/types';
-import { CellEditorSimNao } from './CellEditorSimNao';
+import { EditarCellFaturadoOSValidOS } from './Editar_Cell_FaturadoOS_ValidOS';
 // ================================================================================
 import {
    formatarDataParaBR,
@@ -220,7 +220,7 @@ export const colunasTabelaOS = (
 
             // Se tem função de update, renderiza o editor
             return (
-               <CellEditorSimNao
+               <EditarCellFaturadoOSValidOS
                   value={value?.toUpperCase() as 'SIM' | 'NAO' | null}
                   fieldName="FATURADO_OS"
                   codOs={row.original.COD_OS}
@@ -282,7 +282,7 @@ export const colunasTabelaOS = (
 
             // Se tem função de update, renderiza o editor
             return (
-               <CellEditorSimNao
+               <EditarCellFaturadoOSValidOS
                   value={value?.toUpperCase() as 'SIM' | 'NAO' | null}
                   fieldName="VALID_OS"
                   codOs={row.original.COD_OS}

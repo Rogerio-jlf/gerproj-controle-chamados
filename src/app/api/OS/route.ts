@@ -107,36 +107,52 @@ export async function GET(request: Request) {
       const whereConditions: string[] = [];
       const params: any[] = [];
 
+      // Primeiro, vamos testar uma query mais simples para identificar o problema
+      let hasDateFilter = false;
+
       // Filtro por data (ano, mês, dia)
       if (anoNumber && mesNumber && diaNumber) {
          whereConditions.push(
-            'EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(MONTH FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
+            'OS.DTINI_OS IS NOT NULL AND EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(MONTH FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
          );
          params.push(anoNumber, mesNumber, diaNumber);
+         hasDateFilter = true;
       } else if (anoNumber && mesNumber && !diaNumber) {
          whereConditions.push(
-            'EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(MONTH FROM OS.DTINI_OS) = ?'
+            'OS.DTINI_OS IS NOT NULL AND EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(MONTH FROM OS.DTINI_OS) = ?'
          );
          params.push(anoNumber, mesNumber);
+         hasDateFilter = true;
       } else if (anoNumber && !mesNumber && !diaNumber) {
-         whereConditions.push('EXTRACT(YEAR FROM OS.DTINI_OS) = ?');
+         whereConditions.push(
+            'OS.DTINI_OS IS NOT NULL AND EXTRACT(YEAR FROM OS.DTINI_OS) = ?'
+         );
          params.push(anoNumber);
+         hasDateFilter = true;
       } else if (!anoNumber && mesNumber && !diaNumber) {
-         whereConditions.push('EXTRACT(MONTH FROM OS.DTINI_OS) = ?');
+         whereConditions.push(
+            'OS.DTINI_OS IS NOT NULL AND EXTRACT(MONTH FROM OS.DTINI_OS) = ?'
+         );
          params.push(mesNumber);
+         hasDateFilter = true;
       } else if (!anoNumber && !mesNumber && diaNumber) {
-         whereConditions.push('EXTRACT(DAY FROM OS.DTINI_OS) = ?');
+         whereConditions.push(
+            'OS.DTINI_OS IS NOT NULL AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
+         );
          params.push(diaNumber);
+         hasDateFilter = true;
       } else if (!anoNumber && mesNumber && diaNumber) {
          whereConditions.push(
-            'EXTRACT(MONTH FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
+            'OS.DTINI_OS IS NOT NULL AND EXTRACT(MONTH FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
          );
          params.push(mesNumber, diaNumber);
+         hasDateFilter = true;
       } else if (anoNumber && !mesNumber && diaNumber) {
          whereConditions.push(
-            'EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
+            'OS.DTINI_OS IS NOT NULL AND EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
          );
          params.push(anoNumber, diaNumber);
+         hasDateFilter = true;
       }
 
       // Filtro por recurso
@@ -149,6 +165,33 @@ export async function GET(request: Request) {
       if (codOsQuery) {
          whereConditions.push('OS.COD_OS = ?');
          params.push(Number(codOsQuery));
+      }
+
+      // ===== FILTROS DE COLUNA COM VERIFICAÇÕES DE SEGURANÇA =====
+
+      // DEBUG: Query de teste para identificar dados problemáticos
+      const debugSql = `
+         SELECT 
+            COUNT(*) as total,
+            SUM(CASE WHEN OS.DTINI_OS IS NULL THEN 1 ELSE 0 END) as null_dtini,
+            SUM(CASE WHEN CAST(OS.DTINI_OS AS VARCHAR(50)) = '' THEN 1 ELSE 0 END) as empty_dtini,
+            SUM(CASE WHEN OS.DTINC_OS IS NULL THEN 1 ELSE 0 END) as null_dtinc,
+            SUM(CASE WHEN CAST(OS.DTINC_OS AS VARCHAR(50)) = '' THEN 1 ELSE 0 END) as empty_dtinc,
+            SUM(CASE WHEN OS.HRINI_OS IS NULL THEN 1 ELSE 0 END) as null_hrini,
+            SUM(CASE WHEN CAST(OS.HRINI_OS AS VARCHAR(50)) = '' THEN 1 ELSE 0 END) as empty_hrini,
+            SUM(CASE WHEN OS.HRFIM_OS IS NULL THEN 1 ELSE 0 END) as null_hrfim,
+            SUM(CASE WHEN CAST(OS.HRFIM_OS AS VARCHAR(50)) = '' THEN 1 ELSE 0 END) as empty_hrfim,
+            SUM(CASE WHEN OS.COD_OS IS NULL THEN 1 ELSE 0 END) as null_codos,
+            SUM(CASE WHEN OS.CHAMADO_OS IS NULL THEN 1 ELSE 0 END) as null_chamado,
+            SUM(CASE WHEN CAST(OS.CHAMADO_OS AS VARCHAR(50)) = '' THEN 1 ELSE 0 END) as empty_chamado
+         FROM OS os
+         ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
+      `;
+
+      try {
+         const debugResult = await firebirdQuery(debugSql, params);
+      } catch (debugError) {
+         console.error('DEBUG - Erro na query de análise:', debugError);
       }
 
       // ===== FILTROS DE COLUNA ROBUSTOS =====
@@ -367,6 +410,11 @@ export async function GET(request: Request) {
          );
       }
 
+      whereConditions.push(
+         '(OS.CHAMADO_OS IS NULL OR CAST(OS.CHAMADO_OS AS VARCHAR(20)) <> ?)'
+      );
+      params.push('');
+
       const sql = `
          SELECT
             os.COD_OS,
@@ -499,6 +547,13 @@ export async function GET(request: Request) {
       );
    } catch (error) {
       console.error('Erro ao buscar dados da OS:', error);
+
+      // DEBUG mais detalhado do erro
+      if (error instanceof Error) {
+         console.error('DEBUG - Mensagem de erro:', error.message);
+         console.error('DEBUG - Stack trace:', error.stack);
+      }
+
       return NextResponse.json(
          { error: 'Erro interno no servidor' },
          { status: 500 }
