@@ -30,8 +30,6 @@ import { useFiltersTabelaOs } from '../../../../contexts/Filters_Context_Dia';
 
 // Icons
 import { GrServices } from 'react-icons/gr';
-import { BsEraserFill } from 'react-icons/bs';
-import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
@@ -40,6 +38,8 @@ import {
    MensagemFiltroNaoEncontrado,
    MensagemDadosSemPeriodo,
 } from './Mensagens_Filtros';
+import { RelatorioOS } from './Relatorio_OS';
+import { HiDocumentReport } from 'react-icons/hi';
 
 // ================================================================================
 // TIPOS E INTERFACES
@@ -181,6 +181,8 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
       { id: 'COD_OS', desc: true },
    ]);
    const [showFilters, setShowFilters] = useState(false);
+
+   const [showRelatorio, setShowRelatorio] = useState(false);
 
    // ================================================================================
    // COMPUTED VALUES - FILTROS
@@ -426,6 +428,14 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
       [token, queryClient]
    );
 
+   const handleOpenRelatorioOS = useCallback(() => {
+      setShowRelatorio(true);
+   }, []);
+
+   const handleCloseRelatorioOS = useCallback(() => {
+      setShowRelatorio(false);
+   }, []);
+
    // ================================================================================
    // CONFIGURAÇÃO DA TABELA
    // ================================================================================
@@ -531,13 +541,12 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                      <IoClose size={24} />
                   </button>
                </div>
-
                {/* FILTROS HEADER */}
                <div className="flex items-center gap-6">
                   <div className="flex w-[800px] items-center">
                      <FiltrosTabelaOS onFiltersChange={handleFiltersChange} />
                   </div>
-                  <div className="flex items-center">
+                  <div className="flex items-center gap-3">
                      <FilterControls
                         showFilters={showFilters}
                         setShowFilters={setShowFilters}
@@ -545,6 +554,17 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                         clearFilters={clearFilters}
                         dataLength={paginationInfo?.totalRecords || 0}
                      />
+
+                     {/* BOTÃO PARA ABRIR O RELATÓRIO */}
+                     <button
+                        onClick={handleOpenRelatorioOS}
+                        className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-3 shadow-md shadow-black transition-all hover:scale-105 hover:from-purple-700 hover:to-purple-800 active:scale-95"
+                     >
+                        <HiDocumentReport className="text-white" size={24} />
+                        <span className="text-base font-bold tracking-wider text-white uppercase select-none">
+                           Relatório
+                        </span>
+                     </button>
                   </div>
                </div>
             </header>
@@ -918,6 +938,14 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                   />
                )}{' '}
          </div>
+
+         {/* MODAL DO RELATÓRIO */}
+         {showRelatorio && (
+            <RelatorioOS
+               isOpen={showRelatorio}
+               onClose={handleCloseRelatorioOS}
+            />
+         )}
       </div>
    );
 }

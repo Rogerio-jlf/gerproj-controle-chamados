@@ -188,3 +188,56 @@ export const formatCodChamado = (num: number | null | undefined) => {
    if (str.length <= 2) return str;
    return str.slice(0, 2) + '.' + str.slice(2);
 };
+
+export const formatCodOS = (string: string | null | undefined) => {
+   if (string == null) return ''; // Trata null E undefined
+   const str = string.toString();
+   if (str.length <= 2) return str;
+   return str.slice(0, 2) + '.' + str.slice(2);
+};
+
+// ====================================================================================================
+
+export const formatarCodNumber = (num: number | null | undefined): string => {
+   if (num == null) return '';
+   // Intl já usa o separador de milhares adequado para 'de-DE' (ponto)
+   return new Intl.NumberFormat('de-DE').format(num);
+};
+
+export const formatarCodString = (value: string | null | undefined): string => {
+   if (!value) return '';
+
+   // Remove tudo que não for dígito
+   const onlyDigits = value.replace(/\D/g, '');
+   if (!onlyDigits) return '';
+
+   // Converte para número e formata
+   return new Intl.NumberFormat('de-DE').format(Number(onlyDigits));
+};
+
+export const formatarHorasTotaisHorasDecimais = (
+   value: string | number | null | undefined
+): string => {
+   if (value == null) return '-';
+
+   let hours = 0;
+   let minutes = 0;
+
+   if (typeof value === 'number') {
+      // Caso seja decimal -> ex: 12.5 = 12h30
+      hours = Math.floor(value);
+      minutes = Math.round((value - hours) * 60);
+   } else if (typeof value === 'string') {
+      // Caso seja string "HH:MM"
+      const [hStr, mStr] = value.split(':');
+      hours = parseInt(hStr, 10) || 0;
+      minutes = parseInt(mStr, 10) || 0;
+   }
+
+   // Formata horas com separador de milhar
+   const hoursFormatted = new Intl.NumberFormat('de-DE').format(hours);
+   // Garante minutos sempre com 2 dígitos
+   const minutesFormatted = minutes.toString().padStart(2, '0');
+
+   return `${hoursFormatted}:${minutesFormatted}`;
+};
