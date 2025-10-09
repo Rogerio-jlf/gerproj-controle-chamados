@@ -518,15 +518,16 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
    return (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
          {/* OVERLAY */}
-         <div className="absolute inset-0 bg-black/60" />
+         <div className="absolute inset-0 bg-black/10 backdrop-blur-3xl" />
 
          {/* MODAL */}
-         <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[98vw] overflow-hidden rounded-2xl shadow-xl shadow-black">
-            {/* HEADER */}
-            <header className="flex flex-col gap-10 bg-white/70 p-6">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 mx-4 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl shadow-md shadow-black transition-all duration-500 ease-out">
+            {/* ===== HEADER ===== */}
+            <header className="flex flex-col gap-6 bg-white/50 p-6">
+               {/* HEADER */}
                <div className="flex items-center justify-between gap-8">
                   <div className="flex items-center justify-center gap-6">
-                     <div className="flex items-center justify-center rounded-md bg-white/30 p-4 shadow-sm shadow-black">
+                     <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
                         <GrServices className="text-black" size={28} />
                      </div>
                      <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
@@ -542,30 +543,33 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                   </button>
                </div>
                {/* FILTROS HEADER */}
-               <div className="flex items-center gap-6">
-                  <div className="flex w-[800px] items-center">
-                     <FiltrosTabelaOS onFiltersChange={handleFiltersChange} />
+               <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-6">
+                     <div className="flex w-[800px] items-center">
+                        <FiltrosTabelaOS
+                           onFiltersChange={handleFiltersChange}
+                        />
+                     </div>
+                     <div className="flex items-center gap-3">
+                        <FilterControls
+                           showFilters={showFilters}
+                           setShowFilters={setShowFilters}
+                           totalActiveFilters={totalActiveFilters}
+                           clearFilters={clearFilters}
+                           dataLength={paginationInfo?.totalRecords || 0}
+                        />
+                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                     <FilterControls
-                        showFilters={showFilters}
-                        setShowFilters={setShowFilters}
-                        totalActiveFilters={totalActiveFilters}
-                        clearFilters={clearFilters}
-                        dataLength={paginationInfo?.totalRecords || 0}
-                     />
-
-                     {/* BOTÃO PARA ABRIR O RELATÓRIO */}
-                     <button
-                        onClick={handleOpenRelatorioOS}
-                        className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-3 shadow-md shadow-black transition-all hover:scale-105 hover:from-purple-700 hover:to-purple-800 active:scale-95"
-                     >
-                        <HiDocumentReport className="text-white" size={24} />
-                        <span className="text-base font-bold tracking-wider text-white uppercase select-none">
-                           Relatório
-                        </span>
-                     </button>
-                  </div>
+                  {/* BOTÃO PARA ABRIR O RELATÓRIO */}
+                  <button
+                     onClick={handleOpenRelatorioOS}
+                     className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-3 shadow-md shadow-black transition-all hover:scale-105 hover:from-purple-700 hover:to-purple-800 active:scale-95"
+                  >
+                     <HiDocumentReport className="text-white" size={24} />
+                     <span className="text-base font-bold tracking-wider text-white uppercase select-none">
+                        Relatório
+                     </span>
+                  </button>
                </div>
             </header>
             {/* ===== TABELA ===== */}
@@ -832,7 +836,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                               className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsLeft
-                                 className="text-black group-disabled:text-white"
+                                 className="text-black group-disabled:text-red-400"
                                  size={24}
                               />
                            </button>
@@ -843,7 +847,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                               className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronLeft
-                                 className="text-black group-disabled:text-white"
+                                 className="text-black group-disabled:text-red-400"
                                  size={24}
                               />
                            </button>
@@ -884,7 +888,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                               className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronRight
-                                 className="text-black group-disabled:text-white"
+                                 className="text-black group-disabled:text-red-400"
                                  size={24}
                               />
                            </button>
@@ -897,7 +901,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                               className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsRight
-                                 className="text-black group-disabled:text-white"
+                                 className="text-black group-disabled:text-red-400"
                                  size={24}
                               />
                            </button>

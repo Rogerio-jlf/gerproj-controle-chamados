@@ -578,15 +578,16 @@ export function TabelaChamado() {
    // RENDERIZAÇÃO
    // ================================================================================
    return (
-      <>
+      <div className="flex items-center justify-center">
          {/* VIEW DE CHAMADOS */}
          {activeView === 'chamados' && (
-            <div className="overflow-hidden rounded-2xl bg-black shadow-xl shadow-black">
+            <div className="animate-in slide-in-from-bottom-4 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl shadow-md shadow-black transition-all duration-500 ease-out">
                {/* HEADER */}
-               <header className="flex flex-col gap-10 bg-white/70 p-6">
+               <header className="flex flex-col gap-6 bg-white/50 p-6">
+                  {/* HEADER */}
                   <div className="flex items-center justify-between gap-8">
                      <div className="flex items-center justify-center gap-6">
-                        <div className="flex items-center justify-center rounded-md bg-white/30 p-4 shadow-sm shadow-black">
+                        <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
                            <IoCall className="text-black" size={28} />
                         </div>
                         <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
@@ -629,7 +630,7 @@ export function TabelaChamado() {
                <main className="h-full w-full overflow-hidden bg-black">
                   <div
                      className="h-full overflow-y-auto"
-                     style={{ maxHeight: 'calc(100vh - 450px)' }}
+                     style={{ maxHeight: 'calc(100vh - 500px)' }}
                   >
                      <table className="w-full table-fixed border-collapse">
                         {/* CABEÇALHO DA TABELA */}
@@ -1029,6 +1030,6 @@ export function TabelaChamado() {
             codChamado={selectedCodChamado}
             onSuccess={handleExcluirChamadoSuccess}
          />
-      </>
+      </div>
    );
 }

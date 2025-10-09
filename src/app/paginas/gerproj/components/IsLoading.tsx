@@ -18,7 +18,7 @@ export function IsLoading({ title }: IsLoadingProps) {
    return (
       <div className="flex flex-col items-center justify-center gap-6 py-40">
          <div className="relative">
-            <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-cyan-200 via-cyan-400 to-cyan-600 opacity-20 blur-xl"></div>
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-200 via-blue-400 to-blue-600 opacity-20 blur-xl"></div>
 
             <div className="relative flex items-center justify-center">
                <Loader2 className="animate-spin text-blue-600" size={120} />

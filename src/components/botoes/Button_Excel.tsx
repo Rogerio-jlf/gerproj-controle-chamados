@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import {
@@ -8,7 +9,14 @@ import {
    TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { RiFileExcel2Fill } from 'react-icons/ri';
-import { formatarHora, formatCodChamado } from '../../utils/formatters';
+import { IoClose } from 'react-icons/io5';
+import { FaFileExcel, FaCheckCircle } from 'react-icons/fa';
+
+import {
+   formatarHora,
+   formatarHorasTotaisHorasDecimais,
+} from '../../utils/formatters';
+import { corrigirTextoCorrompido } from '../../lib/corrigirTextoCorrompido';
 
 // ================================================================================
 // TIPOS E INTERFACES
@@ -70,12 +78,6 @@ interface ExcelButtonRelatorioOSProps {
 // ================================================================================
 // FUNÇÕES AUXILIARES
 // ================================================================================
-function formatarDecimalParaTempo(decimal: number | null): string {
-   if (decimal === null || isNaN(decimal)) return '--:--';
-   const horas = Math.floor(decimal);
-   const minutos = Math.round((decimal - horas) * 60);
-   return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
-}
 
 function formatarDataParaBR(data: string | null): string {
    if (!data) return '----------';
@@ -110,396 +112,746 @@ export default function ExcelButtonRelatorioOS({
    tipoAgrupamento,
    filtros,
    buttonText = '',
-   className = '',
 }: ExcelButtonRelatorioOSProps) {
+   const [showModal, setShowModal] = useState(false);
+   const [incluirFaturado, setIncluirFaturado] = useState(false);
+   const [incluirValidado, setIncluirValidado] = useState(false);
+   const [isExporting, setIsExporting] = useState(false);
+
+   const handleOpenModal = () => {
+      setShowModal(true);
+   };
+
+   const handleCloseModal = () => {
+      setShowModal(false);
+      setIncluirFaturado(true);
+      setIncluirValidado(true);
+   };
+
    const exportToExcel = async () => {
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Relatório');
+      setIsExporting(true);
 
-      let currentRow = 1;
+      try {
+         const workbook = new ExcelJS.Workbook();
+         const worksheet = workbook.addWorksheet('Relatório');
+         worksheet.views = [{ showGridLines: false }];
 
-      // ================================================================================
-      // CABEÇALHO DO RELATÓRIO
-      // ================================================================================
-      worksheet.mergeCells(`A${currentRow}:J${currentRow}`);
-      const titleCell = worksheet.getCell(`A${currentRow}`);
-      titleCell.value = 'RELATÓRIO DE ORDENS DE SERVIÇO';
-      titleCell.font = { bold: true, size: 16, color: { argb: 'FFFFFFFF' } };
-      titleCell.fill = {
-         type: 'pattern',
-         pattern: 'solid',
-         fgColor: { argb: 'FF0F766E' },
-      };
-      titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
-      worksheet.getRow(currentRow).height = 30;
-      currentRow++;
+         let currentRow = 1;
 
-      // Data de geração
-      worksheet.mergeCells(`A${currentRow}:J${currentRow}`);
-      const dateCell = worksheet.getCell(`A${currentRow}`);
-      dateCell.value = `Gerado em: ${new Date().toLocaleString('pt-BR')}`;
-      dateCell.font = { italic: true, size: 10 };
-      dateCell.alignment = { horizontal: 'center' };
-      currentRow++;
+         // ================================================================================
+         // CABEÇALHO DO RELATÓRIO
+         // ================================================================================
+         const numColunas =
+            8 + (incluirFaturado ? 1 : 0) + (incluirValidado ? 1 : 0);
+         const ultimaColuna = String.fromCharCode(64 + numColunas);
 
-      currentRow++;
-
-      // ================================================================================
-      // FILTROS APLICADOS
-      // ================================================================================
-      if (filtros && Object.keys(filtros).length > 0) {
-         worksheet.mergeCells(`A${currentRow}:J${currentRow}`);
-         const filtrosTitleCell = worksheet.getCell(`A${currentRow}`);
-         filtrosTitleCell.value = 'FILTROS APLICADOS';
-         filtrosTitleCell.font = {
-            bold: true,
-            size: 12,
-            color: { argb: 'FFFFFFFF' },
-         };
-         filtrosTitleCell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FF6B7280' },
-         };
-         filtrosTitleCell.alignment = { horizontal: 'center' };
-         currentRow++;
-
-         // Período por Data Início/Fim
-         if (filtros.dataInicio || filtros.dataFim) {
-            worksheet.getCell(`A${currentRow}`).value = 'Período:';
-            worksheet.getCell(`A${currentRow}`).font = { bold: true };
-
-            const periodoTexto = [];
-            if (filtros.dataInicio)
-               periodoTexto.push(
-                  `De: ${formatarDataParaBR(filtros.dataInicio)}`
-               );
-            if (filtros.dataFim)
-               periodoTexto.push(`Até: ${formatarDataParaBR(filtros.dataFim)}`);
-
-            worksheet.getCell(`B${currentRow}`).value =
-               periodoTexto.join(' | ');
-            worksheet.mergeCells(`B${currentRow}:E${currentRow}`);
-            currentRow++;
-         }
-
-         // Período por Mês/Ano
-         if (filtros.mes || filtros.ano) {
-            worksheet.getCell(`A${currentRow}`).value = 'Mês/Ano:';
-            worksheet.getCell(`A${currentRow}`).font = { bold: true };
-
-            const mesNome = filtros.mes
-               ? [
-                    '',
-                    'Janeiro',
-                    'Fevereiro',
-                    'Março',
-                    'Abril',
-                    'Maio',
-                    'Junho',
-                    'Julho',
-                    'Agosto',
-                    'Setembro',
-                    'Outubro',
-                    'Novembro',
-                    'Dezembro',
-                 ][parseInt(filtros.mes)]
-               : '';
-
-            worksheet.getCell(`B${currentRow}`).value =
-               `${mesNome}${filtros.ano ? '/' + filtros.ano : ''}`;
-            worksheet.mergeCells(`B${currentRow}:E${currentRow}`);
-            currentRow++;
-         }
-
-         // Filtro Faturado
-         if (filtros.faturado && filtros.faturado !== 'todos') {
-            worksheet.getCell(`A${currentRow}`).value = 'Faturado:';
-            worksheet.getCell(`A${currentRow}`).font = { bold: true };
-            worksheet.getCell(`B${currentRow}`).value =
-               filtros.faturado === 'sim' ? 'Sim' : 'Não';
-            worksheet.mergeCells(`B${currentRow}:E${currentRow}`);
-            currentRow++;
-         }
-
-         // Filtro Validado
-         if (filtros.validado && filtros.validado !== 'todos') {
-            worksheet.getCell(`A${currentRow}`).value = 'Validado:';
-            worksheet.getCell(`A${currentRow}`).font = { bold: true };
-            worksheet.getCell(`B${currentRow}`).value =
-               filtros.validado === 'sim' ? 'Sim' : 'Não';
-            worksheet.mergeCells(`B${currentRow}:E${currentRow}`);
-            currentRow++;
-         }
-
-         // Filtro Cliente
-         if (filtros.cliente) {
-            worksheet.getCell(`A${currentRow}`).value = 'Cliente:';
-            worksheet.getCell(`A${currentRow}`).font = { bold: true };
-            worksheet.getCell(`B${currentRow}`).value = filtros.cliente;
-            worksheet.mergeCells(`B${currentRow}:E${currentRow}`);
-            currentRow++;
-         }
-
-         // Filtro Recurso
-         if (filtros.recurso) {
-            worksheet.getCell(`A${currentRow}`).value = 'Recurso:';
-            worksheet.getCell(`A${currentRow}`).font = { bold: true };
-            worksheet.getCell(`B${currentRow}`).value = filtros.recurso;
-            worksheet.mergeCells(`B${currentRow}:E${currentRow}`);
-            currentRow++;
-         }
-
-         // Filtro Projeto
-         if (filtros.projeto) {
-            worksheet.getCell(`A${currentRow}`).value = 'Projeto:';
-            worksheet.getCell(`A${currentRow}`).font = { bold: true };
-            worksheet.getCell(`B${currentRow}`).value = filtros.projeto;
-            worksheet.mergeCells(`B${currentRow}:E${currentRow}`);
-            currentRow++;
-         }
-
-         currentRow++;
-      }
-
-      // ================================================================================
-      // INFORMAÇÕES DO GRUPO
-      // ================================================================================
-      worksheet.mergeCells(`A${currentRow}:J${currentRow}`);
-      const infoTitleCell = worksheet.getCell(`A${currentRow}`);
-      infoTitleCell.value = 'INFORMAÇÕES DO GRUPO';
-      infoTitleCell.font = {
-         bold: true,
-         size: 12,
-         color: { argb: 'FFFFFFFF' },
-      };
-      infoTitleCell.fill = {
-         type: 'pattern',
-         pattern: 'solid',
-         fgColor: { argb: 'FF6B7280' },
-      };
-      infoTitleCell.alignment = { horizontal: 'center' };
-      currentRow++;
-
-      // Nome do grupo
-      worksheet.getCell(`A${currentRow}`).value =
-         `${getTipoAgrupamentoLabel(tipoAgrupamento)}:`;
-      worksheet.getCell(`A${currentRow}`).font = { bold: true };
-      worksheet.getCell(`B${currentRow}`).value = grupo.nome;
-      worksheet.mergeCells(`B${currentRow}:E${currentRow}`);
-      currentRow++;
-
-      currentRow++;
-
-      // ================================================================================
-      // TOTALIZADORES DO GRUPO
-      // ================================================================================
-      worksheet.mergeCells(`A${currentRow}:J${currentRow}`);
-      const totTitleCell = worksheet.getCell(`A${currentRow}`);
-      totTitleCell.value = 'TOTALIZADORES';
-      totTitleCell.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
-      totTitleCell.fill = {
-         type: 'pattern',
-         pattern: 'solid',
-         fgColor: { argb: 'FF6B7280' },
-      };
-      totTitleCell.alignment = { horizontal: 'center' };
-      currentRow++;
-
-      const totHeaders = [
-         'Total de Horas',
-         'Total de OS',
-         'OS Faturadas',
-         'OS Validadas',
-      ];
-      const totValues = [
-         formatarDecimalParaTempo(grupo.totalHoras),
-         grupo.quantidadeOS.toString(),
-         grupo.osFaturadas.toString(),
-         grupo.osValidadas.toString(),
-      ];
-
-      const totColors = ['FF14B8A6', 'FFA855F7', 'FF3B82F6', 'FF22C55E'];
-
-      for (let i = 0; i < totHeaders.length; i++) {
-         const colStart = String.fromCharCode(65 + i * 2.5);
-         const colEnd = String.fromCharCode(65 + i * 2.5 + 1);
-
-         worksheet.mergeCells(
-            `${colStart}${currentRow}:${colEnd}${currentRow}`
-         );
-         const headerCell = worksheet.getCell(`${colStart}${currentRow}`);
-         headerCell.value = totHeaders[i];
-         headerCell.font = {
-            bold: true,
-            size: 10,
-            color: { argb: 'FFFFFFFF' },
-         };
-         headerCell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: totColors[i] },
-         };
-         headerCell.alignment = { horizontal: 'center' };
-         headerCell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' },
-         };
-      }
-      currentRow++;
-
-      for (let i = 0; i < totValues.length; i++) {
-         const colStart = String.fromCharCode(65 + i * 2.5);
-         const colEnd = String.fromCharCode(65 + i * 2.5 + 1);
-
-         worksheet.mergeCells(
-            `${colStart}${currentRow}:${colEnd}${currentRow}`
-         );
-         const valueCell = worksheet.getCell(`${colStart}${currentRow}`);
-         valueCell.value = totValues[i];
-         valueCell.font = { bold: true, size: 12 };
-         valueCell.alignment = { horizontal: 'center' };
-         valueCell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' },
-         };
-      }
-      currentRow++;
-
-      currentRow += 2;
-
-      // ================================================================================
-      // CABEÇALHOS DAS COLUNAS
-      // ================================================================================
-      const headers = [
-         'OS',
-         'Data',
-         'Chamado',
-         'Hora Início',
-         'Hora Fim',
-         'Horas',
-         'Cliente',
-         'Recurso',
-         'Faturado',
-         'Validado',
-      ];
-
-      headers.forEach((header, index) => {
-         const cell = worksheet.getCell(currentRow, index + 1);
-         cell.value = header;
-         cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-         cell.fill = {
+         worksheet.mergeCells(`A${currentRow}:${ultimaColuna}${currentRow}`);
+         const titleCell = worksheet.getCell(`A${currentRow}`);
+         titleCell.value = 'RELATÓRIO DE ORDENS DE SERVIÇO';
+         titleCell.font = { bold: true, size: 22, color: { argb: 'FFFFFFFF' } };
+         titleCell.fill = {
             type: 'pattern',
             pattern: 'solid',
             fgColor: { argb: 'FF0F766E' },
          };
-         cell.alignment = { horizontal: 'center' };
-         cell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' },
-         };
-      });
-      currentRow++;
+         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+         worksheet.getRow(currentRow).height = 30;
+         currentRow++;
 
-      // ================================================================================
-      // DETALHES
-      // ================================================================================
-      grupo.detalhes.forEach(detalhe => {
-         const rowData = [
-            formatCodChamado(detalhe.codOs) || '-----',
-            formatarDataParaBR(detalhe.data) || '--------',
-            formatCodChamado(Number(detalhe.chamado)) || '-----',
-            formatarHora(detalhe.horaInicio) || '----',
-            formatarHora(detalhe.horaFim) || '----',
-            formatarDecimalParaTempo(detalhe.horas) || '----',
-            detalhe.cliente || '----------',
-            detalhe.recurso || '----------',
-            detalhe.faturado || '---',
-            detalhe.validado || '---',
+         // Data de geração
+         worksheet.mergeCells(`A${currentRow}:${ultimaColuna}${currentRow}`);
+         const dateCell = worksheet.getCell(`A${currentRow}`);
+         dateCell.value = `Gerado em: ${new Date().toLocaleString('pt-BR')}`;
+         dateCell.font = {
+            italic: true,
+            size: 16,
+            color: { argb: 'FFFFFFFF' },
+         };
+         dateCell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FF0F766E' },
+         };
+
+         dateCell.alignment = { horizontal: 'center', vertical: 'middle' };
+         worksheet.getRow(currentRow).height = 30;
+
+         currentRow++;
+
+         currentRow += 1;
+
+         // ================================================================================
+         // FILTROS APLICADOS
+         // ================================================================================
+         if (filtros && Object.keys(filtros).length > 0) {
+            worksheet.mergeCells(`A${currentRow}:F${currentRow}`);
+            const filtrosTitleCell = worksheet.getCell(`A${currentRow}`);
+            filtrosTitleCell.value = 'FILTROS APLICADOS';
+            filtrosTitleCell.font = {
+               bold: true,
+               size: 12,
+               color: { argb: 'FFFFFFFF' },
+            };
+            filtrosTitleCell.fill = {
+               type: 'pattern',
+               pattern: 'solid',
+               fgColor: { argb: '000000' },
+            };
+            filtrosTitleCell.alignment = {
+               horizontal: 'center',
+               vertical: 'middle',
+            };
+            worksheet.getRow(currentRow).height = 24;
+
+            filtrosTitleCell.border = {
+               top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+               left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+               bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+               right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            };
+            currentRow++;
+
+            // Helper para bordas
+            const setBorder = (cell: any) => {
+               cell.border = {
+                  top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                  left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                  bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                  right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+               };
+            };
+
+            // Período por Data Início/Fim
+            if (filtros.dataInicio || filtros.dataFim) {
+               worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
+               worksheet.mergeCells(`C${currentRow}:F${currentRow}`);
+               const labelCell = worksheet.getCell(`A${currentRow}`);
+               labelCell.value = 'Período:';
+               labelCell.font = { bold: true };
+               labelCell.alignment = {
+                  horizontal: 'center',
+                  vertical: 'middle',
+               };
+               setBorder(labelCell);
+
+               const periodoTexto = [];
+               if (filtros.dataInicio)
+                  periodoTexto.push(
+                     `De: ${formatarDataParaBR(filtros.dataInicio)}`
+                  );
+               if (filtros.dataFim)
+                  periodoTexto.push(
+                     `Até: ${formatarDataParaBR(filtros.dataFim)}`
+                  );
+
+               const valueCell = worksheet.getCell(`C${currentRow}`);
+               valueCell.value = periodoTexto.join(' | ');
+               valueCell.alignment = {
+                  horizontal: 'center',
+                  vertical: 'middle',
+               };
+               setBorder(valueCell);
+
+               currentRow++;
+            }
+
+            // Período por Mês/Ano
+            if (filtros.mes || filtros.ano) {
+               worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
+               worksheet.mergeCells(`C${currentRow}:F${currentRow}`);
+               const labelCell = worksheet.getCell(`A${currentRow}`);
+               labelCell.value = 'Mês/Ano:';
+               labelCell.font = { bold: true };
+               labelCell.alignment = {
+                  horizontal: 'center',
+                  vertical: 'middle',
+               };
+               setBorder(labelCell);
+
+               const mesNome = filtros.mes
+                  ? [
+                       '',
+                       'Janeiro',
+                       'Fevereiro',
+                       'Março',
+                       'Abril',
+                       'Maio',
+                       'Junho',
+                       'Julho',
+                       'Agosto',
+                       'Setembro',
+                       'Outubro',
+                       'Novembro',
+                       'Dezembro',
+                    ][parseInt(filtros.mes)]
+                  : '';
+
+               const valueCell = worksheet.getCell(`C${currentRow}`);
+               valueCell.value = `${mesNome}${filtros.ano ? '/' + filtros.ano : ''}`;
+               valueCell.alignment = {
+                  horizontal: 'center',
+                  vertical: 'middle',
+               };
+               setBorder(valueCell);
+               worksheet.getRow(currentRow).height = 24;
+
+               currentRow++;
+            }
+
+            // Filtro Faturado
+            if (filtros.faturado && filtros.faturado !== 'todos') {
+               worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
+               worksheet.mergeCells(`C${currentRow}:F${currentRow}`);
+               const labelCell = worksheet.getCell(`A${currentRow}`);
+               labelCell.value = 'Faturado:';
+               labelCell.font = { bold: true };
+               labelCell.alignment = {
+                  horizontal: 'center',
+                  vertical: 'middle',
+               };
+               setBorder(labelCell);
+
+               const valueCell = worksheet.getCell(`C${currentRow}`);
+               valueCell.value = filtros.faturado === 'sim' ? 'Sim' : 'Não';
+               valueCell.alignment = {
+                  horizontal: 'center',
+                  vertical: 'middle',
+               };
+               setBorder(valueCell);
+               worksheet.getRow(currentRow).height = 24;
+
+               currentRow++;
+            }
+
+            // Filtro Validado
+            if (filtros.validado && filtros.validado !== 'todos') {
+               worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
+               worksheet.mergeCells(`C${currentRow}:F${currentRow}`);
+               const labelCell = worksheet.getCell(`A${currentRow}`);
+               labelCell.value = 'Validado:';
+               labelCell.font = { bold: true };
+               labelCell.alignment = {
+                  horizontal: 'center',
+                  vertical: 'middle',
+               };
+               setBorder(labelCell);
+
+               const valueCell = worksheet.getCell(`C${currentRow}`);
+               valueCell.value = filtros.validado === 'sim' ? 'Sim' : 'Não';
+               valueCell.alignment = {
+                  horizontal: 'center',
+                  vertical: 'middle',
+               };
+               setBorder(valueCell);
+               worksheet.getRow(currentRow).height = 24;
+
+               currentRow++;
+            }
+
+            // Filtro Cliente
+            if (filtros.cliente) {
+               worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
+               worksheet.mergeCells(`C${currentRow}:F${currentRow}`);
+               const labelCell = worksheet.getCell(`A${currentRow}`);
+               labelCell.value = 'Cliente:';
+               labelCell.font = { bold: true };
+               labelCell.alignment = {
+                  horizontal: 'center',
+                  vertical: 'middle',
+               };
+               setBorder(labelCell);
+
+               const valueCell = worksheet.getCell(`C${currentRow}`);
+               valueCell.value = filtros.cliente;
+               valueCell.alignment = {
+                  horizontal: 'center',
+                  vertical: 'middle',
+               };
+               setBorder(valueCell);
+               worksheet.getRow(currentRow).height = 24;
+
+               currentRow++;
+            }
+
+            // Filtro Recurso
+            if (filtros.recurso) {
+               worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
+               worksheet.mergeCells(`C${currentRow}:F${currentRow}`);
+               const labelCell = worksheet.getCell(`A${currentRow}`);
+               labelCell.value = 'Recurso:';
+               labelCell.font = { bold: true };
+               labelCell.alignment = {
+                  horizontal: 'center',
+                  vertical: 'middle',
+               };
+               setBorder(labelCell);
+
+               const valueCell = worksheet.getCell(`C${currentRow}`);
+               valueCell.value = filtros.recurso;
+               valueCell.alignment = {
+                  horizontal: 'center',
+                  vertical: 'middle',
+               };
+               setBorder(valueCell);
+               worksheet.getRow(currentRow).height = 24;
+
+               currentRow++;
+            }
+
+            // Filtro Projeto
+            if (filtros.projeto) {
+               worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
+               worksheet.mergeCells(`C${currentRow}:F${currentRow}`);
+               const labelCell = worksheet.getCell(`A${currentRow}`);
+               labelCell.value = 'Projeto:';
+               labelCell.font = { bold: true };
+               labelCell.alignment = {
+                  horizontal: 'center',
+                  vertical: 'middle',
+               };
+               setBorder(labelCell);
+
+               const valueCell = worksheet.getCell(`C${currentRow}`);
+               valueCell.value = filtros.projeto;
+               valueCell.alignment = {
+                  horizontal: 'center',
+                  vertical: 'middle',
+               };
+               setBorder(valueCell);
+               worksheet.getRow(currentRow).height = 24;
+
+               currentRow++;
+            }
+
+            currentRow += 1;
+         }
+
+         // ================================================================================
+         // INFORMAÇÕES DO GRUPO
+         // ================================================================================
+         worksheet.mergeCells(`A${currentRow}:F${currentRow}`);
+         const infoTitleCell = worksheet.getCell(`A${currentRow}`);
+         infoTitleCell.value = 'INFORMAÇÕES DO GRUPO';
+         infoTitleCell.font = {
+            bold: true,
+            size: 12,
+            color: { argb: 'FFFFFFFF' },
+         };
+         infoTitleCell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: '000000' },
+         };
+         infoTitleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+         worksheet.getRow(currentRow).height = 24;
+
+         infoTitleCell.border = {
+            top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+         };
+         currentRow++;
+
+         // Nome do grupo
+         worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
+         worksheet.getCell(`A${currentRow}`).value =
+            `${getTipoAgrupamentoLabel(tipoAgrupamento)}:`;
+         worksheet.getCell(`A${currentRow}`).font = { bold: true };
+         worksheet.mergeCells(`C${currentRow}:F${currentRow}`);
+         worksheet.getCell(`C${currentRow}`).value = grupo.nome;
+         worksheet.getCell(`A${currentRow}`).alignment = {
+            horizontal: 'center',
+            vertical: 'middle',
+         };
+         worksheet.getCell(`C${currentRow}`).alignment = {
+            horizontal: 'center',
+            vertical: 'middle',
+         };
+
+         worksheet.getCell(`A${currentRow}`).border = {
+            top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+         };
+         worksheet.getCell(`C${currentRow}`).border = {
+            top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+         };
+         worksheet.getRow(currentRow).height = 24;
+
+         currentRow++;
+
+         currentRow += 1;
+
+         // ================================================================================
+         // TOTALIZADORES DO GRUPO
+         // ================================================================================
+         worksheet.mergeCells(`A${currentRow}:F${currentRow}`);
+         const totTitleCell = worksheet.getCell(`A${currentRow}`);
+         totTitleCell.value = 'TOTALIZADORES';
+         totTitleCell.font = {
+            bold: true,
+            size: 12,
+            color: { argb: 'FFFFFFFF' },
+         };
+         totTitleCell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: '000000' },
+         };
+         totTitleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+         worksheet.getRow(currentRow).height = 24;
+         currentRow++;
+
+         const totHeaders = [
+            'Total de Horas',
+            "Total de OS's",
+            "Total de OS's Faturadas",
+            "Total de OS's Validadas",
+         ];
+         const totValues = [
+            `${formatarHorasTotaisHorasDecimais(grupo.totalHoras)}h`,
+            grupo.quantidadeOS,
+            grupo.osFaturadas,
+            grupo.osValidadas,
          ];
 
-         rowData.forEach((value, colIndex) => {
-            const cell = worksheet.getCell(currentRow, colIndex + 1);
-            cell.value = value;
-            cell.alignment = { horizontal: 'left' };
-            cell.border = {
+         const totColors = ['008080', 'A020F0', '0000FF', '008000'];
+
+         // Criar totalizadores verticalmente
+         for (let i = 0; i < totHeaders.length; i++) {
+            // Cabeçalho do totalizador
+            worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
+            const headerCell = worksheet.getCell(`A${currentRow}`);
+            headerCell.value = totHeaders[i];
+            headerCell.font = {
+               bold: true,
+               size: 12,
+               color: { argb: 'FFFFFFFF' },
+            };
+            headerCell.fill = {
+               type: 'pattern',
+               pattern: 'solid',
+               fgColor: { argb: totColors[i] },
+            };
+            headerCell.alignment = { horizontal: 'center', vertical: 'middle' };
+            headerCell.border = {
                top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
                left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
                bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
                right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
             };
 
-            // Colorir colunas Faturado e Validado
-            if (colIndex === 8 || colIndex === 9) {
-               cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-               cell.fill = {
-                  type: 'pattern',
-                  pattern: 'solid',
-                  fgColor: {
-                     argb: value === 'SIM' ? 'FF3B82F6' : 'FFEF4444',
-                  },
-               };
-               cell.alignment = { horizontal: 'center' };
+            // Valor do totalizador
+            worksheet.mergeCells(`C${currentRow}:F${currentRow}`);
+            const valueCell = worksheet.getCell(`C${currentRow}`);
+            valueCell.value = totValues[i];
+            valueCell.font = { size: 12 };
+            valueCell.alignment = { horizontal: 'center', vertical: 'middle' };
+            valueCell.border = {
+               top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+               left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+               bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+               right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            };
+
+            // Aplicar formato de número com separador de milhares para colunas numéricas
+            if (i > 0) {
+               valueCell.numFmt = '#,##0';
             }
+            worksheet.getRow(currentRow).height = 24;
+
+            currentRow++;
+         }
+
+         currentRow--;
+
+         currentRow += 2;
+
+         // ================================================================================
+         // CABEÇALHOS DAS COLUNAS
+         // ================================================================================
+         const headers = [
+            'OS',
+            'Data',
+            'Chamado',
+            'Hora Início',
+            'Hora Fim',
+            'Horas',
+            'Cliente',
+            'Recurso',
+         ];
+
+         if (incluirFaturado) headers.push('Faturado');
+         if (incluirValidado) headers.push('Validado');
+
+         headers.forEach((header, index) => {
+            const cell = worksheet.getCell(currentRow, index + 1);
+            cell.value = header;
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.fill = {
+               type: 'pattern',
+               pattern: 'solid',
+               fgColor: { argb: 'FF0F766E' },
+            };
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            worksheet.getRow(currentRow).height = 24;
+
+            cell.border = {
+               top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+               left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+               bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+               right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            };
+         });
+         currentRow++;
+
+         // ================================================================================
+         // DETALHES
+         // ================================================================================
+         grupo.detalhes.forEach(detalhe => {
+            const rowData = [
+               detalhe.codOs || null,
+               formatarDataParaBR(detalhe.data) || '--------',
+               detalhe.chamado
+                  ? Number(detalhe.chamado) || detalhe.chamado
+                  : '-----',
+               formatarHora(detalhe.horaInicio) || '----',
+               formatarHora(detalhe.horaFim) || '----',
+               formatarHorasTotaisHorasDecimais(detalhe.horas) || '----',
+               detalhe.cliente || '----------',
+               corrigirTextoCorrompido(detalhe.recurso ?? '') || '----------',
+            ];
+
+            if (incluirFaturado) rowData.push(detalhe.faturado || '---');
+            if (incluirValidado) rowData.push(detalhe.validado || '---');
+
+            rowData.forEach((value, colIndex) => {
+               const cell = worksheet.getCell(currentRow, colIndex + 1);
+               cell.value = value;
+               // Centralizar horizontalmente colunas de índice 0 a 5
+               cell.alignment = {
+                  horizontal: colIndex <= 5 ? 'center' : 'left',
+                  vertical: 'middle',
+                  indent: colIndex === 6 || colIndex === 7 ? 2 : 0,
+               };
+               cell.border = {
+                  top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                  left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                  bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                  right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+               };
+
+               // Aplicar formato de número para coluna OS (índice 0)
+               if (
+                  (colIndex === 0 || colIndex === 2) &&
+                  typeof value === 'number'
+               ) {
+                  cell.numFmt = '#,##0';
+               }
+
+               // Colorir colunas Faturado e Validado
+               const isFaturadoCol = incluirFaturado && colIndex === 8;
+               const isValidadoCol =
+                  incluirValidado && colIndex === (incluirFaturado ? 9 : 8);
+
+               if (isFaturadoCol || isValidadoCol) {
+                  cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                  cell.fill = {
+                     type: 'pattern',
+                     pattern: 'solid',
+                     fgColor: {
+                        argb: value === 'SIM' ? 'FF3B82F6' : 'FFEF4444',
+                     },
+                  };
+                  cell.alignment = { horizontal: 'center', vertical: 'middle' };
+               }
+            });
+
+            worksheet.getRow(currentRow).height = 24;
+            currentRow++;
          });
 
-         currentRow++;
-      });
+         // ================================================================================
+         // CONFIGURAÇÕES FINAIS
+         // ================================================================================
+         const columnWidths = [
+            { width: 12 }, // OS
+            { width: 20 }, // Data
+            { width: 12 }, // Chamado
+            { width: 12 }, // Hora Início
+            { width: 12 }, // Hora Fim
+            { width: 12 }, // Horas
+            { width: 50 }, // Cliente
+            { width: 50 }, // Recurso
+         ];
 
-      // ================================================================================
-      // CONFIGURAÇÕES FINAIS
-      // ================================================================================
-      worksheet.columns = [
-         { width: 10 }, // OS
-         { width: 12 }, // Data
-         { width: 30 }, // Chamado
-         { width: 12 }, // Hora Início
-         { width: 12 }, // Hora Fim
-         { width: 10 }, // Horas
-         { width: 25 }, // Cliente
-         { width: 25 }, // Recurso
-         { width: 12 }, // Faturado
-         { width: 12 }, // Validado
-      ];
+         if (incluirFaturado) columnWidths.push({ width: 12 }); // Faturado
+         if (incluirValidado) columnWidths.push({ width: 12 }); // Validado
 
-      // ================================================================================
-      // SALVAR ARQUIVO
-      // ================================================================================
-      const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], {
-         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      });
+         worksheet.columns = columnWidths;
 
-      const timestamp = new Date().getTime();
-      const nomeArquivo = `Relatorio_OS_${grupo.nome.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}.xlsx`;
-      saveAs(blob, nomeArquivo);
+         // ================================================================================
+         // SALVAR ARQUIVO
+         // ================================================================================
+         const buffer = await workbook.xlsx.writeBuffer();
+         const blob = new Blob([buffer], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+         });
+
+         const timestamp = new Date().getTime();
+         const nomeArquivo = `Relatorio_OS_${grupo.nome.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}.xlsx`;
+         saveAs(blob, nomeArquivo);
+
+         handleCloseModal();
+      } catch (error) {
+         console.error('Erro ao exportar Excel:', error);
+      } finally {
+         setIsExporting(false);
+      }
    };
 
    return (
-      <Tooltip>
-         <TooltipTrigger asChild>
-            <button
-               onClick={exportToExcel}
-               className="group cursor-pointer rounded-md border-[1px] border-green-800 bg-green-700 p-2 shadow-md shadow-black transition-all hover:scale-125 active:scale-95"
+      <>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <button
+                  onClick={handleOpenModal}
+                  className="group cursor-pointer rounded-md border-[1px] border-green-800 bg-green-700 p-2 shadow-md shadow-black transition-all hover:scale-125 active:scale-95"
+               >
+                  <RiFileExcel2Fill className="text-white" size={20} />
+                  {buttonText}
+               </button>
+            </TooltipTrigger>
+            <TooltipContent
+               side="left"
+               align="start"
+               sideOffset={8}
+               className="border-t-8 border-green-600 bg-white text-sm font-bold tracking-widest text-black italic shadow-lg shadow-black select-none"
             >
-               <RiFileExcel2Fill className="text-white" size={20} />
-               {buttonText}
-            </button>
-         </TooltipTrigger>
-         <TooltipContent
-            side="left"
-            align="start"
-            sideOffset={8}
-            className="border-t-8 border-green-600 bg-white text-sm font-bold tracking-widest text-black italic shadow-lg shadow-black select-none"
-         >
-            Exportar Excel
-         </TooltipContent>
-      </Tooltip>
+               Exportar Excel
+            </TooltipContent>
+         </Tooltip>
+
+         {/* MODAL */}
+         {showModal && (
+            <div className="animate-in fade-in fixed inset-0 z-70 flex items-center justify-center p-4 duration-300">
+               {/* Overlay */}
+               <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+               {/* Modal Content */}
+               <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-xl overflow-hidden rounded-2xl border-[1px] border-slate-500 bg-slate-100 transition-all duration-500 ease-out">
+                  {/* Header */}
+                  <header className="relative flex items-center justify-between bg-gradient-to-r from-green-600 to-green-700 p-6 shadow-sm shadow-black">
+                     <div className="flex items-center gap-6">
+                        <RiFileExcel2Fill className="text-white" size={32} />
+                        <h2 className="text-xl font-extrabold tracking-wider text-white uppercase select-none">
+                           Exportar P/ Excel
+                        </h2>
+                     </div>
+                     <button
+                        onClick={handleCloseModal}
+                        disabled={isExporting}
+                        className="group cursor-pointer rounded-full bg-red-500/50 p-1 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                     >
+                        <IoClose className="text-white" size={24} />
+                     </button>
+                  </header>
+
+                  {/* Body */}
+                  <main className="flex flex-col gap-6 p-6">
+                     <p className="text-base font-bold tracking-wider text-black italic select-none">
+                        Selecione quais colunas deseja incluir no relatório:
+                     </p>
+
+                     <div className="flex flex-col gap-1">
+                        {/* Checkbox Faturado */}
+                        <label className="mb-4 flex cursor-pointer items-center gap-3 rounded-lg border-[1px] border-green-500 p-4 shadow-sm shadow-black transition-all hover:border-green-500 hover:bg-green-100">
+                           <input
+                              type="checkbox"
+                              checked={incluirFaturado}
+                              onChange={e =>
+                                 setIncluirFaturado(e.target.checked)
+                              }
+                              className="h-5 w-5 cursor-pointer accent-green-600"
+                              disabled={isExporting}
+                           />
+                           <div className="flex-1">
+                              <span className="font-bold tracking-widest text-black select-none">
+                                 Cliente Paga
+                              </span>
+                              <p className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                                 Incluir coluna, Cliente Paga
+                              </p>
+                           </div>
+                           {incluirFaturado && (
+                              <FaCheckCircle
+                                 className="text-green-600"
+                                 size={24}
+                              />
+                           )}
+                        </label>
+
+                        {/* Checkbox Validado */}
+                        <label className="mb-4 flex cursor-pointer items-center gap-3 rounded-lg border-[1px] border-green-500 p-4 shadow-sm shadow-black transition-all hover:border-green-500 hover:bg-green-100">
+                           <input
+                              type="checkbox"
+                              checked={incluirValidado}
+                              onChange={e =>
+                                 setIncluirValidado(e.target.checked)
+                              }
+                              className="h-5 w-5 cursor-pointer accent-green-600"
+                              disabled={isExporting}
+                           />
+                           <div className="flex-1">
+                              <span className="font-bold tracking-widest text-black select-none">
+                                 Consultor Recebe
+                              </span>
+                              <p className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                                 Incluir coluna, Consultor Recebe
+                              </p>
+                           </div>
+                           {incluirValidado && (
+                              <FaCheckCircle
+                                 className="text-green-600"
+                                 size={24}
+                              />
+                           )}
+                        </label>
+                     </div>
+
+                     {/* Botões */}
+                     <div className="flex items-center justify-center gap-6">
+                        <button
+                           onClick={handleCloseModal}
+                           className="flex-1 cursor-pointer rounded-md bg-red-600 px-6 py-2 text-lg font-extrabold text-white shadow-md shadow-black transition-all hover:scale-105 hover:bg-red-800 active:scale-95"
+                           disabled={isExporting}
+                        >
+                           Cancelar
+                        </button>
+                        <button
+                           onClick={exportToExcel}
+                           disabled={isExporting}
+                           className="flex-1 cursor-pointer rounded-md bg-green-600 px-6 py-2 text-lg font-extrabold text-white shadow-md shadow-black transition-all hover:scale-105 hover:bg-green-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                           {isExporting ? (
+                              <>
+                                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                 Exportando...
+                              </>
+                           ) : (
+                              <>Exportar</>
+                           )}
+                        </button>
+                     </div>
+                  </main>
+               </div>
+            </div>
+         )}
+      </>
    );
 }

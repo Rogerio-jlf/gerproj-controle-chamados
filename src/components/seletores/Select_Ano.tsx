@@ -1,4 +1,9 @@
 import { FaFilter } from 'react-icons/fa6';
+import { Dropdown } from 'primereact/dropdown';
+
+import 'primereact/resources/themes/lara-light-indigo/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
 
 // ================================================================================
 // INTERFACES E TIPOS
@@ -12,7 +17,12 @@ interface SelectProps {
 // COMPONENTE PRINCIPAL
 // ================================================================================
 export default function SelectAno({ value, onChange }: SelectProps) {
-   const arrayAnos = [2024, 2025, 2026];
+   const anosOptions = [
+      { name: 'Todos os anos', code: 'todos' },
+      { name: '2024', code: '2024' },
+      { name: '2025', code: '2025' },
+      { name: '2026', code: '2026' },
+   ];
 
    // ================================================================================
    // RENDERIZAÇÃO PRINCIPAL
@@ -25,34 +35,16 @@ export default function SelectAno({ value, onChange }: SelectProps) {
          </label>
          {/* ===== */}
 
-         <select
+         <Dropdown
             value={value}
-            onChange={e => {
-               const selectedValue = e.target.value;
-               if (selectedValue === 'todos') {
-                  onChange('todos');
-               } else {
-                  onChange(Number(selectedValue));
-               }
-            }}
-            className="w-full cursor-pointer rounded-md border-none bg-white px-4 py-2 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-         >
-            <option
-               value="todos"
-               className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
-            >
-               Todos os anos
-            </option>
-            {arrayAnos.map(ano => (
-               <option
-                  key={ano}
-                  value={ano}
-                  className="p-4 text-lg font-semibold tracking-wider text-black italic select-none"
-               >
-                  {ano}
-               </option>
-            ))}
-         </select>
+            options={anosOptions}
+            optionLabel="name"
+            optionValue="code"
+            onChange={e => onChange(e.value)}
+            placeholder="Selecione um ano"
+            appendTo="self"
+            className="shadow-md shadow-black"
+         />
       </div>
    );
 }

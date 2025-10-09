@@ -26,7 +26,7 @@ export default function Header({ titulo, subtitulo, icon }: HeaderProps) {
    // ================================================================================
    return (
       <header>
-         <div className="flex items-center justify-between border-b-4 border-red-500 bg-gray-100 pb-6">
+         <div className="flex items-center justify-between bg-teal-950 px-16 py-10">
             {/* ===== ITENS DA ESQUERDA ===== */}
             <div className="flex items-center gap-6">
                <div
@@ -41,12 +41,12 @@ export default function Header({ titulo, subtitulo, icon }: HeaderProps) {
                {/* ===== */}
 
                <div className="flex flex-col">
-                  <h1 className="text-5xl font-extrabold tracking-widest text-black uppercase select-none">
+                  <h1 className="text-5xl font-extrabold tracking-widest text-white uppercase select-none">
                      {titulo}
                   </h1>
                   {/* ===== */}
                   {subtitulo && (
-                     <h2 className="text-lg font-bold tracking-widest text-black italic select-none">
+                     <h2 className="text-lg font-bold tracking-widest text-white italic select-none">
                         {subtitulo}
                      </h2>
                   )}
@@ -58,12 +58,12 @@ export default function Header({ titulo, subtitulo, icon }: HeaderProps) {
             <div className="flex items-center gap-4">
                <div className="flex items-center gap-4">
                   <div className="text-right">
-                     <h2 className="text-sm font-bold tracking-widest text-black italic select-none">
+                     <h2 className="text-sm font-bold tracking-widest text-white italic select-none">
                         Última atualização
                      </h2>
                      {/* ===== */}
 
-                     <p className="text-base font-extrabold tracking-wider text-black italic select-none">
+                     <p className="text-base font-extrabold tracking-wider text-white italic select-none">
                         {new Date().toLocaleString('pt-BR')}
                      </p>
                   </div>

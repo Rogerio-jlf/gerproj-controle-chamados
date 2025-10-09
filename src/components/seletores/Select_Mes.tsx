@@ -1,4 +1,9 @@
 import { FaFilter } from 'react-icons/fa6';
+import { Dropdown } from 'primereact/dropdown';
+
+import 'primereact/resources/themes/lara-light-indigo/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
 
 // ================================================================================
 // INTERFACES E TIPOS
@@ -12,19 +17,20 @@ interface SelectProps {
 // COMPONENTE PRINCIPAL
 // ================================================================================
 export default function SelectMes({ value, onChange }: SelectProps) {
-   const arrayMeses = [
-      'Janeiro',
-      'Fevereiro',
-      'Março',
-      'Abril',
-      'Maio',
-      'Junho',
-      'Julho',
-      'Agosto',
-      'Setembro',
-      'Outubro',
-      'Novembro',
-      'Dezembro',
+   const mesesOptions = [
+      { name: 'Todos os meses', code: 'todos' },
+      { name: 'Janeiro', code: 1 },
+      { name: 'Fevereiro', code: 2 },
+      { name: 'Março', code: 3 },
+      { name: 'Abril', code: 4 },
+      { name: 'Maio', code: 5 },
+      { name: 'Junho', code: 6 },
+      { name: 'Julho', code: 7 },
+      { name: 'Agosto', code: 8 },
+      { name: 'Setembro', code: 9 },
+      { name: 'Outubro', code: 10 },
+      { name: 'Novembro', code: 11 },
+      { name: 'Dezembro', code: 12 },
    ];
 
    // ================================================================================
@@ -38,34 +44,15 @@ export default function SelectMes({ value, onChange }: SelectProps) {
          </label>
          {/* ===== */}
 
-         <select
+         <Dropdown
             value={value}
-            onChange={e => {
-               const selectedValue = e.target.value;
-               if (selectedValue === 'todos') {
-                  onChange('todos');
-               } else {
-                  onChange(Number(selectedValue));
-               }
-            }}
-            className="w-full cursor-pointer rounded-md border-none bg-white px-4 py-2 text-lg font-extrabold tracking-wider text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-         >
-            <option
-               value="todos"
-               className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
-            >
-               Todos os meses
-            </option>
-            {arrayMeses.map((mes, i) => (
-               <option
-                  key={i}
-                  value={i + 1}
-                  className="p-4 text-lg font-semibold tracking-wider text-black italic select-none"
-               >
-                  {mes}
-               </option>
-            ))}
-         </select>
+            options={mesesOptions}
+            optionLabel="name"
+            optionValue="code"
+            onChange={e => onChange(e.value)}
+            appendTo="self"
+            className="shadow-md shadow-black"
+         />
       </div>
    );
 }

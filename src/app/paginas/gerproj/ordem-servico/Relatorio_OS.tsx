@@ -28,17 +28,20 @@ import {
    formatarCodNumber,
    formatarHorasTotaisHorasDecimais,
    formatarCodString,
+   formatarDataParaBR,
 } from '../../../../utils/formatters';
 
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 
-import ptBR from 'date-fns/locale/pt-BR';
+import { FiRefreshCcw } from 'react-icons/fi';
+import { BsEraserFill } from 'react-icons/bs';
 
 import 'primereact/resources/themes/lara-light-indigo/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
+import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 
 // ================================================================================
 // TIPOS E INTERFACES
@@ -109,6 +112,7 @@ interface RelatorioResponse {
 interface Props {
    isOpen?: boolean;
    onClose: () => void;
+   // ================================================================================
 }
 
 const agruparOptions = [
@@ -116,7 +120,7 @@ const agruparOptions = [
    { name: 'Recurso', code: 'recurso' },
    { name: 'Projeto', code: 'projeto' },
    { name: 'Tarefa', code: 'tarefa' },
-   { name: 'Mês', code: 'mes' },
+   // { name: 'Mês', code: 'mes' },
    { name: 'Cliente + Recurso', code: 'cliente-recurso' },
 ];
 
@@ -125,32 +129,6 @@ const optionsAgruparPorSimNao = [
    { name: 'Sim', code: 'sim' },
    { name: 'Nao', code: 'nao' },
 ];
-
-// ================================================================================
-// FUNÇÕES UTILITÁRIAS
-// ================================================================================
-function formatarDecimalParaTempo(decimal: number | null): string {
-   if (decimal === null || isNaN(decimal)) return '--:--';
-
-   const horas = Math.floor(decimal);
-   const minutos = Math.round((decimal - horas) * 60);
-
-   return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
-}
-
-function formatarDataParaBR(data: string | null): string {
-   if (!data) return '----------';
-
-   try {
-      const date = new Date(data);
-      const dia = date.getDate().toString().padStart(2, '0');
-      const mes = (date.getMonth() + 1).toString().padStart(2, '0');
-      const ano = date.getFullYear();
-      return `${dia}/${mes}/${ano}`;
-   } catch {
-      return '----------';
-   }
-}
 
 // ================================================================================
 // COMPONENTE PRINCIPAL
@@ -306,31 +284,30 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
    // ================================================================================
    // VALIDAÇÕES E ESTADOS DE CARREGAMENTO
    // ================================================================================
-   if (!user || !token) {
+
+   if (!isOpen) return null;
+
+   if (isLoading) {
       return (
-         <div className="flex flex-col items-center justify-center gap-6 py-40">
-            <FaExclamationTriangle
-               className="animate-pulse text-red-600"
-               size={120}
-            />
-            <div className="flex flex-col items-center justify-center gap-4">
-               <h3 className="text-3xl font-extrabold tracking-wider text-red-600 select-none">
-                  Acesso restrito!
-               </h3>
-               <p className="text-lg font-semibold tracking-wider text-red-500 italic select-none">
-                  Sua sessão expirou. Você precisa estar logado para acessar o
-                  sistema.
-               </p>
+         <div className="fixed inset-0 z-[60] flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-2xl" />
+            <div className="relative z-10">
+               <IsLoading title="Gerando relatório de OS" />
             </div>
          </div>
       );
    }
 
-   if (!isOpen) return null;
-
-   if (isLoading) return <IsLoading title="Gerando relatório de OS" />;
-
-   if (isError) return <IsError error={error as Error} />;
+   if (isError) {
+      return (
+         <div className="fixed inset-0 z-[60] flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-2xl" />
+            <div className="relative z-10">
+               <IsError error={error as Error} />
+            </div>
+         </div>
+      );
+   }
 
    const totalizadores = relatorioData?.relatorio.totalizadores;
    const grupos = relatorioData?.relatorio.grupos || [];
@@ -341,12 +318,12 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
    return (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
          {/* OVERLAY */}
-         <div className="absolute inset-0 bg-black/10 backdrop-blur-2xl" />
+         <div className="absolute inset-0 bg-black/10 backdrop-blur-3xl" />
 
          {/* MODAL */}
-         <div className="relative z-10 mx-4 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl shadow-md shadow-black">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 mx-4 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl shadow-md shadow-black transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
-            <header className="flex flex-col gap-6 bg-white/60 p-6">
+            <header className="flex flex-col gap-6 bg-white/50 p-6">
                {/* HEADER */}
                <div className="flex items-center justify-between gap-8">
                   <div className="flex items-center justify-center gap-6">
@@ -357,11 +334,11 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                         Relatório de OS
                      </h1>
                   </div>
+                  {/* ===== */}
 
-                  {/* Botão fechar modal */}
                   <button
                      onClick={handleCloseRelatorio}
-                     className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95"
+                     className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all hover:scale-125 hover:bg-red-500 active:scale-95"
                   >
                      <IoClose size={24} />
                   </button>
@@ -371,19 +348,21 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                {/* FILTROS & CARDS */}
                <div className="flex items-center justify-between gap-6">
                   {/* FILTROS */}
-                  <div className="flex w-[1600px] flex-col gap-4 rounded-xl border-[1px] border-white/10 bg-white/30 p-6 shadow-md shadow-black">
+                  <div className="flex w-[1600px] flex-col gap-4 p-6">
+                     {/* Header Filtros */}
                      <div className="flex items-center gap-4">
-                        <MdFilterList className="text-black" size={24} />
-                        <h2 className="text-lg font-bold tracking-widest text-black uppercase select-none">
+                        <MdFilterList className="text-black" size={28} />
+                        <h2 className="text-xl font-bold tracking-widest text-black uppercase select-none">
                            Filtros
                         </h2>
                      </div>
                      {/* ========== */}
 
+                     {/* Filtros */}
                      <div className="grid grid-cols-4 gap-4">
                         {/* Agrupar por */}
-                        <div className="flex flex-col gap-2">
-                           <label className="text-sm font-semibold tracking-widest text-black italic select-none">
+                        <div className="flex flex-col gap-1">
+                           <label className="text-base font-semibold tracking-widest text-black italic select-none">
                               Agrupar por:
                            </label>
 
@@ -393,16 +372,15 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                               optionLabel="name"
                               optionValue="code"
                               onChange={e => setAgruparPor(e.value)}
-                              className="w-full rounded-md bg-white text-sm font-semibold text-black shadow-md shadow-black"
-                              panelClassName="bg-white shadow-lg rounded-lg border border-slate-200"
+                              className="shadow-md shadow-black"
                               appendTo="self"
                            />
                         </div>
                         {/* ===== */}
 
                         {/* Mês/Ano */}
-                        <div className="flex flex-col gap-2">
-                           <label className="text-sm font-semibold tracking-widest text-black italic select-none">
+                        <div className="flex flex-col gap-1">
+                           <label className="text-base font-semibold tracking-widest text-black italic select-none">
                               Mês/Ano:
                            </label>
 
@@ -426,19 +404,16 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                                  }}
                                  showIcon
                                  placeholder="Mês/Ano"
-                                 panelClassName="bg-white rounded-lg shadow-lg border border-slate-200"
-                                 className="w-full rounded-md bg-white text-sm font-semibold text-black shadow-md shadow-black"
-                                 inputClassName="w-full bg-white text-sm font-semibold text-black rounded-md pr-10"
+                                 className="w-full shadow-md shadow-black"
                                  appendTo="self"
                               />
                            </div>
                         </div>
-
                         {/* ===== */}
 
                         {/* Data Início */}
-                        <div className="flex flex-col gap-2">
-                           <label className="text-sm font-semibold tracking-widest text-black italic select-none">
+                        <div className="flex flex-col gap-1">
+                           <label className="text-base font-semibold tracking-widest text-black italic select-none">
                               Data Início:
                            </label>
                            <Calendar
@@ -449,19 +424,16 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                                  )
                               }
                               showIcon
-                              dateFormat="dd/mm/yy" // ✅ força formato brasileiro
-                              // locale="pt-BR" // ✅ traduz meses e dias
+                              dateFormat="dd/mm/yy" // força formato brasileiro
                               placeholder="Data inicial"
-                              panelClassName="bg-white shadow-lg rounded-lg border border-slate-200"
-                              className="w-full rounded-md bg-white text-sm font-semibold text-black shadow-md shadow-black"
-                              inputClassName="w-full rounded-md border-none text-sm font-semibold text-black"
+                              className="w-full rounded-md shadow-md shadow-black"
                               appendTo="self"
                            />
                         </div>
 
                         {/* Data Fim */}
-                        <div className="flex flex-col gap-2">
-                           <label className="text-sm font-semibold tracking-widest text-black italic select-none">
+                        <div className="flex flex-col gap-1">
+                           <label className="text-base font-semibold tracking-widest text-black italic select-none">
                               Data Fim:
                            </label>
                            <Calendar
@@ -470,19 +442,16 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                                  setDataFim(e.value ? formatDate(e.value) : '')
                               }
                               showIcon
-                              dateFormat="dd/mm/yy" // ✅ força formato brasileiro
-                              // locale="pt-BR" // ✅ traduz meses e dias
+                              dateFormat="dd/mm/yy" // força formato brasileiro
                               placeholder="Data final"
-                              panelClassName="bg-white shadow-lg rounded-lg border border-slate-200"
-                              className="w-full rounded-md bg-white text-sm font-semibold text-black shadow-md shadow-black"
-                              inputClassName="w-full rounded-md border-none text-sm font-semibold text-black"
+                              className="w-full rounded-md shadow-md shadow-black"
                               appendTo="self"
                            />
                         </div>
 
                         {/* Faturado */}
-                        <div className="flex flex-col gap-2">
-                           <label className="text-sm font-semibold tracking-widest text-black italic select-none">
+                        <div className="flex flex-col gap-1">
+                           <label className="text-base font-semibold tracking-widest text-black italic select-none">
                               Faturado:
                            </label>
                            <Dropdown
@@ -492,16 +461,15 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                               optionValue="code"
                               onChange={e => setFaturadoOS(e.value)}
                               placeholder="Selecione uma opção"
-                              className="w-full rounded-md bg-white text-sm font-semibold text-black shadow-md shadow-black"
-                              panelClassName="bg-white shadow-lg rounded-lg border border-slate-200"
+                              className="w-full shadow-md shadow-black"
                               appendTo="self"
                            />
                         </div>
                         {/* ===== */}
 
                         {/* Validado */}
-                        <div className="flex flex-col gap-2">
-                           <label className="text-sm font-semibold tracking-widest text-black italic select-none">
+                        <div className="flex flex-col gap-1">
+                           <label className="text-base font-semibold tracking-widest text-black italic select-none">
                               Validado:
                            </label>
                            <Dropdown
@@ -511,37 +479,44 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                               optionValue="code"
                               onChange={e => setValidOS(e.value)}
                               placeholder="Selecione uma opção"
-                              className="w-full rounded-md bg-white text-sm font-semibold text-black shadow-md shadow-black"
-                              panelClassName="bg-white shadow-lg rounded-lg border border-slate-200"
+                              className="w-full shadow-md shadow-black"
                               appendTo="self"
                            />
                         </div>
                         {/* ===== */}
 
-                        {/* Botões de ação */}
-                        <div className="col-span-2 flex items-end gap-2">
-                           <button
+                        {/* Botões Atualizar & Limpar Filtros */}
+                        <div className="col-span-2 flex items-end gap-4">
+                           {/* Botão Atualizar */}
+                           <Button
                               onClick={() => refetch()}
-                              className="flex-1 rounded-md bg-teal-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:bg-teal-700 active:scale-95"
+                              className="!flex !flex-1 !items-center !justify-center !gap-4 !text-base !font-extrabold !tracking-widest !text-black !italic shadow-md shadow-black transition-all active:scale-95"
+                              severity="success"
                            >
-                              Gerar Relatório
-                           </button>
+                              <FiRefreshCcw size={24} className="" />
+                              ATUALIZAR
+                           </Button>
                            {/* ===== */}
+
+                           {/* Botão Limpar Filtros */}
                            <Button
                               onClick={handleLimparFiltros}
-                              className="flex-1 rounded-md border-none px-4 py-2 text-sm font-bold text-white shadow-md shadow-black transition-all active:scale-95"
+                              className="!flex !flex-1 !items-center !justify-center !gap-4 !text-base !font-extrabold !tracking-widest !text-black !italic shadow-md shadow-black transition-all active:scale-95"
                               severity="info"
                            >
-                              Limpar Filtros
+                              <BsEraserFill size={24} className="" />
+                              LIMPAR FILTROS
                            </Button>
                         </div>
                      </div>
                   </div>
+                  {/* ========== */}
 
                   {/* CARDS */}
                   {totalizadores && (
                      <div className="grid flex-1 grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1 rounded-xl border-[1px] border-teal-600 bg-gradient-to-br from-teal-500 to-teal-600 p-6 shadow-md shadow-black">
+                        {/* Card Total de Horas */}
+                        <div className="flex flex-col gap-1 rounded-tr-4xl rounded-bl-4xl border-[1px] border-teal-600 bg-gradient-to-br from-teal-500 to-teal-600 p-6 shadow-md shadow-black">
                            <div className="text-sm font-extrabold tracking-widest text-white uppercase italic select-none">
                               Total de Horas
                            </div>
@@ -554,7 +529,8 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                         </div>
                         {/* ===== */}
 
-                        <div className="flex flex-col gap-1 rounded-xl border-[1px] border-purple-600 bg-gradient-to-br from-purple-500 to-purple-600 p-6 shadow-md shadow-black">
+                        {/* Card Total de OS's */}
+                        <div className="flex flex-col gap-1 rounded-tl-4xl rounded-br-4xl border-[1px] border-purple-600 bg-gradient-to-br from-purple-500 to-purple-600 p-6 shadow-md shadow-black">
                            <div className="text-sm font-extrabold tracking-widest text-white italic select-none">
                               TOTAL DE OS's
                            </div>
@@ -564,7 +540,8 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                         </div>
                         {/* ===== */}
 
-                        <div className="flex flex-col gap-1 rounded-xl border-[1px] border-blue-600 bg-gradient-to-br from-blue-500 to-blue-600 p-6 shadow-md shadow-black">
+                        {/* Card Total de OS's Faturadas */}
+                        <div className="flex flex-col gap-1 rounded-tl-4xl rounded-br-4xl border-[1px] border-blue-600 bg-gradient-to-br from-blue-500 to-blue-600 p-6 shadow-md shadow-black">
                            <div className="text-sm font-extrabold tracking-widest text-white italic select-none">
                               TOTAL DE OS's FATURADAS
                            </div>
@@ -576,7 +553,8 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                         </div>
                         {/* ===== */}
 
-                        <div className="flex flex-col gap-1 rounded-xl border-[1px] border-green-600 bg-gradient-to-br from-green-500 to-green-600 p-6 shadow-md shadow-black">
+                        {/* Card Total de OS's Validadas */}
+                        <div className="flex flex-col gap-1 rounded-tr-4xl rounded-bl-4xl border-[1px] border-green-600 bg-gradient-to-br from-green-500 to-green-600 p-6 shadow-md shadow-black">
                            <div className="text-sm font-extrabold tracking-widest text-white italic select-none">
                               TOTAL DE OS's VALIDADAS
                            </div>
@@ -586,15 +564,13 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                               )}
                            </div>
                         </div>
-                        {/* ===== */}
                      </div>
                   )}
                </div>
-               {/* ========== */}
             </header>
             {/* ==================== */}
 
-            {/* CONTEÚDO - GRUPOS */}
+            {/* CONTEÚDO */}
             <main className="h-full w-full overflow-hidden bg-black">
                <div
                   className="h-full overflow-y-auto p-6"
@@ -706,37 +682,65 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                                     <table className="w-full">
                                        <thead>
                                           <tr className="border-b-4 border-white/30">
+                                             {/* OS */}
                                              <th className="p-2 text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
                                                 OS
                                              </th>
+                                             {/* ===== */}
+
+                                             {/* Data */}
                                              <th className="p-2 text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
                                                 Data
                                              </th>
+                                             {/* ===== */}
+
+                                             {/* Chamado */}
                                              <th className="p-2 text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
                                                 Chamado
                                              </th>
+                                             {/* ===== */}
+
+                                             {/* Hora Início */}
                                              <th className="p-2 text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
                                                 Hora Início
                                              </th>
+                                             {/* ===== */}
+
+                                             {/* Hora Fim */}
                                              <th className="p-2 text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
                                                 Hora Fim
                                              </th>
+                                             {/* ===== */}
+
+                                             {/* Total Horas */}
                                              <th className="p-2 text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
                                                 Horas
                                              </th>
+                                             {/* ===== */}
+
+                                             {/* Cliente */}
                                              {agruparPor !== 'cliente' && (
                                                 <th className="p-2 text-left text-base font-bold tracking-widest text-white uppercase italic select-none">
                                                    Cliente
                                                 </th>
                                              )}
+                                             {/* ===== */}
+
+                                             {/* Recurso */}
                                              {agruparPor !== 'recurso' && (
                                                 <th className="p-2 text-left text-base font-bold tracking-widest text-white uppercase italic select-none">
                                                    Recurso
                                                 </th>
                                              )}
+                                             {/* ===== */}
+
+                                             {/* Faturado */}
                                              <th className="p-2 text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
                                                 Faturado
                                              </th>
+                                             {/* ===== */}
+
+                                             {/* Validado */}
                                              <th className="p-2 text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
                                                 Validado
                                              </th>
@@ -750,50 +754,77 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                                                    key={idx}
                                                    className="border-b border-white/20 transition-all hover:bg-white/20"
                                                 >
+                                                   {/* OS */}
                                                    <td className="p-2 text-center text-sm font-semibold tracking-widest text-white select-none">
                                                       {formatarCodNumber(
                                                          detalhe.codOs
                                                       )}
                                                    </td>
+                                                   {/* ===== */}
+
+                                                   {/* Data */}
                                                    <td className="p-2 text-center text-sm font-semibold tracking-widest text-white select-none">
                                                       {formatarDataParaBR(
                                                          detalhe.data
                                                       )}
                                                    </td>
+                                                   {/* ===== */}
+
+                                                   {/* Chamado */}
                                                    <td className="p-2 text-center text-sm font-semibold tracking-widest text-white select-none">
                                                       {formatarCodString(
                                                          detalhe.chamado
                                                       )}
                                                    </td>
+                                                   {/* ===== */}
+
+                                                   {/* Hora Início */}
                                                    <td className="p-2 text-center text-sm font-semibold tracking-widest text-white select-none">
                                                       {formatarHora(
                                                          detalhe.horaInicio
                                                       )}
                                                    </td>
+                                                   {/* ===== */}
+
+                                                   {/* Hora Fim */}
                                                    <td className="p-2 text-center text-sm font-semibold tracking-widest text-white select-none">
                                                       {formatarHora(
                                                          detalhe.horaFim
                                                       )}
                                                    </td>
+                                                   {/* ===== */}
+
+                                                   {/* Horas */}
                                                    <td className="p-2 text-center text-sm font-extrabold tracking-widest text-amber-500 select-none">
                                                       {formatarHorasTotaisHorasDecimais(
                                                          detalhe.horas
                                                       )}
                                                    </td>
+                                                   {/* ===== */}
+
+                                                   {/* Cliente */}
                                                    {agruparPor !==
                                                       'cliente' && (
                                                       <td className="p-2 text-sm font-semibold tracking-widest text-white select-none">
                                                          {detalhe.cliente ||
-                                                            '---'}
+                                                            '----------'}
                                                       </td>
                                                    )}
+                                                   {/* ===== */}
+
+                                                   {/* Recurso */}
                                                    {agruparPor !==
                                                       'recurso' && (
                                                       <td className="p-2 text-sm font-semibold tracking-widest text-white select-none">
-                                                         {detalhe.recurso ||
-                                                            '---'}
+                                                         {corrigirTextoCorrompido(
+                                                            detalhe.recurso ??
+                                                               ''
+                                                         ) || '----------'}
                                                       </td>
                                                    )}
+
+                                                   {/* Faturado */}
+                                                   {/* ===== */}
                                                    <td className="p-2 text-center">
                                                       <span
                                                          className={`inline-block rounded px-2 py-1 text-sm font-extrabold tracking-widest select-none ${
@@ -806,6 +837,9 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                                                          {detalhe.faturado}
                                                       </span>
                                                    </td>
+                                                   {/* ===== */}
+
+                                                   {/* Validado */}
                                                    <td className="p-2 text-center">
                                                       <span
                                                          className={`inline-block rounded px-2 py-1 text-sm font-extrabold tracking-widest select-none ${
