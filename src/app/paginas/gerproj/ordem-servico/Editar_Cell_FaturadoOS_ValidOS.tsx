@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { FaEdit } from 'react-icons/fa';
 import {
    Tooltip,
    TooltipContent,

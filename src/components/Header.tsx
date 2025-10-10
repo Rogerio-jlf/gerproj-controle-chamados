@@ -26,7 +26,7 @@ export default function Header({ titulo, subtitulo, icon }: HeaderProps) {
    // ================================================================================
    return (
       <header>
-         <div className="flex items-center justify-between bg-teal-950 px-16 py-10">
+         <div className="flex items-center justify-between bg-teal-900 px-16 py-10">
             {/* ===== ITENS DA ESQUERDA ===== */}
             <div className="flex items-center gap-6">
                <div

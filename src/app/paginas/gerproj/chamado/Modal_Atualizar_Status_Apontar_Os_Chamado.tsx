@@ -1090,7 +1090,7 @@ export function ModalAtualizarStatusApontarOsChamado({
                   <Tooltip>
                      <TooltipTrigger asChild>
                         <div
-                           className={`group relative rounded-full border-2 border-slate-900 px-6 py-2 transition-all ${
+                           className={`group relative rounded-sm border-2 border-slate-900 p-1 transition-all ${
                               isStatusEditable
                                  ? 'cursor-pointer hover:scale-110 hover:border-2 hover:border-slate-900'
                                  : 'cursor-not-allowed opacity-75'

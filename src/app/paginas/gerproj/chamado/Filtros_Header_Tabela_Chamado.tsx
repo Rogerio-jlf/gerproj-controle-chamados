@@ -6,12 +6,10 @@ import { useMemo, useState, useCallback, useEffect } from 'react';
 import { InputFilterTableHeaderProps } from '../../../../types/types';
 import { normalizeDate } from '../../../../utils/formatters';
 // ================================================================================
-import { BsEraserFill } from 'react-icons/bs';
-import { LuFilter, LuFilterX } from 'react-icons/lu';
 import { FaPlus } from 'react-icons/fa';
 
 // ================================================================================
-// INTERFACE PARA PROPS DOS COMPONENTES
+// INTERFACE
 // ================================================================================
 interface FilterControlsProps {
    showFilters: boolean;
@@ -85,17 +83,16 @@ export const FilterControls = ({
             <button
                onClick={() => setShowFilters(!showFilters)}
                disabled={dataLength <= 1}
-               className={`flex cursor-pointer items-center gap-4 rounded-md px-6 py-1.5 text-lg font-extrabold tracking-wider italic transition-all select-none ${
+               className={`cursor-pointer rounded-sm px-6 py-2.5 text-base tracking-widest transition-all ${
                   showFilters
-                     ? 'border-none bg-blue-600 text-white shadow-sm shadow-black hover:bg-blue-800'
-                     : 'border-none bg-white text-black shadow-sm shadow-black'
+                     ? 'border-none bg-blue-600 font-extrabold text-white italic shadow-md shadow-black hover:bg-blue-700'
+                     : 'border-none bg-white font-semibold text-black shadow-md shadow-black hover:bg-white/70'
                } ${
                   dataLength <= 1
                      ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
-                     : 'hover:-translate-y-1 hover:scale-102 active:scale-95'
+                     : 'hover:scale-105 active:scale-95'
                }`}
             >
-               {showFilters ? <LuFilterX size={24} /> : <LuFilter size={24} />}
                {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
             </button>
 
@@ -103,9 +100,8 @@ export const FilterControls = ({
             {totalActiveFilters > 0 && (
                <button
                   onClick={clearFilters}
-                  className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-1.5 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-black transition-all select-none hover:-translate-y-1 hover:scale-102 hover:bg-red-800 active:scale-95"
+                  className="cursor-pointer rounded-sm border-none bg-red-600 px-6 py-2.5 text-base font-extrabold tracking-widest text-white italic shadow-md shadow-black transition-all select-none hover:scale-105 hover:bg-red-700 active:scale-95"
                >
-                  <BsEraserFill className="text-white" size={24} />
                   Limpar Filtros
                </button>
             )}

@@ -6,7 +6,7 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 
 // ================================================================================
-// INTERFACES E TIPOS
+// INTERFACES
 // ================================================================================
 interface SelectProps {
    value: number | 'todos';
@@ -14,7 +14,7 @@ interface SelectProps {
 }
 
 // ================================================================================
-// COMPONENTE PRINCIPAL
+// COMPONENTE
 // ================================================================================
 export default function SelectMes({ value, onChange }: SelectProps) {
    const mesesOptions = [
@@ -34,7 +34,7 @@ export default function SelectMes({ value, onChange }: SelectProps) {
    ];
 
    // ================================================================================
-   // RENDERIZAÇÃO PRINCIPAL
+   // RENDERIZAÇÃO
    // ================================================================================
    return (
       <div className="group flex w-full flex-col gap-1">
@@ -50,6 +50,7 @@ export default function SelectMes({ value, onChange }: SelectProps) {
             optionLabel="name"
             optionValue="code"
             onChange={e => onChange(e.value)}
+            showClear
             appendTo="self"
             className="shadow-md shadow-black"
          />

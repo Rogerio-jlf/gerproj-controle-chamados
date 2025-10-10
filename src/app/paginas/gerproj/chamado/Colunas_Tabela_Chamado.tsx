@@ -3,12 +3,6 @@ import { useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { motion, AnimatePresence } from 'framer-motion';
 // ================================================================================
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from '../../../../components/ui/tooltip';
-// ================================================================================
 import { TabelaChamadoProps } from '../../../../types/types';
 // ================================================================================
 import {
@@ -348,7 +342,7 @@ export const colunasTabelaChamados = (
          cell: ({ getValue }) => {
             const value = getValue() as number;
             return (
-               <div className="flex items-center justify-center rounded-sm border border-white/40 bg-slate-950 py-2 text-center font-bold text-white">
+               <div className="flex items-center justify-center text-center">
                   {formatCodChamado(value) || '-----'}
                </div>
             );
@@ -365,7 +359,7 @@ export const colunasTabelaChamados = (
             const dataFormatada = formatarDataParaBR(value);
 
             return (
-               <div className="flex items-center justify-center rounded-sm border border-white/40 bg-slate-950 py-2 text-center font-bold text-white">
+               <div className="flex items-center justify-center text-center">
                   {dataFormatada || '----------'}
                </div>
             );
@@ -382,7 +376,7 @@ export const colunasTabelaChamados = (
             const isEmpty = !value;
             return (
                <div
-                  className={`flex items-center rounded-sm border border-white/40 bg-slate-950 py-2 font-bold text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-6 text-left'}`}
+                  className={`flex items-center ${isEmpty ? 'justify-center text-center' : 'justify-start text-left'}`}
                >
                   {isEmpty ? (
                      '------------------------------'
@@ -424,13 +418,13 @@ export const colunasTabelaChamados = (
                dataFormatada !== '-'
             ) {
                return (
-                  <div className="flex items-center justify-center rounded-sm border border-white/40 bg-slate-900 py-2 text-center font-bold text-white">
+                  <div className="flex items-center justify-center text-center">
                      {dataFormatada}
                   </div>
                );
             }
             return (
-               <div className="flex items-center justify-center rounded-sm border border-slate-900 bg-yellow-500 py-2 text-center font-bold text-black uppercase">
+               <div className="flex items-center justify-center rounded-sm bg-yellow-500 p-1 text-center text-black uppercase italic">
                   Não atribuído
                </div>
             );
@@ -439,7 +433,7 @@ export const colunasTabelaChamados = (
    ];
    // ==========
 
-   // Coluna
+   // Recurso
    const recursoColumn: ColumnDef<TabelaChamadoProps> = {
       accessorKey: 'NOME_RECURSO',
       header: () => <div className="text-center">Consultor</div>,
@@ -449,7 +443,7 @@ export const colunasTabelaChamados = (
 
          if (codRecurso !== null && codRecurso !== undefined && recurso) {
             return (
-               <div className="flex items-center rounded-sm border border-white/40 bg-slate-900 py-2 pl-6 text-left font-bold text-white">
+               <div className="flex items-center justify-start text-left">
                   {corrigirTextoCorrompido(
                      recurso.split(' ').slice(0, 2).join(' ')
                   )}
@@ -458,7 +452,7 @@ export const colunasTabelaChamados = (
          }
 
          return (
-            <div className="flex items-center justify-center rounded-sm border border-slate-900 bg-yellow-500 py-2 text-center font-bold text-black uppercase">
+            <div className="flex items-center justify-center rounded-sm bg-yellow-500 p-1 text-center text-black uppercase italic">
                Não atribuído
             </div>
          );
@@ -478,7 +472,7 @@ export const colunasTabelaChamados = (
             return (
                <Link
                   href={`mailto:${value}`}
-                  className={`flex items-center rounded-sm border border-white/40 bg-slate-900 py-2 font-bold text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-6 text-left'}`}
+                  className={`flex items-center ${isEmpty ? 'justify-center text-center' : 'justify-start text-left'}`}
                >
                   {isEmpty ? (
                      '------------------------------'

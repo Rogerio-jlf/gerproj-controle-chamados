@@ -6,7 +6,7 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 
 // ================================================================================
-// INTERFACES E TIPOS
+// INTERFACES
 // ================================================================================
 interface SelectProps {
    value: number | 'todos';
@@ -14,7 +14,7 @@ interface SelectProps {
 }
 
 // ================================================================================
-// COMPONENTE PRINCIPAL
+// COMPONENTE
 // ================================================================================
 export default function SelectAno({ value, onChange }: SelectProps) {
    const anosOptions = [
@@ -25,7 +25,7 @@ export default function SelectAno({ value, onChange }: SelectProps) {
    ];
 
    // ================================================================================
-   // RENDERIZAÇÃO PRINCIPAL
+   // RENDERIZAÇÃO
    // ================================================================================
    return (
       <div className="group flex w-full flex-col gap-1">
@@ -42,6 +42,7 @@ export default function SelectAno({ value, onChange }: SelectProps) {
             optionValue="code"
             onChange={e => onChange(e.value)}
             placeholder="Selecione um ano"
+            showClear
             appendTo="self"
             className="shadow-md shadow-black"
          />

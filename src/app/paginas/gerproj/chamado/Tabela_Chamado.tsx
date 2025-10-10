@@ -16,7 +16,7 @@ import { useMemo, useState, useCallback, useEffect } from 'react';
 import {
    FilterInputTableHeaderDebounce,
    FilterControls,
-} from '../components/TableFilters';
+} from './Filtros_Header_Tabela_Chamado';
 import { IsError } from '../components/IsError';
 import { IsLoading } from '../components/IsLoading';
 import { FiltrosTabelaChamado } from './Filtros_Tabela_Chamado';
@@ -41,6 +41,7 @@ import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
+import { RelatorioOS } from '../ordem-servico/Relatorio_OS';
 
 // ================================================================================
 // TIPOS E INTERFACES
@@ -154,9 +155,9 @@ export function TabelaChamado() {
       { id: 'COD_CHAMADO', desc: true },
    ]);
    const [showFilters, setShowFilters] = useState(false);
-   const [activeView, setActiveView] = useState<'chamados' | 'os' | 'tarefas'>(
-      'chamados'
-   );
+   const [activeView, setActiveView] = useState<
+      'chamados' | 'os' | 'tarefas' | 'relatorio'
+   >('chamados');
 
    // ================================================================================
    // ESTADOS - MODAIS E COMPONENTES
@@ -599,8 +600,11 @@ export function TabelaChamado() {
                         <div className="flex items-center gap-4">
                            <DropdownTabelaChamado
                               onOpenTabelaOS={() => setActiveView('os')}
-                              onOpenTabelaTarefas={() =>
+                              onOpenTabelaTarefa={() =>
                                  setActiveView('tarefas')
+                              }
+                              onOpenRelatorioOS={() =>
+                                 setActiveView('relatorio')
                               }
                            />
                         </div>
@@ -640,7 +644,7 @@ export function TabelaChamado() {
                                  {headerGroup.headers.map(header => (
                                     <th
                                        key={header.id}
-                                       className="bg-teal-700 py-6 font-extrabold tracking-wider text-white uppercase select-none"
+                                       className="bg-teal-800 py-6 font-extrabold tracking-wider text-white uppercase select-none"
                                        style={{
                                           width: getColumnWidth(
                                              header.column.id,
@@ -659,13 +663,13 @@ export function TabelaChamado() {
                               </tr>
                            ))}
 
-                           {/* FILTROS TABELA */}
+                           {/* FILTROS HEADER TABELA */}
                            {showFilters && (
                               <tr>
                                  {table.getAllColumns().map(column => (
                                     <th
                                        key={column.id}
-                                       className="bg-teal-700 px-3 pb-6"
+                                       className="bg-teal-800 px-3 pb-6"
                                        style={{
                                           width: getColumnWidth(
                                              column.id,
@@ -757,16 +761,16 @@ export function TabelaChamado() {
                               table.getRowModel().rows.map((row, rowIndex) => (
                                  <tr
                                     key={row.id}
-                                    className={`group border-b border-slate-500 transition-all hover:bg-amber-200 ${
+                                    className={`group transition-all hover:bg-white/80 ${
                                        rowIndex % 2 === 0
-                                          ? 'bg-white/10'
-                                          : 'bg-white/20'
+                                          ? 'bg-slate-800'
+                                          : 'bg-slate-800'
                                     }`}
                                  >
                                     {row.getVisibleCells().map(cell => (
                                        <td
                                           key={cell.id}
-                                          className="p-2 text-sm font-semibold tracking-wider text-white select-none group-hover:text-black"
+                                          className="rounded-sm border border-white/30 bg-black px-4 py-1 text-sm font-semibold tracking-widest text-white select-none"
                                           style={{
                                              width: getColumnWidth(
                                                 cell.column.id,
@@ -843,7 +847,7 @@ export function TabelaChamado() {
                                  className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                  <FiChevronsLeft
-                                    className="text-black group-disabled:text-white"
+                                    className="text-black group-disabled:text-red-400"
                                     size={24}
                                  />
                               </button>
@@ -856,7 +860,7 @@ export function TabelaChamado() {
                                  className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                  <MdChevronLeft
-                                    className="text-black group-disabled:text-white"
+                                    className="text-black group-disabled:text-red-400"
                                     size={24}
                                  />
                               </button>
@@ -901,7 +905,7 @@ export function TabelaChamado() {
                                  className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                  <MdChevronRight
-                                    className="text-black group-disabled:text-white"
+                                    className="text-black group-disabled:text-red-400"
                                     size={24}
                                  />
                               </button>
@@ -914,7 +918,7 @@ export function TabelaChamado() {
                                  className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                  <FiChevronsRight
-                                    className="text-black group-disabled:text-white"
+                                    className="text-black group-disabled:text-red-400"
                                     size={24}
                                  />
                               </button>
@@ -984,6 +988,14 @@ export function TabelaChamado() {
          {/* VIEW DA TABELA DE TAREFAS */}
          {activeView === 'tarefas' && (
             <TabelaTarefas
+               isOpen={true}
+               onClose={() => setActiveView('chamados')}
+            />
+         )}
+
+         {/* VIEW DO RELATÓRIO DE OS'S */}
+         {activeView === 'relatorio' && (
+            <RelatorioOS
                isOpen={true}
                onClose={() => setActiveView('chamados')}
             />
