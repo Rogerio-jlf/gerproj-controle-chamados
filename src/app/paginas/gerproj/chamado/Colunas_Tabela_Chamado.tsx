@@ -1,7 +1,10 @@
 import Link from 'next/link';
-import { useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
-import { motion, AnimatePresence } from 'framer-motion';
+import { SpeedDial } from 'primereact/speeddial';
+import { MenuItem } from 'primereact/menuitem';
+import { Toast } from 'primereact/toast';
+import { Tooltip } from 'primereact/tooltip';
+import { useRef, useState } from 'react';
 // ================================================================================
 import { TabelaChamadoProps } from '../../../../types/types';
 // ================================================================================
@@ -17,6 +20,11 @@ import { GrServices } from 'react-icons/gr';
 import { HiMiniSquaresPlus } from 'react-icons/hi2';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
 import { FaDownload, FaTasks, FaBrain } from 'react-icons/fa';
+
+// Importar CSS do PrimeReact
+import 'primereact/resources/themes/saga-orange/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
 
 // ================================================================================
 // INTERFACES
@@ -38,42 +46,17 @@ interface AcoesTabelaChamadosProps {
    userType?: string;
 }
 
-interface BotaoCircularMenuProps {
+interface SpeedDialMenuProps {
    chamado: TabelaChamadoProps;
    acoes: AcoesTabelaChamadosProps;
 }
 
 // ================================================================================
-// BOTÃO DELETE SEPARADO
+// COMPONENTE SPEEDDIAL CUSTOMIZADO
 // ================================================================================
-const BotaoDelete = ({ chamado, acoes }: BotaoCircularMenuProps) => {
-   const handleDeleteClick = (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      acoes.onExcluirChamado(chamado.COD_CHAMADO);
-   };
-
-   return (
-      <div className="relative flex items-center justify-center rounded-lg bg-red-600 p-2 text-center text-white">
-         <button
-            onClick={handleDeleteClick}
-            className="cursor-pointer transition-all hover:scale-150 focus:outline-none active:scale-95"
-         >
-            <RiDeleteBin5Fill size={24} className="text-white" />
-         </button>
-      </div>
-   );
-};
-
-// ==============================
-
-// ================================================================================
-// BOTÃO MENU CIRCULAR
-// ================================================================================
-const BotaoMenuCircular = ({ chamado, acoes }: BotaoCircularMenuProps) => {
+const SpeedDialMenu = ({ chamado, acoes }: SpeedDialMenuProps) => {
+   const toast = useRef<Toast>(null);
    const [isOpen, setIsOpen] = useState(false);
-   const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
-   const [hoveredButton, setHoveredButton] = useState<number | null>(null);
 
    const handleDownload = () => {
       const blob = new Blob([JSON.stringify(chamado, null, 2)], {
@@ -85,246 +68,147 @@ const BotaoMenuCircular = ({ chamado, acoes }: BotaoCircularMenuProps) => {
       a.download = `chamado_${chamado.COD_CHAMADO}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      setIsOpen(false);
    };
 
-   const handleToggle = (e: React.MouseEvent) => {
-      if (!isOpen) {
-         const rect = e.currentTarget.getBoundingClientRect();
-         setButtonPosition({
-            x: rect.left + rect.width / 2,
-            y: rect.top + rect.height / 2,
-         });
-      }
-      setIsOpen(!isOpen);
+   const handleDeleteClick = () => {
+      acoes.onExcluirChamado(chamado.COD_CHAMADO);
    };
 
-   // Configuração melhorada dos botões com cores e estilos únicos
-   const allActionButtons = [
+   // Configurar itens do menu
+   const items: MenuItem[] = [
       {
-         icon: IoCall,
-         onClick: () => {
+         label: 'Visualizar Chamado',
+         icon: 'pi pi-eye',
+         command: () => {
             acoes.onVisualizarChamado(chamado.COD_CHAMADO);
-            setIsOpen(false);
          },
-         tooltip: 'Visualizar Chamado',
-         bgGradient: 'from-blue-500 to-blue-600',
-         hoverGradient: 'from-blue-600 to-blue-700',
-         iconColor: 'text-white',
-         shadowColor: 'shadow-blue-300/50',
-         hoverShadow: 'hover:shadow-blue-400/60',
-         ringColor: 'hover:ring-blue-300/40',
+         className: 'speeddial-item-blue speeddial-tooltip',
+         tooltip: 'Visualizar detalhes do chamado',
       },
       {
-         icon: GrServices,
-         onClick: () => {
+         label: "Visualizar OS's",
+         icon: 'pi pi-briefcase',
+         command: () => {
             acoes.onVisualizarOSChamado(chamado.COD_CHAMADO);
-            setIsOpen(false);
          },
-         tooltip: "Visualizar OS's",
-         bgGradient: 'from-emerald-500 to-emerald-600',
-         hoverGradient: 'from-emerald-600 to-emerald-700',
-         iconColor: 'text-white',
-         shadowColor: 'shadow-emerald-300/50',
-         hoverShadow: 'hover:shadow-emerald-400/60',
-         ringColor: 'hover:ring-emerald-300/40',
+         className: 'speeddial-item-green speeddial-tooltip',
+         tooltip: 'Ver ordens de serviço relacionadas',
       },
       {
-         icon: FaTasks,
-         onClick: () => {
+         label: 'Visualizar Tarefas',
+         icon: 'pi pi-list-check',
+         command: () => {
             acoes.onVisualizarTarefa();
-            setIsOpen(false);
          },
-         tooltip: 'Visualizar Tarefas',
-         bgGradient: 'from-orange-500 to-orange-600',
-         hoverGradient: 'from-orange-600 to-orange-700',
-         iconColor: 'text-white',
-         shadowColor: 'shadow-orange-300/50',
-         hoverShadow: 'hover:shadow-orange-400/60',
-         ringColor: 'hover:ring-orange-300/40',
+         className: 'speeddial-item-orange speeddial-tooltip',
+         tooltip: 'Ver tarefas do chamado',
       },
       {
-         icon: FaDownload,
-         onClick: handleDownload,
-         tooltip: "Download Arquivo's",
-         bgGradient: 'from-purple-500 to-purple-600',
-         hoverGradient: 'from-purple-600 to-purple-700',
-         iconColor: 'text-white',
-         shadowColor: 'shadow-purple-300/50',
-         hoverShadow: 'hover:shadow-purple-400/60',
-         ringColor: 'hover:ring-purple-300/40',
+         label: "Download Arquivo's",
+         icon: 'pi pi-download',
+         command: handleDownload,
+         className: 'speeddial-item-purple speeddial-tooltip',
+         tooltip: 'Baixar arquivos do chamado',
       },
-      // Botão de atribuição - só incluir se for ADM
-      ...(acoes.userType === 'ADM'
-         ? [
-              {
-                 icon: FaBrain,
-                 onClick: () => {
-                    acoes.onAtribuicaoInteligente?.(chamado);
-                    setIsOpen(false);
-                 },
-                 tooltip: 'Atribuir Chamado',
-                 bgGradient: 'from-pink-500 to-pink-600',
-                 hoverGradient: 'from-pink-600 to-pink-700',
-                 iconColor: 'text-white',
-                 shadowColor: 'shadow-pink-300/50',
-                 hoverShadow: 'hover:shadow-pink-400/60',
-                 ringColor: 'hover:ring-pink-300/40',
-              },
-           ]
-         : []),
    ];
 
-   const actionButtons = allActionButtons;
-   const totalButtons = actionButtons.length;
+   // Adicionar item de atribuição se for ADM
+   if (acoes.userType === 'ADM') {
+      items.push({
+         label: 'Atribuir Chamado',
+         icon: 'pi pi-users',
+         command: () => {
+            acoes.onAtribuicaoInteligente?.(chamado);
+         },
+         className: 'speeddial-item-pink speeddial-tooltip',
+         tooltip: 'Atribuir chamado a um consultor',
+      });
+   }
 
-   // Recalcular posições dos botões
-   const radius = 140;
-   const angleStart = 140;
-   const angleEnd = 240;
-   const buttonPositions = Array.from({ length: totalButtons }).map((_, i) => {
-      const angle =
-         angleStart + ((angleEnd - angleStart) / (totalButtons - 1)) * i;
-      const rad = (angle * Math.PI) / 180;
-      return {
-         x: Math.cos(rad) * radius,
-         y: Math.sin(rad) * radius,
-         delay: 0.1 * i,
-      };
-   });
+   // Adicionar item de exclusão se for ADM
+   if (acoes.userType === 'ADM') {
+      items.push({
+         label: 'Excluir Chamado',
+         icon: 'pi pi-trash',
+         command: handleDeleteClick,
+         className: 'speeddial-item-red speeddial-tooltip',
+         tooltip: 'Excluir este chamado permanentemente',
+      });
+   }
 
    return (
       <>
-         {/* Botão Principal Melhorado */}
-         <div className="relative flex items-center justify-center rounded-lg bg-slate-900 p-2 text-center text-white">
-            <button
-               onClick={handleToggle}
-               className="cursor-pointer transition-all hover:scale-150 focus:outline-none active:scale-95"
-            >
-               {isOpen ? (
-                  <span className="text-xl font-bold">×</span>
-               ) : (
-                  <HiMiniSquaresPlus size={24} />
-               )}
-            </button>
-         </div>
+         <Toast ref={toast} />
 
-         {/* Portal para os botões de ação */}
-         <AnimatePresence>
-            {isOpen && (
-               <>
-                  {/* Overlay de fundo */}
-                  <motion.div
-                     initial={{ opacity: 0 }}
-                     animate={{ opacity: 1 }}
-                     exit={{ opacity: 0 }}
-                     className="fixed inset-0 z-40 bg-black/60"
-                     onClick={() => setIsOpen(false)}
-                  />
+         {/* Tooltip para os botões do SpeedDial */}
+         <Tooltip
+            target=".speeddial-tooltip"
+            position="bottom"
+            showDelay={100}
+         />
 
-                  {/* Container dos botões de ação */}
-                  <div
-                     className="pointer-events-none fixed z-50"
-                     style={{
-                        left: buttonPosition.x,
-                        top: buttonPosition.y,
-                        transform: 'translate(-50%, -50%)',
-                     }}
-                  >
-                     {actionButtons.map((button, index) => {
-                        const isHovered = hoveredButton === index;
+         {/* Overlay escuro quando o SpeedDial está aberto */}
+         {isOpen && (
+            <div
+               className="fixed inset-0 z-[999] bg-black/60 backdrop-blur-xs"
+               onClick={() => setIsOpen(false)}
+            />
+         )}
 
-                        return (
-                           <div key={index} className="relative">
-                              {/* Tooltip melhorado */}
-                              <motion.div
-                                 className={`pointer-events-none absolute -top-14 left-1/2 z-60 -translate-x-1/2 transform rounded-md border-t-4 border-cyan-500 bg-black px-6 py-2 text-sm font-semibold tracking-wider whitespace-nowrap text-white shadow-sm shadow-white`}
-                                 initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                                 animate={{
-                                    opacity: isHovered ? 1 : 0,
-                                    scale: isHovered ? 1 : 0.8,
-                                    y: isHovered ? 0 : 10,
-                                 }}
-                                 transition={{ duration: 0.2 }}
-                              >
-                                 {button.tooltip}
-                                 <div className="absolute top-full left-1/2 h-0 w-0 -translate-x-1/2 transform border-t-4 border-r-4 border-l-4 border-transparent border-t-slate-900" />
-                              </motion.div>
+         <style jsx global>{`
+            /* SpeedDial customizado com z-index e posicionamento */
+            .speeddial-custom {
+               position: static !important;
+               z-index: 1000;
+            }
 
-                              {/* Botão de ação melhorado */}
-                              <motion.button
-                                 initial={{
-                                    opacity: 0,
-                                    scale: 0,
-                                    x: 0,
-                                    y: 0,
-                                 }}
-                                 animate={{
-                                    opacity: 1,
-                                    scale: 1,
-                                    x: buttonPositions[index].x,
-                                    y: buttonPositions[index].y,
-                                 }}
-                                 exit={{
-                                    opacity: 0,
-                                    scale: 0,
-                                    x: 0,
-                                    y: 0,
-                                 }}
-                                 transition={{
-                                    duration: 0.4,
-                                    delay: buttonPositions[index].delay,
-                                    type: 'spring',
-                                    stiffness: 260,
-                                    damping: 20,
-                                 }}
-                                 whileHover={{
-                                    scale: 1.1,
-                                    transition: { duration: 0.2 },
-                                 }}
-                                 whileTap={{ scale: 0.95 }}
-                                 onClick={button.onClick}
-                                 onHoverStart={() => setHoveredButton(index)}
-                                 onHoverEnd={() => setHoveredButton(null)}
-                                 className={`pointer-events-auto absolute h-14 w-14 rounded-full bg-gradient-to-br ${isHovered ? button.hoverGradient : button.bgGradient} ${button.iconColor} shadow-lg ${button.shadowColor} ${button.hoverShadow} border-2 border-white/20 ${button.ringColor} flex items-center justify-center backdrop-blur-sm transition-all duration-300 ease-out ${isHovered ? 'ring-4' : 'ring-0'} -translate-x-1/2 -translate-y-1/2 transform`}
-                              >
-                                 <button.icon size={20} />
-                              </motion.button>
+            .p-speeddial {
+               position: static !important;
+            }
 
-                              {/* Efeito de pulso animado no hover */}
-                              <AnimatePresence>
-                                 {isHovered && (
-                                    <motion.div
-                                       className={`absolute h-14 w-14 rounded-full bg-gradient-to-br ${button.bgGradient} pointer-events-none -translate-x-1/2 -translate-y-1/2 transform opacity-30`}
-                                       style={{
-                                          x: buttonPositions[index].x,
-                                          y: buttonPositions[index].y,
-                                       }}
-                                       initial={{ scale: 1, opacity: 0.3 }}
-                                       animate={{
-                                          scale: [1, 1.3, 1],
-                                          opacity: [0.3, 0, 0.3],
-                                       }}
-                                       exit={{ opacity: 0 }}
-                                       transition={{
-                                          duration: 1.5,
-                                          repeat: Infinity,
-                                          ease: 'easeInOut',
-                                       }}
-                                    />
-                                 )}
-                              </AnimatePresence>
-                           </div>
-                        );
-                     })}
-                  </div>
-               </>
-            )}
-         </AnimatePresence>
+            .p-speeddial-list {
+               position: fixed !important;
+               z-index: 1050 !important;
+               right: 12rem !important;
+            }
+
+            .p-speeddial-action {
+               z-index: 1051 !important;
+               width: 5rem !important;
+               height: 5rem !important;
+            }
+
+            .speeddial-button-custom {
+               border: none;
+               width: 3rem;
+               height: 3rem;
+               position: relative;
+               z-index: 1052 !important;
+            }
+
+            .speeddial-button-custom:hover {
+               background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+               transform: scale(1.1);
+            }
+
+            .p-speeddial-item {
+               margin: 0.3rem;
+            }
+         `}</style>
+         <SpeedDial
+            model={items}
+            direction="left"
+            showIcon={<HiMiniSquaresPlus size={20} />}
+            hideIcon="pi pi-times"
+            buttonClassName="p-button-rounded speeddial-button-custom"
+            className="speeddial-custom"
+            type="linear"
+            onShow={() => setIsOpen(true)}
+            onHide={() => setIsOpen(false)}
+         />
       </>
    );
 };
-// ==============================
 
 // ================================================================================
 // COMPONENTE PRINCIPAL
@@ -333,7 +217,7 @@ export const colunasTabelaChamados = (
    acoes: AcoesTabelaChamadosProps,
    userType?: string
 ): ColumnDef<TabelaChamadoProps>[] => {
-   // Array base de colunas (sem a coluna de recurso)
+   // Array base de colunas
    const baseColumns: ColumnDef<TabelaChamadoProps>[] = [
       // Chamado
       {
@@ -348,7 +232,6 @@ export const colunasTabelaChamados = (
             );
          },
       },
-      // ==========
 
       // Data chamado
       {
@@ -365,7 +248,6 @@ export const colunasTabelaChamados = (
             );
          },
       },
-      // ==========
 
       // Assunto
       {
@@ -387,7 +269,6 @@ export const colunasTabelaChamados = (
             );
          },
       },
-      // ==========
 
       // Status (clicável)
       {
@@ -402,7 +283,6 @@ export const colunasTabelaChamados = (
             />
          ),
       },
-      // ==========
 
       // Data Atribuição
       {
@@ -431,9 +311,8 @@ export const colunasTabelaChamados = (
          },
       },
    ];
-   // ==========
 
-   // Recurso
+   // Coluna de Recurso
    const recursoColumn: ColumnDef<TabelaChamadoProps> = {
       accessorKey: 'NOME_RECURSO',
       header: () => <div className="text-center">Consultor</div>,
@@ -483,23 +362,16 @@ export const colunasTabelaChamados = (
             );
          },
       },
-      // ==========
 
-      // Ações - MODIFICADO PARA INCLUIR BOTÃO DELETE (APENAS PARA ADM)
+      // Ações - USANDO SPEEDDIAL
       {
          id: 'actions',
          header: () => <div className="text-center">Ações</div>,
          cell: ({ row }) => {
             const chamado = row.original;
             return (
-               <div className="flex items-center justify-center gap-3">
-                  {/* Botão Delete - Apenas para ADM */}
-                  {(userType === 'ADM' || acoes.userType === 'ADM') && (
-                     <BotaoDelete chamado={chamado} acoes={acoes} />
-                  )}
-
-                  {/* Menu Circular */}
-                  <BotaoMenuCircular chamado={chamado} acoes={acoes} />
+               <div className="flex items-center justify-center">
+                  <SpeedDialMenu chamado={chamado} acoes={acoes} />
                </div>
             );
          },
@@ -509,7 +381,6 @@ export const colunasTabelaChamados = (
    // Montar array final de colunas condicionalmente
    const allColumns = [
       ...baseColumns,
-      // Inclui a coluna de recurso apenas se for ADM
       ...(userType === 'ADM' || acoes.userType === 'ADM'
          ? [recursoColumn]
          : []),
