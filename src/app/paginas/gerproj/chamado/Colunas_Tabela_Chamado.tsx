@@ -1,10 +1,6 @@
 import Link from 'next/link';
 import { ColumnDef } from '@tanstack/react-table';
-import { SpeedDial } from 'primereact/speeddial';
-import { MenuItem } from 'primereact/menuitem';
-import { Toast } from 'primereact/toast';
-import { Tooltip } from 'primereact/tooltip';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 // ================================================================================
 import { TabelaChamadoProps } from '../../../../types/types';
 // ================================================================================
@@ -15,16 +11,16 @@ import {
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 import { ModalAtualizarStatusApontarOsChamado } from './Modal_Atualizar_Status_Apontar_Os_Chamado';
 // ================================================================================
-import { IoCall } from 'react-icons/io5';
-import { GrServices } from 'react-icons/gr';
 import { HiMiniSquaresPlus } from 'react-icons/hi2';
-import { RiDeleteBin5Fill } from 'react-icons/ri';
-import { FaDownload, FaTasks, FaBrain } from 'react-icons/fa';
-
-// Importar CSS do PrimeReact
-import 'primereact/resources/themes/saga-orange/theme.css';
-import 'primereact/resources/primereact.min.css';
-import 'primeicons/primeicons.css';
+import {
+   HiEye,
+   HiBriefcase,
+   HiClipboardList,
+   HiDownload,
+   HiUsers,
+   HiTrash,
+} from 'react-icons/hi';
+import { IoClose } from 'react-icons/io5';
 
 // ================================================================================
 // INTERFACES
@@ -46,17 +42,18 @@ interface AcoesTabelaChamadosProps {
    userType?: string;
 }
 
-interface SpeedDialMenuProps {
+interface DropdownMenuProps {
    chamado: TabelaChamadoProps;
    acoes: AcoesTabelaChamadosProps;
 }
 
 // ================================================================================
-// COMPONENTE SPEEDDIAL CUSTOMIZADO
+// BOTÃO MENU CIRCULAR - HORIZONTAL À ESQUERDA
 // ================================================================================
-const SpeedDialMenu = ({ chamado, acoes }: SpeedDialMenuProps) => {
-   const toast = useRef<Toast>(null);
+const BotaoMenuCircular = ({ chamado, acoes }: DropdownMenuProps) => {
    const [isOpen, setIsOpen] = useState(false);
+   const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
+   const [hoveredButton, setHoveredButton] = useState<number | null>(null);
 
    const handleDownload = () => {
       const blob = new Blob([JSON.stringify(chamado, null, 2)], {
@@ -68,144 +65,244 @@ const SpeedDialMenu = ({ chamado, acoes }: SpeedDialMenuProps) => {
       a.download = `chamado_${chamado.COD_CHAMADO}.json`;
       a.click();
       URL.revokeObjectURL(url);
+      setIsOpen(false);
    };
 
-   const handleDeleteClick = () => {
-      acoes.onExcluirChamado(chamado.COD_CHAMADO);
+   const handleToggle = (e: React.MouseEvent) => {
+      if (!isOpen) {
+         const rect = e.currentTarget.getBoundingClientRect();
+         setButtonPosition({
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2, // Centro vertical do botão
+         });
+      }
+      setIsOpen(!isOpen);
    };
 
-   // Configurar itens do menu
-   const items: MenuItem[] = [
+   // Configuração dos botões com cores e estilos únicos
+   const allActionButtons = [
       {
-         label: 'Visualizar Chamado',
-         icon: 'pi pi-eye',
-         command: () => {
+         icon: HiEye,
+         onClick: () => {
             acoes.onVisualizarChamado(chamado.COD_CHAMADO);
+            setIsOpen(false);
          },
-         className: 'speeddial-item-blue speeddial-tooltip',
-         tooltip: 'Visualizar detalhes do chamado',
+         tooltip: 'Visualizar Chamado',
+         bgGradient: 'from-blue-500 to-blue-600',
+         hoverGradient: 'from-blue-600 to-blue-700',
+         iconColor: 'text-white',
+         shadowColor: 'shadow-blue-300/50',
+         hoverShadow: 'hover:shadow-blue-400/60',
+         ringColor: 'hover:ring-blue-300/40',
       },
       {
-         label: "Visualizar OS's",
-         icon: 'pi pi-briefcase',
-         command: () => {
+         icon: HiBriefcase,
+         onClick: () => {
             acoes.onVisualizarOSChamado(chamado.COD_CHAMADO);
+            setIsOpen(false);
          },
-         className: 'speeddial-item-green speeddial-tooltip',
-         tooltip: 'Ver ordens de serviço relacionadas',
+         tooltip: "Visualizar OS's",
+         bgGradient: 'from-emerald-500 to-emerald-600',
+         hoverGradient: 'from-emerald-600 to-emerald-700',
+         iconColor: 'text-white',
+         shadowColor: 'shadow-emerald-300/50',
+         hoverShadow: 'hover:shadow-emerald-400/60',
+         ringColor: 'hover:ring-emerald-300/40',
       },
       {
-         label: 'Visualizar Tarefas',
-         icon: 'pi pi-list-check',
-         command: () => {
+         icon: HiClipboardList,
+         onClick: () => {
             acoes.onVisualizarTarefa();
+            setIsOpen(false);
          },
-         className: 'speeddial-item-orange speeddial-tooltip',
-         tooltip: 'Ver tarefas do chamado',
+         tooltip: 'Visualizar Tarefas',
+         bgGradient: 'from-orange-500 to-orange-600',
+         hoverGradient: 'from-orange-600 to-orange-700',
+         iconColor: 'text-white',
+         shadowColor: 'shadow-orange-300/50',
+         hoverShadow: 'hover:shadow-orange-400/60',
+         ringColor: 'hover:ring-orange-300/40',
       },
       {
-         label: "Download Arquivo's",
-         icon: 'pi pi-download',
-         command: handleDownload,
-         className: 'speeddial-item-purple speeddial-tooltip',
-         tooltip: 'Baixar arquivos do chamado',
+         icon: HiDownload,
+         onClick: handleDownload,
+         tooltip: "Download Arquivo's",
+         bgGradient: 'from-purple-500 to-purple-600',
+         hoverGradient: 'from-purple-600 to-purple-700',
+         iconColor: 'text-white',
+         shadowColor: 'shadow-purple-300/50',
+         hoverShadow: 'hover:shadow-purple-400/60',
+         ringColor: 'hover:ring-purple-300/40',
       },
+      // Botão de atribuição - só incluir se for ADM
+      ...(acoes.userType === 'ADM'
+         ? [
+              {
+                 icon: HiUsers,
+                 onClick: () => {
+                    acoes.onAtribuicaoInteligente?.(chamado);
+                    setIsOpen(false);
+                 },
+                 tooltip: 'Atribuir Chamado',
+                 bgGradient: 'from-pink-500 to-pink-600',
+                 hoverGradient: 'from-pink-600 to-pink-700',
+                 iconColor: 'text-white',
+                 shadowColor: 'shadow-pink-300/50',
+                 hoverShadow: 'hover:shadow-pink-400/60',
+                 ringColor: 'hover:ring-pink-300/40',
+              },
+              {
+                 icon: HiTrash,
+                 onClick: () => {
+                    acoes.onExcluirChamado(chamado.COD_CHAMADO);
+                    setIsOpen(false);
+                 },
+                 tooltip: 'Excluir Chamado',
+                 bgGradient: 'from-red-500 to-red-600',
+                 hoverGradient: 'from-red-600 to-red-700',
+                 iconColor: 'text-white',
+                 shadowColor: 'shadow-red-300/50',
+                 hoverShadow: 'hover:shadow-red-400/60',
+                 ringColor: 'hover:ring-red-300/40',
+              },
+           ]
+         : []),
    ];
 
-   // Adicionar item de atribuição se for ADM
-   if (acoes.userType === 'ADM') {
-      items.push({
-         label: 'Atribuir Chamado',
-         icon: 'pi pi-users',
-         command: () => {
-            acoes.onAtribuicaoInteligente?.(chamado);
-         },
-         className: 'speeddial-item-pink speeddial-tooltip',
-         tooltip: 'Atribuir chamado a um consultor',
-      });
-   }
+   const actionButtons = allActionButtons;
+   const totalButtons = actionButtons.length;
 
-   // Adicionar item de exclusão se for ADM
-   if (acoes.userType === 'ADM') {
-      items.push({
-         label: 'Excluir Chamado',
-         icon: 'pi pi-trash',
-         command: handleDeleteClick,
-         className: 'speeddial-item-red speeddial-tooltip',
-         tooltip: 'Excluir este chamado permanentemente',
-      });
-   }
+   // Posições horizontais à esquerda - MESMA ALTURA
+   const spacing = 70; // Espaçamento entre botões
+   const buttonPositions = Array.from({ length: totalButtons }).map((_, i) => ({
+      x: -(spacing * (i + 1)), // Negativo para ir à esquerda
+      y: 30, // Alinhado no centro (mesma altura do botão principal)
+      delay: 0.05 * i,
+   }));
 
    return (
       <>
-         <Toast ref={toast} />
+         {/* Botão Principal */}
+         <div className={`relative text-center ${isOpen ? 'z-[60]' : 'z-10'}`}>
+            <button
+               onClick={handleToggle}
+               className="cursor-pointer transition-all hover:scale-125 focus:outline-none active:scale-95"
+            >
+               {isOpen ? (
+                  <div className="flex items-center justify-center rounded-full bg-red-600 p-1">
+                     <span className="text-xl font-bold">
+                        <IoClose size={32} className="text-white" />
+                     </span>
+                  </div>
+               ) : (
+                  <HiMiniSquaresPlus size={32} />
+               )}
+            </button>
+         </div>
 
-         {/* Tooltip para os botões do SpeedDial */}
-         <Tooltip
-            target=".speeddial-tooltip"
-            position="bottom"
-            showDelay={100}
-         />
-
-         {/* Overlay escuro quando o SpeedDial está aberto */}
+         {/* Overlay e botões */}
          {isOpen && (
-            <div
-               className="fixed inset-0 z-[999] bg-black/60 backdrop-blur-xs"
-               onClick={() => setIsOpen(false)}
-            />
+            <>
+               {/* Overlay de fundo */}
+               <div
+                  className="fixed inset-0 z-40 bg-black/60"
+                  onClick={() => setIsOpen(false)}
+               />
+
+               {/* Container dos botões de ação */}
+               <div
+                  className="pointer-events-none fixed z-50"
+                  style={{
+                     left: buttonPosition.x,
+                     top: buttonPosition.y,
+                     transform: 'translate(-50%, -50%)',
+                  }}
+               >
+                  {actionButtons.map((button, index) => {
+                     const isHovered = hoveredButton === index;
+                     const Icon = button.icon;
+
+                     return (
+                        <div key={index} className="absolute">
+                           {/* Tooltip - ACIMA DO BOTÃO */}
+                           <div
+                              className={`pointer-events-none absolute left-1/2 z-60 -translate-x-1/2 transform rounded-md border-t-4 border-cyan-500 bg-black px-6 py-2 text-sm font-semibold tracking-wider whitespace-nowrap text-white shadow-sm shadow-white transition-all duration-200 ${
+                                 isHovered
+                                    ? 'scale-100 opacity-100'
+                                    : 'scale-80 opacity-0'
+                              }`}
+                              style={{
+                                 left: buttonPositions[index].x,
+                                 top: buttonPositions[index].y + 20, // ACIMA: valor negativo maior
+                              }}
+                           >
+                              {button.tooltip}
+                              {/* Seta apontando para baixo */}
+                              <div className="absolute top-full left-1/2 h-0 w-0 -translate-x-1/2 transform border-t-4 border-r-4 border-l-4 border-transparent border-t-slate-900" />
+                           </div>
+
+                           {/* Botão de ação */}
+                           <button
+                              onClick={button.onClick}
+                              onMouseEnter={() => setHoveredButton(index)}
+                              onMouseLeave={() => setHoveredButton(null)}
+                              className={`pointer-events-auto absolute flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 transform items-center justify-center rounded-full border-2 border-white/20 bg-gradient-to-br shadow-lg backdrop-blur-sm transition-all duration-300 ease-out ${
+                                 isHovered
+                                    ? `${button.hoverGradient} scale-110 ring-4`
+                                    : `${button.bgGradient} scale-100 ring-0`
+                              } ${button.iconColor} ${button.shadowColor} ${button.hoverShadow} ${button.ringColor}`}
+                              style={{
+                                 left: buttonPositions[index].x,
+                                 top: buttonPositions[index].y,
+                                 animation: `slideIn 0.4s ease-out ${buttonPositions[index].delay}s both`,
+                              }}
+                           >
+                              <Icon size={20} />
+                           </button>
+
+                           {/* Efeito de pulso */}
+                           {isHovered && (
+                              <div
+                                 className={`pointer-events-none absolute h-14 w-14 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-gradient-to-br opacity-30 ${button.bgGradient}`}
+                                 style={{
+                                    left: buttonPositions[index].x,
+                                    top: buttonPositions[index].y,
+                                    animation:
+                                       'pulse 1.5s ease-in-out infinite',
+                                 }}
+                              />
+                           )}
+                        </div>
+                     );
+                  })}
+               </div>
+            </>
          )}
 
          <style jsx global>{`
-            /* SpeedDial customizado com z-index e posicionamento */
-            .speeddial-custom {
-               position: static !important;
-               z-index: 1000;
+            @keyframes slideIn {
+               from {
+                  opacity: 0;
+                  transform: translate(-50%, -50%) translateX(0) scale(0);
+               }
+               to {
+                  opacity: 1;
+                  transform: translate(-50%, -50%) scale(1);
+               }
             }
 
-            .p-speeddial {
-               position: static !important;
-            }
-
-            .p-speeddial-list {
-               position: fixed !important;
-               z-index: 1050 !important;
-               right: 12rem !important;
-            }
-
-            .p-speeddial-action {
-               z-index: 1051 !important;
-               width: 5rem !important;
-               height: 5rem !important;
-            }
-
-            .speeddial-button-custom {
-               border: none;
-               width: 3rem;
-               height: 3rem;
-               position: relative;
-               z-index: 1052 !important;
-            }
-
-            .speeddial-button-custom:hover {
-               background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
-               transform: scale(1.1);
-            }
-
-            .p-speeddial-item {
-               margin: 0.3rem;
+            @keyframes pulse {
+               0%,
+               100% {
+                  transform: translate(-50%, -50%) scale(1);
+                  opacity: 0.3;
+               }
+               50% {
+                  transform: translate(-50%, -50%) scale(1.3);
+                  opacity: 0;
+               }
             }
          `}</style>
-         <SpeedDial
-            model={items}
-            direction="left"
-            showIcon={<HiMiniSquaresPlus size={20} />}
-            hideIcon="pi pi-times"
-            buttonClassName="p-button-rounded speeddial-button-custom"
-            className="speeddial-custom"
-            type="linear"
-            onShow={() => setIsOpen(true)}
-            onHide={() => setIsOpen(false)}
-         />
       </>
    );
 };
@@ -363,7 +460,7 @@ export const colunasTabelaChamados = (
          },
       },
 
-      // Ações - USANDO SPEEDDIAL
+      // Ações - USANDO MENU CIRCULAR HORIZONTAL
       {
          id: 'actions',
          header: () => <div className="text-center">Ações</div>,
@@ -371,7 +468,7 @@ export const colunasTabelaChamados = (
             const chamado = row.original;
             return (
                <div className="flex items-center justify-center">
-                  <SpeedDialMenu chamado={chamado} acoes={acoes} />
+                  <BotaoMenuCircular chamado={chamado} acoes={acoes} />
                </div>
             );
          },
@@ -389,5 +486,3 @@ export const colunasTabelaChamados = (
 
    return allColumns;
 };
-
-// apenas verificando

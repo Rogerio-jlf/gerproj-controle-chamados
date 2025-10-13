@@ -502,8 +502,6 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
 
    if (!isOpen) return null;
 
-   if (isLoading) return <IsLoading title="Carregando os dados da tabela OS" />;
-
    if (isError) return <IsError error={error as Error} />;
 
    const handleCloseTabelaTarefa = () => {
@@ -950,6 +948,11 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                onClose={handleCloseRelatorioOS}
             />
          )}
+
+         <IsLoading
+            isLoading={isLoading}
+            title="Carregando todos os dados dos Chamados"
+         />
       </div>
    );
 }

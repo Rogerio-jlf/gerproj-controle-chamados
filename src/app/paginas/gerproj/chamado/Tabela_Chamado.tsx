@@ -42,6 +42,7 @@ import { FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { RelatorioOS } from '../ordem-servico/Relatorio_OS';
+import { SessionExpired } from '../components/IsExpired';
 
 // ================================================================================
 // TIPOS E INTERFACES
@@ -113,7 +114,7 @@ export function TabelaChamado() {
    // ================================================================================
    // HOOKS E CONTEXTOS
    // ================================================================================
-   const { user } = useAuth();
+   const { user, loading: isAuthLoading, isTokenExpired } = useAuth();
    const queryClient = useQueryClient();
    const { filters, setFilters } = useFiltersTabelaChamados();
    const { ano, mes } = filters;
@@ -528,50 +529,15 @@ export function TabelaChamado() {
    // ================================================================================
    // VALIDAÇÕES E ESTADOS DE CARREGAMENTO
    // ================================================================================
-   if (!user || !token) {
-      return (
-         <div className="flex flex-col items-center justify-center gap-6 py-40">
-            <FaExclamationTriangle
-               className="animate-pulse text-red-600"
-               size={120}
-            />
-            <div className="flex flex-col items-center justify-center gap-4">
-               <h3 className="text-3xl font-extrabold tracking-wider text-red-600 select-none">
-                  Acesso restrito!
-               </h3>
-               <p className="text-lg font-semibold tracking-wider text-red-500 italic select-none">
-                  Sua sessão expirou. Você precisa estar logado para acessar o
-                  sistema.
-               </p>
-               <p className="text-lg font-semibold tracking-wider text-red-500 italic select-none">
-                  Por medida de segurança, você será redirecionado para a página
-                  de login.
-               </p>
-               <div className="flex items-center justify-center gap-1">
-                  <span className="text-base font-semibold tracking-wider text-red-600 italic select-none">
-                     Aguarde
-                  </span>
-                  <div className="flex gap-1">
-                     <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-red-600"></div>
-                     <div
-                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-red-600"
-                        style={{ animationDelay: '0.1s' }}
-                     ></div>
-                     <div
-                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-red-600"
-                        style={{ animationDelay: '0.2s' }}
-                     ></div>
-                  </div>
-               </div>
-            </div>
-         </div>
-      );
+
+   if (isAuthLoading) {
+      return <IsLoading isLoading={true} title="Verificando autenticação..." />;
    }
    // ==========
 
-   if (isLoading)
-      return <IsLoading title="Carregando os dados da tabela Chamado" />;
-   // ==========
+   if (isTokenExpired) {
+      return <SessionExpired isTokenExpired={isTokenExpired} />;
+   }
 
    if (isError) return <IsError error={error as Error} />;
 
@@ -596,7 +562,7 @@ export function TabelaChamado() {
                         </h1>
                      </div>
 
-                     {user.tipo === 'ADM' && (
+                     {user && user.tipo === 'ADM' && (
                         <div className="flex items-center gap-4">
                            <DropdownTabelaChamado
                               onOpenTabelaOS={() => setActiveView('os')}
@@ -761,7 +727,7 @@ export function TabelaChamado() {
                               table.getRowModel().rows.map((row, rowIndex) => (
                                  <tr
                                     key={row.id}
-                                    className={`group transition-all hover:bg-white/80 ${
+                                    className={`group transition-all ${
                                        rowIndex % 2 === 0
                                           ? 'bg-slate-800'
                                           : 'bg-slate-800'
@@ -770,7 +736,7 @@ export function TabelaChamado() {
                                     {row.getVisibleCells().map(cell => (
                                        <td
                                           key={cell.id}
-                                          className="rounded-sm border border-white/30 bg-black px-4 py-1 text-sm font-semibold tracking-widest text-white select-none"
+                                          className="border border-white/30 bg-black p-2 text-sm font-semibold tracking-widest text-white select-none group-hover:bg-white/50 group-hover:text-black"
                                           style={{
                                              width: getColumnWidth(
                                                 cell.column.id,
@@ -931,20 +897,20 @@ export function TabelaChamado() {
                {/* MENSAGEM QUANDO NÃO HÁ CHAMADOS */}
                {(!paginationInfo || paginationInfo.totalRecords === 0) &&
                   !isLoading && (
-                     <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-20 text-center">
+                     <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-64 text-center">
                         <FaExclamationTriangle
                            className="mx-auto text-yellow-500"
-                           size={80}
+                           size={100}
                         />
-                        <h3 className="text-2xl font-bold tracking-wider text-white select-none">
+                        <h3 className="text-3xl font-extrabold tracking-wider text-white italic select-none">
                            {user?.tipo === 'ADM'
-                              ? `Nenhum Chamado foi encontrado para o Período ${mes.toString().padStart(2, '0')}/${ano}.`
-                              : `Nenhum Chamado (excluindo finalizados) foi encontrado para o Período ${mes.toString().padStart(2, '0')}/${ano}.`}
+                              ? `Nenhum Chamado foi encontrado para o período: ${mes.toString().padStart(2, '0')}/${ano}.`
+                              : `Nenhum Chamado (excluindo finalizados) foi encontrado para o período: ${mes.toString().padStart(2, '0')}/${ano}.`}
                         </h3>
                         {user?.tipo !== 'ADM' && (
                            <p className="text-base font-semibold tracking-wider text-white italic select-none">
                               Chamados com status "FINALIZADO" não são exibidos
-                              para seu perfil.
+                              para o seu perfil.
                            </p>
                         )}
                      </div>
@@ -954,17 +920,17 @@ export function TabelaChamado() {
                {paginationInfo &&
                   paginationInfo.totalRecords > 0 &&
                   table.getFilteredRowModel().rows.length === 0 && (
-                     <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-20 text-center">
+                     <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-64 text-center">
                         <FaFilterCircleXmark
                            className="mx-auto text-red-600"
-                           size={80}
+                           size={100}
                         />
-                        <h3 className="text-2xl font-bold tracking-wider text-white select-none">
-                           Nenhum Registro encontrado para os Filtros aplicados.
+                        <h3 className="text-3xl font-extrabold tracking-wider text-white italic select-none">
+                           Nenhum registro encontrado para os filtros aplicados.
                         </h3>
                         <p className="text-base font-semibold tracking-wider text-white italic select-none">
-                           Tente ajustar os Filtros ou limpe-os para visualizar
-                           Registros.
+                           Tente ajustar os filtros ou limpe-os para visualizar
+                           registros.
                         </p>
                         {totalActiveFilters > 0 && (
                            <button
@@ -1041,6 +1007,11 @@ export function TabelaChamado() {
             onClose={handleCloseModalExcluirChamado}
             codChamado={selectedCodChamado}
             onSuccess={handleExcluirChamadoSuccess}
+         />
+
+         <IsLoading
+            isLoading={isLoading}
+            title={`Buscando Chamados para o período: ${mes.toString().padStart(2, '0')}/${ano}`}
          />
       </div>
    );

@@ -5,7 +5,6 @@ import { FaTasks, FaChartBar } from 'react-icons/fa';
 import { MdArrowDropDown } from 'react-icons/md';
 import { BiSolidReport } from 'react-icons/bi';
 import {
-   AiOutlineFileText,
    AiOutlineBarChart,
    AiOutlinePieChart,
    AiOutlineTable,

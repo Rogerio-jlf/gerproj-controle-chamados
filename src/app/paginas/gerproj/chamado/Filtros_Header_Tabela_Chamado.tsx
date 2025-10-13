@@ -83,10 +83,10 @@ export const FilterControls = ({
             <button
                onClick={() => setShowFilters(!showFilters)}
                disabled={dataLength <= 1}
-               className={`cursor-pointer rounded-sm px-6 py-2.5 text-base tracking-widest transition-all ${
+               className={`cursor-pointer rounded-sm px-6 py-2.5 text-base tracking-widest transition-all select-none ${
                   showFilters
                      ? 'border-none bg-blue-600 font-extrabold text-white italic shadow-md shadow-black hover:bg-blue-700'
-                     : 'border-none bg-white font-semibold text-black shadow-md shadow-black hover:bg-white/70'
+                     : 'border-none bg-white font-bold text-black italic shadow-md shadow-black hover:bg-white/70'
                } ${
                   dataLength <= 1
                      ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'

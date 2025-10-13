@@ -119,3 +119,44 @@
       color: var(--color-foreground);
    }
 }
+
+/* ================================================================================ */
+/* ESTILIZAÇÃO DO SELECT ANO, MÊS, DIA */
+/* ================================================================================ */
+/* Estilo da linha ao passar o mouse */
+.custom-dropdown-panel .p-dropdown-item:hover {
+   background-color: black !important; /* bg-blue-500 */
+   color: white !important;
+   font-weight: bold !important;
+}
+
+/* Estilo da linha selecionada */
+.custom-dropdown-panel .p-dropdown-item.p-highlight {
+   background-color: #3b82f6 !important; /* bg-blue-500 */
+   color: white !important;
+   font-weight: bold !important;
+}
+
+/* Cor do placeholder */
+.custom-dropdown-input .p-dropdown-label.p-placeholder {
+   color: #6b7280 !important; /* text-gray-500 */
+   font-style: italic;
+   letter-spacing: 0.1em;
+}
+
+/* Cor do texto do valor selecionado */
+.custom-dropdown-input .p-dropdown-label {
+   color: black !important;
+   font-weight: bold !important;
+   font-style: italic;
+   letter-spacing: 0.1em;
+}
+
+/* Cor do texto dos itens do dropdown */
+.custom-dropdown-panel .p-dropdown-item {
+   color: black !important;
+   font-weight: bold !important;
+   font-style: italic;
+   letter-spacing: 0.1em;
+}
+/* ================================================================================ */

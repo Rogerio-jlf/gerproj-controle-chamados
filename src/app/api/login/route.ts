@@ -57,7 +57,7 @@ export async function POST(request: Request) {
             },
          },
          process.env.JWT_SECRET || 'minha_chave_secreta',
-         { expiresIn: '3h' }
+         { expiresIn: '3h' } // Token válido por 3 horas
       );
 
       const isAdmin = user.TIPO_USUARIO === 'ADM';

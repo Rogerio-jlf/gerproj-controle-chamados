@@ -1062,7 +1062,7 @@ export function ModalAtualizarStatusApontarOsChamado({
                         setEditing(false);
                      }
                   }}
-                  className={`w-[300px] min-w-[260px] rounded-sm border-2 border-slate-900 px-6 py-2 ${getStylesStatus(status)}`}
+                  className={`w-[300px] min-w-[260px] rounded-sm px-6 py-2 ${getStylesStatus(status)}`}
                   disabled={isLoading}
                >
                   {!availableStatusOptions.includes(status) && (
@@ -1090,9 +1090,9 @@ export function ModalAtualizarStatusApontarOsChamado({
                   <Tooltip>
                      <TooltipTrigger asChild>
                         <div
-                           className={`group relative rounded-sm border-2 border-slate-900 p-1 transition-all ${
+                           className={`group relative rounded-sm p-1 transition-all ${
                               isStatusEditable
-                                 ? 'cursor-pointer hover:scale-110 hover:border-2 hover:border-slate-900'
+                                 ? 'cursor-pointer hover:scale-125 active:scale-95'
                                  : 'cursor-not-allowed opacity-75'
                            } ${getStylesStatus(status)} ${
                               isLoading ? 'cursor-wait opacity-50' : ''
@@ -1100,7 +1100,7 @@ export function ModalAtualizarStatusApontarOsChamado({
                            onClick={handleStatusCellClick}
                         >
                            <div className="flex items-center justify-center gap-4">
-                              <span className="font-semibold tracking-wider select-none">
+                              <span className="font-extrabold tracking-widest italic">
                                  {status ?? 'Sem status'}
                               </span>
                               {isStatusEditable && (
@@ -1116,9 +1116,9 @@ export function ModalAtualizarStatusApontarOsChamado({
                         side="right"
                         align="start"
                         sideOffset={8}
-                        className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
+                        className="border-t-4 border-blue-600 bg-white text-sm font-bold tracking-widest text-black shadow-lg shadow-black select-none"
                      >
-                        <div className="text-sm font-semibold tracking-wider text-black italic select-none">
+                        <div className="text-sm font-extrabold tracking-widest text-black italic select-none">
                            {isLoading
                               ? 'Aguarde...'
                               : !isStatusEditable

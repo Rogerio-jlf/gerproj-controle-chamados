@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import * as jwtDecode from 'jwt-decode';
 
@@ -41,13 +41,26 @@ export function useAuth(): UseAuthReturn {
       try {
          const decoded = (jwtDecode as any).default(token) as UserToken;
          const currentTimeInSeconds = Math.floor(Date.now() / 1000);
-         return decoded.exp < currentTimeInSeconds;
+         const isExpired = decoded.exp < currentTimeInSeconds;
+
+         return isExpired;
       } catch (error) {
-         console.error('Erro ao decodificar token:', error);
+         console.error('❌ Erro ao decodificar token:', error);
          return true;
       }
    };
 
+   const handleTokenExpiration = useCallback(() => {
+      localStorage.removeItem('token');
+      setIsTokenExpired(true);
+      setUser(null);
+      setTimeout(() => {
+         setIsTokenExpired(false);
+         router.push('/');
+      }, 5000);
+   }, [router]);
+
+   // ========== VERIFICAÇÃO INICIAL ==========
    useEffect(() => {
       const token = localStorage.getItem('token');
 
@@ -61,25 +74,48 @@ export function useAuth(): UseAuthReturn {
          const decoded = (jwtDecode as any).default(token) as UserToken;
 
          if (isTokenReallyExpired(token)) {
-            localStorage.removeItem('token');
-            setIsTokenExpired(true);
+            handleTokenExpiration();
             setLoading(false);
-            setTimeout(() => {
-               router.push('/');
-            }, 5000);
             return;
          }
 
          setUser(decoded);
          setLoading(false);
       } catch (err) {
-         console.error('Erro ao processar token:', err);
+         console.error('❌ Erro ao processar token:', err);
          localStorage.removeItem('token');
          setLoading(false);
          router.push('/');
       }
-   }, [router]);
+   }, [handleTokenExpiration, router]);
 
+   // ========== VERIFICAÇÃO PERIÓDICA ==========
+   useEffect(() => {
+      if (!user) {
+         return;
+      }
+
+      const checkTokenInterval = setInterval(() => {
+         const token = localStorage.getItem('token');
+
+         if (!token) {
+            clearInterval(checkTokenInterval);
+            handleTokenExpiration();
+            return;
+         }
+
+         if (isTokenReallyExpired(token)) {
+            clearInterval(checkTokenInterval);
+            handleTokenExpiration();
+         }
+      }, 5000); // Verifica a cada 5 segundos
+
+      return () => {
+         clearInterval(checkTokenInterval);
+      };
+   }, [handleTokenExpiration, user]);
+
+   // ========== INTERCEPTOR DE FETCH ==========
    useEffect(() => {
       if (!user) return;
 
@@ -91,13 +127,7 @@ export function useAuth(): UseAuthReturn {
          if (response.status === 401) {
             const token = localStorage.getItem('token');
             if (token && user) {
-               localStorage.removeItem('token');
-               setIsTokenExpired(true);
-               setUser(null);
-               setTimeout(() => {
-                  setIsTokenExpired(false);
-                  router.push('/');
-               }, 5000);
+               handleTokenExpiration();
             }
          }
 
@@ -107,7 +137,7 @@ export function useAuth(): UseAuthReturn {
       return () => {
          window.fetch = originalFetch;
       };
-   }, [user, router]);
+   }, [handleTokenExpiration, user]);
 
    return {
       user,
