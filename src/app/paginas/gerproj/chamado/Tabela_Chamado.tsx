@@ -25,8 +25,7 @@ import { TabelaOS } from '../ordem-servico/Tabela_OS';
 import { ModalExcluirChamado } from './Modal_Deletar_Chamado';
 import { ModalAtribuirChamado } from './Modal_Atribuir_Chamado';
 import { colunasTabelaChamados } from './Colunas_Tabela_Chamado';
-import { TabelaTarefas } from '../components/tabelas/Tabela_Tarefas';
-import { TabelaOSChamado } from '../components/tabelas/Tabela_OS_Chamado';
+import { TabelaTarefas } from '../tarefas/Tabela_Tarefa';
 import { ModalVisualizarChamado } from './Modal_Visualizar_Chamado';
 
 // Hooks & Types
@@ -272,7 +271,7 @@ export function TabelaChamado() {
       params: URLSearchParams,
       token: string
    ): Promise<ApiResponse> {
-      const res = await fetch(`/api/chamados/tabela-chamado?${params}`, {
+      const res = await fetch(`/api/tabelas/chamado/tabela-chamado?${params}`, {
          headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -905,16 +904,8 @@ export function TabelaChamado() {
                            size={100}
                         />
                         <h3 className="text-3xl font-extrabold tracking-wider text-white italic select-none">
-                           {user?.tipo === 'ADM'
-                              ? `Nenhum Chamado foi encontrado para o período: ${mes.toString().padStart(2, '0')}/${ano}.`
-                              : `Nenhum Chamado (excluindo finalizados) foi encontrado para o período: ${mes.toString().padStart(2, '0')}/${ano}.`}
+                           {`Nenhum Chamado foi encontrado para o período: ${mes.toString().padStart(2, '0')}/${ano}.`}
                         </h3>
-                        {user?.tipo !== 'ADM' && (
-                           <p className="text-base font-semibold tracking-wider text-white italic select-none">
-                              Chamados com status "FINALIZADO" não são exibidos
-                              para o seu perfil.
-                           </p>
-                        )}
                      </div>
                   )}
 
@@ -937,9 +928,8 @@ export function TabelaChamado() {
                         {totalActiveFilters > 0 && (
                            <button
                               onClick={clearFilters}
-                              className="flex cursor-pointer items-center gap-4 rounded-md border-none bg-red-600 px-6 py-2 text-lg font-extrabold tracking-wider text-white italic shadow-sm shadow-black transition-all select-none hover:-translate-y-1 hover:scale-102 hover:bg-red-800 active:scale-95"
+                              className="cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all hover:scale-105 hover:bg-red-800 active:scale-95"
                            >
-                              <BsEraserFill className="text-white" size={24} />
                               Limpar Filtros
                            </button>
                         )}
@@ -980,14 +970,6 @@ export function TabelaChamado() {
             isOpen={OpenModalVizualizarChamado}
             onClose={handleCloseModalVisualizarChamado}
             chamado={selectedChamado}
-         />
-
-         {/* TABELA OS CHAMADO */}
-         <TabelaOSChamado
-            isOpen={openTabelaOSChamado}
-            onClose={handleCloseTabelaOSChamado}
-            codChamado={selectedCodChamado}
-            onSuccess={() => setOpenTabelaOSChamado(false)}
          />
 
          {/* TABELA TAREFAS */}

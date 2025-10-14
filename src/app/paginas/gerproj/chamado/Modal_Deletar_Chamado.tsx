@@ -55,9 +55,12 @@ export function ModalExcluirChamado({
       setIsLoading(true);
 
       try {
-         const response = await fetch(`/api/chamados/delete/${codChamado}`, {
-            method: 'DELETE',
-         });
+         const response = await fetch(
+            `/api/tabelas/chamado/delete/${codChamado}`,
+            {
+               method: 'DELETE',
+            }
+         );
 
          if (!response.ok) {
             const errorData = await response.json();

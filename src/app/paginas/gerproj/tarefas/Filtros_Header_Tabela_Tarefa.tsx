@@ -22,7 +22,7 @@ interface FilterControlsProps {
 // ================================================================================
 // COMPONENTE INPUT FILTRO POR COLUNA COM DEBOUNCE
 // ================================================================================
-export const FiltrosHeaderTabelaOs = ({
+export const FiltrosHeaderTabelaTarefa = ({
    value,
    onChange,
    placeholder,
@@ -119,23 +119,23 @@ export const FilterControls = ({
 // ================================================================================
 // HOOK PERSONALIZADO PARA FUNÇÕES DE FILTRO
 // ================================================================================
-export const useFiltrosHeaderTabelaOSy = () => {
+export const useFiltrosHeaderTabelaTarefay = () => {
    const globalFilterFn = useCallback(
       (row: any, columnId: string, filterValue: string) => {
          if (!filterValue) return true;
 
          const searchValue = filterValue.toLowerCase().trim();
          const searchableColumns = [
-            'CHAMADO_OS',
-            'COD_OS',
-            'DTINI_OS',
-            'DTINC_OS',
-            'COMP_OS',
-            'NOME_CLIENTE',
-            'FATURADO_OS',
-            'NOME_RECURSO',
-            'VALID_OS',
-            'TAREFA_COMPLETA',
+            'COD_TAREFA',
+            'NOME_TAREFA',
+            'CODPRO_TAREFA',
+            'DTSOL_TAREFA',
+            'DTAPROV_TAREFA',
+            'DTPREVENT_TAREFA',
+            'HREST_TAREFA',
+            'STATUS_TAREFA',
+            'DTINC_TAREFA',
+            'FATURA_TAREFA',
             'PROJETO_COMPLETO',
          ];
 
@@ -143,7 +143,12 @@ export const useFiltrosHeaderTabelaOSy = () => {
             const cellValue = row.getValue(colId);
 
             // Para campos de data, usar normalização
-            if (colId === 'DTINI_OS' || colId === 'DTINC_OS') {
+            if (
+               colId === 'DTSOL_TAREFA' ||
+               colId === 'DTAPROV_TAREFA' ||
+               colId === 'DTPREVENT_TAREFA' ||
+               colId === 'DTINC_TAREFA'
+            ) {
                const dateFormats = normalizeDate(cellValue);
                return dateFormats.some(dateFormat =>
                   dateFormat.toLowerCase().includes(searchValue)
@@ -166,7 +171,12 @@ export const useFiltrosHeaderTabelaOSy = () => {
          const filterString = String(filterValue).toLowerCase().trim();
 
          // Tratamento especial para campos de data
-         if (columnId === 'DTINI_OS' || columnId === 'DTINC_OS') {
+         if (
+            columnId === 'DTSOL_TAREFA' ||
+            columnId === 'DTAPROV_TAREFA' ||
+            columnId === 'DTPREVENT_TAREFA' ||
+            columnId === 'DTINC_TAREFA'
+         ) {
             const dateFormats = normalizeDate(cellValue);
             return dateFormats.some(dateFormat =>
                dateFormat.toLowerCase().includes(filterString)
@@ -174,7 +184,7 @@ export const useFiltrosHeaderTabelaOSy = () => {
          }
 
          // Para campos numéricos (como código do chamado)
-         if (columnId === 'COD_OS' || columnId === 'CHAMADO_OS') {
+         if (columnId === 'COD_TAREFA' || columnId === 'CODPRO_TAREFA') {
             const cellString = String(cellValue || '');
             return cellString.includes(filterString);
          }
@@ -194,16 +204,16 @@ export const useFiltrosHeaderTabelaOSy = () => {
 // ================================================================================
 export const getDefaultColumnDisplayName = (columnId: string): string => {
    const displayNames: Record<string, string> = {
-      CHAMADO_OS: 'Chamado',
-      COD_OS: 'Cód. OS',
-      DTINI_OS: 'Data Início',
-      DTINC_OS: 'Data Término',
-      COMP_OS: 'Componente',
-      NOME_CLIENTE: 'Nome Cliente',
-      FATURADO_OS: 'Faturado',
-      NOME_RECURSO: 'Nome Recurso',
-      VALID_OS: 'Válido',
-      TAREFA_COMPLETA: 'Tarefa Completa',
+      COD_TAREFA: 'Cód. Tarefa',
+      NOME_TAREFA: 'Nome Tarefa',
+      CODPRO_TAREFA: 'Cód. Tarefa',
+      DTSOL_TAREFA: 'Data Solicitação',
+      DTAPROV_TAREFA: 'Data Aprovação',
+      DTPREVENT_TAREFA: 'Data Preventiva',
+      HREST_TAREFA: 'Horas Estimadas',
+      STATUS_TAREFA: 'Status Tarefa',
+      DTINC_TAREFA: 'Data Inclusão',
+      FATURA_TAREFA: 'Cliente Paga',
       PROJETO_COMPLETO: 'Projeto Completo',
    };
    return displayNames[columnId] || columnId;

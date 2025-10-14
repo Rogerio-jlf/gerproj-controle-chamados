@@ -20,7 +20,7 @@ export function useEmailAtribuirChamados() {
          enviarEmailCliente,
          enviarEmailRecurso,
       }: NotificacaoPayload) => {
-         const response = await fetch('/api/chamados/atribuir-chamado', {
+         const response = await fetch('/api/tabelas/chamado/atribuir-chamado', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

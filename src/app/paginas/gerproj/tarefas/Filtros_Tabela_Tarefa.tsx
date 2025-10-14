@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
-import { useFiltersTabelaOs } from '../../../../contexts/Filters_Context_Dia';
+import { useFiltersTabelaTarefa } from '../../../../contexts/Filters_Context_Tabela_Tarefa';
 import SelectAno from '../../../../components/seletores/Select_Ano';
 import SelectMes from '../../../../components/seletores/Select_Mes';
 import SelectDia from '../../../../components/seletores/Select_Dia';
@@ -17,9 +17,9 @@ interface FiltrosProps {
    }) => void;
 }
 
-export function FiltrosTabelaOS({ onFiltersChange }: FiltrosProps) {
+export function FiltrosTabelaTarefa({ onFiltersChange }: FiltrosProps) {
    const hoje = useMemo(() => new Date(), []);
-   const { filters, setFilters, getDiasDoMes } = useFiltersTabelaOs();
+   const { filters, setFilters, getDiasDoMes } = useFiltersTabelaTarefa();
 
    // Estados locais
    const [ano, setAno] = useState<number | 'todos'>(

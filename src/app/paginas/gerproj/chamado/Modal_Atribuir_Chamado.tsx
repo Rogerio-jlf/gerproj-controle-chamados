@@ -1,22 +1,8 @@
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
 import { ToastCustom } from '../../../../components/Toast_Custom';
-import React, {
-   useState,
-   useEffect,
-   useMemo,
-   createContext,
-   useContext,
-   useCallback,
-} from 'react';
-// ================================================================================
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from '../../../../components/ui/tooltip';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 // ================================================================================
 import { TabelaChamadoProps } from '../../../../types/types';
 // ================================================================================
@@ -25,35 +11,17 @@ import { useEmailAtribuirChamados } from '../../../../hooks/useEmailAtribuirCham
 // ================================================================================
 import { Loader2 } from 'lucide-react';
 import { IoIosSave } from 'react-icons/io';
-import { FiActivity } from 'react-icons/fi';
-import { BiSolidZap } from 'react-icons/bi';
-import { HiTrendingUp } from 'react-icons/hi';
 import { ImUsers, ImTarget } from 'react-icons/im';
-import { MdMessage, MdEmail } from 'react-icons/md';
 import { BsAwardFill, BsFillSendFill } from 'react-icons/bs';
-import { FaShield, FaMessage as FaMessage6 } from 'react-icons/fa6';
-import { IoAlertCircle, IoBarChart, IoClose } from 'react-icons/io5';
-import {
-   FaCheckCircle,
-   FaClock,
-   FaExclamationTriangle,
-   FaFilter,
-   FaSearch,
-   FaUser,
-   FaFlag,
-   FaCalendarAlt,
-   FaUsers,
-} from 'react-icons/fa';
+import { IoBarChart, IoClose } from 'react-icons/io5';
+import { FaExclamationTriangle, FaUser, FaUsers } from 'react-icons/fa';
 import { formatCodChamado } from '../../../../utils/formatters';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
-import { FcClearFilters } from 'react-icons/fc';
 import { FaEraser } from 'react-icons/fa';
 import { IoIosSearch } from 'react-icons/io';
 import { CiFilter } from 'react-icons/ci';
 import { MdRecordVoiceOver } from 'react-icons/md';
-import { FaUserTie } from 'react-icons/fa6';
 import { TbListDetails } from 'react-icons/tb';
-import { BsEraserFill } from 'react-icons/bs';
 import { LoadingButton } from '../../../../components/Loading';
 
 // ================================================================================
@@ -298,7 +266,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
       queryFn: async () => {
          try {
             const response = await fetch(
-               '/api/chamados/atribuir-chamado/recursos',
+               '/api/tabelas/chamado/atribuir-chamado/recursos',
                {
                   headers: { Authorization: `Bearer ${token}` },
                }
@@ -334,7 +302,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
       queryKey: ['sugestao-recurso', novoChamado],
       queryFn: async () => {
          const response = await fetch(
-            '/api/chamados/atribuir-chamado/sugestao-recurso',
+            '/api/tabelas/chamado/atribuir-chamado/sugestao-recurso',
             {
                method: 'POST',
                headers: {
@@ -359,7 +327,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
       queryFn: async () => {
          try {
             const response = await fetch(
-               `/api/chamados/atribuir-chamado/recurso/${selectedRecurso}`,
+               `/api/tabelas/chamado/atribuir-chamado/recurso/${selectedRecurso}`,
                {
                   headers: { Authorization: `Bearer ${token}` },
                }

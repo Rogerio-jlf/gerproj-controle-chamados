@@ -13,9 +13,7 @@ import { ModalAtualizarStatusApontarOsChamado } from './Modal_Atualizar_Status_A
 // ================================================================================
 import { HiMiniSquaresPlus } from 'react-icons/hi2';
 import { IoClose } from 'react-icons/io5';
-import { GrServices } from 'react-icons/gr';
-import { FaEye, FaDownload } from 'react-icons/fa6';
-import { GrTask } from 'react-icons/gr';
+import { FaEye } from 'react-icons/fa6';
 import { RiDeleteBin6Fill } from 'react-icons/ri';
 import { FaUserCheck } from 'react-icons/fa';
 
@@ -52,25 +50,12 @@ const BotaoMenuCircular = ({ chamado, acoes }: DropdownMenuProps) => {
    const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
    const [hoveredButton, setHoveredButton] = useState<number | null>(null);
 
-   const handleDownload = () => {
-      const blob = new Blob([JSON.stringify(chamado, null, 2)], {
-         type: 'application/json',
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `chamado_${chamado.COD_CHAMADO}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      setIsOpen(false);
-   };
-
    const handleToggle = (e: React.MouseEvent) => {
       if (!isOpen) {
          const rect = e.currentTarget.getBoundingClientRect();
          setButtonPosition({
             x: rect.left + rect.width / 2,
-            y: rect.top + rect.height / 2, // Centro vertical do botão
+            y: rect.top + rect.height / 2,
          });
       }
       setIsOpen(!isOpen);
@@ -91,45 +76,6 @@ const BotaoMenuCircular = ({ chamado, acoes }: DropdownMenuProps) => {
          shadowColor: 'shadow-blue-300/50',
          hoverShadow: 'hover:shadow-blue-400/60',
          ringColor: 'hover:ring-blue-300/40',
-      },
-      {
-         icon: GrServices,
-         onClick: () => {
-            acoes.onVisualizarOSChamado(chamado.COD_CHAMADO);
-            setIsOpen(false);
-         },
-         tooltip: "Visualizar OS's",
-         bgGradient: 'from-emerald-500 to-emerald-600',
-         hoverGradient: 'from-emerald-600 to-emerald-700',
-         iconColor: 'text-white',
-         shadowColor: 'shadow-emerald-300/50',
-         hoverShadow: 'hover:shadow-emerald-400/60',
-         ringColor: 'hover:ring-emerald-300/40',
-      },
-      {
-         icon: GrTask,
-         onClick: () => {
-            acoes.onVisualizarTarefa();
-            setIsOpen(false);
-         },
-         tooltip: 'Visualizar Tarefas',
-         bgGradient: 'from-orange-500 to-orange-600',
-         hoverGradient: 'from-orange-600 to-orange-700',
-         iconColor: 'text-white',
-         shadowColor: 'shadow-orange-300/50',
-         hoverShadow: 'hover:shadow-orange-400/60',
-         ringColor: 'hover:ring-orange-300/40',
-      },
-      {
-         icon: FaDownload,
-         onClick: handleDownload,
-         tooltip: "Download Arquivo's",
-         bgGradient: 'from-purple-500 to-purple-600',
-         hoverGradient: 'from-purple-600 to-purple-700',
-         iconColor: 'text-white',
-         shadowColor: 'shadow-purple-300/50',
-         hoverShadow: 'hover:shadow-purple-400/60',
-         ringColor: 'hover:ring-purple-300/40',
       },
       // Botão de atribuição - só incluir se for ADM
       ...(acoes.userType === 'ADM'

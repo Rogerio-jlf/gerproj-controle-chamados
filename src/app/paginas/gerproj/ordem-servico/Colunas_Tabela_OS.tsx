@@ -1,11 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table';
 // ================================================================================
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from '../../../../components/ui/tooltip';
-// ================================================================================
 import { TabelaOSProps } from '../../../../types/types';
 import { EditarCellFaturadoOSValidOS } from './Editar_Cell_FaturadoOS_ValidOS';
 // ================================================================================
@@ -49,7 +43,7 @@ export const colunasTabelaOS = (
          cell: ({ getValue }) => {
             const value = getValue() as number;
             return (
-               <div className="flex items-center justify-center rounded-sm border border-teal-700 bg-teal-600 py-2 text-center font-bold text-white">
+               <div className="flex items-center justify-center text-center">
                   {formatCodChamado(value) || '-----'}
                </div>
             );
@@ -65,7 +59,7 @@ export const colunasTabelaOS = (
             const value = getValue() as number;
 
             return (
-               <div className="flex items-center justify-center rounded-sm border border-purple-700 bg-purple-600 py-2 text-center font-bold text-white">
+               <div className="flex items-center justify-center text-center">
                   {formatCodChamado(value) || '-----'}
                </div>
             );
@@ -82,7 +76,7 @@ export const colunasTabelaOS = (
             const dataFormatada = formatarDataParaBR(value);
 
             return (
-               <div className="flex items-center justify-center rounded-sm border-[1px] border-slate-500 bg-slate-950 py-2 text-center font-bold text-white">
+               <div className="flex items-center justify-center text-center">
                   {dataFormatada || '----------'}
                </div>
             );
@@ -97,7 +91,7 @@ export const colunasTabelaOS = (
          cell: ({ getValue }) => {
             const hora = getValue() as string;
             return (
-               <div className="flex items-center justify-center rounded-sm border-[1px] border-slate-500 bg-slate-950 py-2 text-center font-bold text-white">
+               <div className="flex items-center justify-center text-center">
                   {hora ? formatarHora(hora) : '--:--'}
                </div>
             );
@@ -112,7 +106,7 @@ export const colunasTabelaOS = (
          cell: ({ getValue }) => {
             const hora = getValue() as string;
             return (
-               <div className="flex items-center justify-center rounded-sm border-[1px] border-slate-500 bg-slate-950 py-2 text-center font-bold text-white">
+               <div className="flex items-center justify-center text-center">
                   {hora ? formatarHora(hora) : '--:--'}
                </div>
             );
@@ -129,7 +123,7 @@ export const colunasTabelaOS = (
             const tempoFormatado = formatarDecimalParaTempo(value);
 
             return (
-               <div className="flex items-center justify-center rounded-sm border-[1px] border-slate-500 bg-slate-950 py-2 text-center font-bold text-white">
+               <div className="flex items-center justify-center text-center">
                   {tempoFormatado || '--:--'}
                </div>
             );
@@ -146,7 +140,7 @@ export const colunasTabelaOS = (
             const dataFormatada = formatarDataHoraParaBR(value);
 
             return (
-               <div className="flex items-center justify-center rounded-sm border-[1px] border-slate-500 bg-slate-950 py-2 text-center font-bold text-white">
+               <div className="flex items-center justify-center text-center">
                   {dataFormatada || '----------'}
                </div>
             );
@@ -162,7 +156,7 @@ export const colunasTabelaOS = (
             const value = getValue() as string;
 
             return (
-               <div className="flex items-center justify-center rounded-sm border-[1px] border-slate-500 bg-slate-950 py-2 text-center font-bold text-white">
+               <div className="flex items-center justify-center text-center">
                   {value || '-------'}
                </div>
             );
@@ -181,7 +175,7 @@ export const colunasTabelaOS = (
 
             return (
                <div
-                  className={`flex items-center justify-center rounded-sm border-[1px] border-slate-500 bg-slate-950 py-2 text-center font-bold text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-4 text-left'}`}
+                  className={`flex items-center ${isEmpty ? 'justify-center text-center' : 'justify-start text-left'}`}
                >
                   {textoCorrigido
                      ? textoCorrigido.split(' ').slice(0, 2).join(' ')
@@ -203,15 +197,12 @@ export const colunasTabelaOS = (
             if (!handleUpdateField) {
                const valueUpper = value?.toUpperCase();
                let bgColor = 'bg-gray-400';
-               if (valueUpper === 'SIM')
-                  bgColor =
-                     'bg-blue-600 text-white border-blue-700 border-[1px]';
-               else if (valueUpper === 'NAO')
-                  bgColor = 'bg-red-600 text-white border-red-700 border-[1px]';
+               if (valueUpper === 'SIM') bgColor = 'bg-blue-600 text-white';
+               else if (valueUpper === 'NAO') bgColor = 'bg-red-600 text-white';
 
                return (
                   <div
-                     className={`flex items-center ${bgColor} justify-center py-2 text-center font-bold text-black`}
+                     className={`flex items-center ${bgColor} justify-center text-center`}
                   >
                      {valueUpper || '---'}
                   </div>
@@ -243,7 +234,7 @@ export const colunasTabelaOS = (
             if (recurso) {
                return (
                   <div
-                     className={`flex items-center justify-center rounded-sm border-[1px] border-slate-500 bg-slate-950 py-2 text-center font-bold text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-4 text-left'}`}
+                     className={`flex items-center ${isEmpty ? 'justify-center text-center' : 'justify-start text-left'}`}
                   >
                      {recurso
                         ? recurso.split(' ').slice(0, 2).join(' ')
@@ -266,14 +257,12 @@ export const colunasTabelaOS = (
             if (!handleUpdateField) {
                const valueUpper = value?.toUpperCase();
                let bgColor = 'bg-white/50';
-               if (valueUpper === 'SIM')
-                  bgColor = 'bg-blue-600 text-white border-blue-700';
-               else if (valueUpper === 'NAO')
-                  bgColor = 'bg-red-600 text-white border-red-700';
+               if (valueUpper === 'SIM') bgColor = 'bg-blue-600 text-white';
+               else if (valueUpper === 'NAO') bgColor = 'bg-red-600 text-white';
 
                return (
                   <div
-                     className={`flex items-center rounded-sm border ${bgColor} justify-center py-2 text-center font-bold text-black`}
+                     className={`flex items-center ${bgColor} justify-center text-center`}
                   >
                      {valueUpper || '---'}
                   </div>
@@ -303,7 +292,7 @@ export const colunasTabelaOS = (
             const isEmpty = !value;
             return (
                <div
-                  className={`flex items-center justify-center rounded-sm border-[1px] border-slate-500 bg-slate-950 py-2 text-center font-bold text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-4 text-left'}`}
+                  className={`flex items-center ${isEmpty ? 'justify-center text-center' : 'justify-start text-left'}`}
                >
                   {isEmpty ? (
                      '------------------------------'
@@ -325,7 +314,7 @@ export const colunasTabelaOS = (
             const isEmpty = !value;
             return (
                <div
-                  className={`flex items-center justify-center rounded-sm border-[1px] border-slate-500 bg-slate-950 py-2 text-center font-bold text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-4 text-left'}`}
+                  className={`flex items-center ${isEmpty ? 'justify-center text-center' : 'justify-start text-left'}`}
                >
                   {isEmpty ? (
                      '------------------------------'

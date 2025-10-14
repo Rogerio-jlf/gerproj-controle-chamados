@@ -21,7 +21,7 @@ import {
    ModalPermitirRetroativoOsChamado,
    getCurrentUserId,
    isUserAdmin,
-} from '../components/modais/Modal_Permitir_OS_Retroativa_Chamado';
+} from '../components/Modal_Permitir_OS_Retroativa_Chamado';
 import { ToastCustom } from '../../../../components/Toast_Custom';
 // ================================================================================
 import {
@@ -353,7 +353,9 @@ export function ModalAtualizarStatusApontarOsChamado({
    const fetchClassificacoes = async () => {
       setLoadingClassificacoes(true);
       try {
-         const response = await fetch('/api/chamados/atribuir-classificacao');
+         const response = await fetch(
+            '/api/tabelas/chamado/atribuir-classificacao'
+         );
          if (response.ok) {
             const data = await response.json();
             setClassificacoes(data);
@@ -373,7 +375,7 @@ export function ModalAtualizarStatusApontarOsChamado({
       setLoadingTarefas(true);
       try {
          const response = await fetch(
-            `/api/chamados/atribuir-tarefa/${codChamado}`
+            `/api/tabelas/chamados/atribuir-tarefa/${codChamado}`
          );
          if (response.ok) {
             const data = await response.json();
@@ -793,7 +795,7 @@ export function ModalAtualizarStatusApontarOsChamado({
          const start = Date.now();
 
          const response = await fetch(
-            `/api/chamados/status-apontamento-chamado/${codChamado}`,
+            `/api/tabelas/chamados/status-apontamento-chamado/${codChamado}`,
             {
                method: 'POST',
                headers: { 'Content-Type': 'application/json' },
