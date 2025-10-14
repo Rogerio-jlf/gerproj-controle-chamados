@@ -292,7 +292,7 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
          <div className="fixed inset-0 z-[60] flex items-center justify-center">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-2xl" />
             <div className="relative z-10">
-               <IsLoading title="Gerando relatório de OS" />
+               <IsLoading title="Gerando relatório de OS" isLoading={false} />
             </div>
          </div>
       );

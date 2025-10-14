@@ -54,6 +54,7 @@ import { MdRecordVoiceOver } from 'react-icons/md';
 import { FaUserTie } from 'react-icons/fa6';
 import { TbListDetails } from 'react-icons/tb';
 import { BsEraserFill } from 'react-icons/bs';
+import { LoadingButton } from '../../../../components/Loading';
 
 // ================================================================================
 // INTERFACES E TIPOS
@@ -590,22 +591,23 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
    // RENDERIZAÇÃO
    // ================================================================================
    return (
-      <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
-         {/* ===== OVERLAY ===== */}
-         <div className="absolute inset-0 bg-black/60" />
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+         {/* OVERLAY */}
+         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
 
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full overflow-hidden rounded-2xl border-0 bg-slate-300 shadow-xl shadow-black transition-all duration-500 ease-out">
+         {/* MODAL */}
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 mx-4 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl border-0 bg-white/10 shadow-sm shadow-black transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
-            <header className="relative flex items-center justify-between bg-black p-6 shadow-sm shadow-black">
+            <header className="relative flex items-center justify-between bg-teal-600 p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
-                  <RiDeleteBin5Fill className="text-orange-400" size={60} />
+                  <RiDeleteBin5Fill className="text-black" size={60} />
                   {/* ===== */}
                   <div className="flex flex-col">
-                     <h1 className="text-3xl font-extrabold tracking-wider text-orange-400 select-none">
+                     <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
                         Atribuir Chamado
                      </h1>
 
-                     <p className="text-xl font-extrabold tracking-widest text-orange-400 italic select-none">
+                     <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
                         Chamado #{formatCodChamado(chamado.COD_CHAMADO)}
                      </p>
                   </div>
@@ -625,9 +627,9 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
             {/* ==================== */}
 
             {/* ===== COLUNAS ===== */}
-            <div className="flex h-full flex-1 gap-6 overflow-hidden p-6">
+            <div className="flex h-full gap-6 overflow-hidden p-6">
                {/* ===== COLUNA RECURSOS ===== */}
-               <section className="flex-[0_0_40%] overflow-hidden rounded-xl border-[1px] border-black/20 bg-slate-50 p-6 shadow-lg shadow-black">
+               <section className="flex-[0_0_40%] overflow-hidden rounded-xl bg-white/95 p-6 shadow-sm shadow-black">
                   <div className="flex flex-col gap-10">
                      <div className="flex flex-col gap-10">
                         {/* Header */}
@@ -740,7 +742,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                         {recursosFiltrados.map((recurso: RecursoStats) => (
                            <div
                               key={recurso.COD_RECURSO}
-                              className="flex cursor-pointer flex-col gap-4 rounded-lg border-[1px] border-black bg-white p-4 shadow-md shadow-black transition-all outline-none hover:-translate-y-1 hover:scale-102 active:scale-95"
+                              className="flex cursor-pointer flex-col gap-4 rounded-lg bg-white p-4 shadow-sm shadow-black transition-all outline-none hover:-translate-y-1 hover:scale-102 active:scale-95"
                               onClick={() =>
                                  handleSelectRecurso(recurso.COD_RECURSO)
                               }
@@ -806,7 +808,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                {/* ==================== */}
 
                {/* ===== COLUNA DETALHES/SUGESTÃO ===== */}
-               <section className="flex-[0_0_25%] overflow-hidden rounded-xl border-[1px] border-black/20 bg-slate-50 p-6 shadow-lg shadow-black">
+               <section className="flex-[0_0_25%] overflow-hidden rounded-xl bg-white/95 p-6 shadow-sm shadow-black">
                   <div className="flex flex-col gap-10">
                      {/* Botão sugestão consultor */}
                      <div className="flex items-center gap-4">
@@ -1157,7 +1159,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                {/* ==================== */}
 
                {/* ===== COLUNA FORMULÁRIO ===== */}
-               <section className="flex-[0_0_32.5%] overflow-hidden rounded-xl border-[1px] border-black/20 bg-slate-50 p-6 shadow-lg shadow-black">
+               <section className="flex-[0_0_33%] overflow-hidden rounded-xl bg-white/95 p-6 shadow-sm shadow-black">
                   <div className="flex flex-col gap-10">
                      {/* Header do formulário */}
                      <div className="flex items-center gap-4">
@@ -1318,12 +1320,8 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                            <button
                               onClick={handleLimparFormulario}
                               disabled={atribuirMutation.isPending}
-                              className="flex cursor-pointer items-center gap-2 rounded-md border-[1px] border-red-600 bg-red-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-110 hover:border-none hover:bg-red-900 active:scale-95"
+                              className="cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all hover:scale-105 hover:bg-red-800 active:scale-95"
                            >
-                              <BsEraserFill
-                                 className="mr-2 inline-block"
-                                 size={20}
-                              />
                               Limpar
                            </button>
                            {/* ===== */}
@@ -1334,17 +1332,17 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                               disabled={
                                  !isFormValid() || atribuirMutation.isPending
                               }
-                              className={`cursor-pointer rounded-md border-[1px] border-blue-600 bg-blue-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black ${
+                              className={`cursor-pointer rounded-sm border-none bg-blue-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-sm shadow-black ${
                                  atribuirMutation.isPending || !isFormValid()
                                     ? 'disabled:cursor-not-allowed disabled:opacity-50'
-                                    : 'transition-all hover:scale-110 hover:border-none hover:bg-blue-900 active:scale-95'
+                                    : 'transition-all hover:scale-105 hover:bg-blue-800 active:scale-95'
                               }`}
                            >
                               {atribuirMutation.isPending ? (
-                                 <div className="flex items-center gap-2">
-                                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                    <span>Salvando...</span>
-                                 </div>
+                                 <span className="flex items-center justify-center gap-2">
+                                    <LoadingButton size={20} />
+                                    Salvando...
+                                 </span>
                               ) : (
                                  <div className="flex items-center gap-2">
                                     <IoIosSave

@@ -12,15 +12,12 @@ import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido
 import { ModalAtualizarStatusApontarOsChamado } from './Modal_Atualizar_Status_Apontar_Os_Chamado';
 // ================================================================================
 import { HiMiniSquaresPlus } from 'react-icons/hi2';
-import {
-   HiEye,
-   HiBriefcase,
-   HiClipboardList,
-   HiDownload,
-   HiUsers,
-   HiTrash,
-} from 'react-icons/hi';
 import { IoClose } from 'react-icons/io5';
+import { GrServices } from 'react-icons/gr';
+import { FaEye, FaDownload } from 'react-icons/fa6';
+import { GrTask } from 'react-icons/gr';
+import { RiDeleteBin6Fill } from 'react-icons/ri';
+import { FaUserCheck } from 'react-icons/fa';
 
 // ================================================================================
 // INTERFACES
@@ -82,7 +79,7 @@ const BotaoMenuCircular = ({ chamado, acoes }: DropdownMenuProps) => {
    // Configuração dos botões com cores e estilos únicos
    const allActionButtons = [
       {
-         icon: HiEye,
+         icon: FaEye,
          onClick: () => {
             acoes.onVisualizarChamado(chamado.COD_CHAMADO);
             setIsOpen(false);
@@ -96,7 +93,7 @@ const BotaoMenuCircular = ({ chamado, acoes }: DropdownMenuProps) => {
          ringColor: 'hover:ring-blue-300/40',
       },
       {
-         icon: HiBriefcase,
+         icon: GrServices,
          onClick: () => {
             acoes.onVisualizarOSChamado(chamado.COD_CHAMADO);
             setIsOpen(false);
@@ -110,7 +107,7 @@ const BotaoMenuCircular = ({ chamado, acoes }: DropdownMenuProps) => {
          ringColor: 'hover:ring-emerald-300/40',
       },
       {
-         icon: HiClipboardList,
+         icon: GrTask,
          onClick: () => {
             acoes.onVisualizarTarefa();
             setIsOpen(false);
@@ -124,7 +121,7 @@ const BotaoMenuCircular = ({ chamado, acoes }: DropdownMenuProps) => {
          ringColor: 'hover:ring-orange-300/40',
       },
       {
-         icon: HiDownload,
+         icon: FaDownload,
          onClick: handleDownload,
          tooltip: "Download Arquivo's",
          bgGradient: 'from-purple-500 to-purple-600',
@@ -138,7 +135,7 @@ const BotaoMenuCircular = ({ chamado, acoes }: DropdownMenuProps) => {
       ...(acoes.userType === 'ADM'
          ? [
               {
-                 icon: HiUsers,
+                 icon: FaUserCheck,
                  onClick: () => {
                     acoes.onAtribuicaoInteligente?.(chamado);
                     setIsOpen(false);
@@ -152,7 +149,7 @@ const BotaoMenuCircular = ({ chamado, acoes }: DropdownMenuProps) => {
                  ringColor: 'hover:ring-pink-300/40',
               },
               {
-                 icon: HiTrash,
+                 icon: RiDeleteBin6Fill,
                  onClick: () => {
                     acoes.onExcluirChamado(chamado.COD_CHAMADO);
                     setIsOpen(false);
@@ -243,7 +240,10 @@ const BotaoMenuCircular = ({ chamado, acoes }: DropdownMenuProps) => {
 
                            {/* Botão de ação */}
                            <button
-                              onClick={button.onClick}
+                              onClick={e => {
+                                 e.stopPropagation();
+                                 button.onClick();
+                              }}
                               onMouseEnter={() => setHoveredButton(index)}
                               onMouseLeave={() => setHoveredButton(null)}
                               className={`pointer-events-auto absolute flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 transform items-center justify-center rounded-full border-2 border-white/20 bg-gradient-to-br shadow-lg backdrop-blur-sm transition-all duration-300 ease-out ${

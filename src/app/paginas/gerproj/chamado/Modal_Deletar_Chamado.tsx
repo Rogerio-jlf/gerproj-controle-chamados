@@ -8,6 +8,7 @@ import { ToastCustom } from '../../../../components/Toast_Custom';
 // ================================================================================
 import { IoClose } from 'react-icons/io5';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
+import { LoadingButton } from '../../../../components/Loading';
 
 // ================================================================================
 // INTERFACES
@@ -100,20 +101,20 @@ export function ModalExcluirChamado({
    return (
       <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
          {/* ===== OVERLAY ===== */}
-         <div className="absolute inset-0 bg-black/60" />
+         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
 
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-slate-200 shadow-xl shadow-black transition-all duration-500 ease-out">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white/80 shadow-sm shadow-white transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
-            <header className="relative flex items-center justify-between bg-black p-6 shadow-sm shadow-black">
+            <header className="relative flex items-center justify-between bg-teal-600 p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
-                  <RiDeleteBin5Fill className="text-orange-400" size={60} />
+                  <RiDeleteBin5Fill className="text-black" size={60} />
                   {/* ===== */}
                   <div className="flex flex-col">
-                     <h1 className="text-3xl font-extrabold tracking-wider text-orange-400 select-none">
+                     <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
                         Excluir Chamado
                      </h1>
 
-                     <p className="text-xl font-extrabold tracking-widest text-orange-400 italic select-none">
+                     <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
                         Chamado #{formatCodChamado(codChamado)}
                      </p>
                   </div>
@@ -153,7 +154,7 @@ export function ModalExcluirChamado({
                <button
                   onClick={handleCloseModalExcluirChamado}
                   disabled={isLoading}
-                  className="cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all hover:scale-105 hover:bg-red-800 active:scale-95"
                >
                   Cancelar
                </button>
@@ -162,13 +163,13 @@ export function ModalExcluirChamado({
                <button
                   onClick={handleSubmitExcluirChamado}
                   disabled={isLoading || !codChamado}
-                  className="cursor-pointer rounded-sm border-none bg-blue-500 px-6 py-2 text-lg font-extrabold text-white shadow-sm shadow-black transition-all select-none hover:scale-105 hover:bg-blue-900 hover:shadow-md hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="cursor-pointer rounded-sm border-none bg-blue-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-sm shadow-black transition-all hover:scale-105 hover:bg-blue-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                >
                   {isLoading ? (
-                     <div className="flex items-center gap-2">
-                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                        <span>Excluindo...</span>
-                     </div>
+                     <span className="flex items-center justify-center gap-2">
+                        <LoadingButton size={20} />
+                        Excluindo...
+                     </span>
                   ) : (
                      <div className="flex items-center gap-1">
                         <RiDeleteBin5Fill

@@ -55,20 +55,20 @@ export function ModalVisualizarChamado({
    return (
       <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
          {/* ===== OVERLAY ===== */}
-         <div className="absolute inset-0 bg-black/60" />
+         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
          {/* ========== */}
 
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-slate-200 shadow-xl shadow-black transition-all duration-500 ease-out">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white/70 shadow-sm shadow-white transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
-            <header className="relative flex items-center justify-between bg-black p-6 shadow-sm shadow-black">
+            <header className="relative flex items-center justify-between bg-teal-600 p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
-                  <FaDatabase className="text-orange-400" size={60} />
+                  <FaDatabase className="text-black" size={60} />
                   {/* ===== */}
                   <div className="flex flex-col">
-                     <h1 className="text-3xl font-extrabold tracking-wider text-orange-400 select-none">
+                     <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
                         Dados do Chamado
                      </h1>
-                     <p className="text-xl font-extrabold tracking-widest text-orange-400 italic select-none">
+                     <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
                         Chamado #{formatCodChamado(chamado.COD_CHAMADO)}
                      </p>
                   </div>
@@ -78,7 +78,7 @@ export function ModalVisualizarChamado({
                {/* Botão fechar modal */}
                <button
                   onClick={handleCloseModalVisualizarChamado}
-                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-sm shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                >
                   <IoClose size={24} />
                </button>
@@ -88,8 +88,8 @@ export function ModalVisualizarChamado({
             {/* ===== CONTEÚDO ===== */}
             <main className="flex h-full overflow-hidden">
                {/* ===== DADOS DO CHAMADO ===== */}
-               <section className="w-full overflow-y-auto bg-gray-50 p-6">
-                  <div className="space-y-0 overflow-hidden rounded-xl border-t-2 border-gray-200 bg-white shadow-md shadow-black">
+               <section className="w-full overflow-y-auto bg-white/10 p-6">
+                  <div className="space-y-0 overflow-hidden rounded-xl border-t-2 border-gray-200 bg-white/70 shadow-sm shadow-black">
                      {/* Data */}
                      <div className="group flex items-center gap-4 border-b border-gray-200 px-6 py-3">
                         <div className="flex w-16 items-center justify-center rounded-md border-r border-gray-200 bg-blue-200 p-3">

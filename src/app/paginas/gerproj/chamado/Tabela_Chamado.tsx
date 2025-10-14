@@ -177,6 +177,8 @@ export function TabelaChamado() {
    const [selectedCodChamado, setSelectedCodChamado] = useState<number | null>(
       null
    );
+   const [selectedCodChamadoParaExcluir, setSelectedCodChamadoParaExcluir] =
+      useState<number | null>(null);
 
    // ================================================================================
    // COMPUTED VALUES - FILTROS
@@ -420,12 +422,12 @@ export function TabelaChamado() {
    // HANDLERS - MODAIS (EXCLUSÃO)
    // ================================================================================
    const handleOpenModalExcluirChamado = useCallback((codChamado: number) => {
-      setSelectedCodChamado(codChamado);
+      setSelectedCodChamadoParaExcluir(codChamado);
    }, []);
    // ==========
 
    const handleCloseModalExcluirChamado = useCallback(() => {
-      setSelectedCodChamado(null);
+      setSelectedCodChamadoParaExcluir(null);
    }, []);
    // =========
 
@@ -791,7 +793,7 @@ export function TabelaChamado() {
                                  onChange={e =>
                                     handlePageSizeChange(Number(e.target.value))
                                  }
-                                 className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                                 className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none"
                               >
                                  {[20, 50, 100].map(size => (
                                     <option
@@ -810,10 +812,10 @@ export function TabelaChamado() {
                               <button
                                  onClick={() => handlePageChange(1)}
                                  disabled={!paginationInfo.hasPrevPage}
-                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                  <FiChevronsLeft
-                                    className="text-black group-disabled:text-red-400"
+                                    className="text-black group-disabled:text-red-500"
                                     size={24}
                                  />
                               </button>
@@ -823,10 +825,10 @@ export function TabelaChamado() {
                                     handlePageChange(currentPage - 1)
                                  }
                                  disabled={!paginationInfo.hasPrevPage}
-                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                  <MdChevronLeft
-                                    className="text-black group-disabled:text-red-400"
+                                    className="text-black group-disabled:text-red-500"
                                     size={24}
                                  />
                               </button>
@@ -841,7 +843,7 @@ export function TabelaChamado() {
                                              Number(e.target.value)
                                           )
                                        }
-                                       className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                                       className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none"
                                     >
                                        {Array.from(
                                           { length: paginationInfo.totalPages },
@@ -868,10 +870,10 @@ export function TabelaChamado() {
                                     handlePageChange(currentPage + 1)
                                  }
                                  disabled={!paginationInfo.hasNextPage}
-                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                  <MdChevronRight
-                                    className="text-black group-disabled:text-red-400"
+                                    className="text-black group-disabled:text-red-500"
                                     size={24}
                                  />
                               </button>
@@ -881,10 +883,10 @@ export function TabelaChamado() {
                                     handlePageChange(paginationInfo.totalPages)
                                  }
                                  disabled={!paginationInfo.hasNextPage}
-                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                  <FiChevronsRight
-                                    className="text-black group-disabled:text-red-400"
+                                    className="group-disabled:text-red-5 00 text-black"
                                     size={24}
                                  />
                               </button>
@@ -1003,9 +1005,9 @@ export function TabelaChamado() {
 
          {/* MODAL EXCLUIR CHAMADO */}
          <ModalExcluirChamado
-            isOpen={!!selectedCodChamado}
+            isOpen={!!selectedCodChamadoParaExcluir}
             onClose={handleCloseModalExcluirChamado}
-            codChamado={selectedCodChamado}
+            codChamado={selectedCodChamadoParaExcluir}
             onSuccess={handleExcluirChamadoSuccess}
          />
 
