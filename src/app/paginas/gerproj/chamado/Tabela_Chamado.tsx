@@ -35,7 +35,7 @@ import { formatarCodNumber } from '../../../../utils/formatters';
 // Hooks & Types
 import { useAuth } from '../../../../hooks/useAuth';
 import { TabelaChamadoProps } from '../../../../types/types';
-import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context_Tabela_Chamado';
+import { useFiltersTabelaChamado } from '../../../../contexts/Filters_Context_Tabela_Chamado';
 
 // Icons
 import { IoCall } from 'react-icons/io5';
@@ -117,8 +117,8 @@ function TabelaChamadoContent() {
    const searchParams = useSearchParams();
    const { user, loading: isAuthLoading, isTokenExpired } = useAuth();
    const queryClient = useQueryClient();
-   const { filters, setFilters } = useFiltersTabelaChamados();
-   const { ano, mes } = filters;
+   const { filters, setFilters } = useFiltersTabelaChamado();
+   const { ano, mes, dia } = filters;
    const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
@@ -223,6 +223,11 @@ function TabelaChamadoContent() {
          limit: String(pageSize),
       });
 
+      // ✅ ADICIONE O DIA AQUI
+      if (dia !== 'todos') {
+         params.append('dia', String(dia));
+      }
+
       if (globalFilter && globalFilter.trim()) {
          params.append('globalFilter', globalFilter.trim());
       }
@@ -255,6 +260,7 @@ function TabelaChamadoContent() {
    }, [
       ano,
       mes,
+      dia, // ✅ Adicione 'dia' aqui também
       user,
       currentPage,
       pageSize,
@@ -363,7 +369,11 @@ function TabelaChamadoContent() {
    }, []);
 
    const handleFiltersChange = useCallback(
-      (newFilters: { ano: number | 'todos'; mes: number | 'todos' }) => {
+      (newFilters: {
+         ano: number | 'todos';
+         mes: number | 'todos';
+         dia: number | 'todos'; // ✅ Adicione o tipo do dia
+      }) => {
          setFilters(prevFilters => ({
             ...prevFilters,
             ...newFilters,
@@ -878,7 +888,7 @@ function TabelaChamadoContent() {
                                  className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                  <FiChevronsRight
-                                    className="group-disabled:text-red-5 00 text-black"
+                                    className="text-black group-disabled:text-red-500"
                                     size={24}
                                  />
                               </button>

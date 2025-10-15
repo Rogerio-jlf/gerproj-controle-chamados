@@ -30,6 +30,7 @@ export async function GET(request: Request) {
       const { searchParams } = new URL(request.url);
       const mesParam = searchParams.get('mes');
       const anoParam = searchParams.get('ano');
+      const diaParam = searchParams.get('dia'); // NOVO: Parâmetro de dia
       const codChamadoQuery = searchParams.get('codChamado')?.trim();
 
       // Paginação
@@ -62,7 +63,7 @@ export async function GET(request: Request) {
       const startRow = (page - 1) * limit + 1;
       const endRow = page * limit;
 
-      // Validação mês/ano
+      // Validação mês/ano/dia
       let mesNumber: number | null = null;
       if (mesParam && mesParam !== 'todos') {
          mesNumber = Number(mesParam);
@@ -85,6 +86,18 @@ export async function GET(request: Request) {
          }
       }
 
+      // NOVO: Validação do dia
+      let diaNumber: number | null = null;
+      if (diaParam && diaParam !== 'todos') {
+         diaNumber = Number(diaParam);
+         if (isNaN(diaNumber) || diaNumber < 1 || diaNumber > 31) {
+            return NextResponse.json(
+               { error: "Parâmetro 'dia' inválido" },
+               { status: 400 }
+            );
+         }
+      }
+
       if (!isAdmin && !codRecurso) {
          return NextResponse.json(
             { error: 'Usuário não admin precisa ter codRecurso definido' },
@@ -95,24 +108,49 @@ export async function GET(request: Request) {
       const whereConditions: string[] = [];
       const params: any[] = [];
 
-      // Filtro por data
-      if (anoNumber && mesNumber) {
-         const dataInicio = new Date(anoNumber, mesNumber - 1, 1);
-         const dataFim = new Date(anoNumber, mesNumber, 1);
+      // ATUALIZADO: Filtro por data com suporte a dia
+      if (anoNumber && mesNumber && diaNumber) {
+         // Ano, mês e dia específicos
          whereConditions.push(
-            'Chamado.DATA_CHAMADO >= ? AND Chamado.DATA_CHAMADO < ?'
+            'Chamado.DATA_CHAMADO IS NOT NULL AND EXTRACT(YEAR FROM Chamado.DATA_CHAMADO) = ? AND EXTRACT(MONTH FROM Chamado.DATA_CHAMADO) = ? AND EXTRACT(DAY FROM Chamado.DATA_CHAMADO) = ?'
          );
-         params.push(dataInicio, dataFim);
-      } else if (anoNumber && !mesNumber) {
-         const dataInicio = new Date(anoNumber, 0, 1);
-         const dataFim = new Date(anoNumber + 1, 0, 1);
+         params.push(anoNumber, mesNumber, diaNumber);
+      } else if (anoNumber && mesNumber && !diaNumber) {
+         // Ano e mês específicos
          whereConditions.push(
-            'Chamado.DATA_CHAMADO >= ? AND Chamado.DATA_CHAMADO < ?'
+            'Chamado.DATA_CHAMADO IS NOT NULL AND EXTRACT(YEAR FROM Chamado.DATA_CHAMADO) = ? AND EXTRACT(MONTH FROM Chamado.DATA_CHAMADO) = ?'
          );
-         params.push(dataInicio, dataFim);
-      } else if (!anoNumber && mesNumber) {
-         whereConditions.push('EXTRACT(MONTH FROM Chamado.DATA_CHAMADO) = ?');
+         params.push(anoNumber, mesNumber);
+      } else if (anoNumber && !mesNumber && !diaNumber) {
+         // Apenas ano específico
+         whereConditions.push(
+            'Chamado.DATA_CHAMADO IS NOT NULL AND EXTRACT(YEAR FROM Chamado.DATA_CHAMADO) = ?'
+         );
+         params.push(anoNumber);
+      } else if (!anoNumber && mesNumber && !diaNumber) {
+         // Apenas mês específico
+         whereConditions.push(
+            'Chamado.DATA_CHAMADO IS NOT NULL AND EXTRACT(MONTH FROM Chamado.DATA_CHAMADO) = ?'
+         );
          params.push(mesNumber);
+      } else if (!anoNumber && !mesNumber && diaNumber) {
+         // Apenas dia específico
+         whereConditions.push(
+            'Chamado.DATA_CHAMADO IS NOT NULL AND EXTRACT(DAY FROM Chamado.DATA_CHAMADO) = ?'
+         );
+         params.push(diaNumber);
+      } else if (!anoNumber && mesNumber && diaNumber) {
+         // Mês e dia específicos
+         whereConditions.push(
+            'Chamado.DATA_CHAMADO IS NOT NULL AND EXTRACT(MONTH FROM Chamado.DATA_CHAMADO) = ? AND EXTRACT(DAY FROM Chamado.DATA_CHAMADO) = ?'
+         );
+         params.push(mesNumber, diaNumber);
+      } else if (anoNumber && !mesNumber && diaNumber) {
+         // Ano e dia específicos
+         whereConditions.push(
+            'Chamado.DATA_CHAMADO IS NOT NULL AND EXTRACT(YEAR FROM Chamado.DATA_CHAMADO) = ? AND EXTRACT(DAY FROM Chamado.DATA_CHAMADO) = ?'
+         );
+         params.push(anoNumber, diaNumber);
       }
 
       // Filtro por recurso e status

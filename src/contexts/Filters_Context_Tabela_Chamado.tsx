@@ -6,6 +6,7 @@ import { createContext, useContext, useState } from 'react';
 export interface FiltersProps {
    ano: number | 'todos'; // Permite "todos" para ano
    mes: number | 'todos'; // Permite "todos" para mês
+   dia: number | 'todos'; // Permite "todos" para dia
    cliente: string;
    recurso: string;
    status: string;
@@ -17,19 +18,21 @@ interface FiltersContextProps {
    filters: FiltersProps;
    setFilters: React.Dispatch<React.SetStateAction<FiltersProps>>;
    clearFilters: () => void;
+   getDiasDoMes: (ano: number | 'todos', mes: number | 'todos') => number[];
 }
 
 // Cria o contexto dos filtros de chamados abertos, inicialmente indefinido
-const FiltersTabelaChamadosContext = createContext<
+const FiltersTabelaChamadoContext = createContext<
    FiltersContextProps | undefined
 >(undefined);
 
-// Função auxiliar para obter o estado inicial dos filtros (ano e mês atuais)
+// Função auxiliar para obter o estado inicial dos filtros (ano, mês e dia atuais)
 const getInitialFilters = (): FiltersProps => {
    const hoje = new Date();
    return {
       ano: hoje.getFullYear(),
       mes: hoje.getMonth() + 1,
+      dia: hoje.getDate(),
       cliente: '',
       recurso: '',
       status: '',
@@ -37,8 +40,25 @@ const getInitialFilters = (): FiltersProps => {
    };
 };
 
+// Função auxiliar para obter os dias de um determinado mês/ano
+const getDiasDoMes = (
+   ano: number | 'todos',
+   mes: number | 'todos'
+): number[] => {
+   // Se ano ou mês for "todos", retorna array vazio (não é possível determinar os dias)
+   if (ano === 'todos' || mes === 'todos') {
+      return [];
+   }
+
+   // Obtém o número de dias do mês específico
+   const diasNoMes = new Date(ano, mes, 0).getDate();
+
+   // Retorna array com todos os dias do mês [1, 2, 3, ..., diasNoMes]
+   return Array.from({ length: diasNoMes }, (_, i) => i + 1);
+};
+
 // Componente provedor do contexto dos filtros de chamados abertos
-export function FiltersTabelaChamadosProvider({
+export function FiltersTabelaChamadoProvider({
    children,
 }: {
    children: React.ReactNode;
@@ -51,20 +71,25 @@ export function FiltersTabelaChamadosProvider({
 
    // Retorna o provedor do contexto, disponibilizando os valores e funções
    return (
-      <FiltersTabelaChamadosContext.Provider
-         value={{ filters, setFilters, clearFilters }}
+      <FiltersTabelaChamadoContext.Provider
+         value={{
+            filters,
+            setFilters,
+            clearFilters,
+            getDiasDoMes,
+         }}
       >
          {children}
-      </FiltersTabelaChamadosContext.Provider>
+      </FiltersTabelaChamadoContext.Provider>
    );
 }
 
 // Hook customizado para acessar o contexto dos filtros de chamados abertos
-export function useFiltersTabelaChamados() {
-   const context = useContext(FiltersTabelaChamadosContext);
+export function useFiltersTabelaChamado() {
+   const context = useContext(FiltersTabelaChamadoContext);
    if (context === undefined) {
       throw new Error(
-         'useFiltersTabelaChamados deve ser chamado dentro de um FiltersTabelaChamadosProvider'
+         'useFiltersTabelaChamado deve ser chamado dentro de um FiltersTabelaChamadoProvider'
       );
    }
    return context;
