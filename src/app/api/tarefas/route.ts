@@ -115,44 +115,38 @@ export async function GET(request: Request) {
       const whereConditions: string[] = [];
       const params: any[] = [];
 
-      // Condição obrigatória: STATUS_TAREFA diferente de 4
-      whereConditions.push('TAREFA.STATUS_TAREFA <> ?');
-      params.push(4);
+      // Condição de STATUS_TAREFA <> 4 removida completamente
+      // Agora todas as tarefas serão retornadas, independente do status
 
       // Filtro por data (ano, mês, dia) - DTSOL_TAREFA
+      // Agora inclui registros com DTSOL_TAREFA NULL quando não há filtro de data
       if (anoNumber && mesNumber && diaNumber) {
          whereConditions.push(
-            'TAREFA.DTSOL_TAREFA IS NOT NULL AND EXTRACT(YEAR FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(MONTH FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(DAY FROM TAREFA.DTSOL_TAREFA) = ?'
+            'EXTRACT(YEAR FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(MONTH FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(DAY FROM TAREFA.DTSOL_TAREFA) = ?'
          );
          params.push(anoNumber, mesNumber, diaNumber);
       } else if (anoNumber && mesNumber && !diaNumber) {
          whereConditions.push(
-            'TAREFA.DTSOL_TAREFA IS NOT NULL AND EXTRACT(YEAR FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(MONTH FROM TAREFA.DTSOL_TAREFA) = ?'
+            'EXTRACT(YEAR FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(MONTH FROM TAREFA.DTSOL_TAREFA) = ?'
          );
          params.push(anoNumber, mesNumber);
       } else if (anoNumber && !mesNumber && !diaNumber) {
-         whereConditions.push(
-            'TAREFA.DTSOL_TAREFA IS NOT NULL AND EXTRACT(YEAR FROM TAREFA.DTSOL_TAREFA) = ?'
-         );
+         whereConditions.push('EXTRACT(YEAR FROM TAREFA.DTSOL_TAREFA) = ?');
          params.push(anoNumber);
       } else if (!anoNumber && mesNumber && !diaNumber) {
-         whereConditions.push(
-            'TAREFA.DTSOL_TAREFA IS NOT NULL AND EXTRACT(MONTH FROM TAREFA.DTSOL_TAREFA) = ?'
-         );
+         whereConditions.push('EXTRACT(MONTH FROM TAREFA.DTSOL_TAREFA) = ?');
          params.push(mesNumber);
       } else if (!anoNumber && !mesNumber && diaNumber) {
-         whereConditions.push(
-            'TAREFA.DTSOL_TAREFA IS NOT NULL AND EXTRACT(DAY FROM TAREFA.DTSOL_TAREFA) = ?'
-         );
+         whereConditions.push('EXTRACT(DAY FROM TAREFA.DTSOL_TAREFA) = ?');
          params.push(diaNumber);
       } else if (!anoNumber && mesNumber && diaNumber) {
          whereConditions.push(
-            'TAREFA.DTSOL_TAREFA IS NOT NULL AND EXTRACT(MONTH FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(DAY FROM TAREFA.DTSOL_TAREFA) = ?'
+            'EXTRACT(MONTH FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(DAY FROM TAREFA.DTSOL_TAREFA) = ?'
          );
          params.push(mesNumber, diaNumber);
       } else if (anoNumber && !mesNumber && diaNumber) {
          whereConditions.push(
-            'TAREFA.DTSOL_TAREFA IS NOT NULL AND EXTRACT(YEAR FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(DAY FROM TAREFA.DTSOL_TAREFA) = ?'
+            'EXTRACT(YEAR FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(DAY FROM TAREFA.DTSOL_TAREFA) = ?'
          );
          params.push(anoNumber, diaNumber);
       }
@@ -424,13 +418,10 @@ export async function GET(request: Request) {
       }
 
       if (filterFaturaTarefa) {
-         const cleanFatura = filterFaturaTarefa.replace(/[^\d]/g, '');
-         if (cleanFatura) {
-            whereConditions.push(
-               'CAST(TAREFA.FATURA_TAREFA AS VARCHAR(20)) LIKE ?'
-            );
-            params.push(`%${cleanFatura}%`);
-         }
+         console.log('🔍 Filtro FATURA_TAREFA:', filterFaturaTarefa);
+         // CHAR(3) tem padding de espaços, então usamos TRIM para comparação exata
+         whereConditions.push('UPPER(TRIM(TAREFA.FATURA_TAREFA)) = UPPER(?)');
+         params.push(filterFaturaTarefa.trim());
       }
 
       const sql = `
@@ -438,6 +429,7 @@ export async function GET(request: Request) {
             TAREFA.COD_TAREFA,
             TAREFA.NOME_TAREFA,
             TAREFA.CODPRO_TAREFA,
+            TAREFA.CODREC_TAREFA,
             TAREFA.DTSOL_TAREFA,
             TAREFA.DTAPROV_TAREFA,
             TAREFA.DTPREVENT_TAREFA,
@@ -446,11 +438,18 @@ export async function GET(request: Request) {
             TAREFA.DTINC_TAREFA,
             TAREFA.FATURA_TAREFA,
             PROJETO.COD_PROJETO,
-            PROJETO.NOME_PROJETO
+            PROJETO.NOME_PROJETO,
+            PROJETO.CODCLI_PROJETO,
+            RECURSO.COD_RECURSO,
+            RECURSO.NOME_RECURSO,
+            CLIENTE.COD_CLIENTE,
+            CLIENTE.NOME_CLIENTE
          FROM TAREFA
          LEFT JOIN PROJETO ON TAREFA.CODPRO_TAREFA = PROJETO.COD_PROJETO
+         LEFT JOIN RECURSO ON TAREFA.CODREC_TAREFA = RECURSO.COD_RECURSO
+         LEFT JOIN CLIENTE ON PROJETO.CODCLI_PROJETO = CLIENTE.COD_CLIENTE
          ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
-         ORDER BY TAREFA.DTSOL_TAREFA DESC, TAREFA.COD_TAREFA DESC
+         ORDER BY TAREFA.COD_TAREFA DESC, TAREFA.DTSOL_TAREFA DESC
          ROWS ${startRow} TO ${endRow};
       `;
 
@@ -458,6 +457,8 @@ export async function GET(request: Request) {
          SELECT COUNT(*) as TOTAL
          FROM TAREFA
          LEFT JOIN PROJETO ON TAREFA.CODPRO_TAREFA = PROJETO.COD_PROJETO
+         LEFT JOIN RECURSO ON TAREFA.CODREC_TAREFA = RECURSO.COD_RECURSO
+         LEFT JOIN CLIENTE ON PROJETO.CODCLI_PROJETO = CLIENTE.COD_CLIENTE
          ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
       `;
 
@@ -466,16 +467,28 @@ export async function GET(request: Request) {
          firebirdQuery(countSql, params),
       ]);
 
-      // Processa os dados para adicionar o campo PROJETO_COMPLETO
+      // Processa os dados para adicionar os campos compostos
       const tarefasData = (rawTarefasData || []).map((record: any) => {
+         const tarefaCompleta =
+            record.COD_TAREFA && record.NOME_TAREFA
+               ? `${record.COD_TAREFA} - ${record.NOME_TAREFA}`
+               : null;
+
          const projetoCompleto =
             record.COD_PROJETO && record.NOME_PROJETO
                ? `${record.COD_PROJETO} - ${record.NOME_PROJETO}`
                : null;
 
+         const recursoCompleto =
+            record.COD_RECURSO && record.NOME_RECURSO
+               ? `${record.COD_RECURSO} - ${record.NOME_RECURSO}`
+               : null;
+
          return {
             ...record,
+            TAREFA_COMPLETA: tarefaCompleta,
             PROJETO_COMPLETO: projetoCompleto,
+            RECURSO_COMPLETO: recursoCompleto,
          };
       });
 

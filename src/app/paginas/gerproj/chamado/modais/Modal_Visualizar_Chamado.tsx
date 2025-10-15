@@ -1,12 +1,12 @@
 'use client';
 // ================================================================================
-import { TabelaChamadoProps } from '../../../../types/types';
+import { TabelaChamadoProps } from '../../../../../types/types';
 // ================================================================================
 import {
    formatCodChamado,
    getStylesStatus,
-} from '../../../../utils/formatters';
-import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
+} from '../../../../../utils/formatters';
+import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
 // ================================================================================
 import {
    FaCalendarAlt,

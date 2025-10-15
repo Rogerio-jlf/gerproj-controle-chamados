@@ -10,38 +10,39 @@ import {
    getSortedRowModel,
 } from '@tanstack/react-table';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useMemo, useState, useCallback, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 // Components
 import {
    FilterInputTableHeaderDebounce,
    FilterControls,
-} from './Filtros_Header_Tabela_Chamado';
+} from './filtros/Filtros_Header_Tabela_Chamado';
 import { IsError } from '../components/IsError';
 import { IsLoading } from '../components/IsLoading';
-import { FiltrosTabelaChamado } from './Filtros_Tabela_Chamado';
+import { FiltrosTabelaChamado } from './filtros/Filtros_Tabela_Chamado';
 import { DropdownTabelaChamado } from './Dropdown_Tabela_Chamado';
 import { TabelaOS } from '../ordem-servico/Tabela_OS';
-import { ModalExcluirChamado } from './Modal_Deletar_Chamado';
-import { ModalAtribuirChamado } from './Modal_Atribuir_Chamado';
+import { ModalExcluirChamado } from './modais/Modal_Deletar_Chamado';
+import { ModalAtribuirChamado } from './modais/Modal_Atribuir_Chamado';
 import { colunasTabelaChamados } from './Colunas_Tabela_Chamado';
 import { TabelaTarefas } from '../tarefas/Tabela_Tarefa';
-import { ModalVisualizarChamado } from './Modal_Visualizar_Chamado';
+import { ModalVisualizarChamado } from './modais/Modal_Visualizar_Chamado';
 
 // Hooks & Types
 import { useAuth } from '../../../../hooks/useAuth';
 import { TabelaChamadoProps } from '../../../../types/types';
-import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
+import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context_Tabela_Chamado';
 
 // Icons
 import { IoCall } from 'react-icons/io5';
-import { BsEraserFill } from 'react-icons/bs';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { RelatorioOS } from '../ordem-servico/Relatorio_OS';
 import { SessionExpired } from '../components/IsExpired';
+import { formatarCodNumber } from '../../../../utils/formatters';
 
 // ================================================================================
 // TIPOS E INTERFACES
@@ -90,7 +91,6 @@ function getColumnWidth(columnId: string, userType?: string): string {
 
    return widthMap[columnId] || 'auto';
 }
-// ==========
 
 function useDebouncedValue<T>(value: T, delay: number = 500): T {
    const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -107,12 +107,14 @@ function useDebouncedValue<T>(value: T, delay: number = 500): T {
 }
 
 // ================================================================================
-// COMPONENTE PRINCIPAL
+// COMPONENTE INTERNO COM SEARCH PARAMS
 // ================================================================================
-export function TabelaChamado() {
+function TabelaChamadoContent() {
    // ================================================================================
    // HOOKS E CONTEXTOS
    // ================================================================================
+   const router = useRouter();
+   const searchParams = useSearchParams();
    const { user, loading: isAuthLoading, isTokenExpired } = useAuth();
    const queryClient = useQueryClient();
    const { filters, setFilters } = useFiltersTabelaChamados();
@@ -155,14 +157,18 @@ export function TabelaChamado() {
       { id: 'COD_CHAMADO', desc: true },
    ]);
    const [showFilters, setShowFilters] = useState(false);
-   const [activeView, setActiveView] = useState<
-      'chamados' | 'os' | 'tarefas' | 'relatorio'
-   >('chamados');
+
+   // Gerenciar activeView baseado em searchParams
+   const activeView = searchParams.get('modal') as
+      | 'chamados'
+      | 'os'
+      | 'tarefas'
+      | 'relatorio'
+      | null;
 
    // ================================================================================
    // ESTADOS - MODAIS E COMPONENTES
    // ================================================================================
-   const [openTabelaOSChamado, setOpenTabelaOSChamado] = useState(false);
    const [openTabelaTarefa, setOpenTabelaTarefa] = useState(false);
    const [openTabelaOs, setOpenTabelaOs] = useState(false);
    const [OpenModalVizualizarChamado, setOpenModalVizualizarChamado] =
@@ -173,9 +179,6 @@ export function TabelaChamado() {
       useState<TabelaChamadoProps | null>(null);
    const [selectedChamadoParaAtribuir, setSelectedChamadoParaAtribuir] =
       useState<TabelaChamadoProps | null>(null);
-   const [selectedCodChamado, setSelectedCodChamado] = useState<number | null>(
-      null
-   );
    const [selectedCodChamadoParaExcluir, setSelectedCodChamadoParaExcluir] =
       useState<number | null>(null);
 
@@ -265,7 +268,6 @@ export function TabelaChamado() {
       filterEmail,
       codChamadoFilter,
    ]);
-   // ==========
 
    async function fetchChamados(
       params: URLSearchParams,
@@ -297,7 +299,6 @@ export function TabelaChamado() {
          },
       };
    }
-   // ==========
 
    const {
       data: apiResponse,
@@ -311,7 +312,6 @@ export function TabelaChamado() {
       staleTime: 1000 * 60 * 5,
       retry: 2,
    });
-   // ==========
 
    const data = useMemo(() => apiResponse?.data || [], [apiResponse]);
    const paginationInfo = apiResponse?.pagination;
@@ -333,6 +333,20 @@ export function TabelaChamado() {
    ]);
 
    // ================================================================================
+   // HANDLERS - NAVEGAÇÃO COM ROUTER
+   // ================================================================================
+   const handleOpenView = useCallback(
+      (view: 'os' | 'tarefas' | 'relatorio') => {
+         router.push(`?modal=${view}`, { scroll: false });
+      },
+      [router]
+   );
+
+   const handleCloseView = useCallback(() => {
+      router.push('?', { scroll: false });
+   }, [router]);
+
+   // ================================================================================
    // HANDLERS - FILTROS
    // ================================================================================
    const clearFilters = useCallback(() => {
@@ -347,7 +361,6 @@ export function TabelaChamado() {
       setCodChamadoFilter('');
       setCurrentPage(1);
    }, []);
-   // ==========
 
    const handleFiltersChange = useCallback(
       (newFilters: { ano: number | 'todos'; mes: number | 'todos' }) => {
@@ -365,7 +378,6 @@ export function TabelaChamado() {
    const handlePageChange = useCallback((newPage: number) => {
       setCurrentPage(newPage);
    }, []);
-   // ==========
 
    const handlePageSizeChange = useCallback((newSize: number) => {
       setPageSize(newSize);
@@ -379,7 +391,6 @@ export function TabelaChamado() {
       setOpenModalVizualizarChamado(false);
       setSelectedChamado(null);
    }, []);
-   // ==========
 
    const handleVisualizarChamado = useCallback(
       (codChamado: number) => {
@@ -391,20 +402,6 @@ export function TabelaChamado() {
       },
       [data]
    );
-
-   // ================================================================================
-   // HANDLERS - TABELA (OS CHAMADO)
-   // ================================================================================
-   const handleCloseTabelaOSChamado = useCallback(() => {
-      setOpenTabelaOSChamado(false);
-      setSelectedCodChamado(null);
-   }, []);
-   // ==========
-
-   const handleVisualizarOSChamado = useCallback((codChamado: number) => {
-      setSelectedCodChamado(codChamado);
-      setOpenTabelaOSChamado(true);
-   }, []);
 
    // ================================================================================
    // HANDLERS - MODAIS (ATRIBUIR CHAMADO)
@@ -423,12 +420,10 @@ export function TabelaChamado() {
    const handleOpenModalExcluirChamado = useCallback((codChamado: number) => {
       setSelectedCodChamadoParaExcluir(codChamado);
    }, []);
-   // ==========
 
    const handleCloseModalExcluirChamado = useCallback(() => {
       setSelectedCodChamadoParaExcluir(null);
    }, []);
-   // =========
 
    const handleExcluirChamadoSuccess = useCallback(() => {
       queryClient.invalidateQueries({ queryKey: ['chamadosAbertos'] });
@@ -493,7 +488,6 @@ export function TabelaChamado() {
                onVisualizarChamado: handleVisualizarChamado,
                onVisualizarOS: () => setOpenTabelaOs(true),
                onVisualizarTarefa: () => setOpenTabelaTarefa(true),
-               onVisualizarOSChamado: handleVisualizarOSChamado,
                onAtribuicaoInteligente: handleOpenModalAtribuirChamado,
                onUpdateStatus: updateStatus,
                onExcluirChamado: handleOpenModalExcluirChamado,
@@ -503,14 +497,12 @@ export function TabelaChamado() {
          ),
       [
          handleVisualizarChamado,
-         handleVisualizarOSChamado,
          handleOpenModalAtribuirChamado,
          updateStatus,
          handleOpenModalExcluirChamado,
          user?.tipo,
       ]
    );
-   // ==========
 
    const table = useReactTable({
       data: data ?? [],
@@ -530,11 +522,9 @@ export function TabelaChamado() {
    // ================================================================================
    // VALIDAÇÕES E ESTADOS DE CARREGAMENTO
    // ================================================================================
-
    if (isAuthLoading) {
       return <IsLoading isLoading={true} title="Verificando autenticação..." />;
    }
-   // ==========
 
    if (isTokenExpired) {
       return <SessionExpired isTokenExpired={isTokenExpired} />;
@@ -548,7 +538,7 @@ export function TabelaChamado() {
    return (
       <div className="flex items-center justify-center">
          {/* VIEW DE CHAMADOS */}
-         {activeView === 'chamados' && (
+         {(!activeView || activeView === 'chamados') && (
             <div className="animate-in slide-in-from-bottom-4 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl shadow-md shadow-black transition-all duration-500 ease-out">
                {/* HEADER */}
                <header className="flex flex-col gap-6 bg-white/50 p-6">
@@ -566,12 +556,12 @@ export function TabelaChamado() {
                      {user && user.tipo === 'ADM' && (
                         <div className="flex items-center gap-4">
                            <DropdownTabelaChamado
-                              onOpenTabelaOS={() => setActiveView('os')}
+                              onOpenTabelaOS={() => handleOpenView('os')}
                               onOpenTabelaTarefa={() =>
-                                 setActiveView('tarefas')
+                                 handleOpenView('tarefas')
                               }
                               onOpenRelatorioOS={() =>
-                                 setActiveView('relatorio')
+                                 handleOpenView('relatorio')
                               }
                            />
                         </div>
@@ -775,7 +765,7 @@ export function TabelaChamado() {
                            </span>
                            <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
                               {paginationInfo.totalRecords > 1
-                                 ? `de ${paginationInfo.totalRecords} encontrados no total.`
+                                 ? `de ${formatarCodNumber(paginationInfo.totalRecords)} encontrados no total.`
                                  : `de 1 encontrado no total.`}
                            </span>
                         </section>
@@ -860,7 +850,10 @@ export function TabelaChamado() {
                                  </span>
                                  <span className="text-base font-semibold tracking-widest text-black italic select-none">
                                     {' '}
-                                    de {paginationInfo.totalPages}
+                                    de{' '}
+                                    {formatarCodNumber(
+                                       paginationInfo.totalPages
+                                    )}
                                  </span>
                               </div>
 
@@ -938,31 +931,31 @@ export function TabelaChamado() {
             </div>
          )}
 
-         {/* VIEW DA TABELA DE OS */}
+         {/* VIEW DROPDOWN DA TABELA DE OS */}
          {activeView === 'os' && (
-            <TabelaOS isOpen={true} onClose={() => setActiveView('chamados')} />
+            <TabelaOS isOpen={true} onClose={handleCloseView} />
          )}
 
-         {/* VIEW DA TABELA DE TAREFAS */}
+         {/* VIEW DROPDOWN DA TABELA DE TAREFAS */}
          {activeView === 'tarefas' && (
-            <TabelaTarefas
-               isOpen={true}
-               onClose={() => setActiveView('chamados')}
-            />
+            <TabelaTarefas isOpen={true} onClose={handleCloseView} />
          )}
 
-         {/* VIEW DO RELATÓRIO DE OS'S */}
+         {/* VIEW DROPDOWN DO RELATÓRIO DE OS'S */}
          {activeView === 'relatorio' && (
-            <RelatorioOS
-               isOpen={true}
-               onClose={() => setActiveView('chamados')}
-            />
+            <RelatorioOS isOpen={true} onClose={handleCloseView} />
          )}
 
-         {/* TABELA OS SECUNDÁRIA */}
+         {/* TABELA OS */}
          <TabelaOS
             isOpen={openTabelaOs}
             onClose={() => setOpenTabelaOs(false)}
+         />
+
+         {/* TABELA TAREFAS */}
+         <TabelaTarefas
+            isOpen={openTabelaTarefa}
+            onClose={() => setOpenTabelaTarefa(false)}
          />
 
          {/* MODAL VISUALIZAR CHAMADO */}
@@ -970,12 +963,6 @@ export function TabelaChamado() {
             isOpen={OpenModalVizualizarChamado}
             onClose={handleCloseModalVisualizarChamado}
             chamado={selectedChamado}
-         />
-
-         {/* TABELA TAREFAS */}
-         <TabelaTarefas
-            isOpen={openTabelaTarefa}
-            onClose={() => setOpenTabelaTarefa(false)}
          />
 
          {/* MODAL ATRIBUIR CHAMADO */}
@@ -993,10 +980,29 @@ export function TabelaChamado() {
             onSuccess={handleExcluirChamadoSuccess}
          />
 
+         {/* LOADING */}
          <IsLoading
             isLoading={isLoading}
             title={`Buscando Chamados para o período: ${mes.toString().padStart(2, '0')}/${ano}`}
          />
       </div>
+   );
+}
+
+// ================================================================================
+// COMPONENTE PRINCIPAL COM SUSPENSE
+// ================================================================================
+export function TabelaChamado() {
+   return (
+      <Suspense
+         fallback={
+            <IsLoading
+               isLoading={true}
+               title="Carregando tabela de chamados..."
+            />
+         }
+      >
+         <TabelaChamadoContent />
+      </Suspense>
    );
 }

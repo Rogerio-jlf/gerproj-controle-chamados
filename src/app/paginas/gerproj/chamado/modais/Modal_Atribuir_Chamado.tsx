@@ -1,13 +1,13 @@
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
-import { ToastCustom } from '../../../../components/Toast_Custom';
+import { ToastCustom } from '../../../../../components/Toast_Custom';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 // ================================================================================
-import { TabelaChamadoProps } from '../../../../types/types';
+import { TabelaChamadoProps } from '../../../../../types/types';
 // ================================================================================
-import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
-import { useEmailAtribuirChamados } from '../../../../hooks/useEmailAtribuirChamados';
+import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+import { useEmailAtribuirChamados } from '../../../../../hooks/useEmailAtribuirChamados';
 // ================================================================================
 import { Loader2 } from 'lucide-react';
 import { IoIosSave } from 'react-icons/io';
@@ -15,14 +15,14 @@ import { ImUsers, ImTarget } from 'react-icons/im';
 import { BsAwardFill, BsFillSendFill } from 'react-icons/bs';
 import { IoBarChart, IoClose } from 'react-icons/io5';
 import { FaExclamationTriangle, FaUser, FaUsers } from 'react-icons/fa';
-import { formatCodChamado } from '../../../../utils/formatters';
+import { formatCodChamado } from '../../../../../utils/formatters';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
 import { FaEraser } from 'react-icons/fa';
 import { IoIosSearch } from 'react-icons/io';
 import { CiFilter } from 'react-icons/ci';
 import { MdRecordVoiceOver } from 'react-icons/md';
 import { TbListDetails } from 'react-icons/tb';
-import { LoadingButton } from '../../../../components/Loading';
+import { LoadingButton } from '../../../../../components/Loading';
 
 // ================================================================================
 // INTERFACES E TIPOS

@@ -9,7 +9,7 @@ import {
    formatCodChamado,
 } from '../../../../utils/formatters';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
-import { ModalAtualizarStatusApontarOsChamado } from './Modal_Atualizar_Status_Apontar_Os_Chamado';
+import { ModalAtualizarStatusApontarOsChamado } from './modais/Modal_Atualizar_Status_Apontar_Os_Chamado';
 // ================================================================================
 import { HiMiniSquaresPlus } from 'react-icons/hi2';
 import { IoClose } from 'react-icons/io5';
@@ -22,7 +22,6 @@ import { FaUserCheck } from 'react-icons/fa';
 // ================================================================================
 interface AcoesTabelaChamadosProps {
    onVisualizarChamado: (codChamado: number) => void;
-   onVisualizarOSChamado: (codChamado: number) => void;
    onVisualizarOS: () => void;
    onVisualizarTarefa: () => void;
    onAtribuicaoInteligente: (chamado: TabelaChamadoProps) => void;
@@ -32,7 +31,6 @@ interface AcoesTabelaChamadosProps {
       codClassificacao?: number,
       codTarefa?: number
    ) => Promise<void>;
-   onOpenApontamentos?: (codChamado: number, newStatus: string) => void;
    onExcluirChamado: (codChamado: number) => void;
    userType?: string;
 }
@@ -252,6 +250,7 @@ const BotaoMenuCircular = ({ chamado, acoes }: DropdownMenuProps) => {
       </>
    );
 };
+// ====================
 
 // ================================================================================
 // COMPONENTE PRINCIPAL
@@ -269,12 +268,13 @@ export const colunasTabelaChamados = (
          cell: ({ getValue }) => {
             const value = getValue() as number;
             return (
-               <div className="flex items-center justify-center text-center">
+               <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
                   {formatCodChamado(value) || '-----'}
                </div>
             );
          },
       },
+      // ==========
 
       // Data chamado
       {
@@ -285,12 +285,13 @@ export const colunasTabelaChamados = (
             const dataFormatada = formatarDataParaBR(value);
 
             return (
-               <div className="flex items-center justify-center text-center">
-                  {dataFormatada || '----------'}
+               <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
+                  {dataFormatada || '-----'}
                </div>
             );
          },
       },
+      // ==========
 
       // Assunto
       {
@@ -301,10 +302,10 @@ export const colunasTabelaChamados = (
             const isEmpty = !value;
             return (
                <div
-                  className={`flex items-center ${isEmpty ? 'justify-center text-center' : 'justify-start text-left'}`}
+                  className={`flex items-center rounded-md bg-black p-2 text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-2 text-left'}`}
                >
                   {isEmpty ? (
-                     '------------------------------'
+                     '-----'
                   ) : (
                      <span className="block w-full truncate">{value}</span>
                   )}
@@ -312,6 +313,7 @@ export const colunasTabelaChamados = (
             );
          },
       },
+      // ==========
 
       // Status (clicável)
       {
@@ -326,6 +328,7 @@ export const colunasTabelaChamados = (
             />
          ),
       },
+      // ==========
 
       // Data Atribuição
       {
@@ -341,7 +344,7 @@ export const colunasTabelaChamados = (
                dataFormatada !== '-'
             ) {
                return (
-                  <div className="flex items-center justify-center text-center">
+                  <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
                      {dataFormatada}
                   </div>
                );
@@ -354,6 +357,7 @@ export const colunasTabelaChamados = (
          },
       },
    ];
+   // ==========
 
    // Coluna de Recurso
    const recursoColumn: ColumnDef<TabelaChamadoProps> = {
@@ -365,7 +369,7 @@ export const colunasTabelaChamados = (
 
          if (codRecurso !== null && codRecurso !== undefined && recurso) {
             return (
-               <div className="flex items-center justify-start text-left">
+               <div className="flex items-center justify-start rounded-md bg-black p-2 text-left text-white">
                   {corrigirTextoCorrompido(
                      recurso.split(' ').slice(0, 2).join(' ')
                   )}
@@ -380,6 +384,7 @@ export const colunasTabelaChamados = (
          );
       },
    };
+   // ==========
 
    // Colunas finais
    const finalColumns: ColumnDef<TabelaChamadoProps>[] = [
@@ -394,7 +399,7 @@ export const colunasTabelaChamados = (
             return (
                <Link
                   href={`mailto:${value}`}
-                  className={`flex items-center ${isEmpty ? 'justify-center text-center' : 'justify-start text-left'}`}
+                  className={`flex items-center rounded-md bg-black p-2 text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-2 text-left'}`}
                >
                   {isEmpty ? (
                      '------------------------------'
@@ -405,6 +410,7 @@ export const colunasTabelaChamados = (
             );
          },
       },
+      // ==========
 
       // Ações - USANDO MENU CIRCULAR HORIZONTAL
       {
@@ -420,6 +426,7 @@ export const colunasTabelaChamados = (
          },
       },
    ];
+   // ==========
 
    // Montar array final de colunas condicionalmente
    const allColumns = [

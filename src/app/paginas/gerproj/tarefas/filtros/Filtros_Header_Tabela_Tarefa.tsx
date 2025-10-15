@@ -3,13 +3,13 @@
 import { debounce } from 'lodash';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 // ================================================================================
-import { InputFilterTableHeaderProps } from '../../../../types/types';
-import { normalizeDate } from '../../../../utils/formatters';
+import { InputFilterTableHeaderProps } from '../../../../../types/types';
+import { normalizeDate } from '../../../../../utils/formatters';
 // ================================================================================
 import { FaPlus } from 'react-icons/fa';
 
 // ================================================================================
-// INTERFACE
+// INTERFACE PARA PROPS DOS COMPONENTES
 // ================================================================================
 interface FilterControlsProps {
    showFilters: boolean;
@@ -22,7 +22,7 @@ interface FilterControlsProps {
 // ================================================================================
 // COMPONENTE INPUT FILTRO POR COLUNA COM DEBOUNCE
 // ================================================================================
-export const FilterInputTableHeaderDebounce = ({
+export const FiltrosHeaderTabelaTarefa = ({
    value,
    onChange,
    placeholder,
@@ -30,10 +30,12 @@ export const FilterInputTableHeaderDebounce = ({
 }: InputFilterTableHeaderProps) => {
    const [localValue, setLocalValue] = useState(value);
    const [isFocused, setIsFocused] = useState(false);
+   // ====================
 
    useEffect(() => {
       setLocalValue(value);
    }, [value]);
+   // ====================
 
    const debouncedOnChange = useMemo(
       () =>
@@ -42,12 +44,14 @@ export const FilterInputTableHeaderDebounce = ({
          }, 200),
       [onChange]
    );
+   // ====================
 
    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const inputValue = e.target.value;
       setLocalValue(inputValue);
       debouncedOnChange(inputValue);
    };
+   // ====================
 
    return (
       <input
@@ -55,12 +59,13 @@ export const FilterInputTableHeaderDebounce = ({
          value={localValue}
          onChange={handleChange}
          placeholder={isFocused ? '' : placeholder}
-         className="w-full rounded-md bg-teal-950 px-4 py-2 text-base text-white placeholder-slate-400 shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-105 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+         className="w-full rounded-md bg-teal-950 px-4 py-2 text-base text-white placeholder-slate-400 shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
          onFocus={() => setIsFocused(true)}
          onBlur={() => setIsFocused(false)}
       />
    );
 };
+// ====================
 
 // ================================================================================
 // CONTROLES DE FILTRO (MOSTRAR/OCULTAR E LIMPAR)
@@ -109,30 +114,41 @@ export const FilterControls = ({
       </div>
    );
 };
+// ====================
 
 // ================================================================================
 // HOOK PERSONALIZADO PARA FUNÇÕES DE FILTRO
 // ================================================================================
-export const useTableFilters = () => {
+export const useFiltrosHeaderTabelaTarefay = () => {
    const globalFilterFn = useCallback(
       (row: any, columnId: string, filterValue: string) => {
          if (!filterValue) return true;
 
          const searchValue = filterValue.toLowerCase().trim();
          const searchableColumns = [
-            'COD_CHAMADO',
-            'DATA_CHAMADO',
-            'ASSUNTO_CHAMADO',
-            'STATUS_CHAMADO',
+            'TAREFA_COMPLETA',
+            'PROJETO_COMPLETO',
             'NOME_RECURSO',
-            'EMAIL_CHAMADO',
+            'NOME_CLIENTE',
+            'DTSOL_TAREFA',
+            'DTAPROV_TAREFA',
+            'DTPREVENT_TAREFA',
+            'HREST_TAREFA',
+            'STATUS_TAREFA',
+            'DTINC_TAREFA',
+            'FATURA_TAREFA',
          ];
 
          return searchableColumns.some(colId => {
             const cellValue = row.getValue(colId);
 
             // Para campos de data, usar normalização
-            if (colId === 'DATA_CHAMADO') {
+            if (
+               colId === 'DTSOL_TAREFA' ||
+               colId === 'DTAPROV_TAREFA' ||
+               colId === 'DTPREVENT_TAREFA' ||
+               colId === 'DTINC_TAREFA'
+            ) {
                const dateFormats = normalizeDate(cellValue);
                return dateFormats.some(dateFormat =>
                   dateFormat.toLowerCase().includes(searchValue)
@@ -155,15 +171,37 @@ export const useTableFilters = () => {
          const filterString = String(filterValue).toLowerCase().trim();
 
          // Tratamento especial para campos de data
-         if (columnId === 'DATA_CHAMADO') {
+         if (
+            columnId === 'DTSOL_TAREFA' ||
+            columnId === 'DTAPROV_TAREFA' ||
+            columnId === 'DTPREVENT_TAREFA' ||
+            columnId === 'DTINC_TAREFA'
+         ) {
             const dateFormats = normalizeDate(cellValue);
             return dateFormats.some(dateFormat =>
                dateFormat.toLowerCase().includes(filterString)
             );
          }
 
+         // ✅ CORREÇÃO: Tratamento especial para FATURA_TAREFA
+         if (columnId === 'FATURA_TAREFA') {
+            // Normaliza tanto o valor da célula quanto o filtro para uppercase
+            const cellString = String(cellValue || '').toUpperCase();
+            const filterUpper = filterString.toUpperCase();
+
+            // Remove acentuação se necessário
+            const normalizedCell = cellString
+               .normalize('NFD')
+               .replace(/[\u0300-\u036f]/g, '');
+            const normalizedFilter = filterUpper
+               .normalize('NFD')
+               .replace(/[\u0300-\u036f]/g, '');
+
+            return normalizedCell.includes(normalizedFilter);
+         }
+
          // Para campos numéricos (como código do chamado)
-         if (columnId === 'COD_CHAMADO') {
+         if (columnId === 'HREST_TAREFA' || columnId === 'STATUS_TAREFA') {
             const cellString = String(cellValue || '');
             return cellString.includes(filterString);
          }
@@ -176,19 +214,4 @@ export const useTableFilters = () => {
    );
 
    return { globalFilterFn, columnFilterFn };
-};
-
-// ================================================================================
-// FUNÇÃO UTILITÁRIA PARA NOMES DE COLUNAS (PODE SER CUSTOMIZADA)
-// ================================================================================
-export const getDefaultColumnDisplayName = (columnId: string): string => {
-   const displayNames: Record<string, string> = {
-      COD_CHAMADO: 'Código',
-      DATA_CHAMADO: 'Data',
-      ASSUNTO_CHAMADO: 'Assunto',
-      STATUS_CHAMADO: 'Status',
-      NOME_RECURSO: 'Recurso',
-      EMAIL_CHAMADO: 'Email',
-   };
-   return displayNames[columnId] || columnId;
 };

@@ -4,9 +4,9 @@ import { createContext, useContext, useState } from 'react';
 
 // Define a interface para o estado dos filtros de chamados abertos
 export interface FiltersProps {
-   ano: number | 'todos'; // Permite "todos" para ano
-   mes: number | 'todos'; // Permite "todos" para mês
-   dia: number | 'todos'; // Permite "todos" para dia
+   ano: number | 'todos';
+   mes: number | 'todos';
+   dia: number | 'todos';
    cliente: string;
    recurso: string;
    status: string;
@@ -21,18 +21,17 @@ interface FiltersContextProps {
    getDiasDoMes: (ano: number | 'todos', mes: number | 'todos') => number[];
 }
 
-// Cria o contexto dos filtros de chamados abertos, inicialmente indefinido
+// Cria o contexto dos filtros de chamados abertos
 const FiltersTabelaTarefaContext = createContext<
    FiltersContextProps | undefined
 >(undefined);
 
-// Função auxiliar para obter o estado inicial dos filtros (ano, mês e dia atuais)
+// ✅ CORREÇÃO: Inicializa com "todos" ao invés da data atual
 const getInitialFilters = (): FiltersProps => {
-   const hoje = new Date();
    return {
-      ano: hoje.getFullYear(),
-      mes: hoje.getMonth() + 1,
-      dia: hoje.getDate(),
+      ano: 'todos', // ✅ Mudado de hoje.getFullYear()
+      mes: 'todos', // ✅ Mudado de hoje.getMonth() + 1
+      dia: 'todos', // ✅ Mudado de hoje.getDate()
       cliente: '',
       recurso: '',
       status: '',
@@ -45,7 +44,7 @@ const getDiasDoMes = (
    ano: number | 'todos',
    mes: number | 'todos'
 ): number[] => {
-   // Se ano ou mês for "todos", retorna array vazio (não é possível determinar os dias)
+   // Se ano ou mês for "todos", retorna array vazio
    if (ano === 'todos' || mes === 'todos') {
       return [];
    }
@@ -57,19 +56,17 @@ const getDiasDoMes = (
    return Array.from({ length: diasNoMes }, (_, i) => i + 1);
 };
 
-// Componente provedor do contexto dos filtros de chamados abertos
+// Componente provedor do contexto dos filtros
 export function FiltersTabelaTarefaProvider({
    children,
 }: {
    children: React.ReactNode;
 }) {
-   // Estado dos filtros e função para atualizá-lo
    const [filters, setFilters] = useState<FiltersProps>(getInitialFilters());
 
    // Função para limpar os filtros (voltar ao estado inicial)
    const clearFilters = () => setFilters(getInitialFilters());
 
-   // Retorna o provedor do contexto, disponibilizando os valores e funções
    return (
       <FiltersTabelaTarefaContext.Provider
          value={{
@@ -84,7 +81,7 @@ export function FiltersTabelaTarefaProvider({
    );
 }
 
-// Hook customizado para acessar o contexto dos filtros de chamados abertos
+// Hook customizado para acessar o contexto
 export function useFiltersTabelaTarefa() {
    const context = useContext(FiltersTabelaTarefaContext);
    if (context === undefined) {

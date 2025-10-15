@@ -9,20 +9,20 @@ import {
    TooltipContent,
    TooltipProvider,
    TooltipTrigger,
-} from '../../../../components/ui/tooltip';
+} from '../../../../../components/ui/tooltip';
 // ================================================================================
 import {
    formatCodChamado,
    getStylesStatus,
-} from '../../../../utils/formatters';
-import { useAuth } from '../../../../hooks/useAuth';
+} from '../../../../../utils/formatters';
+import { useAuth } from '../../../../../hooks/useAuth';
 import {
    canUseBackdatedAppointments,
    ModalPermitirRetroativoOsChamado,
    getCurrentUserId,
    isUserAdmin,
-} from '../components/Modal_Permitir_OS_Retroativa_Chamado';
-import { ToastCustom } from '../../../../components/Toast_Custom';
+} from '../../components/Modal_Permitir_OS_Retroativa_Chamado';
+import { ToastCustom } from '../../../../../components/Toast_Custom';
 // ================================================================================
 import {
    FaExclamationTriangle,
@@ -1092,7 +1092,7 @@ export function ModalAtualizarStatusApontarOsChamado({
                   <Tooltip>
                      <TooltipTrigger asChild>
                         <div
-                           className={`group relative rounded-sm p-1 transition-all ${
+                           className={`group relative rounded-md p-2 transition-all ${
                               isStatusEditable
                                  ? 'cursor-pointer hover:scale-125 active:scale-95'
                                  : 'cursor-not-allowed opacity-75'

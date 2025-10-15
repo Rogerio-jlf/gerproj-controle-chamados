@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 // ================================================================================
-import { useFiltersTabelaChamados } from '../../../../contexts/Filters_Context';
-import SelectAno from '../../../../components/seletores/Select_Ano';
-import SelectMes from '../../../../components/seletores/Select_Mes';
+import { useFiltersTabelaChamados } from '../../../../../contexts/Filters_Context_Tabela_Chamado';
+import { SelectAnoTabelaChamado } from './Select_Ano_Tabela_Chamado';
+import { SelectMesTabelaChamado } from './Select_Mes_Tabela_Chamado';
 
 // ================================================================================
 //  INTERFACES
@@ -71,11 +71,11 @@ export function FiltrosTabelaChamado({ onFiltersChange }: FiltrosProps) {
    return (
       <div className="flex w-full gap-6">
          <div className="flex-1">
-            <SelectAno value={ano} onChange={setAno} />
+            <SelectAnoTabelaChamado value={ano} onChange={setAno} />
          </div>
 
          <div className="flex-1">
-            <SelectMes value={mes} onChange={setMes} />
+            <SelectMesTabelaChamado value={mes} onChange={setMes} />
          </div>
       </div>
    );
