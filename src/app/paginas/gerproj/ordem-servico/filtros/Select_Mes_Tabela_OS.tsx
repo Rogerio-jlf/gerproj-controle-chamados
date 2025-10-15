@@ -14,7 +14,7 @@ interface SelectProps {
 // ================================================================================
 // COMPONENTE
 // ================================================================================
-export default function SelectMes({ value, onChange }: SelectProps) {
+export function SelectMesTabelaOS({ value, onChange }: SelectProps) {
    const [isOpen, setIsOpen] = useState(false);
    const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -111,7 +111,7 @@ export default function SelectMes({ value, onChange }: SelectProps) {
 
             {/* Dropdown Panel */}
             {isOpen && (
-               <div className="absolute top-full right-0 left-0 z-50 mt-2 overflow-hidden rounded-md bg-white shadow-md shadow-black">
+               <div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-96 overflow-y-auto rounded-md bg-white shadow-md shadow-black">
                   {mesesOptions.map(option => (
                      <button
                         key={option.code}

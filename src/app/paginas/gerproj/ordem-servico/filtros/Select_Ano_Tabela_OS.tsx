@@ -14,7 +14,7 @@ interface SelectProps {
 // ================================================================================
 // COMPONENTE
 // ================================================================================
-export default function SelectAno({ value, onChange }: SelectProps) {
+export function SelectAnoTabelaOS({ value, onChange }: SelectProps) {
    const currentYear = new Date().getFullYear();
    const [isOpen, setIsOpen] = useState(false);
    const dropdownRef = useRef<HTMLDivElement>(null);
@@ -105,7 +105,7 @@ export default function SelectAno({ value, onChange }: SelectProps) {
 
             {/* Dropdown Panel */}
             {isOpen && (
-               <div className="absolute top-full right-0 left-0 z-50 mt-2 overflow-hidden rounded-md bg-white shadow-md shadow-black">
+               <div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-96 overflow-y-auto rounded-md bg-white shadow-md shadow-black">
                   {anosOptions.map(option => (
                      <button
                         key={option.code}

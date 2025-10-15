@@ -3,8 +3,8 @@
 import { debounce } from 'lodash';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 // ================================================================================
-import { InputFilterTableHeaderProps } from '../../../../types/types';
-import { normalizeDate } from '../../../../utils/formatters';
+import { InputFilterTableHeaderProps } from '../../../../../types/types';
+import { normalizeDate } from '../../../../../utils/formatters';
 // ================================================================================
 import { FaPlus } from 'react-icons/fa';
 
@@ -88,7 +88,7 @@ export const FilterControls = ({
             <button
                onClick={() => setShowFilters(!showFilters)}
                disabled={dataLength <= 1}
-               className={`cursor-pointer rounded-sm px-6 py-2.5 text-base tracking-widest transition-all select-none ${
+               className={`w-[250px] cursor-pointer rounded-sm px-6 py-2.5 text-base tracking-widest transition-all select-none ${
                   showFilters
                      ? 'border-none bg-blue-600 font-extrabold text-white italic shadow-md shadow-black hover:bg-blue-700'
                      : 'border-none bg-white font-bold text-black italic shadow-md shadow-black hover:bg-white/70'
@@ -187,24 +187,4 @@ export const useFiltrosHeaderTabelaOSy = () => {
    );
 
    return { globalFilterFn, columnFilterFn };
-};
-
-// ================================================================================
-// FUNÇÃO UTILITÁRIA PARA NOMES DE COLUNAS (PODE SER CUSTOMIZADA)
-// ================================================================================
-export const getDefaultColumnDisplayName = (columnId: string): string => {
-   const displayNames: Record<string, string> = {
-      CHAMADO_OS: 'Chamado',
-      COD_OS: 'Cód. OS',
-      DTINI_OS: 'Data Início',
-      DTINC_OS: 'Data Término',
-      COMP_OS: 'Componente',
-      NOME_CLIENTE: 'Nome Cliente',
-      FATURADO_OS: 'Faturado',
-      NOME_RECURSO: 'Nome Recurso',
-      VALID_OS: 'Válido',
-      TAREFA_COMPLETA: 'Tarefa Completa',
-      PROJETO_COMPLETO: 'Projeto Completo',
-   };
-   return displayNames[columnId] || columnId;
 };

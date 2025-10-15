@@ -17,7 +17,7 @@ interface SelectProps {
 // ================================================================================
 // COMPONENTE
 // ================================================================================
-export default function SelectDia({
+export function SelectDiaTabelaOS({
    value,
    onChange,
    diasDisponiveis,
@@ -165,7 +165,7 @@ export default function SelectDia({
 
             {/* Dropdown Panel */}
             {isOpen && !isDisabled && (
-               <div className="absolute top-full right-0 left-0 z-50 mt-2 overflow-hidden rounded-md bg-white shadow-md shadow-black">
+               <div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-96 overflow-y-auto rounded-md bg-white shadow-md shadow-black">
                   {diasOptions.map(option => (
                      <button
                         key={option.code}

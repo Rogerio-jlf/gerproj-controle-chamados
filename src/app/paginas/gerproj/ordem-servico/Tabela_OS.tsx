@@ -2,8 +2,6 @@
 // ================================================================================
 // IMPORTS
 // ================================================================================
-import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState, useCallback, useEffect } from 'react';
 import {
    flexRender,
    SortingState,
@@ -12,33 +10,35 @@ import {
    getSortedRowModel,
 } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 
 // Components
 import {
    FiltrosHeaderTabelaOs,
    FilterControls,
-} from './Filtros_Header_Tabela_OS';
+} from './filtros/Filtros_Header_Tabela_OS';
 import { IsError } from '../components/IsError';
 import { IsLoading } from '../components/IsLoading';
-import { FiltrosTabelaOS } from './Filtros_Tabela_OS';
 import { colunasTabelaOS } from './Colunas_Tabela_OS';
+import { FiltrosTabelaOS } from './filtros/Filtros_Tabela_OS';
+import { formatarCodNumber } from '../../../../utils/formatters';
+import { MensagemFiltroNaoEncontrado } from './filtros/Mensagens_Filtros';
 
 // Hooks & Types
 import { useAuth } from '../../../../hooks/useAuth';
 import { TabelaOSProps } from '../../../../types/types';
-import { useFiltersTabelaOs } from '../../../../contexts/Filters_Context_Dia';
+import { useFiltersTabelaOs } from '../../../../contexts/Filters_Context_Tabela_OS';
 
 // Icons
+import { IoClose } from 'react-icons/io5';
 import { GrServices } from 'react-icons/gr';
+import { FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
-import { IoClose } from 'react-icons/io5';
-import { MensagemFiltroNaoEncontrado } from './Mensagens_Filtros';
-import { RelatorioOS } from './Relatorio_OS';
-import { FaExclamationTriangle } from 'react-icons/fa';
 
 // ================================================================================
-// TIPOS E INTERFACES
+// INTERFACES
 // ================================================================================
 interface PaginationInfo {
    currentPage: number;
@@ -703,7 +703,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                         </span>
                         <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
                            {paginationInfo.totalRecords > 1
-                              ? `de ${paginationInfo.totalRecords} encontrados no total.`
+                              ? `de ${formatarCodNumber(paginationInfo.totalRecords)} encontrados no total.`
                               : `de 1 encontrado no total.`}
                         </span>
                      </section>
@@ -784,7 +784,8 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                               </span>
                               <span className="text-base font-semibold tracking-widest text-black italic select-none">
                                  {' '}
-                                 de {paginationInfo.totalPages}
+                                 de{' '}
+                                 {formatarCodNumber(paginationInfo.totalPages)}
                               </span>
                            </div>
 
@@ -807,7 +808,7 @@ export function TabelaOS({ isOpen = true, onClose }: Props) {
                               className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsRight
-                                 className="group-disabled:text-red-5 00 text-black"
+                                 className="text-black group-disabled:text-red-500"
                                  size={24}
                               />
                            </button>

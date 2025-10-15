@@ -1,7 +1,7 @@
 'use client';
 // ================================================================================
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState, useCallback, useEffect } from 'react';
+// IMPORTS
+// ================================================================================
 import {
    flexRender,
    getCoreRowModel,
@@ -9,32 +9,35 @@ import {
    getSortedRowModel,
    SortingState,
 } from '@tanstack/react-table';
-// ================================================================================
-import { TabelaTarefaProps } from '../../../../types/types';
-// ================================================================================
-import { useAuth } from '../../../../hooks/useAuth';
-import { colunasTabelaTarefa } from './Colunas_Tabela_Tarefa';
-// ================================================================================
-import { IsError } from '../components/IsError';
-import { IsLoading } from '../components/IsLoading';
-// ================================================================================
-import { FaFilterCircleXmark } from 'react-icons/fa6';
-import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
-import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
-import { IoClose } from 'react-icons/io5';
-import { FaExclamationTriangle, FaTasks } from 'react-icons/fa';
-import { useFiltersTabelaTarefa } from '../../../../contexts/Filters_Context_Tabela_Tarefa';
-import { FiltrosTabelaTarefa } from './filtros/Filtros_Tabela_Tarefa';
+import { useQuery } from '@tanstack/react-query';
+import { useMemo, useState, useCallback, useEffect } from 'react';
+
+// Components
 import {
    FilterControls,
    FiltrosHeaderTabelaTarefa,
 } from './filtros/Filtros_Header_Tabela_Tarefa';
+import { IsError } from '../components/IsError';
+import { IsLoading } from '../components/IsLoading';
+import { colunasTabelaTarefa } from './Colunas_Tabela_Tarefa';
 import { formatarCodNumber } from '../../../../utils/formatters';
+import { FiltrosTabelaTarefa } from './filtros/Filtros_Tabela_Tarefa';
+
+// Hooks & Types
+import { useAuth } from '../../../../hooks/useAuth';
+import { TabelaTarefaProps } from '../../../../types/types';
+import { useFiltersTabelaTarefa } from '../../../../contexts/Filters_Context_Tabela_Tarefa';
+
+// Icons
+import { IoClose } from 'react-icons/io5';
+import { FaFilterCircleXmark } from 'react-icons/fa6';
+import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
+import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
+import { FaExclamationTriangle, FaTasks } from 'react-icons/fa';
 
 // ================================================================================
-// INTERFACES E TIPOS
+// INTERFACES
 // ================================================================================
-
 interface PaginationInfo {
    currentPage: number;
    totalPages: number;
@@ -803,7 +806,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                               className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsRight
-                                 className="group-disabled:text-red-5 00 text-black"
+                                 className="text-black group-disabled:text-red-500"
                                  size={24}
                               />
                            </button>

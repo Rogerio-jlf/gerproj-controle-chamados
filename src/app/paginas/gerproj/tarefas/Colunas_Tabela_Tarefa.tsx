@@ -43,7 +43,7 @@ export const colunasTabelaTarefa = (
                className={`flex items-center rounded-md bg-black p-2 text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-2 text-left'}`}
             >
                {isEmpty ? (
-                  '------------------------------'
+                  '-----'
                ) : (
                   <span className="block w-full truncate">{value}</span>
                )}
@@ -65,7 +65,7 @@ export const colunasTabelaTarefa = (
                className={`flex items-center rounded-md bg-black p-2 text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-2 text-left'}`}
             >
                {isEmpty ? (
-                  '-'
+                  '-----'
                ) : (
                   <span className="block w-full truncate">{value}</span>
                )}
@@ -89,7 +89,7 @@ export const colunasTabelaTarefa = (
                className={`flex items-center rounded-md bg-black p-2 text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-2 text-left'}`}
             >
                {isEmpty ? (
-                  '-'
+                  '-----'
                ) : (
                   <span className="block w-full truncate">{nomes}</span>
                )}
@@ -113,7 +113,7 @@ export const colunasTabelaTarefa = (
                className={`flex items-center rounded-md bg-black p-2 text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-2 text-left'}`}
             >
                {isEmpty ? (
-                  '-'
+                  '-----'
                ) : (
                   <span className="block w-full truncate">{nomes}</span>
                )}
@@ -133,7 +133,7 @@ export const colunasTabelaTarefa = (
 
          return (
             <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-               {dataFormatada || '-'}
+               {dataFormatada || '-----'}
             </div>
          );
       },
@@ -150,7 +150,7 @@ export const colunasTabelaTarefa = (
 
          return (
             <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-               {dataFormatada || '-'}
+               {dataFormatada || '-----'}
             </div>
          );
       },
@@ -167,7 +167,7 @@ export const colunasTabelaTarefa = (
 
          return (
             <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-               {dataFormatada || '-'}
+               {dataFormatada || '-----'}
             </div>
          );
       },
@@ -184,7 +184,7 @@ export const colunasTabelaTarefa = (
 
          return (
             <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-               {tempoFormatado || '-'}h
+               {tempoFormatado || '-----'}h
             </div>
          );
       },
@@ -200,7 +200,7 @@ export const colunasTabelaTarefa = (
 
          return (
             <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-               {value || '-'}
+               {value || '-----'}
             </div>
          );
       },
@@ -217,7 +217,7 @@ export const colunasTabelaTarefa = (
 
          return (
             <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-               {dataFormatada || '-'}
+               {dataFormatada || '-----'}
             </div>
          );
       },
@@ -241,7 +241,7 @@ export const colunasTabelaTarefa = (
             <div
                className={`flex items-center ${bgColor} justify-center rounded-md p-2 text-center`}
             >
-               {valueUpper || '-'}
+               {valueUpper || '-----'}
             </div>
          );
       },

@@ -1,10 +1,10 @@
 'use client';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
-import { useFiltersTabelaOs } from '../../../../contexts/Filters_Context_Dia';
-import SelectAno from '../../../../components/seletores/Select_Ano';
-import SelectMes from '../../../../components/seletores/Select_Mes';
-import SelectDia from '../../../../components/seletores/Select_Dia';
+import { useFiltersTabelaOs } from '../../../../../contexts/Filters_Context_Tabela_OS';
+import { SelectAnoTabelaOS } from './Select_Ano_Tabela_OS';
+import { SelectMesTabelaOS } from './Select_Mes_Tabela_OS';
+import { SelectDiaTabelaOS } from './Select_Dia_Tabela_OS';
 
 interface FiltrosProps {
    onFiltersChange: (filters: {
@@ -149,15 +149,15 @@ export function FiltrosTabelaOS({ onFiltersChange }: FiltrosProps) {
    return (
       <div className="flex w-full gap-6">
          <div className="w-[250px]">
-            <SelectAno value={ano} onChange={setAno} />
+            <SelectAnoTabelaOS value={ano} onChange={setAno} />
          </div>
 
          <div className="w-[250px]">
-            <SelectMes value={mes} onChange={setMes} />
+            <SelectMesTabelaOS value={mes} onChange={setMes} />
          </div>
 
          <div className="w-[250px]">
-            <SelectDia
+            <SelectDiaTabelaOS
                value={dia}
                onChange={handleDiaChange}
                diasDisponiveis={getDiasParaSelect()}

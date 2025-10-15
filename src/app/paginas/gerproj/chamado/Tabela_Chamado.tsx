@@ -9,9 +9,9 @@ import {
    getCoreRowModel,
    getSortedRowModel,
 } from '@tanstack/react-table';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 
 // Components
 import {
@@ -20,17 +20,17 @@ import {
 } from './filtros/Filtros_Header_Tabela_Chamado';
 import { IsError } from '../components/IsError';
 import { IsLoading } from '../components/IsLoading';
-import { FiltrosTabelaChamado } from './filtros/Filtros_Tabela_Chamado';
-import { DropdownTabelaChamado } from './Dropdown_Tabela_Chamado';
 import { TabelaOS } from '../ordem-servico/Tabela_OS';
+import { SessionExpired } from '../components/IsExpired';
+import { TabelaTarefas } from '../tarefas/Tabela_Tarefa';
+import { RelatorioOS } from '../ordem-servico/Relatorio_OS';
+import { colunasTabelaChamados } from './Colunas_Tabela_Chamado';
+import { formatarCodNumber } from '../../../../utils/formatters';
+import { DropdownTabelaChamado } from './Dropdown_Tabela_Chamado';
 import { ModalExcluirChamado } from './modais/Modal_Deletar_Chamado';
 import { ModalAtribuirChamado } from './modais/Modal_Atribuir_Chamado';
-import { colunasTabelaChamados } from './Colunas_Tabela_Chamado';
-import { TabelaTarefas } from '../tarefas/Tabela_Tarefa';
+import { FiltrosTabelaChamado } from './filtros/Filtros_Tabela_Chamado';
 import { ModalVisualizarChamado } from './modais/Modal_Visualizar_Chamado';
-import { RelatorioOS } from '../ordem-servico/Relatorio_OS';
-import { SessionExpired } from '../components/IsExpired';
-import { formatarCodNumber } from '../../../../utils/formatters';
 
 // Hooks & Types
 import { useAuth } from '../../../../hooks/useAuth';
@@ -45,7 +45,7 @@ import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 
 // ================================================================================
-// TIPOS E INTERFACES
+// INTERFACES
 // ================================================================================
 interface PaginationInfo {
    currentPage: number;
@@ -64,31 +64,17 @@ interface ApiResponse {
 // ================================================================================
 // FUNÇÕES UTILITÁRIAS
 // ================================================================================
-function getColumnWidth(columnId: string, userType?: string): string {
-   if (userType === 'ADM') {
-      const widthMapAdmin: Record<string, string> = {
-         COD_CHAMADO: '7%',
-         DATA_CHAMADO: '7%',
-         ASSUNTO_CHAMADO: '24%',
-         STATUS_CHAMADO: '16%',
-         DTENVIO_CHAMADO: '10%',
-         NOME_RECURSO: '12%',
-         EMAIL_CHAMADO: '18%',
-         actions: '6%',
-      };
-      return widthMapAdmin[columnId] || 'auto';
-   }
-
+function getColumnWidth(columnId: string): string {
    const widthMap: Record<string, string> = {
-      COD_CHAMADO: '8%',
-      DATA_CHAMADO: '8%',
-      ASSUNTO_CHAMADO: '27%',
-      STATUS_CHAMADO: '15%',
-      DTENVIO_CHAMADO: '15%',
-      EMAIL_CHAMADO: '20%',
-      actions: '7%',
+      COD_CHAMADO: '7%',
+      DATA_CHAMADO: '7%',
+      ASSUNTO_CHAMADO: '24%',
+      STATUS_CHAMADO: '16%',
+      DTENVIO_CHAMADO: '10%',
+      NOME_RECURSO: '12%',
+      EMAIL_CHAMADO: '18%',
+      actions: '6%',
    };
-
    return widthMap[columnId] || 'auto';
 }
 
@@ -614,8 +600,7 @@ function TabelaChamadoContent() {
                                        className="bg-teal-800 py-6 font-extrabold tracking-wider text-white uppercase select-none"
                                        style={{
                                           width: getColumnWidth(
-                                             header.column.id,
-                                             user?.tipo
+                                             header.column.id
                                           ),
                                        }}
                                     >
@@ -638,10 +623,7 @@ function TabelaChamadoContent() {
                                        key={column.id}
                                        className="bg-teal-800 px-3 pb-6"
                                        style={{
-                                          width: getColumnWidth(
-                                             column.id,
-                                             user?.tipo
-                                          ),
+                                          width: getColumnWidth(column.id),
                                        }}
                                     >
                                        {column.id === 'COD_CHAMADO' && (
@@ -740,8 +722,7 @@ function TabelaChamadoContent() {
                                           className="border border-white/30 bg-black p-2 text-sm font-semibold tracking-widest text-white select-none group-hover:bg-white/50 group-hover:text-black"
                                           style={{
                                              width: getColumnWidth(
-                                                cell.column.id,
-                                                user?.tipo
+                                                cell.column.id
                                              ),
                                           }}
                                        >

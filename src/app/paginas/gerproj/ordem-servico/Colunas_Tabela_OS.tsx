@@ -1,7 +1,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 // ================================================================================
 import { TabelaOSProps } from '../../../../types/types';
-import { EditarCellFaturadoOSValidOS } from './Editar_Cell_FaturadoOS_ValidOS';
+import { ModalEditarCellFaturadoOSValidOS } from './Modal_Editar_Cell_FaturadoOS_ValidOS';
 // ================================================================================
 import {
    formatarDataParaBR,
@@ -9,6 +9,8 @@ import {
    formatarDecimalParaTempo,
    formatarHora,
    formatCodChamado,
+   formatarCodNumber,
+   formatarHorasTotaisHorasDecimais,
 } from '../../../../utils/formatters';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 
@@ -43,8 +45,8 @@ export const colunasTabelaOS = (
          cell: ({ getValue }) => {
             const value = getValue() as number;
             return (
-               <div className="flex items-center justify-center text-center">
-                  {formatCodChamado(value) || '-----'}
+               <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
+                  {formatarCodNumber(value) || '-----'}
                </div>
             );
          },
@@ -59,8 +61,8 @@ export const colunasTabelaOS = (
             const value = getValue() as number;
 
             return (
-               <div className="flex items-center justify-center text-center">
-                  {formatCodChamado(value) || '-----'}
+               <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
+                  {formatarCodNumber(value) || '-----'}
                </div>
             );
          },
@@ -76,8 +78,8 @@ export const colunasTabelaOS = (
             const dataFormatada = formatarDataParaBR(value);
 
             return (
-               <div className="flex items-center justify-center text-center">
-                  {dataFormatada || '----------'}
+               <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
+                  {dataFormatada || '-----'}
                </div>
             );
          },
@@ -89,10 +91,10 @@ export const colunasTabelaOS = (
          accessorKey: 'HRINI_OS',
          header: () => <div className="text-center">Hora Início</div>,
          cell: ({ getValue }) => {
-            const hora = getValue() as string;
+            const value = getValue() as string;
             return (
-               <div className="flex items-center justify-center text-center">
-                  {hora ? formatarHora(hora) : '--:--'}
+               <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
+                  {value ? formatarHora(value) : '-----'}
                </div>
             );
          },
@@ -104,10 +106,10 @@ export const colunasTabelaOS = (
          accessorKey: 'HRFIM_OS',
          header: () => <div className="text-center">Hora final</div>,
          cell: ({ getValue }) => {
-            const hora = getValue() as string;
+            const value = getValue() as string;
             return (
-               <div className="flex items-center justify-center text-center">
-                  {hora ? formatarHora(hora) : '--:--'}
+               <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
+                  {value ? formatarHora(value) : '-----'}
                </div>
             );
          },
@@ -120,11 +122,11 @@ export const colunasTabelaOS = (
          header: () => <div className="text-center">Tempo total</div>,
          cell: ({ getValue }) => {
             const value = getValue() as number;
-            const tempoFormatado = formatarDecimalParaTempo(value);
+            const tempoFormatado = formatarHorasTotaisHorasDecimais(value);
 
             return (
-               <div className="flex items-center justify-center text-center">
-                  {tempoFormatado || '--:--'}
+               <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
+                  {tempoFormatado || '-----'}
                </div>
             );
          },
@@ -140,8 +142,8 @@ export const colunasTabelaOS = (
             const dataFormatada = formatarDataHoraParaBR(value);
 
             return (
-               <div className="flex items-center justify-center text-center">
-                  {dataFormatada || '----------'}
+               <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
+                  {dataFormatada || '-----'}
                </div>
             );
          },
@@ -156,8 +158,8 @@ export const colunasTabelaOS = (
             const value = getValue() as string;
 
             return (
-               <div className="flex items-center justify-center text-center">
-                  {value || '-------'}
+               <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
+                  {value || '-----'}
                </div>
             );
          },
@@ -175,11 +177,11 @@ export const colunasTabelaOS = (
 
             return (
                <div
-                  className={`flex items-center ${isEmpty ? 'justify-center text-center' : 'justify-start text-left'}`}
+                  className={`flex items-center rounded-md bg-black p-2 text-center text-white ${isEmpty ? 'justify-center text-center' : 'justify-start text-left'}`}
                >
                   {textoCorrigido
                      ? textoCorrigido.split(' ').slice(0, 2).join(' ')
-                     : '---------------'}
+                     : '-----'}
                </div>
             );
          },
@@ -204,14 +206,14 @@ export const colunasTabelaOS = (
                   <div
                      className={`flex items-center ${bgColor} justify-center text-center`}
                   >
-                     {valueUpper || '---'}
+                     {valueUpper || '-----'}
                   </div>
                );
             }
 
             // Se tem função de update, renderiza o editor
             return (
-               <EditarCellFaturadoOSValidOS
+               <ModalEditarCellFaturadoOSValidOS
                   value={value?.toUpperCase() as 'SIM' | 'NAO' | null}
                   fieldName="FATURADO_OS"
                   codOs={row.original.COD_OS}
@@ -234,11 +236,14 @@ export const colunasTabelaOS = (
             if (recurso) {
                return (
                   <div
-                     className={`flex items-center ${isEmpty ? 'justify-center text-center' : 'justify-start text-left'}`}
+                     className={`flex items-center rounded-md bg-black p-2 text-center text-white ${isEmpty ? 'justify-center text-center' : 'justify-start text-left'}`}
                   >
                      {recurso
-                        ? recurso.split(' ').slice(0, 2).join(' ')
-                        : '---------------'}
+                        ? corrigirTextoCorrompido(recurso)
+                             .split(' ')
+                             .slice(0, 2)
+                             .join(' ')
+                        : '-----'}
                   </div>
                );
             }
@@ -264,14 +269,14 @@ export const colunasTabelaOS = (
                   <div
                      className={`flex items-center ${bgColor} justify-center text-center`}
                   >
-                     {valueUpper || '---'}
+                     {valueUpper || '-----'}
                   </div>
                );
             }
 
             // Se tem função de update, renderiza o editor
             return (
-               <EditarCellFaturadoOSValidOS
+               <ModalEditarCellFaturadoOSValidOS
                   value={value?.toUpperCase() as 'SIM' | 'NAO' | null}
                   fieldName="VALID_OS"
                   codOs={row.original.COD_OS}
@@ -292,10 +297,10 @@ export const colunasTabelaOS = (
             const isEmpty = !value;
             return (
                <div
-                  className={`flex items-center ${isEmpty ? 'justify-center text-center' : 'justify-start text-left'}`}
+                  className={`flex items-center rounded-md bg-black p-2 text-center text-white ${isEmpty ? 'justify-center text-center' : 'justify-start text-left'}`}
                >
                   {isEmpty ? (
-                     '------------------------------'
+                     '-----'
                   ) : (
                      <span className="block w-full truncate">{value}</span>
                   )}
@@ -314,10 +319,10 @@ export const colunasTabelaOS = (
             const isEmpty = !value;
             return (
                <div
-                  className={`flex items-center ${isEmpty ? 'justify-center text-center' : 'justify-start text-left'}`}
+                  className={`flex items-center rounded-md bg-black p-2 text-center text-white ${isEmpty ? 'justify-center text-center' : 'justify-start text-left'}`}
                >
                   {isEmpty ? (
-                     '------------------------------'
+                     '-----'
                   ) : (
                      <span className="block w-full truncate">{value}</span>
                   )}

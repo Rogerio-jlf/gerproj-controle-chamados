@@ -127,7 +127,7 @@ export function ModalExcluirChamado({
                <button
                   onClick={handleCloseModalExcluirChamado}
                   disabled={isLoading}
-                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95"
                >
                   <IoClose size={24} />
                </button>
