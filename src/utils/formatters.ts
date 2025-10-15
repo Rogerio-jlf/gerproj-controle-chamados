@@ -103,7 +103,7 @@ export const removerAcentos = (texto: string): string => {
 export const getStylesStatus = (status: string | undefined) => {
    switch (status?.toUpperCase()) {
       case 'NAO FINALIZADO':
-         return 'bg-red-500 text-black italic hover:scale';
+         return 'bg-red-500 text-black italic';
 
       case 'EM ATENDIMENTO':
          return 'bg-blue-500 text-black italic';

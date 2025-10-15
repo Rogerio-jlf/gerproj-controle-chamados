@@ -1,21 +1,21 @@
 import Link from 'next/link';
-import { ColumnDef } from '@tanstack/react-table';
 import { useState } from 'react';
+import { ColumnDef } from '@tanstack/react-table';
 // ================================================================================
 import { TabelaChamadoProps } from '../../../../types/types';
 // ================================================================================
 import {
    formatarDataParaBR,
    formatCodChamado,
+   getStylesStatus,
 } from '../../../../utils/formatters';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
-import { ModalAtualizarStatusApontarOsChamado } from './modais/Modal_Atualizar_Status_Apontar_Os_Chamado';
 // ================================================================================
-import { HiMiniSquaresPlus } from 'react-icons/hi2';
-import { IoClose } from 'react-icons/io5';
 import { FaEye } from 'react-icons/fa6';
-import { RiDeleteBin6Fill } from 'react-icons/ri';
+import { IoClose } from 'react-icons/io5';
 import { FaUserCheck } from 'react-icons/fa';
+import { RiDeleteBin6Fill } from 'react-icons/ri';
+import { HiMiniSquaresPlus } from 'react-icons/hi2';
 
 // ================================================================================
 // INTERFACES
@@ -319,14 +319,18 @@ export const colunasTabelaChamados = (
       {
          accessorKey: 'STATUS_CHAMADO',
          header: () => <div className="text-center">Status</div>,
-         cell: ({ row }) => (
-            <ModalAtualizarStatusApontarOsChamado
-               status={row.original.STATUS_CHAMADO}
-               codChamado={row.original.COD_CHAMADO}
-               nomeCliente={row.original.NOME_CLIENTE ?? '-'}
-               onUpdateSuccess={() => {}}
-            />
-         ),
+         cell: ({ getValue }) => {
+            const value = getValue() as string;
+            const styles = getStylesStatus(value);
+
+            return (
+               <div
+                  className={`flex items-center justify-center rounded-md p-2 ${styles}`}
+               >
+                  {value}
+               </div>
+            );
+         },
       },
       // ==========
 

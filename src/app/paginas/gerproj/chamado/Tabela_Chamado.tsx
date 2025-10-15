@@ -28,6 +28,9 @@ import { ModalAtribuirChamado } from './modais/Modal_Atribuir_Chamado';
 import { colunasTabelaChamados } from './Colunas_Tabela_Chamado';
 import { TabelaTarefas } from '../tarefas/Tabela_Tarefa';
 import { ModalVisualizarChamado } from './modais/Modal_Visualizar_Chamado';
+import { RelatorioOS } from '../ordem-servico/Relatorio_OS';
+import { SessionExpired } from '../components/IsExpired';
+import { formatarCodNumber } from '../../../../utils/formatters';
 
 // Hooks & Types
 import { useAuth } from '../../../../hooks/useAuth';
@@ -40,9 +43,6 @@ import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
-import { RelatorioOS } from '../ordem-servico/Relatorio_OS';
-import { SessionExpired } from '../components/IsExpired';
-import { formatarCodNumber } from '../../../../utils/formatters';
 
 // ================================================================================
 // TIPOS E INTERFACES
