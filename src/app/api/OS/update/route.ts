@@ -1,6 +1,3 @@
-// ================================================================================
-// ARQUIVO: app/api/OS/update/route.ts
-// ================================================================================
 import jwt from 'jsonwebtoken';
 import { NextResponse } from 'next/server';
 import { firebirdQuery } from '../../../../lib/firebird/firebird-client';

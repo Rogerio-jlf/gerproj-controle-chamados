@@ -4,59 +4,38 @@
 // ================================================================================
 import {
    flexRender,
-   getCoreRowModel,
-   useReactTable,
-   getSortedRowModel,
    SortingState,
+   useReactTable,
+   getCoreRowModel,
+   getSortedRowModel,
 } from '@tanstack/react-table';
+import { useQueryClient } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 
 // Components
 import {
+   FiltrosHeaderTabelaOs,
    FilterControls,
-   FiltrosHeaderTabelaTarefa,
-} from './filtros/Filtros_Header_Tabela_Tarefa';
+} from './filtros/Filtros_Header_Tabela_OS';
 import { IsError } from '../../../../components/IsError';
 import { IsLoading } from '../../../../components/IsLoading';
-import { colunasTabelaTarefa } from './Colunas_Tabela_Tarefa';
+import { colunasTabelaOS } from './Colunas_Tabela_OS';
+import { FiltrosTabelaOS } from './filtros/Filtros_Tabela_OS';
 import { formatarCodNumber } from '../../../../utils/formatters';
-import { FiltrosTabelaTarefa } from './filtros/Filtros_Tabela_Tarefa';
+import { MensagemFiltroNaoEncontrado } from './filtros/Mensagens_Filtros';
 
 // Hooks & Types
 import { useAuth } from '../../../../hooks/useAuth';
-import { TabelaTarefaProps } from '../../../../types/types';
-import { useFiltersTabelaTarefa } from '../../../../contexts/Filters_Context_Tabela_Tarefa';
+import { TabelaOSProps } from '../../../../types/types';
+import { useFiltersTabelaOs } from '../../../../contexts/Filters_Context_Tabela_OS';
 
 // Icons
 import { IoClose } from 'react-icons/io5';
-import { FaFilterCircleXmark } from 'react-icons/fa6';
+import { GrServices } from 'react-icons/gr';
+import { FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
-import { FaExclamationTriangle, FaTasks } from 'react-icons/fa';
-
-// ================================================================================
-// CONSTANTES
-// ================================================================================
-const MODAL_MAX_HEIGHT = 'calc(100vh - 500px)';
-const DEBOUNCE_DELAY = 800;
-const ANIMATION_DURATION = 300;
-const CACHE_TIME = 1000 * 60 * 5;
-const PAGE_SIZE_OPTIONS = [20, 50, 100];
-
-const COLUMN_WIDTHS: Record<string, string> = {
-   TAREFA_COMPLETA: '19%',
-   PROJETO_COMPLETO: '19%',
-   NOME_RECURSO: '11%',
-   NOME_CLIENTE: '11%',
-   DTSOL_TAREFA: '6%',
-   DTAPROV_TAREFA: '6%',
-   DTPREVENT_TAREFA: '6%',
-   HREST_TAREFA: '6%',
-   STATUS_TAREFA: '5%',
-   DTINC_TAREFA: '6%',
-   FATURA_TAREFA: '5%',
-};
 
 // ================================================================================
 // INTERFACES
@@ -71,64 +50,39 @@ interface PaginationInfo {
 }
 
 interface ApiResponse {
-   data: TabelaTarefaProps[];
+   data: TabelaOSProps[];
    pagination: PaginationInfo;
 }
 
 interface Props {
-   isOpen: boolean;
+   isOpen?: boolean;
    onClose: () => void;
 }
-
-// ================================================================================
-// COMPONENTES AUXILIARES
-// ================================================================================
-const EmptyState = () => (
-   <section className="bg-black py-72 text-center">
-      <FaExclamationTriangle
-         className="mx-auto mb-6 text-yellow-500"
-         size={80}
-      />
-      <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
-         Nenhuma Tarefa foi encontrada no momento.
-      </h3>
-   </section>
-);
-
-const NoResultsState = ({
-   totalActiveFilters,
-   clearFilters,
-}: {
-   totalActiveFilters: number;
-   clearFilters: () => void;
-}) => (
-   <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-72 text-center">
-      <FaFilterCircleXmark className="mx-auto text-red-600" size={100} />
-      <h3 className="text-3xl font-extrabold tracking-wider text-white italic select-none">
-         Nenhum registro encontrado para os filtros aplicados.
-      </h3>
-      <p className="text-base font-semibold tracking-wider text-white italic select-none">
-         Tente ajustar os filtros ou limpe-os para visualizar registros.
-      </p>
-      {totalActiveFilters > 0 && (
-         <button
-            onClick={clearFilters}
-            className="cursor-pointer rounded-md border-none bg-red-600 px-6 py-2 text-base font-extrabold tracking-widest text-white italic shadow-md shadow-black transition-all hover:scale-105 hover:bg-red-700 active:scale-95"
-         >
-            Limpar Filtros
-         </button>
-      )}
-   </div>
-);
 
 // ================================================================================
 // FUNÇÕES UTILITÁRIAS
 // ================================================================================
 function getColumnWidth(columnId: string): string {
-   return COLUMN_WIDTHS[columnId] || 'auto';
+   const widthMap: Record<string, string> = {
+      CHAMADO_OS: '5%',
+      COD_OS: '5%',
+      DTINI_OS: '6%',
+      HRINI_OS: '4%',
+      HRFIM_OS: '4%',
+      QTD_HR_OS: '4%',
+      DTINC_OS: '8%',
+      COMP_OS: '5%',
+      NOME_CLIENTE: '10%',
+      FATURADO_OS: '4%',
+      NOME_RECURSO: '11%',
+      VALID_OS: '4%',
+      TAREFA_COMPLETA: '15%',
+      PROJETO_COMPLETO: '15%',
+   };
+   return widthMap[columnId] || 'auto';
 }
 
-function useDebouncedValue<T>(value: T, delay: number = DEBOUNCE_DELAY): T {
+function useDebouncedValue<T>(value: T, delay: number = 800): T {
    const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
    useEffect(() => {
@@ -145,12 +99,13 @@ function useDebouncedValue<T>(value: T, delay: number = DEBOUNCE_DELAY): T {
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export function TabelaTarefas({ isOpen, onClose }: Props) {
+export function TabelaOS({ isOpen = true, onClose }: Props) {
    // ================================================================================
    // HOOKS E CONTEXTOS
    // ================================================================================
    const { user } = useAuth();
-   const { filters, setFilters } = useFiltersTabelaTarefa();
+   const queryClient = useQueryClient();
+   const { filters, setFilters } = useFiltersTabelaOs();
    const { ano, mes, dia } = filters;
    const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -158,97 +113,37 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    // ================================================================================
    // ESTADOS - FILTROS (INPUTS SEM DEBOUNCE)
    // ================================================================================
+   const [inputFilterChamadoOs, setInputFilterChamadoOs] = useState('');
+   const [inputFilterCodOs, setInputFilterCodOs] = useState('');
+   const [inputFilterDtiniOs, setInputFilterDtiniOs] = useState('');
+   const [inputFilterDtincOs, setInputFilterDtincOs] = useState('');
+   const [inputFilterCompOs, setInputFilterCompOs] = useState('');
+   const [inputFilterNomeCliente, setInputFilterNomeCliente] = useState('');
+   const [inputFilterFaturadoOs, setInputFilterFaturadoOs] = useState('');
+   const [inputFilterNomeRecurso, setInputFilterNomeRecurso] = useState('');
+   const [inputFilterValidOs, setInputFilterValidOs] = useState('');
    const [inputFilterTarefaCompleta, setInputFilterTarefaCompleta] =
       useState('');
    const [inputFilterProjetoCompleto, setInputFilterProjetoCompleto] =
       useState('');
-   const [inputFilterNomeRecurso, setInputFilterNomeRecurso] = useState('');
-   const [inputFilterNomeCliente, setInputFilterNomeCliente] = useState('');
-   const [inputFilterDtSolTarefa, setInputFilterDtSolTarefa] = useState('');
-   const [inputFilterDtAprovTarefa, setInputFilterDtAprovTarefa] = useState('');
-   const [inputFilterDtPreventTarefa, setInputFilterDtPreventTarefa] =
-      useState('');
-   const [inputFilterHrEstTarefa, setInputFilterHrEstTarefa] = useState('');
-   const [inputFilterStatusTarefa, setInputFilterStatusTarefa] = useState('');
-   const [inputFilterDtIncTarefa, setInputFilterDtIncTarefa] = useState('');
-   const [inputFilterFaturaTarefa, setInputFilterFaturaTarefa] = useState('');
 
    // ESTADOS - FILTROS (COM DEBOUNCE)
-   const filterTarefaCompleta = useDebouncedValue(inputFilterTarefaCompleta);
-   const filterProjetoCompleto = useDebouncedValue(inputFilterProjetoCompleto);
-   const filterNomeRecurso = useDebouncedValue(inputFilterNomeRecurso);
-   const filterNomeCliente = useDebouncedValue(inputFilterNomeCliente);
-   const filterDtSolTarefa = useDebouncedValue(inputFilterDtSolTarefa);
-   const filterDtAprovTarefa = useDebouncedValue(inputFilterDtAprovTarefa);
-   const filterDtPreventTarefa = useDebouncedValue(inputFilterDtPreventTarefa);
-   const filterHrEstTarefa = useDebouncedValue(inputFilterHrEstTarefa);
-   const filterStatusTarefa = useDebouncedValue(inputFilterStatusTarefa);
-   const filterDtIncTarefa = useDebouncedValue(inputFilterDtIncTarefa);
-   const filterFaturaTarefa = useDebouncedValue(inputFilterFaturaTarefa);
-
-   // ================================================================================
-   // MAPEAMENTO DE FILTROS
-   // ================================================================================
-   const FILTER_MAP = useMemo(
-      () => ({
-         TAREFA_COMPLETA: {
-            state: inputFilterTarefaCompleta,
-            setter: setInputFilterTarefaCompleta,
-         },
-         PROJETO_COMPLETO: {
-            state: inputFilterProjetoCompleto,
-            setter: setInputFilterProjetoCompleto,
-         },
-         NOME_RECURSO: {
-            state: inputFilterNomeRecurso,
-            setter: setInputFilterNomeRecurso,
-         },
-         NOME_CLIENTE: {
-            state: inputFilterNomeCliente,
-            setter: setInputFilterNomeCliente,
-         },
-         DTSOL_TAREFA: {
-            state: inputFilterDtSolTarefa,
-            setter: setInputFilterDtSolTarefa,
-         },
-         DTAPROV_TAREFA: {
-            state: inputFilterDtAprovTarefa,
-            setter: setInputFilterDtAprovTarefa,
-         },
-         DTPREVENT_TAREFA: {
-            state: inputFilterDtPreventTarefa,
-            setter: setInputFilterDtPreventTarefa,
-         },
-         HREST_TAREFA: {
-            state: inputFilterHrEstTarefa,
-            setter: setInputFilterHrEstTarefa,
-         },
-         STATUS_TAREFA: {
-            state: inputFilterStatusTarefa,
-            setter: setInputFilterStatusTarefa,
-         },
-         DTINC_TAREFA: {
-            state: inputFilterDtIncTarefa,
-            setter: setInputFilterDtIncTarefa,
-         },
-         FATURA_TAREFA: {
-            state: inputFilterFaturaTarefa,
-            setter: setInputFilterFaturaTarefa,
-         },
-      }),
-      [
-         inputFilterTarefaCompleta,
-         inputFilterProjetoCompleto,
-         inputFilterNomeRecurso,
-         inputFilterNomeCliente,
-         inputFilterDtSolTarefa,
-         inputFilterDtAprovTarefa,
-         inputFilterDtPreventTarefa,
-         inputFilterHrEstTarefa,
-         inputFilterStatusTarefa,
-         inputFilterDtIncTarefa,
-         inputFilterFaturaTarefa,
-      ]
+   const filterChamadoOs = useDebouncedValue(inputFilterChamadoOs, 800);
+   const filterCodOs = useDebouncedValue(inputFilterCodOs, 800);
+   const filterDtiniOs = useDebouncedValue(inputFilterDtiniOs, 800);
+   const filterDtincOs = useDebouncedValue(inputFilterDtincOs, 800);
+   const filterCompOs = useDebouncedValue(inputFilterCompOs, 800);
+   const filterNomeCliente = useDebouncedValue(inputFilterNomeCliente, 800);
+   const filterFaturadoOs = useDebouncedValue(inputFilterFaturadoOs, 800);
+   const filterNomeRecurso = useDebouncedValue(inputFilterNomeRecurso, 800);
+   const filterValidOs = useDebouncedValue(inputFilterValidOs, 800);
+   const filterTarefaCompleta = useDebouncedValue(
+      inputFilterTarefaCompleta,
+      800
+   );
+   const filterProjetoCompleto = useDebouncedValue(
+      inputFilterProjetoCompleto,
+      800
    );
 
    // ================================================================================
@@ -261,116 +156,116 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    // ESTADOS - TABELA
    // ================================================================================
    const [sorting, setSorting] = useState<SortingState>([
-      { id: 'COD_TAREFA', desc: true },
+      { id: 'COD_OS', desc: true },
    ]);
    const [showFilters, setShowFilters] = useState(false);
-   const [isClosing, setIsClosing] = useState(false);
 
    // ================================================================================
    // COMPUTED VALUES - FILTROS
    // ================================================================================
    const totalActiveFilters = useMemo(() => {
-      const filters = [
-         filterTarefaCompleta,
-         filterProjetoCompleto,
-         filterNomeRecurso,
-         filterNomeCliente,
-         filterDtSolTarefa,
-         filterDtAprovTarefa,
-         filterDtPreventTarefa,
-         filterHrEstTarefa,
-         filterStatusTarefa,
-         filterDtIncTarefa,
-         filterFaturaTarefa,
-      ];
-      return filters.filter(f => f?.trim()).length;
+      let count = 0;
+      if (filterChamadoOs && filterChamadoOs.trim()) count += 1;
+      if (filterCodOs && filterCodOs.trim()) count += 1;
+      if (filterDtiniOs && filterDtiniOs.trim()) count += 1;
+      if (filterDtincOs && filterDtincOs.trim()) count += 1;
+      if (filterCompOs && filterCompOs.trim()) count += 1;
+      if (filterNomeCliente && filterNomeCliente.trim()) count += 1;
+      if (filterFaturadoOs && filterFaturadoOs.trim()) count += 1;
+      if (filterNomeRecurso && filterNomeRecurso.trim()) count += 1;
+      if (filterValidOs && filterValidOs.trim()) count += 1;
+      if (filterTarefaCompleta && filterTarefaCompleta.trim()) count += 1;
+      if (filterProjetoCompleto && filterProjetoCompleto.trim()) count += 1;
+      return count;
    }, [
+      filterChamadoOs,
+      filterCodOs,
+      filterDtiniOs,
+      filterDtincOs,
+      filterCompOs,
+      filterNomeCliente,
+      filterFaturadoOs,
+      filterNomeRecurso,
+      filterValidOs,
       filterTarefaCompleta,
       filterProjetoCompleto,
-      filterNomeRecurso,
-      filterNomeCliente,
-      filterDtSolTarefa,
-      filterDtAprovTarefa,
-      filterDtPreventTarefa,
-      filterHrEstTarefa,
-      filterStatusTarefa,
-      filterDtIncTarefa,
-      filterFaturaTarefa,
    ]);
 
    // ================================================================================
    // QUERY PARAMS E API
    // ================================================================================
-   const enabled = useMemo(() => {
-      return !!(
-         (ano === 'todos' || typeof ano === 'number') &&
-         (mes === 'todos' || typeof mes === 'number') &&
-         (dia === 'todos' || typeof dia === 'number') &&
-         token &&
-         user
-      );
-   }, [ano, mes, dia, token, user]);
+   const enabled = !!ano && !!mes && !!dia && !!token && !!user;
 
    const queryParams = useMemo(() => {
       if (!user) return new URLSearchParams();
-
       const params = new URLSearchParams({
+         ano: String(ano),
+         mes: String(mes),
+         dia: String(dia),
          page: String(currentPage),
          limit: String(pageSize),
       });
 
-      // Filtros de data
-      params.append('ano', ano === 'todos' ? 'todos' : String(ano));
-      params.append('mes', mes === 'todos' ? 'todos' : String(mes));
-      params.append('dia', dia === 'todos' ? 'todos' : String(dia));
-
-      // Filtros de coluna
-      const filterMappings = [
-         { filter: filterTarefaCompleta, param: 'filter_COD_TAREFA' },
-         { filter: filterProjetoCompleto, param: 'filter_NOME_PROJETO' },
-         { filter: filterNomeRecurso, param: 'filter_NOME_RECURSO' },
-         { filter: filterNomeCliente, param: 'filter_NOME_CLIENTE' },
-         { filter: filterDtSolTarefa, param: 'filter_DTSOL_TAREFA' },
-         { filter: filterDtAprovTarefa, param: 'filter_DTAPROV_TAREFA' },
-         { filter: filterDtPreventTarefa, param: 'filter_DTPREVENT_TAREFA' },
-         { filter: filterHrEstTarefa, param: 'filter_HREST_TAREFA' },
-         { filter: filterStatusTarefa, param: 'filter_STATUS_TAREFA' },
-         { filter: filterDtIncTarefa, param: 'filter_DTINC_TAREFA' },
-         { filter: filterFaturaTarefa, param: 'filter_FATURA_TAREFA' },
-      ];
-
-      filterMappings.forEach(({ filter, param }) => {
-         if (filter && filter.trim()) {
-            params.append(param, filter.trim());
-         }
-      });
+      if (filterChamadoOs && filterChamadoOs.trim()) {
+         params.append('filter_CHAMADO_OS', filterChamadoOs.trim());
+      }
+      if (filterCodOs && filterCodOs.trim()) {
+         params.append('filter_COD_OS', filterCodOs.trim());
+      }
+      if (filterDtiniOs && filterDtiniOs.trim()) {
+         params.append('filter_DTINI_OS', filterDtiniOs.trim());
+      }
+      if (filterDtincOs && filterDtincOs.trim()) {
+         params.append('filter_DTINC_OS', filterDtincOs.trim());
+      }
+      if (filterCompOs && filterCompOs.trim()) {
+         params.append('filter_COMP_OS', filterCompOs.trim());
+      }
+      if (filterNomeCliente && filterNomeCliente.trim()) {
+         params.append('filter_NOME_CLIENTE', filterNomeCliente.trim());
+      }
+      if (filterFaturadoOs && filterFaturadoOs.trim()) {
+         params.append('filter_FATURADO_OS', filterFaturadoOs.trim());
+      }
+      if (filterNomeRecurso && filterNomeRecurso.trim()) {
+         params.append('filter_NOME_RECURSO', filterNomeRecurso.trim());
+      }
+      if (filterValidOs && filterValidOs.trim()) {
+         params.append('filter_VALID_OS', filterValidOs.trim());
+      }
+      if (filterTarefaCompleta && filterTarefaCompleta.trim()) {
+         params.append('filter_NOME_TAREFA', filterTarefaCompleta.trim());
+      }
+      if (filterProjetoCompleto && filterProjetoCompleto.trim()) {
+         params.append('filter_NOME_PROJETO', filterProjetoCompleto.trim());
+      }
 
       return params;
    }, [
-      user,
-      currentPage,
-      pageSize,
       ano,
       mes,
       dia,
+      user,
+      currentPage,
+      pageSize,
+      filterChamadoOs,
+      filterCodOs,
+      filterDtiniOs,
+      filterDtincOs,
+      filterCompOs,
+      filterNomeCliente,
+      filterFaturadoOs,
+      filterNomeRecurso,
+      filterValidOs,
       filterTarefaCompleta,
       filterProjetoCompleto,
-      filterNomeRecurso,
-      filterNomeCliente,
-      filterDtSolTarefa,
-      filterDtAprovTarefa,
-      filterDtPreventTarefa,
-      filterHrEstTarefa,
-      filterStatusTarefa,
-      filterDtIncTarefa,
-      filterFaturaTarefa,
    ]);
 
    async function fetchOS(
       params: URLSearchParams,
       token: string
    ): Promise<ApiResponse> {
-      const res = await fetch(`/api/tarefa/tabela?${params}`, {
+      const res = await fetch(`/api/os/tabela?${params}`, {
          headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -379,7 +274,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
 
       if (!res.ok) {
          const errorData = await res.json();
-         throw new Error(errorData.error || 'Erro ao buscar tarefas');
+         throw new Error(errorData.error || 'Erro ao buscar OS');
       }
 
       const responseData = await res.json();
@@ -403,10 +298,10 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
       isError,
       error,
    } = useQuery({
-      queryKey: ['tarefaData', queryParams.toString(), token],
+      queryKey: ['osData', queryParams.toString(), token],
       queryFn: () => fetchOS(queryParams, token!),
       enabled,
-      staleTime: CACHE_TIME,
+      staleTime: 1000 * 60 * 5,
       retry: 2,
    });
 
@@ -419,34 +314,34 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    useEffect(() => {
       setCurrentPage(1);
    }, [
+      filterChamadoOs,
+      filterCodOs,
+      filterDtiniOs,
+      filterDtincOs,
+      filterCompOs,
+      filterNomeCliente,
+      filterFaturadoOs,
+      filterNomeRecurso,
+      filterValidOs,
       filterTarefaCompleta,
       filterProjetoCompleto,
-      filterNomeRecurso,
-      filterNomeCliente,
-      filterDtSolTarefa,
-      filterDtAprovTarefa,
-      filterDtPreventTarefa,
-      filterHrEstTarefa,
-      filterStatusTarefa,
-      filterDtIncTarefa,
-      filterFaturaTarefa,
    ]);
 
    // ================================================================================
    // HANDLERS - FILTROS
    // ================================================================================
    const clearFilters = useCallback(() => {
+      setInputFilterChamadoOs('');
+      setInputFilterCodOs('');
+      setInputFilterDtiniOs('');
+      setInputFilterDtincOs('');
+      setInputFilterCompOs('');
+      setInputFilterNomeCliente('');
+      setInputFilterFaturadoOs('');
+      setInputFilterNomeRecurso('');
+      setInputFilterValidOs('');
       setInputFilterTarefaCompleta('');
       setInputFilterProjetoCompleto('');
-      setInputFilterNomeRecurso('');
-      setInputFilterNomeCliente('');
-      setInputFilterDtSolTarefa('');
-      setInputFilterDtAprovTarefa('');
-      setInputFilterDtPreventTarefa('');
-      setInputFilterHrEstTarefa('');
-      setInputFilterStatusTarefa('');
-      setInputFilterDtIncTarefa('');
-      setInputFilterFaturaTarefa('');
       setCurrentPage(1);
    }, []);
 
@@ -475,22 +370,47 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
       setPageSize(newSize);
       setCurrentPage(1);
    }, []);
+   // ================================================================================
 
-   // ================================================================================
-   // HANDLERS - MODAL
-   // ================================================================================
-   const handleCloseTabelaTarefa = useCallback(() => {
-      setIsClosing(true);
-      setTimeout(() => {
-         setIsClosing(false);
-         onClose();
-      }, ANIMATION_DURATION);
-   }, [onClose]);
+   const handleUpdateField = useCallback(
+      async (codOs: number, field: string, value: any) => {
+         if (!token) {
+            throw new Error('Token não disponível');
+         }
+
+         const response = await fetch('/api/os/update', {
+            method: 'PATCH',
+            headers: {
+               Authorization: `Bearer ${token}`,
+               'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+               codOs,
+               field,
+               value,
+            }),
+         });
+
+         if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Erro ao atualizar campo');
+         }
+
+         // Invalida o cache para recarregar os dados
+         queryClient.invalidateQueries({ queryKey: ['osData'] });
+
+         return response.json();
+      },
+      [token, queryClient]
+   );
 
    // ================================================================================
    // CONFIGURAÇÃO DA TABELA
    // ================================================================================
-   const colunas = useMemo(() => colunasTabelaTarefa(), []);
+   const colunas = useMemo(
+      () => colunasTabelaOS({ handleUpdateField }),
+      [handleUpdateField]
+   );
 
    const table = useReactTable({
       data: data ?? [],
@@ -508,15 +428,16 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    // ================================================================================
    // VALIDAÇÕES E ESTADOS DE CARREGAMENTO
    // ================================================================================
+
    if (!isOpen) return null;
 
-   if (!user || !token) {
-      return <IsError error={new Error('Usuário não autenticado')} />;
-   }
+   if (isError) return <IsError error={error as Error} />;
 
-   if (isError) {
-      return <IsError error={error as Error} />;
-   }
+   const handleCloseTabelaTarefa = () => {
+      setTimeout(() => {
+         onClose();
+      }, 300);
+   };
 
    // ================================================================================
    // RENDERIZAÇÃO
@@ -526,41 +447,34 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
          {/* OVERLAY */}
          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
 
-         {/* CONTAINER */}
-         <div
-            className={`animate-in slide-in-from-bottom-4 z-10 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl shadow-xl shadow-black transition-all duration-500 ease-out ${
-               isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
-            }`}
-         >
+         {/* MODAL */}
+         <div className="animate-in slide-in-from-bottom-4 z-10 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl shadow-md shadow-black transition-all duration-500 ease-out">
             {/* HEADER */}
             <header className="flex flex-col gap-6 bg-white/50 p-6">
+               {/* HEADER */}
                <div className="flex items-center justify-between gap-8">
                   <div className="flex items-center justify-center gap-6">
                      <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
-                        <FaTasks className="text-black" size={28} />
+                        <GrServices className="text-black" size={28} />
                      </div>
                      <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
-                        Tarefas
+                        Ordens de Serviço
                      </h1>
                   </div>
 
                   <button
                      onClick={handleCloseTabelaTarefa}
-                     aria-label="Fechar modal de tarefas"
-                     className={`group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 ${
-                        isClosing ? 'animate-spin' : ''
-                     }`}
+                     className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95"
                   >
                      <IoClose size={24} />
                   </button>
                </div>
+               {/* ========== */}
 
                {/* FILTROS HEADER */}
                <div className="flex items-center gap-6">
                   <div className="flex w-[800px] items-center">
-                     <FiltrosTabelaTarefa
-                        onFiltersChange={handleFiltersChange}
-                     />
+                     <FiltrosTabelaOS onFiltersChange={handleFiltersChange} />
                   </div>
                   <div className="flex items-center">
                      <FilterControls
@@ -573,12 +487,11 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                   </div>
                </div>
             </header>
-
             {/* ===== TABELA ===== */}
             <main className="h-full w-full overflow-hidden bg-black">
                <div
                   className="h-full overflow-y-auto"
-                  style={{ maxHeight: MODAL_MAX_HEIGHT }}
+                  style={{ maxHeight: 'calc(100vh - 500px)' }}
                >
                   <table className="w-full table-fixed border-collapse">
                      {/* CABEÇALHO DA TABELA */}
@@ -604,7 +517,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                            </tr>
                         ))}
 
-                        {/* ===== FILTROS DA TABELA ===== */}
+                        {/* FILTROS HEADER TABELA */}
                         {showFilters && (
                            <tr>
                               {table.getAllColumns().map(column => (
@@ -615,21 +528,125 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                                        width: getColumnWidth(column.id),
                                     }}
                                  >
-                                    {column.id in FILTER_MAP && (
-                                       <FiltrosHeaderTabelaTarefa
-                                          value={
-                                             FILTER_MAP[
-                                                column.id as keyof typeof FILTER_MAP
-                                             ].state
-                                          }
+                                    {column.id === 'CHAMADO_OS' && (
+                                       <FiltrosHeaderTabelaOs
+                                          value={inputFilterChamadoOs}
                                           onChange={value =>
-                                             FILTER_MAP[
-                                                column.id as keyof typeof FILTER_MAP
-                                             ].setter(String(value))
+                                             setInputFilterChamadoOs(
+                                                String(value)
+                                             )
                                           }
-                                          columnId={column.id}
                                        />
                                     )}
+                                    {/* ===== */}
+                                    {column.id === 'COD_OS' && (
+                                       <FiltrosHeaderTabelaOs
+                                          value={inputFilterCodOs}
+                                          onChange={value =>
+                                             setInputFilterCodOs(String(value))
+                                          }
+                                       />
+                                    )}
+                                    {/* ===== */}
+                                    {column.id === 'DTINI_OS' && (
+                                       <FiltrosHeaderTabelaOs
+                                          value={inputFilterDtiniOs}
+                                          onChange={value =>
+                                             setInputFilterDtiniOs(
+                                                String(value)
+                                             )
+                                          }
+                                          type="text"
+                                       />
+                                    )}
+                                    {/* ===== */}
+                                    {column.id === 'DTINC_OS' && (
+                                       <FiltrosHeaderTabelaOs
+                                          value={inputFilterDtincOs}
+                                          onChange={value =>
+                                             setInputFilterDtincOs(
+                                                String(value)
+                                             )
+                                          }
+                                          type="text"
+                                       />
+                                    )}
+                                    {/* ===== */}
+                                    {column.id === 'COMP_OS' && (
+                                       <FiltrosHeaderTabelaOs
+                                          value={inputFilterCompOs}
+                                          onChange={value =>
+                                             setInputFilterCompOs(String(value))
+                                          }
+                                       />
+                                    )}
+                                    {/* ===== */}
+                                    {column.id === 'NOME_CLIENTE' && (
+                                       <FiltrosHeaderTabelaOs
+                                          value={inputFilterNomeCliente}
+                                          onChange={value =>
+                                             setInputFilterNomeCliente(
+                                                String(value)
+                                             )
+                                          }
+                                       />
+                                    )}
+                                    {/* ===== */}
+                                    {column.id === 'FATURADO_OS' && (
+                                       <FiltrosHeaderTabelaOs
+                                          value={inputFilterFaturadoOs}
+                                          onChange={value =>
+                                             setInputFilterFaturadoOs(
+                                                String(value)
+                                             )
+                                          }
+                                       />
+                                    )}
+                                    {/* ===== */}
+                                    {column.id === 'NOME_RECURSO' && (
+                                       <FiltrosHeaderTabelaOs
+                                          value={inputFilterNomeRecurso}
+                                          onChange={value =>
+                                             setInputFilterNomeRecurso(
+                                                String(value)
+                                             )
+                                          }
+                                       />
+                                    )}
+                                    {/* ===== */}
+                                    {column.id === 'VALID_OS' && (
+                                       <FiltrosHeaderTabelaOs
+                                          value={inputFilterValidOs}
+                                          onChange={value =>
+                                             setInputFilterValidOs(
+                                                String(value)
+                                             )
+                                          }
+                                       />
+                                    )}
+                                    {/* ===== */}
+                                    {column.id === 'TAREFA_COMPLETA' && (
+                                       <FiltrosHeaderTabelaOs
+                                          value={inputFilterTarefaCompleta}
+                                          onChange={value =>
+                                             setInputFilterTarefaCompleta(
+                                                String(value)
+                                             )
+                                          }
+                                       />
+                                    )}
+                                    {/* ===== */}
+                                    {column.id === 'PROJETO_COMPLETO' && (
+                                       <FiltrosHeaderTabelaOs
+                                          value={inputFilterProjetoCompleto}
+                                          onChange={value =>
+                                             setInputFilterProjetoCompleto(
+                                                String(value)
+                                             )
+                                          }
+                                       />
+                                    )}
+                                    {/* ===== */}
                                  </th>
                               ))}
                            </tr>
@@ -646,7 +663,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                                  className={`group transition-all ${
                                     rowIndex % 2 === 0
                                        ? 'bg-slate-800'
-                                       : 'bg-slate-700'
+                                       : 'bg-slate-800'
                                  }`}
                               >
                                  {row.getVisibleCells().map(cell => (
@@ -671,8 +688,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                   </table>
                </div>
             </main>
-
-            {/* PAGINAÇÃO */}
+            {/* PAGINAÇÃO DA API */}
             {paginationInfo && paginationInfo.totalRecords > 0 && (
                <div className="bg-white/70 px-12 py-4">
                   <div className="flex items-center justify-between">
@@ -706,7 +722,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                               }
                               className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none"
                            >
-                              {PAGE_SIZE_OPTIONS.map(size => (
+                              {[20, 50, 100].map(size => (
                                  <option
                                     key={size}
                                     value={size}
@@ -723,7 +739,6 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                            <button
                               onClick={() => handlePageChange(1)}
                               disabled={!paginationInfo.hasPrevPage}
-                              aria-label="Ir para primeira página"
                               className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsLeft
@@ -735,7 +750,6 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                            <button
                               onClick={() => handlePageChange(currentPage - 1)}
                               disabled={!paginationInfo.hasPrevPage}
-                              aria-label="Página anterior"
                               className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronLeft
@@ -752,7 +766,6 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                                     onChange={e =>
                                        handlePageChange(Number(e.target.value))
                                     }
-                                    aria-label="Selecionar página"
                                     className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none"
                                  >
                                     {Array.from(
@@ -779,7 +792,6 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                            <button
                               onClick={() => handlePageChange(currentPage + 1)}
                               disabled={!paginationInfo.hasNextPage}
-                              aria-label="Próxima página"
                               className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronRight
@@ -793,7 +805,6 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                                  handlePageChange(paginationInfo.totalPages)
                               }
                               disabled={!paginationInfo.hasNextPage}
-                              aria-label="Ir para última página"
                               className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsRight
@@ -806,25 +817,49 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                   </div>
                </div>
             )}
-
-            {/* ===== MENSAGEM QUANDO NÃO HÁ TAREFAS ===== */}
-            {data && data.length === 0 && !isLoading && <EmptyState />}
-
-            {/* MENSAGEM QUANDO OS FILTROS NÃO RETORNAM RESULTADOS */}
-            {paginationInfo &&
-               paginationInfo.totalRecords > 0 &&
-               table.getFilteredRowModel().rows.length === 0 && (
-                  <NoResultsState
-                     totalActiveFilters={totalActiveFilters}
-                     clearFilters={clearFilters}
-                  />
+            {/* MENSAGEM QUANDO NÃO HÁ CHAMADOS */}
+            {(!paginationInfo || paginationInfo.totalRecords === 0) &&
+               !isLoading && (
+                  <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-64 text-center">
+                     <FaExclamationTriangle
+                        className="mx-auto text-yellow-500"
+                        size={100}
+                     />
+                     <h3 className="text-3xl font-extrabold tracking-wider text-white italic select-none">
+                        {`Nenhuma OS foi encontrada para o período: ${mes.toString().padStart(2, '0')}/${ano}.`}
+                     </h3>
+                  </div>
                )}
+            {/* MENSAGEM QUANDO OS FILTROS DA TABELA NÃO RETORNAM RESULTADOS */}
+            {paginationInfo &&
+               paginationInfo.totalRecords === 0 &&
+               !isLoading &&
+               totalActiveFilters > 0 && (
+                  <MensagemFiltroNaoEncontrado
+                     filters={{
+                        filterChamadoOs,
+                        filterCodOs,
+                        filterDtiniOs,
+                        filterDtincOs,
+                        filterCompOs,
+                        filterNomeCliente,
+                        filterFaturadoOs,
+                        filterNomeRecurso,
+                        filterValidOs,
+                        filterTarefaCompleta,
+                        filterProjetoCompleto,
+                     }}
+                     clearFilters={clearFilters}
+                     ano={ano}
+                     mes={mes}
+                     dia={dia}
+                  />
+               )}{' '}
          </div>
 
-         {/* LOADING */}
          <IsLoading
             isLoading={isLoading}
-            title={`Buscando Tarefas para o período: ${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${ano}`}
+            title={`Buscando OS's para o período: ${mes.toString().padStart(2, '0')}/${ano}`}
          />
       </div>
    );

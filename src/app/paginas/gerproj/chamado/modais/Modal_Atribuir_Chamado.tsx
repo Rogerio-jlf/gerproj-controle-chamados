@@ -266,7 +266,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
       queryFn: async () => {
          try {
             const response = await fetch(
-               '/api/tabelas/chamado/atribuir-chamado/recursos',
+               '/api/chamado/atribuir-chamado/recursos',
                {
                   headers: { Authorization: `Bearer ${token}` },
                }
@@ -289,7 +289,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
    const { data: clientes = [], isLoading: loadingClientes } = useQuery({
       queryKey: ['clientes'],
       queryFn: async () => {
-         const response = await fetch('/api/clientes', {
+         const response = await fetch('/api/cliente', {
             headers: { Authorization: `Bearer ${token}` },
          });
          if (!response.ok) throw new Error('Erro ao buscar clientes');
@@ -302,7 +302,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
       queryKey: ['sugestao-recurso', novoChamado],
       queryFn: async () => {
          const response = await fetch(
-            '/api/tabelas/chamado/atribuir-chamado/sugestao-recurso',
+            '/api/chamado/atribuir-chamado/sugestao-recurso',
             {
                method: 'POST',
                headers: {
@@ -327,7 +327,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
       queryFn: async () => {
          try {
             const response = await fetch(
-               `/api/tabelas/chamado/atribuir-chamado/recurso/${selectedRecurso}`,
+               `/api/chamado/atribuir-chamado/recurso/${selectedRecurso}`,
                {
                   headers: { Authorization: `Bearer ${token}` },
                }

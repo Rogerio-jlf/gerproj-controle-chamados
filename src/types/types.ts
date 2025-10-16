@@ -112,6 +112,30 @@ export interface TabelaTarefaProps {
    NOME_RECURSO: string;
 }
 // ================================================================================
+export interface TabelaProjetoProps {
+   COD_PROJETO: number;
+   NOME_PROJETO: string;
+   CODCLI_PROJETO: number;
+   RESPCLI_PROJETO: string;
+   PROPOSTA_PROJETO: string | null;
+   CODREC_PROJETO: number;
+   PERC_PROJETO: number;
+   LOGINC_PROJETO: string | null;
+   LOGALT_PROJETO: string | null;
+   QTDHORAS_PROJETO: number;
+   STATUS_PROJETO: 'ATI' | 'ENC';
+   // =====
+   COD_CLIENTE: number;
+   NOME_CLIENTE: string;
+   // =====
+   COD_RECURSO: number;
+   NOME_RECURSO: string;
+   // =====
+   PROJETO_COMPLETO?: string | null;
+   CLIENTE_COMPLETO?: string | null;
+   RECURSO_COMPLETO?: string | null;
+}
+// ================================================================================
 
 export interface TabelaRecursoProps {
    COD_RECURSO: number;

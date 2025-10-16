@@ -4,7 +4,7 @@ import {
    TooltipTrigger,
 } from '../components/ui/tooltip';
 // ================================================================================
-import LogoutButton from './botoes/Button_Logout';
+import LogoutButton from './Button_Logout';
 // ================================================================================
 import { LuRefreshCw } from 'react-icons/lu';
 

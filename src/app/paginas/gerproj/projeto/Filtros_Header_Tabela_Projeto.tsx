@@ -5,8 +5,7 @@
 import { debounce } from 'lodash';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 // ================================================================================
-import { InputFilterTableHeaderProps } from '../../../../../types/types';
-import { normalizeDate } from '../../../../../utils/formatters';
+import { InputFilterTableHeaderProps } from '../../../../types/types';
 // ================================================================================
 import { FaPlus } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
@@ -17,46 +16,31 @@ import { IoClose } from 'react-icons/io5';
 const DEBOUNCE_DELAY = 200;
 
 const SEARCHABLE_COLUMNS = [
-   'TAREFA_COMPLETA',
    'PROJETO_COMPLETO',
-   'NOME_RECURSO',
-   'NOME_CLIENTE',
-   'DTSOL_TAREFA',
-   'DTAPROV_TAREFA',
-   'DTPREVENT_TAREFA',
-   'HREST_TAREFA',
-   'STATUS_TAREFA',
-   'DTINC_TAREFA',
-   'FATURA_TAREFA',
+   'CLIENTE_COMPLETO',
+   'RESPCLI_PROJETO',
+   'RECURSO_COMPLETO',
+   'QTDHORAS_PROJETO',
+   'STATUS_PROJETO',
 ] as const;
 
-const DATE_COLUMNS = [
-   'DTSOL_TAREFA',
-   'DTAPROV_TAREFA',
-   'DTPREVENT_TAREFA',
-   'DTINC_TAREFA',
-] as const;
-
-const NUMERIC_COLUMNS = ['HREST_TAREFA', 'STATUS_TAREFA'] as const;
-const UPPERCASE_COLUMNS = ['FATURA_TAREFA'] as const;
+const NUMERIC_COLUMNS = ['QTDHORAS_PROJETO'] as const;
+const UPPERCASE_COLUMNS = ['STATUS_PROJETO'] as const;
 
 // Limites de caracteres baseados no banco de dados
 export const COLUMN_MAX_LENGTH: Record<string, number> = {
-   COD_TAREFA: 10, // INTEGER
-   NOME_TAREFA: 50, // VARCHAR(50)
-   CODPRO_TAREFA: 10, // INTEGER
-   CODREC_TAREFA: 10, // INTEGER
-   DTSOL_TAREFA: 10, // DATE (formato DD/MM/YYYY)
-   DTAPROV_TAREFA: 10, // DATE
-   DTPREVENT_TAREFA: 10, // DATE
-   HREST_TAREFA: 18, // NUMERIC(15,2)
-   STATUS_TAREFA: 10, // INTEGER
-   DTINC_TAREFA: 10, // DATE
-   FATURA_TAREFA: 3, // CHAR(3)
-   TAREFA_COMPLETA: 15, // Concatenação testada
-   PROJETO_COMPLETO: 15, // Concatenação testada
-   NOME_RECURSO: 30, // Assumindo limite
-   NOME_CLIENTE: 30, // Assumindo limite
+   COD_PROJETO: 10, // INTEGER (máximo ~10 dígitos)
+   NOME_PROJETO: 50, // VARCHAR(50)
+   COD_CLIENTE: 10, // INTEGER (máximo ~10 dígitos)
+   NOME_CLIENTE: 50, // Assumindo mesmo tamanho
+   RESPCLI_PROJETO: 20, // VARCHAR(50)
+   COD_RECURSO: 10, // INTEGER (máximo ~10 dígitos)
+   NOME_RECURSO: 50, // Assumindo mesmo tamanho
+   QTDHORAS_PROJETO: 18, // NUMERIC(15,2) = 15 dígitos + 1 vírgula + 2 decimais
+   STATUS_PROJETO: 3, // CHAR(3)
+   PROJETO_COMPLETO: 15, // Concatenação: código + nome
+   CLIENTE_COMPLETO: 15, // Concatenação: código + nome
+   RECURSO_COMPLETO: 15, // Concatenação: código + nome
 };
 
 // ================================================================================
@@ -92,7 +76,7 @@ const getCellValue = (row: any, columnId: string): string => {
 // ================================================================================
 // COMPONENTE INPUT FILTRO POR COLUNA COM DEBOUNCE E MAXLENGTH
 // ================================================================================
-export const FiltrosHeaderTabelaTarefa = ({
+export const FiltrosHeaderTabelaProjeto = ({
    value,
    onChange,
    placeholder = 'Filtrar...',
@@ -279,16 +263,6 @@ export const useFiltrosHeaderTabelaTarefay = () => {
 
          return SEARCHABLE_COLUMNS.some(colId => {
             const cellValue = getCellValue(row, colId);
-
-            // Para campos de data, usar normalização
-            if (DATE_COLUMNS.includes(colId as any)) {
-               const dateFormats = normalizeDate(cellValue);
-               return dateFormats.some(dateFormat =>
-                  dateFormat.toLowerCase().includes(searchValue)
-               );
-            }
-
-            // Para outros campos, busca normal
             const cellString = cellValue.toLowerCase();
             return cellString.includes(searchValue);
          });
@@ -303,22 +277,14 @@ export const useFiltrosHeaderTabelaTarefay = () => {
          const cellValue = getCellValue(row, columnId);
          const filterString = String(filterValue).trim();
 
-         // Tratamento especial para campos de data
-         if (DATE_COLUMNS.includes(columnId as any)) {
-            const dateFormats = normalizeDate(cellValue);
-            return dateFormats.some(dateFormat =>
-               dateFormat.toLowerCase().includes(filterString.toLowerCase())
-            );
-         }
-
-         // Tratamento para colunas uppercase (FATURA_TAREFA)
+         // Tratamento para colunas uppercase (com remoção de acentos)
          if (UPPERCASE_COLUMNS.includes(columnId as any)) {
             const normalizedCell = normalizeString(cellValue);
             const normalizedFilter = normalizeString(filterString);
             return normalizedCell.includes(normalizedFilter);
          }
 
-         // Tratamento para colunas numéricas
+         // Tratamento para colunas numéricas (sem conversão para lowercase)
          if (NUMERIC_COLUMNS.includes(columnId as any)) {
             return cellValue.includes(filterString);
          }

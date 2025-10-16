@@ -18,12 +18,12 @@ import {
    FilterInputTableHeaderDebounce,
    FilterControls,
 } from './filtros/Filtros_Header_Tabela_Chamado';
-import { IsError } from '../components/IsError';
-import { IsLoading } from '../components/IsLoading';
-import { TabelaOS } from '../ordem-servico/Tabela_OS';
-import { SessionExpired } from '../components/IsExpired';
+import { IsError } from '../../../../components/IsError';
+import { IsLoading } from '../../../../components/IsLoading';
+import { TabelaOS } from '../os/Tabela_OS';
+import { SessionExpired } from '../../../../components/IsExpired';
 import { TabelaTarefas } from '../tarefas/Tabela_Tarefa';
-import { RelatorioOS } from '../ordem-servico/Relatorio_OS';
+import { RelatorioOS } from '../os/Relatorio_OS';
 import { colunasTabelaChamados } from './Colunas_Tabela_Chamado';
 import { formatarCodNumber } from '../../../../utils/formatters';
 import { DropdownTabelaChamado } from './Dropdown_Tabela_Chamado';
@@ -43,6 +43,8 @@ import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
+import { ModalPermitirRetroativoOsChamado } from './modais/Modal_Permitir_OS_Retroativa_Chamado';
+import { TabelaProjeto } from '../projeto/Tabela_Projeto';
 
 // ================================================================================
 // INTERFACES
@@ -150,6 +152,7 @@ function TabelaChamadoContent() {
       | 'os'
       | 'tarefas'
       | 'relatorio'
+      | 'projetos'
       | null;
 
    // ================================================================================
@@ -157,9 +160,12 @@ function TabelaChamadoContent() {
    // ================================================================================
    const [openTabelaTarefa, setOpenTabelaTarefa] = useState(false);
    const [openTabelaOs, setOpenTabelaOs] = useState(false);
+   const [openTabelaProjeto, setOpenTabelaProjeto] = useState(false);
    const [OpenModalVizualizarChamado, setOpenModalVizualizarChamado] =
       useState(false);
    const [openModalAtribuirChamado, setOpenModalAtribuirChamado] =
+      useState(false);
+   const [openModalPermitirOsRetroativa, setOpenModalPermitirOsRetroativa] =
       useState(false);
    const [selectedChamado, setSelectedChamado] =
       useState<TabelaChamadoProps | null>(null);
@@ -167,6 +173,8 @@ function TabelaChamadoContent() {
       useState<TabelaChamadoProps | null>(null);
    const [selectedCodChamadoParaExcluir, setSelectedCodChamadoParaExcluir] =
       useState<number | null>(null);
+   const [selectedChamadoParaRetroativa, setSelectedChamadoParaRetroativa] =
+      useState<TabelaChamadoProps | null>(null);
 
    // ================================================================================
    // COMPUTED VALUES - FILTROS
@@ -265,7 +273,7 @@ function TabelaChamadoContent() {
       params: URLSearchParams,
       token: string
    ): Promise<ApiResponse> {
-      const res = await fetch(`/api/tabelas/chamado/tabela-chamado?${params}`, {
+      const res = await fetch(`/api/chamado/tabela-chamado?${params}`, {
          headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -328,7 +336,7 @@ function TabelaChamadoContent() {
    // HANDLERS - NAVEGAÇÃO COM ROUTER
    // ================================================================================
    const handleOpenView = useCallback(
-      (view: 'os' | 'tarefas' | 'relatorio') => {
+      (view: 'os' | 'tarefas' | 'relatorio' | 'projetos') => {
          router.push(`?modal=${view}`, { scroll: false });
       },
       [router]
@@ -358,7 +366,7 @@ function TabelaChamadoContent() {
       (newFilters: {
          ano: number | 'todos';
          mes: number | 'todos';
-         dia: number | 'todos'; // ✅ Adicione o tipo do dia
+         dia: number | 'todos';
       }) => {
          setFilters(prevFilters => ({
             ...prevFilters,
@@ -381,19 +389,31 @@ function TabelaChamadoContent() {
    }, []);
 
    // ================================================================================
-   // HANDLERS - MODAIS (CHAMADO)
+   // HANDLERS - MODAIS
    // ================================================================================
-   const handleCloseModalVisualizarChamado = useCallback(() => {
-      setOpenModalVizualizarChamado(false);
-      setSelectedChamado(null);
-   }, []);
-
-   const handleVisualizarChamado = useCallback(
+   const handleOpenModalVisualizarChamado = useCallback(
       (codChamado: number) => {
          const chamado = data?.find(c => c.COD_CHAMADO === codChamado);
          if (chamado) {
             setSelectedChamado(chamado);
             setOpenModalVizualizarChamado(true);
+         }
+      },
+      [data]
+   );
+   // ==========
+   const handleCloseModalVisualizarChamado = useCallback(() => {
+      setOpenModalVizualizarChamado(false);
+      setSelectedChamado(null);
+   }, []);
+   // ====================
+
+   const handleOpenModalPermitirOsRetroativa = useCallback(
+      (codChamado: number) => {
+         const chamado = data?.find(c => c.COD_CHAMADO === codChamado);
+         if (chamado) {
+            setSelectedChamadoParaRetroativa(chamado);
+            setOpenModalPermitirOsRetroativa(true);
          }
       },
       [data]
@@ -479,24 +499,20 @@ function TabelaChamadoContent() {
    // ================================================================================
    const colunas = useMemo(
       () =>
-         colunasTabelaChamados(
-            {
-               onVisualizarChamado: handleVisualizarChamado,
-               onVisualizarOS: () => setOpenTabelaOs(true),
-               onVisualizarTarefa: () => setOpenTabelaTarefa(true),
-               onAtribuicaoInteligente: handleOpenModalAtribuirChamado,
-               onUpdateStatus: updateStatus,
-               onExcluirChamado: handleOpenModalExcluirChamado,
-               userType: user?.tipo,
-            },
-            user?.tipo
-         ),
+         colunasTabelaChamados({
+            onTabelaOS: () => setOpenTabelaOs(true),
+            onTabelaTarefa: () => setOpenTabelaTarefa(true),
+            onTabelaProjeto: () => setOpenTabelaProjeto(true),
+            onVisualizarChamado: handleOpenModalVisualizarChamado,
+            onAtribuirChamado: handleOpenModalAtribuirChamado,
+            onExcluirChamado: handleOpenModalExcluirChamado,
+            onPermitirRetroativa: handleOpenModalPermitirOsRetroativa,
+         }),
       [
-         handleVisualizarChamado,
+         handleOpenModalVisualizarChamado,
          handleOpenModalAtribuirChamado,
-         updateStatus,
          handleOpenModalExcluirChamado,
-         user?.tipo,
+         handleOpenModalPermitirOsRetroativa,
       ]
    );
 
@@ -555,6 +571,9 @@ function TabelaChamadoContent() {
                               onOpenTabelaOS={() => handleOpenView('os')}
                               onOpenTabelaTarefa={() =>
                                  handleOpenView('tarefas')
+                              }
+                              onOpenTabelaProjeto={() =>
+                                 handleOpenView('projetos')
                               }
                               onOpenRelatorioOS={() =>
                                  handleOpenView('relatorio')
@@ -937,6 +956,11 @@ function TabelaChamadoContent() {
             <RelatorioOS isOpen={true} onClose={handleCloseView} />
          )}
 
+         {/* VIEW DROPDOWN DO RELATÓRIO DE PROJETOS */}
+         {activeView === 'projetos' && (
+            <TabelaProjeto isOpen={true} onClose={handleCloseView} />
+         )}
+
          {/* TABELA OS */}
          <TabelaOS
             isOpen={openTabelaOs}
@@ -947,6 +971,12 @@ function TabelaChamadoContent() {
          <TabelaTarefas
             isOpen={openTabelaTarefa}
             onClose={() => setOpenTabelaTarefa(false)}
+         />
+
+         {/* TABELA PROJETOS */}
+         <TabelaProjeto
+            isOpen={openTabelaProjeto}
+            onClose={() => setOpenTabelaProjeto(false)}
          />
 
          {/* MODAL VISUALIZAR CHAMADO */}
@@ -969,6 +999,18 @@ function TabelaChamadoContent() {
             onClose={handleCloseModalExcluirChamado}
             codChamado={selectedCodChamadoParaExcluir}
             onSuccess={handleExcluirChamadoSuccess}
+         />
+
+         {/* MODAL PERMITIR OS RETROATIVA */}
+         <ModalPermitirRetroativoOsChamado
+            isOpen={openModalPermitirOsRetroativa}
+            onClose={() => setOpenModalPermitirOsRetroativa(false)}
+            chamadoId={
+               selectedChamadoParaRetroativa
+                  ? String(selectedChamadoParaRetroativa.COD_CHAMADO)
+                  : ''
+            }
+            currentUserId={''}
          />
 
          {/* LOADING */}

@@ -15,35 +15,32 @@ import { FaEye } from 'react-icons/fa6';
 import { IoClose } from 'react-icons/io5';
 import { FaUserCheck } from 'react-icons/fa';
 import { RiDeleteBin6Fill } from 'react-icons/ri';
+import { HiPhoneMissedCall } from 'react-icons/hi';
 import { HiMiniSquaresPlus } from 'react-icons/hi2';
 
 // ================================================================================
 // INTERFACES
 // ================================================================================
-interface AcoesTabelaChamadosProps {
+interface AcoesTabelaChamadoProps {
    onVisualizarChamado: (codChamado: number) => void;
-   onVisualizarOS: () => void;
-   onVisualizarTarefa: () => void;
-   onAtribuicaoInteligente: (chamado: TabelaChamadoProps) => void;
-   onUpdateStatus?: (
-      codChamado: number,
-      newStatus: string,
-      codClassificacao?: number,
-      codTarefa?: number
-   ) => Promise<void>;
+   onTabelaOS: () => void;
+   onTabelaTarefa: () => void;
+   onTabelaProjeto: () => void;
+   onAtribuirChamado: (chamado: TabelaChamadoProps) => void;
    onExcluirChamado: (codChamado: number) => void;
+   onPermitirRetroativa: (codChamado: number) => void;
    userType?: string;
 }
 
-interface DropdownMenuProps {
+interface DropdownTabelaChamadoProps {
    chamado: TabelaChamadoProps;
-   acoes: AcoesTabelaChamadosProps;
+   acoes: AcoesTabelaChamadoProps;
 }
 
 // ================================================================================
 // BOTÃO MENU CIRCULAR - HORIZONTAL À ESQUERDA
 // ================================================================================
-const BotaoMenuCircular = ({ chamado, acoes }: DropdownMenuProps) => {
+const BotaoMenuCircular = ({ chamado, acoes }: DropdownTabelaChamadoProps) => {
    const [isOpen, setIsOpen] = useState(false);
    const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
    const [hoveredButton, setHoveredButton] = useState<number | null>(null);
@@ -75,39 +72,48 @@ const BotaoMenuCircular = ({ chamado, acoes }: DropdownMenuProps) => {
          hoverShadow: 'hover:shadow-blue-400/60',
          ringColor: 'hover:ring-blue-300/40',
       },
-      // Botão de atribuição - só incluir se for ADM
-      ...(acoes.userType === 'ADM'
-         ? [
-              {
-                 icon: FaUserCheck,
-                 onClick: () => {
-                    acoes.onAtribuicaoInteligente?.(chamado);
-                    setIsOpen(false);
-                 },
-                 tooltip: 'Atribuir Chamado',
-                 bgGradient: 'from-pink-500 to-pink-600',
-                 hoverGradient: 'from-pink-600 to-pink-700',
-                 iconColor: 'text-white',
-                 shadowColor: 'shadow-pink-300/50',
-                 hoverShadow: 'hover:shadow-pink-400/60',
-                 ringColor: 'hover:ring-pink-300/40',
-              },
-              {
-                 icon: RiDeleteBin6Fill,
-                 onClick: () => {
-                    acoes.onExcluirChamado(chamado.COD_CHAMADO);
-                    setIsOpen(false);
-                 },
-                 tooltip: 'Excluir Chamado',
-                 bgGradient: 'from-red-500 to-red-600',
-                 hoverGradient: 'from-red-600 to-red-700',
-                 iconColor: 'text-white',
-                 shadowColor: 'shadow-red-300/50',
-                 hoverShadow: 'hover:shadow-red-400/60',
-                 ringColor: 'hover:ring-red-300/40',
-              },
-           ]
-         : []),
+      {
+         icon: FaUserCheck,
+         onClick: () => {
+            acoes.onAtribuirChamado?.(chamado);
+            setIsOpen(false);
+         },
+         tooltip: 'Atribuir Chamado',
+         bgGradient: 'from-pink-500 to-pink-600',
+         hoverGradient: 'from-pink-600 to-pink-700',
+         iconColor: 'text-white',
+         shadowColor: 'shadow-pink-300/50',
+         hoverShadow: 'hover:shadow-pink-400/60',
+         ringColor: 'hover:ring-pink-300/40',
+      },
+      {
+         icon: RiDeleteBin6Fill,
+         onClick: () => {
+            acoes.onExcluirChamado(chamado.COD_CHAMADO);
+            setIsOpen(false);
+         },
+         tooltip: 'Excluir Chamado',
+         bgGradient: 'from-red-500 to-red-600',
+         hoverGradient: 'from-red-600 to-red-700',
+         iconColor: 'text-white',
+         shadowColor: 'shadow-red-300/50',
+         hoverShadow: 'hover:shadow-red-400/60',
+         ringColor: 'hover:ring-red-300/40',
+      },
+      {
+         icon: HiPhoneMissedCall,
+         onClick: () => {
+            acoes.onPermitirRetroativa(chamado.COD_CHAMADO);
+            setIsOpen(false);
+         },
+         tooltip: 'Permitir OS Retroativa',
+         bgGradient: 'from-green-500 to-green-600',
+         hoverGradient: 'from-green-600 to-green-700',
+         iconColor: 'text-white',
+         shadowColor: 'shadow-green-300/50',
+         hoverShadow: 'hover:shadow-green-400/60',
+         ringColor: 'hover:ring-green-300/40',
+      },
    ];
 
    const actionButtons = allActionButtons;
@@ -256,7 +262,7 @@ const BotaoMenuCircular = ({ chamado, acoes }: DropdownMenuProps) => {
 // COMPONENTE PRINCIPAL
 // ================================================================================
 export const colunasTabelaChamados = (
-   acoes: AcoesTabelaChamadosProps,
+   acoes: AcoesTabelaChamadoProps,
    userType?: string
 ): ColumnDef<TabelaChamadoProps>[] => {
    // Array base de colunas

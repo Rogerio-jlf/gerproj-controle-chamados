@@ -4,6 +4,7 @@ import { GrServices } from 'react-icons/gr';
 import { FaTasks, FaChartBar } from 'react-icons/fa';
 import { MdArrowDropDown } from 'react-icons/md';
 import { BiSolidReport } from 'react-icons/bi';
+import { FaDiagramProject } from 'react-icons/fa6';
 import {
    AiOutlineBarChart,
    AiOutlinePieChart,
@@ -33,8 +34,9 @@ interface DropdownOption {
 
 interface DropdownHeaderProps {
    onOpenTabelaOS: () => void;
-   onOpenTabelaTarefa: () => void;
    onOpenRelatorioOS: () => void;
+   onOpenTabelaTarefa: () => void;
+   onOpenTabelaProjeto: () => void;
 }
 
 // ================================================================================
@@ -42,8 +44,9 @@ interface DropdownHeaderProps {
 // ================================================================================
 export function DropdownTabelaChamado({
    onOpenTabelaOS,
-   onOpenTabelaTarefa,
    onOpenRelatorioOS,
+   onOpenTabelaTarefa,
+   onOpenTabelaProjeto,
 }: DropdownHeaderProps) {
    const [isOpen, setIsOpen] = useState(false);
    const [hoveredOption, setHoveredOption] = useState<string | null>(null);
@@ -137,6 +140,19 @@ export function DropdownTabelaChamado({
             setActiveSubMenu(null);
          },
          bg: 'orange-600',
+         iconColor: 'text-white',
+      },
+      {
+         id: 'tabela-projetos',
+         label: 'Projetos',
+         icon: FaDiagramProject,
+         description: 'Gerenciamento de Projetos',
+         action: () => {
+            onOpenTabelaProjeto();
+            setIsOpen(false);
+            setActiveSubMenu(null);
+         },
+         bg: 'purple-600',
          iconColor: 'text-white',
       },
       {
@@ -250,7 +266,9 @@ export function DropdownTabelaChamado({
                                                   ? 'bg-orange-600'
                                                   : option.bg === 'blue-600'
                                                     ? 'bg-blue-600'
-                                                    : ''
+                                                    : option.bg === 'purple-600'
+                                                      ? 'bg-purple-600'
+                                                      : 'bg-gray-600'
                                           }`}
                                        >
                                           <option.icon

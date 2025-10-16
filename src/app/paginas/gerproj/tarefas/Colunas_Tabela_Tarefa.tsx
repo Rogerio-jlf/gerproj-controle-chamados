@@ -1,10 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table';
-// ================================================================================
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from '../../../../components/ui/tooltip';
+import { useMemo } from 'react';
 // ================================================================================
 import { TabelaTarefaProps } from '../../../../types/types';
 // ================================================================================
@@ -12,373 +7,283 @@ import {
    formatarDataParaBR,
    formatarHorasTotaisHorasDecimais,
 } from '../../../../utils/formatters';
-// ================================================================================
-import { GrServices } from 'react-icons/gr';
-import { FaDownload, FaPhoneAlt, FaHandPointUp } from 'react-icons/fa';
 
 // ================================================================================
-// INTERFACES
+// CONSTANTES
 // ================================================================================
-interface BotoesAcaoProps {
-   openTabelaOSTarefa?: (codTarefa: number) => void;
-   openTabelaChamadosTarefa?: (codTarefa: number) => void;
-   openModalApontamentoOSTarefa?: (tarefa: TabelaTarefaProps) => void;
+const STATUS_TAREFA_CONFIG = {
+   0: {
+      label: 'PENDENTE',
+      bgColor: 'bg-yellow-500',
+      textColor: 'text-black',
+   },
+   1: {
+      label: 'EM ANDAMENTO',
+      bgColor: 'bg-blue-600',
+      textColor: 'text-white',
+   },
+   2: {
+      label: 'CONCLUÍDO',
+      bgColor: 'bg-green-600',
+      textColor: 'text-white',
+   },
+   3: {
+      label: 'CANCELADO',
+      bgColor: 'bg-red-600',
+      textColor: 'text-white',
+   },
+   DEFAULT: {
+      label: 'N/A',
+      bgColor: 'bg-gray-400',
+      textColor: 'text-white',
+   },
+} as const;
+
+const FATURA_CONFIG = {
+   SIM: {
+      label: 'SIM',
+      bgColor: 'bg-blue-600',
+      textColor: 'text-white',
+   },
+   NAO: {
+      label: 'NÃO',
+      bgColor: 'bg-red-600',
+      textColor: 'text-white',
+   },
+   DEFAULT: {
+      label: 'N/A',
+      bgColor: 'bg-gray-400',
+      textColor: 'text-white',
+   },
+} as const;
+
+const EMPTY_VALUE = '-----';
+
+// ================================================================================
+// COMPONENTES AUXILIARES REUTILIZÁVEIS
+// ================================================================================
+
+/**
+ * Componente genérico para células de texto
+ */
+interface CellTextProps {
+   value: string | null | undefined;
+   maxWords?: number;
+   align?: 'left' | 'center';
 }
 
+const CellText = ({ value, maxWords, align = 'left' }: CellTextProps) => {
+   const isEmpty = !value || value.trim() === '';
+
+   const processedValue = useMemo(() => {
+      if (isEmpty) return null;
+
+      // Limita a quantidade de palavras se especificado
+      if (maxWords && maxWords > 0) {
+         return value.split(' ').slice(0, maxWords).join(' ');
+      }
+
+      return value;
+   }, [value, maxWords, isEmpty]);
+
+   const alignClass =
+      align === 'center'
+         ? 'justify-center text-center'
+         : 'justify-start pl-2 text-left';
+
+   return (
+      <div
+         className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
+      >
+         {isEmpty ? (
+            EMPTY_VALUE
+         ) : (
+            <span className="block w-full truncate" title={value}>
+               {processedValue}
+            </span>
+         )}
+      </div>
+   );
+};
+
+/**
+ * Componente para célula de data formatada
+ */
+interface CellDateProps {
+   value: string | null | undefined;
+}
+
+const CellDate = ({ value }: CellDateProps) => {
+   const formattedDate = useMemo(() => {
+      if (!value) return null;
+      return formatarDataParaBR(value);
+   }, [value]);
+
+   return (
+      <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
+         {formattedDate || EMPTY_VALUE}
+      </div>
+   );
+};
+
+/**
+ * Componente para célula de horas
+ */
+interface CellHoursProps {
+   value: number | string | null | undefined;
+}
+
+const CellHours = ({ value }: CellHoursProps) => {
+   const formattedHours = useMemo(() => {
+      if (!value) return null;
+      return formatarHorasTotaisHorasDecimais(value);
+   }, [value]);
+
+   return (
+      <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
+         {formattedHours ? `${formattedHours}h` : EMPTY_VALUE}
+      </div>
+   );
+};
+
+/**
+ * Componente para célula de status da tarefa
+ */
+interface CellStatusTarefaProps {
+   value: number | null | undefined;
+}
+
+const CellStatusTarefa = ({ value }: CellStatusTarefaProps) => {
+   const status = value as keyof typeof STATUS_TAREFA_CONFIG;
+   const config = STATUS_TAREFA_CONFIG[status] || STATUS_TAREFA_CONFIG.DEFAULT;
+
+   return (
+      <div
+         className={`flex items-center justify-center rounded-md p-2 text-center font-bold ${config.bgColor} ${config.textColor}`}
+         title={config.label}
+      >
+         {value !== null && value !== undefined ? value : EMPTY_VALUE}
+      </div>
+   );
+};
+
+/**
+ * Componente para célula de fatura
+ */
+interface CellFaturaProps {
+   value: string | null | undefined;
+}
+
+const CellFatura = ({ value }: CellFaturaProps) => {
+   const valueUpper = value?.toUpperCase().trim() as keyof typeof FATURA_CONFIG;
+   const config = FATURA_CONFIG[valueUpper] || FATURA_CONFIG.DEFAULT;
+
+   return (
+      <div
+         className={`flex items-center justify-center rounded-md p-2 text-center font-bold ${config.bgColor} ${config.textColor}`}
+         title={config.label}
+      >
+         {valueUpper || EMPTY_VALUE}
+      </div>
+   );
+};
+
+/**
+ * Componente para cabeçalho centralizado
+ */
+const HeaderCenter = ({ children }: { children: React.ReactNode }) => (
+   <div className="text-center">{children}</div>
+);
+
 // ================================================================================
-// COMPONENTE PRINCIPAL
+// DEFINIÇÃO DAS COLUNAS
 // ================================================================================
-export const colunasTabelaTarefa = (
-   props?: BotoesAcaoProps
-): ColumnDef<TabelaTarefaProps>[] => [
+export const colunasTabelaTarefa = (): ColumnDef<TabelaTarefaProps>[] => [
    // Tarefa completa
    {
       accessorKey: 'TAREFA_COMPLETA',
-      header: () => <div className="text-center">Tarefa</div>,
-      cell: ({ getValue }) => {
-         const value = getValue() as string;
-         const isEmpty = !value;
-         return (
-            <div
-               className={`flex items-center rounded-md bg-black p-2 text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-2 text-left'}`}
-            >
-               {isEmpty ? (
-                  '-----'
-               ) : (
-                  <span className="block w-full truncate">{value}</span>
-               )}
-            </div>
-         );
-      },
+      header: () => <HeaderCenter>Tarefa</HeaderCenter>,
+      cell: ({ getValue }) => <CellText value={getValue() as string} />,
    },
-   // ==========
 
    // Projeto completo
    {
       accessorKey: 'PROJETO_COMPLETO',
-      header: () => <div className="text-center">Projeto</div>,
-      cell: ({ getValue }) => {
-         const value = getValue() as string;
-         const isEmpty = !value;
-         return (
-            <div
-               className={`flex items-center rounded-md bg-black p-2 text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-2 text-left'}`}
-            >
-               {isEmpty ? (
-                  '-----'
-               ) : (
-                  <span className="block w-full truncate">{value}</span>
-               )}
-            </div>
-         );
-      },
+      header: () => <HeaderCenter>Projeto</HeaderCenter>,
+      cell: ({ getValue }) => <CellText value={getValue() as string} />,
    },
-   // ==========
 
-   // Nome do recurso
+   // Nome do recurso (Consultor)
    {
       accessorKey: 'NOME_RECURSO',
-      header: () => <div className="text-center">Consultor</div>,
-      cell: ({ getValue }) => {
-         const value = getValue() as string;
-         const isEmpty = !value;
-         // Mostra apenas os dois primeiros nomes
-         const nomes = value?.split(' ').slice(0, 2).join(' ');
-         return (
-            <div
-               className={`flex items-center rounded-md bg-black p-2 text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-2 text-left'}`}
-            >
-               {isEmpty ? (
-                  '-----'
-               ) : (
-                  <span className="block w-full truncate">{nomes}</span>
-               )}
-            </div>
-         );
-      },
+      header: () => <HeaderCenter>Consultor</HeaderCenter>,
+      cell: ({ getValue }) => (
+         <CellText value={getValue() as string} maxWords={2} />
+      ),
    },
-   // ==========
 
    // Nome do cliente
    {
       accessorKey: 'NOME_CLIENTE',
-      header: () => <div className="text-center">Cliente</div>,
-      cell: ({ getValue }) => {
-         const value = getValue() as string;
-         const isEmpty = !value;
-         const nomes = value?.split(' ').slice(0, 2).join(' ');
-
-         return (
-            <div
-               className={`flex items-center rounded-md bg-black p-2 text-white ${isEmpty ? 'justify-center text-center' : 'justify-start pl-2 text-left'}`}
-            >
-               {isEmpty ? (
-                  '-----'
-               ) : (
-                  <span className="block w-full truncate">{nomes}</span>
-               )}
-            </div>
-         );
-      },
+      header: () => <HeaderCenter>Cliente</HeaderCenter>,
+      cell: ({ getValue }) => (
+         <CellText value={getValue() as string} maxWords={2} />
+      ),
    },
-   // ==========
 
    // Data de solicitação
    {
       accessorKey: 'DTSOL_TAREFA',
-      header: () => <div className="text-center">Data Solicitação</div>,
-      cell: ({ getValue }) => {
-         const value = getValue() as string;
-         const dataFormatada = formatarDataParaBR(value);
-
-         return (
-            <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-               {dataFormatada || '-----'}
-            </div>
-         );
-      },
+      header: () => <HeaderCenter>Data Solicitação</HeaderCenter>,
+      cell: ({ getValue }) => <CellDate value={getValue() as string} />,
    },
-   // ==========
 
    // Data de aprovação
    {
       accessorKey: 'DTAPROV_TAREFA',
-      header: () => <div className="text-center">Data Aprovação</div>,
-      cell: ({ getValue }) => {
-         const value = getValue() as string;
-         const dataFormatada = formatarDataParaBR(value);
-
-         return (
-            <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-               {dataFormatada || '-----'}
-            </div>
-         );
-      },
+      header: () => <HeaderCenter>Data Aprovação</HeaderCenter>,
+      cell: ({ getValue }) => <CellDate value={getValue() as string} />,
    },
-   // ==========
 
    // Data de prevenção
    {
       accessorKey: 'DTPREVENT_TAREFA',
-      header: () => <div className="text-center">Data Prevenção</div>,
-      cell: ({ getValue }) => {
-         const value = getValue() as string;
-         const dataFormatada = formatarDataParaBR(value);
-
-         return (
-            <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-               {dataFormatada || '-----'}
-            </div>
-         );
-      },
+      header: () => <HeaderCenter>Data Prevenção</HeaderCenter>,
+      cell: ({ getValue }) => <CellDate value={getValue() as string} />,
    },
-   // ==========
 
    // Horas estipuladas
    {
       accessorKey: 'HREST_TAREFA',
-      header: () => <div className="text-center">Hora Estipulada</div>,
-      cell: ({ getValue }) => {
-         const value = getValue() as number;
-         const tempoFormatado = formatarHorasTotaisHorasDecimais(value);
-
-         return (
-            <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-               {tempoFormatado || '-----'}h
-            </div>
-         );
-      },
+      header: () => <HeaderCenter>Hora Estipulada</HeaderCenter>,
+      cell: ({ getValue }) => <CellHours value={getValue() as number} />,
    },
-   // ==========
 
-   // Status
+   // Status da tarefa
    {
       accessorKey: 'STATUS_TAREFA',
-      header: () => <div className="text-center">Status</div>,
-      cell: ({ getValue }) => {
-         const value = getValue() as number;
-
-         return (
-            <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-               {value || '-----'}
-            </div>
-         );
-      },
+      header: () => <HeaderCenter>Status</HeaderCenter>,
+      cell: ({ getValue }) => <CellStatusTarefa value={getValue() as number} />,
    },
-   // ==========
 
    // Data de inclusão
    {
       accessorKey: 'DTINC_TAREFA',
-      header: () => <div className="text-center">Data Inclusão</div>,
-      cell: ({ getValue }) => {
-         const value = getValue() as string;
-         const dataFormatada = formatarDataParaBR(value);
-
-         return (
-            <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-               {dataFormatada || '-----'}
-            </div>
-         );
-      },
+      header: () => <HeaderCenter>Data Inclusão</HeaderCenter>,
+      cell: ({ getValue }) => <CellDate value={getValue() as string} />,
    },
-   // ==========
 
    // Fatura tarefa
    {
       accessorKey: 'FATURA_TAREFA',
-      header: () => <div className="text-center">Fatura</div>,
-      cell: ({ getValue }) => {
-         const value = getValue() as string;
-
-         // Se não tem função de update, renderiza como antes (somente leitura)
-         const valueUpper = value?.toUpperCase();
-         let bgColor = 'bg-gray-400';
-         if (valueUpper === 'SIM') bgColor = 'bg-blue-600 text-white';
-         else if (valueUpper === 'NAO') bgColor = 'bg-red-600 text-white';
-
-         return (
-            <div
-               className={`flex items-center ${bgColor} justify-center rounded-md p-2 text-center`}
-            >
-               {valueUpper || '-----'}
-            </div>
-         );
-      },
+      header: () => <HeaderCenter>Fatura</HeaderCenter>,
+      cell: ({ getValue }) => <CellFatura value={getValue() as string} />,
    },
-   // ==========
-
-   // Botões de ação
-   // {
-   //    id: 'actions',
-   //    header: () => <div className="text-center">Ações</div>,
-   //    cell: ({ row }) => {
-   //       const tarefa = row.original;
-
-   //       const handleDownload = () => {
-   //          const blob = new Blob([JSON.stringify(tarefa, null, 2)], {
-   //             type: 'application/json',
-   //          });
-   //          const url = URL.createObjectURL(blob);
-   //          const a = document.createElement('a');
-   //          a.href = url;
-   //          a.download = `tarefa_${tarefa.COD_TAREFA}.json`;
-   //          a.click();
-   //          URL.revokeObjectURL(url);
-   //       };
-   //       // =====
-
-   //       const handleOpenTabelaOSTarefa = () => {
-   //          if (props?.openTabelaOSTarefa) {
-   //             props.openTabelaOSTarefa(tarefa.COD_TAREFA);
-   //          }
-   //       };
-   //       // =====
-
-   //       const handleOpenTabelaChamadosTarefa = () => {
-   //          if (props?.openTabelaChamadosTarefa) {
-   //             props.openTabelaChamadosTarefa(tarefa.COD_TAREFA);
-   //          }
-   //       };
-   //       // =====
-
-   //       const handleOpenModalApontamentoOSTarefa = () => {
-   //          if (props?.openModalApontamentoOSTarefa) {
-   //             props.openModalApontamentoOSTarefa(tarefa);
-   //          }
-   //       };
-   //       // =====
-
-   //       // ================================================================================
-   //       // RENDERIZAÇÃO
-   //       // ================================================================================
-   //       return (
-   //          <div className="flex items-center justify-center gap-4">
-   //             {/* Botão download */}
-   //             <Tooltip>
-   //                <TooltipTrigger asChild>
-   //                   <button
-   //                      onClick={handleDownload}
-   //                      className="cursor-pointer transition-all hover:scale-125 active:scale-95"
-   //                   >
-   //                      <FaDownload size={24} />
-   //                   </button>
-   //                </TooltipTrigger>
-   //                <TooltipContent
-   //                   side="left"
-   //                   align="end"
-   //                   sideOffset={8}
-   //                   className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
-   //                >
-   //                   Baixar Arquivos
-   //                </TooltipContent>
-   //             </Tooltip>
-   //             {/* ========== */}
-
-   //             {/* Botão visualizar OS */}
-   //             <Tooltip>
-   //                <TooltipTrigger asChild>
-   //                   <button
-   //                      onClick={handleOpenTabelaOSTarefa}
-   //                      className="cursor-pointer transition-all hover:scale-125 active:scale-95"
-   //                   >
-   //                      <GrServices size={24} />
-   //                   </button>
-   //                </TooltipTrigger>
-   //                <TooltipContent
-   //                   side="left"
-   //                   align="center"
-   //                   sideOffset={8}
-   //                   className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
-   //                >
-   //                   Visualizar OS's
-   //                </TooltipContent>
-   //             </Tooltip>
-   //             {/* ========== */}
-
-   //             {/* Botão visualizar chamados */}
-   //             <Tooltip>
-   //                <TooltipTrigger asChild>
-   //                   <button
-   //                      onClick={handleOpenTabelaChamadosTarefa}
-   //                      className="cursor-pointer transition-all hover:scale-125 active:scale-95"
-   //                   >
-   //                      <FaPhoneAlt size={24} />
-   //                   </button>
-   //                </TooltipTrigger>
-   //                <TooltipContent
-   //                   side="left"
-   //                   align="end"
-   //                   sideOffset={8}
-   //                   className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
-   //                >
-   //                   Visualizar Chamados
-   //                </TooltipContent>
-   //             </Tooltip>
-   //             {/* ========== */}
-
-   //             {/* Botão apontamento */}
-   //             <Tooltip>
-   //                <TooltipTrigger asChild>
-   //                   <button
-   //                      onClick={handleOpenModalApontamentoOSTarefa}
-   //                      className="cursor-pointer transition-all hover:scale-125 active:scale-95"
-   //                   >
-   //                      <FaHandPointUp size={24} />
-   //                   </button>
-   //                </TooltipTrigger>
-   //                <TooltipContent
-   //                   side="left"
-   //                   align="end"
-   //                   sideOffset={8}
-   //                   className="border-t-4 border-blue-600 bg-white text-sm font-semibold tracking-wider text-black shadow-lg shadow-black select-none"
-   //                >
-   //                   Efetuar Apontamento
-   //                </TooltipContent>
-   //             </Tooltip>
-   //             {/* ========== */}
-   //          </div>
-   //       );
-   //    },
-   // },
 ];
+
+// ================================================================================
+// EXPORT DE TIPOS ÚTEIS
+// ================================================================================
+export type StatusTarefaType = keyof typeof STATUS_TAREFA_CONFIG;
+export type FaturaType = keyof typeof FATURA_CONFIG;
+export { STATUS_TAREFA_CONFIG, FATURA_CONFIG, EMPTY_VALUE };
