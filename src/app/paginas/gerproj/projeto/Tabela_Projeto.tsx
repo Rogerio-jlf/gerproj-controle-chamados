@@ -38,7 +38,7 @@ import { FaFilterCircleXmark, FaDiagramProject } from 'react-icons/fa6';
 // ================================================================================
 const MODAL_MAX_HEIGHT = 'calc(100vh - 500px)';
 const DEBOUNCE_DELAY = 800;
-const ANIMATION_DURATION = 300;
+const ANIMATION_DURATION = 100;
 const CACHE_TIME = 1000 * 60 * 5;
 const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
@@ -83,7 +83,7 @@ const EmptyState = () => (
          size={80}
       />
       <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
-         Nenhuma Tarefa foi encontrada no momento.
+         Nenhum Projeto foi encontrado no momento.
       </h3>
    </section>
 );
@@ -415,7 +415,7 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
    if (!isOpen) return null;
 
    if (!user || !token) {
-      return <IsError error={new Error('Usuário não autenticado')} />;
+      return <IsError error={new Error('Usuário não autenticado.')} />;
    }
 
    if (isError) {
@@ -424,7 +424,7 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
 
    if (isLoading) {
       return (
-         <IsLoading isLoading={true} title="Aguarde, carregando Tarefas..." />
+         <IsLoading isLoading={true} title="Aguarde, carregando Projetos..." />
       );
    }
 
@@ -457,7 +457,7 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
                   <button
                      onClick={handleCloseTabelaTarefa}
                      aria-label="Fechar modal de projetos"
-                     className={`group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 ${
+                     className={`group cursor-pointer rounded-full bg-red-500/50 p-3 text-white transition-all hover:scale-125 hover:bg-red-500 active:scale-95 ${
                         isClosing ? 'animate-spin' : ''
                      }`}
                   >

@@ -158,8 +158,6 @@ export async function GET(request: Request) {
       }
 
       if (filterStatusProjeto) {
-         console.log('🔍 Filtro STATUS_PROJETO:', filterStatusProjeto);
-         // CHAR(3) tem padding de espaços, então usamos TRIM para comparação exata
          whereConditions.push('UPPER(TRIM(PROJETO.STATUS_PROJETO)) = UPPER(?)');
          params.push(filterStatusProjeto.trim());
       }

@@ -171,9 +171,15 @@ export async function GET(request: Request) {
          params.push(`%${cleanCodTarefa}%`);
       }
 
+      // Filtro por nome da tarefa (busca no nome E no código)
       if (filterNomeTarefa) {
-         whereConditions.push('UPPER(TAREFA.NOME_TAREFA) LIKE ?');
-         params.push(`%${filterNomeTarefa.toUpperCase()}%`);
+         whereConditions.push(
+            '(UPPER(TAREFA.NOME_TAREFA) LIKE ? OR CAST(TAREFA.COD_TAREFA AS VARCHAR(20)) LIKE ?)'
+         );
+         params.push(
+            `%${filterNomeTarefa.toUpperCase()}%`,
+            `%${filterNomeTarefa}%`
+         );
       }
 
       if (filterCodRecurso) {
@@ -418,8 +424,6 @@ export async function GET(request: Request) {
       }
 
       if (filterFaturaTarefa) {
-         console.log('🔍 Filtro FATURA_TAREFA:', filterFaturaTarefa);
-         // CHAR(3) tem padding de espaços, então usamos TRIM para comparação exata
          whereConditions.push('UPPER(TRIM(TAREFA.FATURA_TAREFA)) = UPPER(?)');
          params.push(filterFaturaTarefa.trim());
       }
@@ -461,6 +465,10 @@ export async function GET(request: Request) {
          LEFT JOIN CLIENTE ON PROJETO.CODCLI_PROJETO = CLIENTE.COD_CLIENTE
          ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
       `;
+
+      console.log('DEBUG - SQL:', sql);
+      console.log('DEBUG - Params completos:', params);
+      console.log('DEBUG - whereConditions:', whereConditions);
 
       const [rawTarefasData, countResult] = await Promise.all([
          firebirdQuery(sql, params),

@@ -7,6 +7,13 @@ import {
    formatarDataParaBR,
    formatarHorasTotaisHorasDecimais,
 } from '../../../../utils/formatters';
+// ================================================================================
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipProvider,
+   TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 // ================================================================================
 // CONSTANTES
@@ -30,6 +37,11 @@ const STATUS_TAREFA_CONFIG = {
    3: {
       label: 'CANCELADO',
       bgColor: 'bg-red-600',
+      textColor: 'text-white',
+   },
+   4: {
+      label: 'FINALIZADO',
+      bgColor: 'bg-purple-600',
       textColor: 'text-white',
    },
    DEFAULT: {
@@ -103,6 +115,80 @@ const CellText = ({ value, maxWords, align = 'left' }: CellTextProps) => {
             </span>
          )}
       </div>
+   );
+};
+
+/**
+ * Componente para células de texto com Tooltip
+ */
+interface CellTextWithTooltipProps {
+   value: string | null | undefined;
+   maxWords?: number;
+   align?: 'left' | 'center';
+}
+
+const CellTextWithTooltip = ({
+   value,
+   maxWords,
+   align = 'left',
+}: CellTextWithTooltipProps) => {
+   const isEmpty = !value || value.trim() === '';
+
+   const processedValue = useMemo(() => {
+      if (isEmpty) return null;
+
+      // Limita a quantidade de palavras se especificado
+      if (maxWords && maxWords > 0) {
+         return value.split(' ').slice(0, maxWords).join(' ');
+      }
+
+      return value;
+   }, [value, maxWords, isEmpty]);
+
+   const alignClass =
+      align === 'center'
+         ? 'justify-center text-center'
+         : 'justify-start pl-2 text-left';
+
+   // Se estiver vazio, retorna sem tooltip
+   if (isEmpty) {
+      return (
+         <div
+            className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
+         >
+            {EMPTY_VALUE}
+         </div>
+      );
+   }
+
+   // Se o texto foi truncado ou limitado, mostra o tooltip
+   const isTruncated = maxWords
+      ? value.split(' ').length > maxWords
+      : value.replace(/\s+/g, '').length > 27;
+
+   return (
+      <TooltipProvider delayDuration={300}>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <div
+                  className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass} cursor-help`}
+               >
+                  <span className="block w-full truncate">
+                     {processedValue}
+                  </span>
+               </div>
+            </TooltipTrigger>
+            {isTruncated && (
+               <TooltipContent
+                  side="top"
+                  align="center"
+                  className="max-w-lg border-none bg-slate-600 font-semibold tracking-wider break-words text-white italic shadow-sm shadow-black"
+               >
+                  <p className="text-sm">{value}</p>
+               </TooltipContent>
+            )}
+         </Tooltip>
+      </TooltipProvider>
    );
 };
 
@@ -199,18 +285,22 @@ const HeaderCenter = ({ children }: { children: React.ReactNode }) => (
 // DEFINIÇÃO DAS COLUNAS
 // ================================================================================
 export const colunasTabelaTarefa = (): ColumnDef<TabelaTarefaProps>[] => [
-   // Tarefa completa
+   // Tarefa completa (COM TOOLTIP)
    {
       accessorKey: 'TAREFA_COMPLETA',
       header: () => <HeaderCenter>Tarefa</HeaderCenter>,
-      cell: ({ getValue }) => <CellText value={getValue() as string} />,
+      cell: ({ getValue }) => (
+         <CellTextWithTooltip value={getValue() as string} />
+      ),
    },
 
-   // Projeto completo
+   // Projeto completo (COM TOOLTIP)
    {
       accessorKey: 'PROJETO_COMPLETO',
       header: () => <HeaderCenter>Projeto</HeaderCenter>,
-      cell: ({ getValue }) => <CellText value={getValue() as string} />,
+      cell: ({ getValue }) => (
+         <CellTextWithTooltip value={getValue() as string} />
+      ),
    },
 
    // Nome do recurso (Consultor)

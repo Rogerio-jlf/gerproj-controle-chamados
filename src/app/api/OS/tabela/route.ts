@@ -2,553 +2,601 @@ import jwt from 'jsonwebtoken';
 import { NextResponse } from 'next/server';
 import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
 
+// ==================== TYPES ====================
+interface TokenPayload {
+   tipo: string;
+   recurso?: {
+      id: number;
+   };
+}
+
+interface OSRecord {
+   COD_OS: number;
+   CODTRF_OS: number | null;
+   DTINI_OS: Date | null;
+   HRINI_OS: string | null;
+   HRFIM_OS: string | null;
+   CODREC_OS: number | null;
+   DTINC_OS: Date | null;
+   FATURADO_OS: string | null;
+   COMP_OS: string | null;
+   VALID_OS: string | null;
+   CHAMADO_OS: string | null;
+   COD_RECURSO: number | null;
+   NOME_RECURSO: string | null;
+   COD_CLIENTE: number | null;
+   NOME_CLIENTE: string | null;
+}
+
+interface OSRecordWithHours extends OSRecord {
+   QTD_HR_OS: number | null;
+}
+
+interface PaginationInfo {
+   currentPage: number;
+   totalPages: number;
+   totalRecords: number;
+   recordsPerPage: number;
+   hasNextPage: boolean;
+   hasPrevPage: boolean;
+}
+
+interface ApiResponse<T> {
+   data?: T;
+   pagination?: PaginationInfo;
+   error?: string;
+}
+
+interface DateFilter {
+   condition: string;
+   params: number[];
+}
+
+// ==================== CONSTANTS ====================
+const MAX_HOURS = 23;
+const MAX_MINUTES = 59;
+const MIN_YEAR = 2000;
+const MAX_YEAR = 3000;
+const MIN_MONTH = 1;
+const MAX_MONTH = 12;
+const MIN_DAY = 1;
+const MAX_DAY = 31;
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 20;
+const MAX_LIMIT = 100;
+const HOURS_IN_DAY = 24;
+
+// ==================== ERROR HANDLING ====================
+class ApiError extends Error {
+   constructor(
+      public statusCode: number,
+      message: string
+   ) {
+      super(message);
+      this.name = 'ApiError';
+   }
+}
+
+// ==================== UTILITY FUNCTIONS ====================
+function getCleanParam(param: string | null | undefined): string | null {
+   if (!param) return null;
+   const cleaned = param.trim();
+   return cleaned.length > 0 ? cleaned : null;
+}
+
+function validatePagination(page: number, limit: number): void {
+   if (page < 1 || limit < 1 || limit > MAX_LIMIT) {
+      throw new ApiError(
+         400,
+         `Parâmetros de paginação inválidos. Page deve ser >= 1, limit entre 1 e ${MAX_LIMIT}`
+      );
+   }
+}
+
+function validateDateParams(
+   mesParam: string | null,
+   anoParam: string | null,
+   diaParam: string | null
+): { mes: number | null; ano: number | null; dia: number | null } {
+   let mes: number | null = null;
+   if (mesParam && mesParam !== 'todos') {
+      mes = Number(mesParam);
+      if (isNaN(mes) || mes < MIN_MONTH || mes > MAX_MONTH) {
+         throw new ApiError(400, "Parâmetro 'mês' inválido");
+      }
+   }
+
+   let ano: number | null = null;
+   if (anoParam && anoParam !== 'todos') {
+      ano = Number(anoParam);
+      if (isNaN(ano) || ano < MIN_YEAR || ano > MAX_YEAR) {
+         throw new ApiError(400, "Parâmetro 'ano' inválido");
+      }
+   }
+
+   let dia: number | null = null;
+   if (diaParam && diaParam !== 'todos') {
+      dia = Number(diaParam);
+      if (isNaN(dia) || dia < MIN_DAY || dia > MAX_DAY) {
+         throw new ApiError(400, "Parâmetro 'dia' inválido");
+      }
+   }
+
+   return { mes, ano, dia };
+}
+
+function parseTime(timeStr: string): number | null {
+   const cleanTime = timeStr.replace(/[^0-9]/g, '').padStart(4, '0');
+
+   if (cleanTime.length < 4) return null;
+
+   const hours = parseInt(cleanTime.substring(0, 2), 10);
+   const minutes = parseInt(cleanTime.substring(2, 4), 10);
+
+   if (isNaN(hours) || isNaN(minutes)) return null;
+   if (hours > MAX_HOURS || minutes > MAX_MINUTES) return null;
+
+   return hours + minutes / 60;
+}
+
+function calculateHours(
+   hrini: string | null,
+   hrfim: string | null
+): number | null {
+   if (!hrini || !hrfim) return null;
+
+   try {
+      const strHrini = String(hrini).trim();
+      const strHrfim = String(hrfim).trim();
+
+      if (!strHrini || !strHrfim) return null;
+
+      const horaInicio = parseTime(strHrini);
+      const horaFim = parseTime(strHrfim);
+
+      if (horaInicio === null || horaFim === null) return null;
+
+      let diferenca = horaFim - horaInicio;
+
+      if (diferenca < 0) {
+         diferenca += HOURS_IN_DAY;
+      }
+
+      return Math.round(diferenca * 100) / 100;
+   } catch (error) {
+      console.error('Erro ao calcular horas:', error, { hrini, hrfim });
+      return null;
+   }
+}
+
+function formatDateSearchValue(searchValue: string): string {
+   let value = searchValue;
+
+   if (/^\d+$/.test(value)) {
+      if (value.length === 2) {
+         return value;
+      } else if (value.length === 4) {
+         return `${value.substring(0, 2)}.${value.substring(2, 4)}`;
+      } else if (value.length === 8 || value.length === 10) {
+         return `${value.substring(0, 2)}.${value.substring(2, 4)}.${value.substring(4, 8)}`;
+      }
+   }
+
+   return value;
+}
+
+function buildDateFilter(fieldName: string, searchValue: string): DateFilter {
+   const formattedValue = formatDateSearchValue(
+      searchValue.trim().replace(/\//g, '.')
+   );
+   const parts = formattedValue.split('.');
+
+   if (parts.length === 1 && /^\d{1,2}$/.test(parts[0])) {
+      return {
+         condition: `EXTRACT(DAY FROM ${fieldName}) = ?`,
+         params: [parseInt(parts[0])],
+      };
+   } else if (
+      parts.length === 2 &&
+      /^\d{1,2}$/.test(parts[0]) &&
+      /^\d{1,2}$/.test(parts[1])
+   ) {
+      return {
+         condition: `(EXTRACT(DAY FROM ${fieldName}) = ? AND EXTRACT(MONTH FROM ${fieldName}) = ?)`,
+         params: [parseInt(parts[0]), parseInt(parts[1])],
+      };
+   } else if (
+      parts.length === 3 &&
+      /^\d{1,2}$/.test(parts[0]) &&
+      /^\d{1,2}$/.test(parts[1]) &&
+      /^\d{4}$/.test(parts[2])
+   ) {
+      return {
+         condition: `(EXTRACT(DAY FROM ${fieldName}) = ? AND EXTRACT(MONTH FROM ${fieldName}) = ? AND EXTRACT(YEAR FROM ${fieldName}) = ?)`,
+         params: [parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2])],
+      };
+   } else {
+      return {
+         condition: `CAST(${fieldName} AS VARCHAR(50)) LIKE ?`,
+         params: [], // Retorna vazio, mas será tratado no buildWhereConditions
+      };
+   }
+}
+
+function normalizeYesNoValue(value: string): string {
+   const normalized = value.toUpperCase().trim();
+
+   if (normalized === 'SIM' || normalized === 'S') {
+      return 'SIM';
+   } else if (
+      normalized === 'NAO' ||
+      normalized === 'NÃO' ||
+      normalized === 'N'
+   ) {
+      return 'NAO';
+   }
+
+   return normalized;
+}
+
+// ==================== QUERY BUILDING ====================
+function buildMainDateFilters(
+   ano: number | null,
+   mes: number | null,
+   dia: number | null
+): { conditions: string[]; params: number[] } {
+   const conditions: string[] = [];
+   const params: number[] = [];
+
+   if (ano && mes && dia) {
+      conditions.push(
+         'OS.DTINI_OS IS NOT NULL AND EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(MONTH FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
+      );
+      params.push(ano, mes, dia);
+   } else if (ano && mes && !dia) {
+      conditions.push(
+         'OS.DTINI_OS IS NOT NULL AND EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(MONTH FROM OS.DTINI_OS) = ?'
+      );
+      params.push(ano, mes);
+   } else if (ano && !mes && !dia) {
+      conditions.push(
+         'OS.DTINI_OS IS NOT NULL AND EXTRACT(YEAR FROM OS.DTINI_OS) = ?'
+      );
+      params.push(ano);
+   } else if (!ano && mes && !dia) {
+      conditions.push(
+         'OS.DTINI_OS IS NOT NULL AND EXTRACT(MONTH FROM OS.DTINI_OS) = ?'
+      );
+      params.push(mes);
+   } else if (!ano && !mes && dia) {
+      conditions.push(
+         'OS.DTINI_OS IS NOT NULL AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
+      );
+      params.push(dia);
+   } else if (!ano && mes && dia) {
+      conditions.push(
+         'OS.DTINI_OS IS NOT NULL AND EXTRACT(MONTH FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
+      );
+      params.push(mes, dia);
+   } else if (ano && !mes && dia) {
+      conditions.push(
+         'OS.DTINI_OS IS NOT NULL AND EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
+      );
+      params.push(ano, dia);
+   }
+
+   return { conditions, params };
+}
+
+function buildWhereConditions(
+   searchParams: URLSearchParams,
+   isAdmin: boolean,
+   codRecurso: number | undefined,
+   ano: number | null,
+   mes: number | null,
+   dia: number | null
+): { conditions: string[]; params: any[] } {
+   const conditions: string[] = [];
+   const params: any[] = [];
+
+   // Filtros de data principal
+   const mainDateFilters = buildMainDateFilters(ano, mes, dia);
+   conditions.push(...mainDateFilters.conditions);
+   params.push(...mainDateFilters.params);
+
+   // Filtro por recurso
+   if (!isAdmin && codRecurso) {
+      conditions.push('OS.CODREC_OS = ?');
+      params.push(Number(codRecurso));
+   }
+
+   // Filtro por código da OS
+   const codOsQuery = searchParams.get('codOs')?.trim();
+   if (codOsQuery) {
+      conditions.push('OS.COD_OS = ?');
+      params.push(Number(codOsQuery));
+   }
+
+   // ===== FILTROS DE COLUNA =====
+   const filterChamadoOs = getCleanParam(searchParams.get('filter_CHAMADO_OS'));
+   if (filterChamadoOs) {
+      const cleanChamado = filterChamadoOs.replace(/[^\w\s]/g, '');
+      conditions.push('UPPER(OS.CHAMADO_OS) LIKE ?');
+      params.push(`%${cleanChamado.toUpperCase()}%`);
+   }
+
+   const filterCodOs = getCleanParam(searchParams.get('filter_COD_OS'));
+   if (filterCodOs) {
+      const cleanCodOs = filterCodOs.replace(/[^\d]/g, '');
+      if (cleanCodOs.length > 0) {
+         conditions.push('CAST(OS.COD_OS AS VARCHAR(20)) LIKE ?');
+         params.push(`%${cleanCodOs}%`);
+      }
+   }
+
+   const filterCodtrfOs = getCleanParam(searchParams.get('filter_CODTRF_OS'));
+   if (filterCodtrfOs) {
+      const cleanCodtrf = filterCodtrfOs.replace(/[^\d]/g, '');
+      if (cleanCodtrf.length > 0) {
+         conditions.push('CAST(OS.CODTRF_OS AS VARCHAR(20)) LIKE ?');
+         params.push(`%${cleanCodtrf}%`);
+      }
+   }
+
+   const filterDtiniOs = getCleanParam(searchParams.get('filter_DTINI_OS'));
+   if (filterDtiniOs) {
+      const dateFilter = buildDateFilter('OS.DTINI_OS', filterDtiniOs);
+      if (dateFilter.params.length > 0) {
+         conditions.push(dateFilter.condition);
+         params.push(...dateFilter.params);
+      } else {
+         const searchValue = formatDateSearchValue(
+            filterDtiniOs.trim().replace(/\//g, '.')
+         );
+         conditions.push('CAST(OS.DTINI_OS AS VARCHAR(50)) LIKE ?');
+         params.push(`%${searchValue}%`);
+      }
+   }
+
+   const filterDtincOs = getCleanParam(searchParams.get('filter_DTINC_OS'));
+   if (filterDtincOs) {
+      const dateFilter = buildDateFilter('OS.DTINC_OS', filterDtincOs);
+      if (dateFilter.params.length > 0) {
+         conditions.push(dateFilter.condition);
+         params.push(...dateFilter.params);
+      } else {
+         const searchValue = formatDateSearchValue(
+            filterDtincOs.trim().replace(/\//g, '.')
+         );
+         conditions.push('CAST(OS.DTINC_OS AS VARCHAR(50)) LIKE ?');
+         params.push(`%${searchValue}%`);
+      }
+   }
+
+   const filterCompOs = getCleanParam(searchParams.get('filter_COMP_OS'));
+   if (filterCompOs) {
+      let searchValue = filterCompOs.trim();
+      const cleanValue = searchValue.replace(/[\/\s]/g, '');
+
+      if (/^\d+$/.test(cleanValue) && cleanValue.length >= 6) {
+         const mes = cleanValue.substring(0, 2);
+         const ano = cleanValue.substring(2);
+         searchValue = `${mes}/${ano}`;
+      }
+
+      conditions.push(
+         "REPLACE(REPLACE(UPPER(OS.COMP_OS), '/', ''), ' ', '') LIKE ?"
+      );
+      params.push(`%${cleanValue.toUpperCase()}%`);
+   }
+
+   const filterNomeCliente = getCleanParam(
+      searchParams.get('filter_NOME_CLIENTE')
+   );
+   if (filterNomeCliente) {
+      conditions.push('UPPER(Cliente.NOME_CLIENTE) LIKE ?');
+      params.push(`%${filterNomeCliente.toUpperCase()}%`);
+   }
+
+   const filterFaturadoOs = getCleanParam(
+      searchParams.get('filter_FATURADO_OS')
+   );
+   if (filterFaturadoOs) {
+      const faturadoValue = normalizeYesNoValue(filterFaturadoOs);
+
+      if (faturadoValue === 'SIM' || faturadoValue === 'NAO') {
+         conditions.push('TRIM(UPPER(OS.FATURADO_OS)) = ?');
+         params.push(faturadoValue);
+      } else {
+         conditions.push('TRIM(UPPER(OS.FATURADO_OS)) LIKE ?');
+         params.push(`%${faturadoValue}%`);
+      }
+   }
+
+   const filterNomeRecurso = getCleanParam(
+      searchParams.get('filter_NOME_RECURSO')
+   );
+   if (filterNomeRecurso) {
+      conditions.push('UPPER(Recurso.NOME_RECURSO) LIKE ?');
+      params.push(`%${filterNomeRecurso.toUpperCase()}%`);
+   }
+
+   const filterValidOs = getCleanParam(searchParams.get('filter_VALID_OS'));
+   if (filterValidOs) {
+      const validValue = normalizeYesNoValue(filterValidOs);
+
+      if (validValue === 'SIM' || validValue === 'NAO') {
+         conditions.push('TRIM(UPPER(OS.VALID_OS)) = ?');
+         params.push(validValue);
+      } else {
+         conditions.push('TRIM(UPPER(OS.VALID_OS)) LIKE ?');
+         params.push(`%${validValue}%`);
+      }
+   }
+
+   return { conditions, params };
+}
+
+function buildQuery(
+   whereConditions: string[],
+   startRow: number,
+   endRow: number
+): string {
+   return `
+      SELECT
+         os.COD_OS,
+         os.CODTRF_OS,
+         os.DTINI_OS,
+         os.HRINI_OS,
+         os.HRFIM_OS,
+         os.CODREC_OS,
+         os.DTINC_OS,
+         os.FATURADO_OS,
+         os.COMP_OS,
+         os.VALID_OS,
+         os.CHAMADO_OS,
+         Recurso.COD_RECURSO,
+         Recurso.NOME_RECURSO,
+         Cliente.COD_CLIENTE,
+         Cliente.NOME_CLIENTE
+      FROM OS os
+      LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = os.CODREC_OS
+      LEFT JOIN CHAMADO Chamado ON Chamado.COD_CHAMADO = os.CHAMADO_OS
+      LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
+      ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
+      ORDER BY os.COD_OS DESC, os.DTINI_OS DESC
+      ROWS ${startRow} TO ${endRow};
+   `;
+}
+
+function buildCountQuery(whereConditions: string[]): string {
+   return `
+      SELECT COUNT(*) as TOTAL
+      FROM OS os
+      LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = os.CODREC_OS
+      LEFT JOIN CHAMADO Chamado ON Chamado.COD_CHAMADO = os.CHAMADO_OS
+      LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
+      ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
+   `;
+}
+
+// ==================== AUTH ====================
+function verifyToken(authHeader: string | null): TokenPayload {
+   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new ApiError(401, 'Token não fornecido');
+   }
+
+   const token = authHeader.replace('Bearer ', '');
+
+   if (!process.env.JWT_SECRET) {
+      throw new ApiError(500, 'Configuração de segurança inválida');
+   }
+
+   try {
+      return jwt.verify(token, process.env.JWT_SECRET) as TokenPayload;
+   } catch (err) {
+      throw new ApiError(401, 'Token inválido');
+   }
+}
+
+// ==================== MAIN HANDLER ====================
 export async function GET(request: Request) {
    try {
-      const authHeader = request.headers.get('Authorization');
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-         return NextResponse.json(
-            { error: 'Token não fornecido' },
-            { status: 401 }
-         );
-      }
-
-      const token = authHeader.replace('Bearer ', '');
-      let decoded: any;
-
-      try {
-         decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET || 'minha_chave_secreta'
-         );
-      } catch (err) {
-         return NextResponse.json({ error: 'Token inválido' }, { status: 401 });
-      }
-
+      // Autenticação
+      const decoded = verifyToken(request.headers.get('Authorization'));
       const isAdmin = decoded.tipo === 'ADM';
       const codRecurso = decoded.recurso?.id;
 
+      // Parse URL params
       const { searchParams } = new URL(request.url);
       const mesParam = searchParams.get('mes');
       const anoParam = searchParams.get('ano');
       const diaParam = searchParams.get('dia');
-      const codOsQuery = searchParams.get('codOs')?.trim();
 
-      // Paginação
-      const page = parseInt(searchParams.get('page') || '1', 10);
-      const limit = parseInt(searchParams.get('limit') || '20', 10);
-
-      // ===== FILTROS DE COLUNA =====
-
-      const filterChamadoOs = searchParams.get('filter_CHAMADO_OS')?.trim();
-      const filterCodOs = searchParams.get('filter_COD_OS')?.trim();
-      const filterDtiniOs = searchParams.get('filter_DTINI_OS')?.trim();
-      const filterDtincOs = searchParams.get('filter_DTINC_OS')?.trim();
-      const filterCompOs = searchParams.get('filter_COMP_OS')?.trim();
-      const filterNomeCliente = searchParams.get('filter_NOME_CLIENTE')?.trim();
-      const filterFaturadoOs = searchParams.get('filter_FATURADO_OS')?.trim();
-      const filterNomeRecurso = searchParams.get('filter_NOME_RECURSO')?.trim();
-      const filterValidOs = searchParams.get('filter_VALID_OS')?.trim();
-      const filterNomeTarefa = searchParams.get('filter_NOME_TAREFA')?.trim();
-      const filterNomeProjeto = searchParams.get('filter_NOME_PROJETO')?.trim();
-
-      if (page < 1 || limit < 1 || limit > 100) {
-         return NextResponse.json(
-            {
-               error: 'Parâmetros de paginação inválidos. Page deve ser >= 1, limit entre 1 e 100',
-            },
-            { status: 400 }
-         );
-      }
+      // Validação de paginação
+      const page = parseInt(
+         searchParams.get('page') || String(DEFAULT_PAGE),
+         10
+      );
+      const limit = parseInt(
+         searchParams.get('limit') || String(DEFAULT_LIMIT),
+         10
+      );
+      validatePagination(page, limit);
 
       const startRow = (page - 1) * limit + 1;
       const endRow = page * limit;
 
-      // Validação mês/ano/dia
-      let mesNumber: number | null = null;
-      if (mesParam && mesParam !== 'todos') {
-         mesNumber = Number(mesParam);
-         if (isNaN(mesNumber) || mesNumber < 1 || mesNumber > 12) {
-            return NextResponse.json(
-               { error: "Parâmetro 'mês' inválido" },
-               { status: 400 }
-            );
-         }
-      }
-
-      let anoNumber: number | null = null;
-      if (anoParam && anoParam !== 'todos') {
-         anoNumber = Number(anoParam);
-         if (isNaN(anoNumber) || anoNumber < 2000 || anoNumber > 3000) {
-            return NextResponse.json(
-               { error: "Parâmetro 'ano' inválido" },
-               { status: 400 }
-            );
-         }
-      }
-
-      let diaNumber: number | null = null;
-      if (diaParam && diaParam !== 'todos') {
-         diaNumber = Number(diaParam);
-         if (isNaN(diaNumber) || diaNumber < 1 || diaNumber > 31) {
-            return NextResponse.json(
-               { error: "Parâmetro 'dia' inválido" },
-               { status: 400 }
-            );
-         }
-      }
-
-      if (!isAdmin && !codRecurso) {
-         return NextResponse.json(
-            { error: 'Usuário não admin precisa ter codRecurso definido' },
-            { status: 400 }
-         );
-      }
-
-      const whereConditions: string[] = [];
-      const params: any[] = [];
-
-      // Primeiro, vamos testar uma query mais simples para identificar o problema
-      let hasDateFilter = false;
-
-      // Filtro por data (ano, mês, dia)
-      if (anoNumber && mesNumber && diaNumber) {
-         whereConditions.push(
-            'OS.DTINI_OS IS NOT NULL AND EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(MONTH FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
-         );
-         params.push(anoNumber, mesNumber, diaNumber);
-         hasDateFilter = true;
-      } else if (anoNumber && mesNumber && !diaNumber) {
-         whereConditions.push(
-            'OS.DTINI_OS IS NOT NULL AND EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(MONTH FROM OS.DTINI_OS) = ?'
-         );
-         params.push(anoNumber, mesNumber);
-         hasDateFilter = true;
-      } else if (anoNumber && !mesNumber && !diaNumber) {
-         whereConditions.push(
-            'OS.DTINI_OS IS NOT NULL AND EXTRACT(YEAR FROM OS.DTINI_OS) = ?'
-         );
-         params.push(anoNumber);
-         hasDateFilter = true;
-      } else if (!anoNumber && mesNumber && !diaNumber) {
-         whereConditions.push(
-            'OS.DTINI_OS IS NOT NULL AND EXTRACT(MONTH FROM OS.DTINI_OS) = ?'
-         );
-         params.push(mesNumber);
-         hasDateFilter = true;
-      } else if (!anoNumber && !mesNumber && diaNumber) {
-         whereConditions.push(
-            'OS.DTINI_OS IS NOT NULL AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
-         );
-         params.push(diaNumber);
-         hasDateFilter = true;
-      } else if (!anoNumber && mesNumber && diaNumber) {
-         whereConditions.push(
-            'OS.DTINI_OS IS NOT NULL AND EXTRACT(MONTH FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
-         );
-         params.push(mesNumber, diaNumber);
-         hasDateFilter = true;
-      } else if (anoNumber && !mesNumber && diaNumber) {
-         whereConditions.push(
-            'OS.DTINI_OS IS NOT NULL AND EXTRACT(YEAR FROM OS.DTINI_OS) = ? AND EXTRACT(DAY FROM OS.DTINI_OS) = ?'
-         );
-         params.push(anoNumber, diaNumber);
-         hasDateFilter = true;
-      }
-
-      // Filtro por recurso
-      if (!isAdmin && codRecurso) {
-         whereConditions.push('OS.CODREC_OS = ?');
-         params.push(Number(codRecurso));
-      }
-
-      // Filtro por código da OS
-      if (codOsQuery) {
-         whereConditions.push('OS.COD_OS = ?');
-         params.push(Number(codOsQuery));
-      }
-
-      // ===== FILTROS DE COLUNA COM VERIFICAÇÕES DE SEGURANÇA =====
-
-      // DEBUG: Query de teste para identificar dados problemáticos
-      const debugSql = `
-         SELECT 
-            COUNT(*) as total,
-            SUM(CASE WHEN OS.DTINI_OS IS NULL THEN 1 ELSE 0 END) as null_dtini,
-            SUM(CASE WHEN CAST(OS.DTINI_OS AS VARCHAR(50)) = '' THEN 1 ELSE 0 END) as empty_dtini,
-            SUM(CASE WHEN OS.DTINC_OS IS NULL THEN 1 ELSE 0 END) as null_dtinc,
-            SUM(CASE WHEN CAST(OS.DTINC_OS AS VARCHAR(50)) = '' THEN 1 ELSE 0 END) as empty_dtinc,
-            SUM(CASE WHEN OS.HRINI_OS IS NULL THEN 1 ELSE 0 END) as null_hrini,
-            SUM(CASE WHEN CAST(OS.HRINI_OS AS VARCHAR(50)) = '' THEN 1 ELSE 0 END) as empty_hrini,
-            SUM(CASE WHEN OS.HRFIM_OS IS NULL THEN 1 ELSE 0 END) as null_hrfim,
-            SUM(CASE WHEN CAST(OS.HRFIM_OS AS VARCHAR(50)) = '' THEN 1 ELSE 0 END) as empty_hrfim,
-            SUM(CASE WHEN OS.COD_OS IS NULL THEN 1 ELSE 0 END) as null_codos,
-            SUM(CASE WHEN OS.CHAMADO_OS IS NULL THEN 1 ELSE 0 END) as null_chamado,
-            SUM(CASE WHEN CAST(OS.CHAMADO_OS AS VARCHAR(50)) = '' THEN 1 ELSE 0 END) as empty_chamado
-         FROM OS os
-         ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
-      `;
-
-      try {
-         const debugResult = await firebirdQuery(debugSql, params);
-      } catch (debugError) {
-         console.error('DEBUG - Erro na query de análise:', debugError);
-      }
-
-      // ===== FILTROS DE COLUNA ROBUSTOS =====
-      if (filterChamadoOs) {
-         // Remove pontos e outros caracteres não numéricos para facilitar a busca
-         const cleanChamado = filterChamadoOs.replace(/[^\w\s]/g, '');
-         whereConditions.push('UPPER(OS.CHAMADO_OS) LIKE ?');
-         params.push(`%${cleanChamado.toUpperCase()}%`);
-      }
-
-      if (filterCodOs) {
-         // Remove pontos e outros caracteres não numéricos para facilitar a busca
-         const cleanCodOs = filterCodOs.replace(/[^\d]/g, '');
-         whereConditions.push('CAST(OS.COD_OS AS VARCHAR(20)) LIKE ?');
-         params.push(`%${cleanCodOs}%`);
-      }
-
-      if (filterDtiniOs) {
-         let searchValue = filterDtiniOs.trim().replace(/\//g, '.');
-
-         // Se só tem números, formata com pontos
-         if (/^\d+$/.test(searchValue)) {
-            if (searchValue.length === 2) {
-               searchValue = searchValue;
-            } else if (searchValue.length === 4) {
-               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}`;
-            } else if (searchValue.length === 8) {
-               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}.${searchValue.substring(4, 8)}`;
-            }
-         }
-
-         const parts = searchValue.split('.');
-
-         if (parts.length === 1 && /^\d{1,2}$/.test(parts[0])) {
-            whereConditions.push('EXTRACT(DAY FROM OS.DTINI_OS) = ?');
-            params.push(parseInt(parts[0]));
-         } else if (
-            parts.length === 2 &&
-            /^\d{1,2}$/.test(parts[0]) &&
-            /^\d{1,2}$/.test(parts[1])
-         ) {
-            whereConditions.push(
-               '(EXTRACT(DAY FROM OS.DTINI_OS) = ? AND EXTRACT(MONTH FROM OS.DTINI_OS) = ?)'
-            );
-            params.push(parseInt(parts[0]), parseInt(parts[1]));
-         } else if (
-            parts.length === 3 &&
-            /^\d{1,2}$/.test(parts[0]) &&
-            /^\d{1,2}$/.test(parts[1]) &&
-            /^\d{4}$/.test(parts[2])
-         ) {
-            whereConditions.push(
-               '(EXTRACT(DAY FROM OS.DTINI_OS) = ? AND EXTRACT(MONTH FROM OS.DTINI_OS) = ? AND EXTRACT(YEAR FROM OS.DTINI_OS) = ?)'
-            );
-            params.push(
-               parseInt(parts[0]),
-               parseInt(parts[1]),
-               parseInt(parts[2])
-            );
-         } else {
-            whereConditions.push(`CAST(OS.DTINI_OS AS VARCHAR(50)) LIKE ?`);
-            params.push(`%${searchValue}%`);
-         }
-      }
-
-      if (filterDtincOs) {
-         let searchValue = filterDtincOs.trim().replace(/\//g, '.');
-         // Se só tem números, formata com pontos
-         if (/^\d+$/.test(searchValue)) {
-            if (searchValue.length === 2) {
-               searchValue = searchValue;
-            } else if (searchValue.length === 4) {
-               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}`;
-            } else if (searchValue.length === 8) {
-               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}.${searchValue.substring(4, 8)}`;
-            } else if (searchValue.length === 10) {
-               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}.${searchValue.substring(4, 8)}`;
-            }
-         }
-
-         const parts = searchValue.split('.');
-
-         if (parts.length === 1 && /^\d{1,2}$/.test(parts[0])) {
-            whereConditions.push('EXTRACT(DAY FROM OS.DTINC_OS) = ?');
-            params.push(parseInt(parts[0]));
-         } else if (
-            parts.length === 2 &&
-            /^\d{1,2}$/.test(parts[0]) &&
-            /^\d{1,2}$/.test(parts[1])
-         ) {
-            whereConditions.push(
-               '(EXTRACT(DAY FROM OS.DTINC_OS) = ? AND EXTRACT(MONTH FROM OS.DTINC_OS) = ?)'
-            );
-            params.push(parseInt(parts[0]), parseInt(parts[1]));
-         } else if (
-            parts.length === 3 &&
-            /^\d{1,2}$/.test(parts[0]) &&
-            /^\d{1,2}$/.test(parts[1]) &&
-            /^\d{4}$/.test(parts[2])
-         ) {
-            whereConditions.push(
-               '(EXTRACT(DAY FROM OS.DTINC_OS) = ? AND EXTRACT(MONTH FROM OS.DTINC_OS) = ? AND EXTRACT(YEAR FROM OS.DTINC_OS) = ?)'
-            );
-            params.push(
-               parseInt(parts[0]),
-               parseInt(parts[1]),
-               parseInt(parts[2])
-            );
-         } else {
-            whereConditions.push(`CAST(OS.DTINC_OS AS VARCHAR(50)) LIKE ?`);
-            params.push(`%${searchValue}%`);
-         }
-      }
-
-      if (filterCompOs) {
-         let searchValue = filterCompOs.trim();
-
-         // Remove barras e espaços para facilitar a busca
-         const cleanValue = searchValue.replace(/[\/\s]/g, '');
-
-         // Se contém apenas números (ex: "10", "102025", "2025")
-         if (/^\d+$/.test(cleanValue)) {
-            // Se tem 6 ou mais dígitos, pode ser MM/YYYY junto (ex: "102025")
-            if (cleanValue.length >= 6) {
-               // Tenta formatar como MM/YYYY
-               const mes = cleanValue.substring(0, 2);
-               const ano = cleanValue.substring(2);
-               searchValue = `${mes}/${ano}`;
-            }
-         }
-
-         // Remove caracteres especiais do campo no banco para comparação
-         whereConditions.push(
-            "REPLACE(REPLACE(UPPER(OS.COMP_OS), '/', ''), ' ', '') LIKE ?"
-         );
-         params.push(`%${cleanValue.toUpperCase()}%`);
-      }
-
-      if (filterNomeCliente) {
-         whereConditions.push('UPPER(Cliente.NOME_CLIENTE) LIKE ?');
-         params.push(`%${filterNomeCliente.toUpperCase()}%`);
-      }
-
-      if (filterFaturadoOs) {
-         let faturadoValue = filterFaturadoOs.toUpperCase().trim();
-
-         // Normaliza valores comuns
-         if (faturadoValue === 'SIM' || faturadoValue === 'S') {
-            faturadoValue = 'SIM';
-         } else if (
-            faturadoValue === 'NAO' ||
-            faturadoValue === 'NÃO' ||
-            faturadoValue === 'N'
-         ) {
-            faturadoValue = 'NAO';
-         }
-
-         // Usa comparação exata para evitar problemas com CHAR
-         if (faturadoValue === 'SIM' || faturadoValue === 'NAO') {
-            whereConditions.push('TRIM(UPPER(OS.FATURADO_OS)) = ?');
-            params.push(faturadoValue);
-         } else {
-            whereConditions.push('TRIM(UPPER(OS.FATURADO_OS)) LIKE ?');
-            params.push(`%${faturadoValue}%`);
-         }
-      }
-
-      if (filterNomeRecurso) {
-         whereConditions.push('UPPER(Recurso.NOME_RECURSO) LIKE ?');
-         params.push(`%${filterNomeRecurso.toUpperCase()}%`);
-      }
-
-      if (filterValidOs) {
-         let validValue = filterValidOs.toUpperCase().trim();
-
-         // Normaliza valores comuns
-         if (validValue === 'SIM' || validValue === 'S') {
-            validValue = 'SIM';
-         } else if (
-            validValue === 'NAO' ||
-            validValue === 'NÃO' ||
-            validValue === 'N'
-         ) {
-            validValue = 'NAO';
-         }
-
-         // Usa comparação exata para evitar problemas com CHAR
-         if (validValue === 'SIM' || validValue === 'NAO') {
-            whereConditions.push('TRIM(UPPER(OS.VALID_OS)) = ?');
-            params.push(validValue);
-         } else {
-            whereConditions.push('TRIM(UPPER(OS.VALID_OS)) LIKE ?');
-            params.push(`%${validValue}%`);
-         }
-      }
-
-      if (filterNomeTarefa) {
-         // Busca tanto no código quanto no nome da tarefa
-         whereConditions.push(
-            '(UPPER(Tarefa.NOME_TAREFA) LIKE ? OR CAST(Tarefa.COD_TAREFA AS VARCHAR(20)) LIKE ?)'
-         );
-         params.push(
-            `%${filterNomeTarefa.toUpperCase()}%`,
-            `%${filterNomeTarefa}%`
-         );
-      }
-
-      if (filterNomeProjeto) {
-         // Busca tanto no código quanto no nome do projeto
-         whereConditions.push(
-            '(UPPER(Projeto.NOME_PROJETO) LIKE ? OR CAST(Projeto.COD_PROJETO AS VARCHAR(20)) LIKE ?)'
-         );
-         params.push(
-            `%${filterNomeProjeto.toUpperCase()}%`,
-            `%${filterNomeProjeto}%`
-         );
-      }
-
-      whereConditions.push(
-         '(OS.CHAMADO_OS IS NULL OR CAST(OS.CHAMADO_OS AS VARCHAR(20)) <> ?)'
+      // Validação de datas
+      const { mes, ano, dia } = validateDateParams(
+         mesParam,
+         anoParam,
+         diaParam
       );
-      params.push('');
 
-      const sql = `
-         SELECT
-            os.COD_OS,
-            os.CODTRF_OS,
-            os.DTINI_OS,
-            os.HRINI_OS,
-            os.HRFIM_OS,
-            os.CODREC_OS,
-            os.DTINC_OS,
-            os.FATURADO_OS,
-            os.COMP_OS,
-            os.VALID_OS,
-            os.CHAMADO_OS,
-            Recurso.COD_RECURSO,
-            Recurso.NOME_RECURSO,
-            Cliente.COD_CLIENTE,
-            Cliente.NOME_CLIENTE,
-            Tarefa.COD_TAREFA,
-            Tarefa.NOME_TAREFA,
-            Projeto.COD_PROJETO,
-            Projeto.NOME_PROJETO
-         FROM OS os
-         LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = os.CODREC_OS
-         LEFT JOIN CHAMADO Chamado ON Chamado.COD_CHAMADO = os.CHAMADO_OS
-         LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
-         LEFT JOIN TAREFA Tarefa ON Tarefa.COD_TAREFA = os.CODTRF_OS
-         LEFT JOIN PROJETO Projeto ON Projeto.COD_PROJETO = Tarefa.CODPRO_TAREFA
-         ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
-         ORDER BY os.DTINI_OS DESC, os.COD_OS DESC
-         ROWS ${startRow} TO ${endRow};
-      `;
+      // Validação de acesso
+      if (!isAdmin && !codRecurso) {
+         throw new ApiError(
+            400,
+            'Usuário não admin precisa ter codRecurso definido'
+         );
+      }
 
-      const countSql = `
-         SELECT COUNT(*) as TOTAL
-         FROM OS os
-         LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = os.CODREC_OS
-         LEFT JOIN CHAMADO Chamado ON Chamado.COD_CHAMADO = os.CHAMADO_OS
-         LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
-         LEFT JOIN TAREFA Tarefa ON Tarefa.COD_TAREFA = os.CODTRF_OS
-         LEFT JOIN PROJETO Projeto ON Projeto.COD_PROJETO = Tarefa.CODPRO_TAREFA
-         ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
-      `;
+      // Construção de condições WHERE
+      const { conditions: whereConditions, params } = buildWhereConditions(
+         searchParams,
+         isAdmin,
+         codRecurso,
+         ano,
+         mes,
+         dia
+      );
 
+      // Construção de queries
+      const sql = buildQuery(whereConditions, startRow, endRow);
+      const countSql = buildCountQuery(whereConditions);
+
+      // Execução paralela
       const [rawOsData, countResult] = await Promise.all([
          firebirdQuery(sql, params),
          firebirdQuery(countSql, params),
       ]);
 
-      const calculateHours = (
-         hrini: string | null,
-         hrfim: string | null
-      ): number | null => {
-         if (!hrini || !hrfim) return null;
-
-         try {
-            const strHrini = String(hrini).trim();
-            const strHrfim = String(hrfim).trim();
-
-            if (!strHrini || !strHrfim) return null;
-
-            const parseTime = (timeStr: string) => {
-               const cleanTime = timeStr
-                  .replace(/[^0-9]/g, '')
-                  .padStart(4, '0');
-
-               if (cleanTime.length < 4) return null;
-
-               const hours = parseInt(cleanTime.substring(0, 2), 10);
-               const minutes = parseInt(cleanTime.substring(2, 4), 10);
-
-               if (isNaN(hours) || isNaN(minutes)) return null;
-               if (hours > 23 || minutes > 59) return null;
-
-               return hours + minutes / 60;
-            };
-
-            const horaInicio = parseTime(strHrini);
-            const horaFim = parseTime(strHrfim);
-
-            if (horaInicio === null || horaFim === null) return null;
-
-            let diferenca = horaFim - horaInicio;
-
-            if (diferenca < 0) {
-               diferenca += 24;
-            }
-
-            return Math.round(diferenca * 100) / 100;
-         } catch (error) {
-            console.error('Erro ao calcular horas:', error, { hrini, hrfim });
-            return null;
-         }
-      };
-
-      const osData = (rawOsData || []).map((record: any) => {
-         const tarefaCompleta =
-            record.COD_TAREFA && record.NOME_TAREFA
-               ? `${record.COD_TAREFA} - ${record.NOME_TAREFA}`
-               : null;
-
-         const projetoCompleto =
-            record.COD_PROJETO && record.NOME_PROJETO
-               ? `${record.COD_PROJETO} - ${record.NOME_PROJETO}`
-               : null;
-
-         return {
+      // Processamento de dados
+      const osData: OSRecordWithHours[] = (rawOsData || []).map(
+         (record: OSRecord) => ({
             ...record,
-            TAREFA_COMPLETA: tarefaCompleta,
-            PROJETO_COMPLETO: projetoCompleto,
             QTD_HR_OS: calculateHours(record.HRINI_OS, record.HRFIM_OS),
-         };
-      });
+         })
+      );
 
+      // Cálculo de paginação
       const total = countResult[0].TOTAL;
       const totalPages = Math.ceil(total / limit);
 
-      return NextResponse.json(
-         {
-            data: osData,
-            pagination: {
-               currentPage: page,
-               totalPages,
-               totalRecords: total,
-               recordsPerPage: limit,
-               hasNextPage: page < totalPages,
-               hasPrevPage: page > 1,
-            },
+      const response: ApiResponse<OSRecordWithHours[]> = {
+         data: osData,
+         pagination: {
+            currentPage: page,
+            totalPages,
+            totalRecords: total,
+            recordsPerPage: limit,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1,
          },
-         { status: 200 }
-      );
+      };
+
+      return NextResponse.json(response, { status: 200 });
    } catch (error) {
       console.error('Erro ao buscar dados da OS:', error);
 
-      // DEBUG mais detalhado do erro
+      if (error instanceof ApiError) {
+         return NextResponse.json(
+            { error: error.message },
+            { status: error.statusCode }
+         );
+      }
+
       if (error instanceof Error) {
          console.error('DEBUG - Mensagem de erro:', error.message);
          console.error('DEBUG - Stack trace:', error.stack);

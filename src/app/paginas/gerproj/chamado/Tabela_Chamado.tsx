@@ -542,7 +542,9 @@ function TabelaChamadoContent() {
       return <SessionExpired isTokenExpired={isTokenExpired} />;
    }
 
-   if (isError) return <IsError error={error as Error} />;
+   if (isError) {
+      return <IsError error={error as Error} />;
+   }
 
    // ================================================================================
    // RENDERIZAÇÃO
@@ -907,7 +909,7 @@ function TabelaChamadoContent() {
                            size={100}
                         />
                         <h3 className="text-3xl font-extrabold tracking-wider text-white italic select-none">
-                           {`Nenhum Chamado foi encontrado para o período: ${mes.toString().padStart(2, '0')}/${ano}.`}
+                           {`Nenhum Chamado foi encontrado para o período: ${dia === 'todos' ? '' : String(dia).padStart(2, '0')}/${mes === 'todos' ? '' : String(mes).padStart(2, '0')}/${ano === 'todos' ? '' : ano}.`}
                         </h3>
                      </div>
                   )}
@@ -1016,7 +1018,7 @@ function TabelaChamadoContent() {
          {/* LOADING */}
          <IsLoading
             isLoading={isLoading}
-            title={`Buscando Chamados para o período: ${mes.toString().padStart(2, '0')}/${ano}`}
+            title={`Buscando OS's para o período: ${dia === 'todos' ? '' : String(dia).padStart(2, '0')}/${mes === 'todos' ? '' : String(mes).padStart(2, '0')}/${ano === 'todos' ? '' : ano}.`}
          />
       </div>
    );

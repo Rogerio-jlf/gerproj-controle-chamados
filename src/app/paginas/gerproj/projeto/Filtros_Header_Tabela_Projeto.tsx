@@ -29,18 +29,19 @@ const UPPERCASE_COLUMNS = ['STATUS_PROJETO'] as const;
 
 // Limites de caracteres baseados no banco de dados
 export const COLUMN_MAX_LENGTH: Record<string, number> = {
+   PROJETO_COMPLETO: 15, // Concatenação: código + nome
+   CLIENTE_COMPLETO: 15, // Concatenação: código + nome
+   RESPCLI_PROJETO: 20, // VARCHAR(50)
+   RECURSO_COMPLETO: 15, // Concatenação: código + nome
+   // QTDHORAS_PROJETO: 18, // NUMERIC(15,2) = 15 dígitos + 1 vírgula + 2 decimais
+   STATUS_PROJETO: 3, // CHAR(3)
+   // =====
    COD_PROJETO: 10, // INTEGER (máximo ~10 dígitos)
    NOME_PROJETO: 50, // VARCHAR(50)
    COD_CLIENTE: 10, // INTEGER (máximo ~10 dígitos)
    NOME_CLIENTE: 50, // Assumindo mesmo tamanho
-   RESPCLI_PROJETO: 20, // VARCHAR(50)
    COD_RECURSO: 10, // INTEGER (máximo ~10 dígitos)
    NOME_RECURSO: 50, // Assumindo mesmo tamanho
-   QTDHORAS_PROJETO: 18, // NUMERIC(15,2) = 15 dígitos + 1 vírgula + 2 decimais
-   STATUS_PROJETO: 3, // CHAR(3)
-   PROJETO_COMPLETO: 15, // Concatenação: código + nome
-   CLIENTE_COMPLETO: 15, // Concatenação: código + nome
-   RECURSO_COMPLETO: 15, // Concatenação: código + nome
 };
 
 // ================================================================================
@@ -79,7 +80,6 @@ const getCellValue = (row: any, columnId: string): string => {
 export const FiltrosHeaderTabelaProjeto = ({
    value,
    onChange,
-   placeholder = 'Filtrar...',
    type = 'text',
    columnId,
 }: ExtendedInputFilterProps) => {
@@ -157,8 +157,6 @@ export const FiltrosHeaderTabelaProjeto = ({
             value={localValue}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            placeholder={isFocused ? '' : placeholder}
-            aria-label={placeholder}
             maxLength={maxLength}
             className={`w-full rounded-md bg-teal-950 px-4 py-2 pr-10 text-base text-white placeholder-slate-400 shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:outline-none ${
                isNearLimit

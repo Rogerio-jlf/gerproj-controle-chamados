@@ -7,113 +7,47 @@ Content-Type: application/json
   "senha": "&"
 }
 
-### - BUSCAR TODOS OS CHAMADOS
-GET http://localhost:3000/api/OS
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1ODkwODA0NywiZXhwIjoxNzU4OTExNjQ3fQ.7SKylX-QjmplDg8XehIcBI3S5DsvYovCq1cIoKfOsG8
-
-
-### - BUSCAR TODOS OS CHAMADOS
-GET http://localhost:3000/api/chamados
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1ODkwNDAyMywiZXhwIjoxNzU4OTA3NjIzfQ.ty24oEzH_DXDoKwj_cjgMr3ZWyPlCSm8FvugmZsd_o0
-
-
-### - BUSCAR TODOS OS CHAMADOS POR TAREFA
-GET http://localhost:3000/api/tarefas?codTarefa=343
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1ODY0Nzk4MiwiZXhwIjoxNzU4NjUxNTgyfQ.mBk2BAm9SIPS1-1FGA9_Awttyjc-UWamvd1QTX3NWOo
-
-### - BUSCAR TODOS OS CHAMADOS
-GET http://localhost:3000/api/chamados?codChamado=13471
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1ODY0Nzk4MiwiZXhwIjoxNzU4NjUxNTgyfQ.mBk2BAm9SIPS1-1FGA9_Awttyjc-UWamvd1QTX3NWOo
-
-
-
-### - BUSCAR TODAS AS OS's POR CHAMADO
-GET http://localhost:3000/api/OS-chamado
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ1LCJub21lIjoiR0lMTUFSIFBFTklETyBERSBTT1VaQSIsInRpcG8iOiJVU1UiLCJyZWN1cnNvIjp7ImlkIjoxNDQsIm5vbWUiOiJHSUxNQVIgUEVOSURPIERFIFNPVVpBIiwiZW1haWwiOiJnaWxtYXIuc291emFAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1NjgxMzY5OCwiZXhwIjoxNzU2ODE3Mjk4fQ._vdRlAGQWMaZ1hIVzYDOjySsxz4W3vHWsQ5XOpykgEM
-
-
-
-### - BUSCAR TODAS AS OS's POR TAREFA
-GET http://localhost:3000/api/OS-tarefa/1667
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ1LCJub21lIjoiR0lMTUFSIFBFTklETyBERSBTT1VaQSIsInRpcG8iOiJVU1UiLCJyZWN1cnNvIjp7ImlkIjoxNDQsIm5vbWUiOiJHSUxNQVIgUEVOSURPIERFIFNPVVpBIiwiZW1haWwiOiJnaWxtYXIuc291emFAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1NjgyODk0MiwiZXhwIjoxNzU2ODMyNTQyfQ.Mu86Go8OnL3ksJkRbJ3RamugfwJ5Iu9A0sczn-l3oj4
-
-
-
-### - BUSCAR TODOS OS CHAMADOS POR TAREFA
-GET http://localhost:3000/api/chamados-tarefa/1587
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ1LCJub21lIjoiR0lMTUFSIFBFTklETyBERSBTT1VaQSIsInRpcG8iOiJVU1UiLCJyZWN1cnNvIjp7ImlkIjoxNDQsIm5vbWUiOiJHSUxNQVIgUEVOSURPIERFIFNPVVpBIiwiZW1haWwiOiJnaWxtYXIuc291emFAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1NjgyODk0MiwiZXhwIjoxNzU2ODMyNTQyfQ.Mu86Go8OnL3ksJkRbJ3RamugfwJ5Iu9A0sczn-l3oj4
-
-
-
-### Atualizar chamado para EM ATENDIMENTO (não deve criar OS)
-POST http://localhost:3000/api/status-apontamento-chamado/13471
-Content-Type: application/json
-
-{
-  "statusChamado": "EM ATENDIMENTO",
-  "codTarefa": 10,
-  "criarOS": false
-}
-
+# BUSCAR TODOS OS REGISTROS DA TABELA OS - FILTRANDO ANO / MES / DIA - OK
 ###
+GET http://localhost:3000/api/os/tabela?page=1&limit=20&ano=2025&mes=9&dia=1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MDczMTY1OSwiZXhwIjoxNzYwNzQyNDU5fQ.iFZAV-Ca2Rvqpx-JzbUYk4cVHN-g2AtFXYs5kWTaEu0
 
-### Atualizar chamado para FINALIZADO (OS obrigatória)
-POST http://localhost:3000/api/status-apontamento-chamado/13471
-Content-Type: application/json
-
-{
-  "statusChamado": "FINALIZADO",
-  "codClassificacao": 3,
-  "codTarefa": 10,
-  "criarOS": true,
-  "dadosOS": {
-    "dataInicioOS": "2025-09-18",
-    "horaInicioOS": "08:00",
-    "horaFimOS": "09:30",
-    "observacaoOS": "Chamado finalizado com sucesso e verificação realizada",
-    "recurso": "1"
-  }
-}
-
+# BUSCAR TODOS OS REGISTROS DA TABELA OS - FILTRANDO ANO / MES / TODOS - OK
 ###
+GET http://localhost:3000/api/os/tabela?page=1&limit=20&ano=2025&mes=9&dia=todos
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MDcyMzM3MiwiZXhwIjoxNzYwNzM0MTcyfQ.As6LISZdQrfze9qDW64mQ-zTfMBco0K7TC-RUCjfEz0
 
-GET http://localhost:3000/api/permitir-retroativo-os-chamado
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1ODYzNzMzNywiZXhwIjoxNzU4NjQwOTM3fQ.Lzc7tx8Rbly_E3tv2uvHR60lpXxAVshw-RvB3Whnofk
-
+# BUSCAR TODOS OS REGISTROS DA TABELA OS - FILTRANDO ANO / TODOS / DIA - OK
 ###
-GET http://localhost:3000/api/permitir-retroativo-os-tarefa?resourceId=143&tarefaId=343
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1ODYzNzMzNywiZXhwIjoxNzU4NjQwOTM3fQ.Lzc7tx8Rbly_E3tv2uvHR60lpXxAVshw-RvB3Whnofk
+GET http://localhost:3000/api/os/tabela?page=1&limit=20&ano=2025&mes=todos&dia=1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MDcyMzM3MiwiZXhwIjoxNzYwNzM0MTcyfQ.As6LISZdQrfze9qDW64mQ-zTfMBco0K7TC-RUCjfEz0
 
+# BUSCAR TODOS OS REGISTROS DA TABELA OS - FILTRANDO TODOS / MES / DIA - OK
 ###
-POST http://localhost:3000/api/permitir-retroativo-os-tarefa
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1ODYzNzMzNywiZXhwIjoxNzU4NjQwOTM3fQ.Lzc7tx8Rbly_E3tv2uvHR60lpXxAVshw-RvB3Whnofk
+GET http://localhost:3000/api/os/tabela?page=1&limit=20&ano=todos&mes=9&dia=1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MDcyMzM3MiwiZXhwIjoxNzYwNzM0MTcyfQ.As6LISZdQrfze9qDW64mQ-zTfMBco0K7TC-RUCjfEz0
 
-{
-  "resourceId": "144",
-  "resourceName": "GILMAR PENIDO DE SOUZA",
-  "tarefaId": "343",
-  "adminId": "143",
-}
+# ===========================================================================================================================
 
-# ================================================================================
-# DELETES
-# ================================================================================
-### Deletar Chamado
-DELETE http://localhost:3000/api/chamados/delete/13471
-# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1ODYzNzMzNywiZXhwIjoxNzU4NjQwOTM3fQ.Lzc7tx8Rbly_E3tv2uvHR60lpXxAVshw-RvB3Whnofk
-
+# BUSCAR TODOS OS REGISTROS DA TABELA OS - FILTRANDO TODOS / TODOS / TODOS - ERRO 500
 ###
-GET http://localhost:3000/api/chamados/tabela-chamado?ano=2025&mes=todos&page=1&limit=20&filter_DATA_CHAMADO=26.09
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc1OTMyNTA1MiwiZXhwIjoxNzU5MzM1ODUyfQ.hemLovtUC6hk_yCX2-w6js3cbuWNwlR4IdO4vRxXhng
+GET http://localhost:3000/api/os/tabela?page=1&limit=20&ano=todos&mes=todos&dia=todos
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MDcyMzM3MiwiZXhwIjoxNzYwNzM0MTcyfQ.As6LISZdQrfze9qDW64mQ-zTfMBco0K7TC-RUCjfEz0
 
+# BUSCAR TODOS OS REGISTROS DA TABELA OS - FILTRANDO TODOS / TODOS / DIA - ERRO 500
 ###
-GET http://localhost:3000/api/tarefas
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MDUyNjk0NSwiZXhwIjoxNzYwNTM3NzQ1fQ.rFR-roegnX72U4NoZHCM6HyxhoA-Osb95NbeFlmYjKg
+GET http://localhost:3000/api/os/tabela?page=1&limit=20&ano=todos&mes=todos&dia=1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MDcyMzM3MiwiZXhwIjoxNzYwNzM0MTcyfQ.As6LISZdQrfze9qDW64mQ-zTfMBco0K7TC-RUCjfEz0
 
-# BUSCAR TODOS OS REGISTROS DA TABELA PROJETO
+# BUSCAR TODOS OS REGISTROS DA TABELA OS - FILTRANDO TODOS / MES / TODOS - ERRO 500
 ###
-GET http://localhost:3000/api/projeto/tabela
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MDYzNDU2MSwiZXhwIjoxNzYwNjQ1MzYxfQ.7uFf-yhPBIelDd9JGaYwdgAUW8Yh3wZVn34mpA3ECMs
+GET http://localhost:3000/api/os/tabela?page=1&limit=20&ano=todos&mes=9&dia=todos
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MDcyMzM3MiwiZXhwIjoxNzYwNzM0MTcyfQ.As6LISZdQrfze9qDW64mQ-zTfMBco0K7TC-RUCjfEz0
+
+# BUSCAR TODOS OS REGISTROS DA TABELA OS - FILTRANDO ANO / TODOS / TODOS - ERRO 500
+###
+GET http://localhost:3000/api/os/tabela?page=1&limit=20&ano=2025&mes=todos&dia=todos
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MDcyMzM3MiwiZXhwIjoxNzYwNzM0MTcyfQ.As6LISZdQrfze9qDW64mQ-zTfMBco0K7TC-RUCjfEz0
+
 
 

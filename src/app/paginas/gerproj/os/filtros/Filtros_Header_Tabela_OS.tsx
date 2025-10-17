@@ -1,5 +1,7 @@
 'use client';
 // ================================================================================
+// IMPORTS
+// ================================================================================
 import { debounce } from 'lodash';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 // ================================================================================
@@ -7,9 +9,51 @@ import { InputFilterTableHeaderProps } from '../../../../../types/types';
 import { normalizeDate } from '../../../../../utils/formatters';
 // ================================================================================
 import { FaPlus } from 'react-icons/fa';
+import { IoClose } from 'react-icons/io5';
+import { SelectSimNaoTabelaOS } from './Select_Sim_Nao'; // Importar o novo componente
 
 // ================================================================================
-// INTERFACE PARA PROPS DOS COMPONENTES
+// CONSTANTES
+// ================================================================================
+const DEBOUNCE_DELAY = 200;
+
+const SEARCHABLE_COLUMNS = [
+   'COD_OS',
+   'CODTRF_OS',
+   'CHAMADO_OS',
+   'DTINI_OS',
+   'DTINC_OS',
+   'NOME_CLIENTE',
+   'FATURADO_OS',
+   'NOME_RECURSO',
+   'VALID_OS',
+] as const;
+
+const DATE_COLUMNS = ['DTINI_OS', 'DTINC_OS'] as const;
+
+const NUMERIC_COLUMNS = ['COD_OS', 'CHAMADO_OS'] as const;
+const NUMERIC_ONLY_COLUMNS = ['COD_OS', 'CODTRF_OS'] as const;
+const UPPERCASE_COLUMNS = ['FATURADO_OS', 'VALID_OS'] as const;
+
+// Colunas que usam dropdown SIM/NÃO
+const DROPDOWN_SIM_NAO_COLUMNS = ['FATURADO_OS', 'VALID_OS'] as const;
+
+// Limites de caracteres baseados no banco de dados
+export const COLUMN_MAX_LENGTH: Record<string, number> = {
+   COD_OS: 5, // INTEGER
+   CODTRF_OS: 4, // Concatenação testada
+   CHAMADO_OS: 5, // INTEGER
+   DTINI_OS: 10, // DATE (formato DD/MM/YYYY)
+   DTINC_OS: 10, // DATE
+   COMP_OS: 7, // VARCHAR (assumindo competência/descrição)
+   NOME_CLIENTE: 15, // Assumindo limite
+   NOME_RECURSO: 15, // Assumindo limite
+   FATURADO_OS: 3, // CHAR(3) - similar ao FATURA_TAREFA
+   VALID_OS: 3, // CHAR(3) - assumindo SIM/NÃO
+};
+
+// ================================================================================
+// INTERFACES
 // ================================================================================
 interface FilterControlsProps {
    showFilters: boolean;
@@ -19,53 +63,175 @@ interface FilterControlsProps {
    dataLength: number;
 }
 
+interface ExtendedInputFilterProps extends InputFilterTableHeaderProps {
+   columnId?: string;
+}
+
 // ================================================================================
-// COMPONENTE INPUT FILTRO POR COLUNA COM DEBOUNCE
+// FUNÇÕES UTILITÁRIAS
 // ================================================================================
-export const FiltrosHeaderTabelaOs = ({
+const normalizeString = (str: string): string => {
+   return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase();
+};
+
+const getCellValue = (row: any, columnId: string): string => {
+   const value = row.getValue(columnId);
+   return String(value || '');
+};
+
+// ================================================================================
+// COMPONENTE INPUT FILTRO (INTERNO) COM DEBOUNCE E MAXLENGTH
+// ================================================================================
+const InputFilterWithDebounce = ({
    value,
    onChange,
-   placeholder,
    type = 'text',
-}: InputFilterTableHeaderProps) => {
+   columnId,
+}: ExtendedInputFilterProps) => {
    const [localValue, setLocalValue] = useState(value);
-   const [isFocused, setIsFocused] = useState(false);
-   // ====================
 
+   // Obter o limite máximo para a coluna específica
+   const maxLength = columnId ? COLUMN_MAX_LENGTH[columnId] : undefined;
+
+   // Verificar se a coluna aceita apenas números
+   const isNumericOnly = columnId
+      ? NUMERIC_ONLY_COLUMNS.includes(columnId as any)
+      : false;
+
+   // Sincroniza valor local com prop externa
    useEffect(() => {
       setLocalValue(value);
    }, [value]);
-   // ====================
 
+   // Debounce otimizado com cleanup
    const debouncedOnChange = useMemo(
       () =>
          debounce((newValue: string) => {
             onChange(newValue.trim());
-         }, 200),
+         }, DEBOUNCE_DELAY),
       [onChange]
    );
-   // ====================
 
-   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const inputValue = e.target.value;
-      setLocalValue(inputValue);
-      debouncedOnChange(inputValue);
-   };
-   // ====================
+   // Cleanup do debounce
+   useEffect(() => {
+      return () => {
+         debouncedOnChange.cancel();
+      };
+   }, [debouncedOnChange]);
+
+   // Handlers
+   const handleChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+         const inputValue = e.target.value;
+
+         // Validar apenas números se for coluna numérica
+         if (isNumericOnly && inputValue && !/^\d*$/.test(inputValue)) {
+            return; // Não permite caracteres não numéricos
+         }
+
+         // Validar o limite de caracteres se definido
+         if (maxLength && inputValue.length > maxLength) {
+            return; // Não permite digitar além do limite
+         }
+
+         setLocalValue(inputValue);
+         debouncedOnChange(inputValue);
+      },
+      [debouncedOnChange, maxLength, isNumericOnly]
+   );
+
+   const handleClear = useCallback(() => {
+      setLocalValue('');
+      onChange('');
+      debouncedOnChange.cancel();
+   }, [onChange, debouncedOnChange]);
+
+   // Atalho de teclado para limpar (Escape)
+   const handleKeyDown = useCallback(
+      (e: React.KeyboardEvent<HTMLInputElement>) => {
+         if (e.key === 'Escape' && localValue) {
+            e.preventDefault();
+            handleClear();
+         }
+      },
+      [localValue, handleClear]
+   );
+
+   // Calcular se está próximo do limite (>80%)
+   const isNearLimit =
+      maxLength && localValue ? localValue.length / maxLength > 0.8 : false;
 
    return (
-      <input
+      <div className="group relative w-full">
+         <input
+            type={type}
+            value={localValue}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            maxLength={maxLength}
+            inputMode={isNumericOnly ? 'numeric' : 'text'}
+            pattern={isNumericOnly ? '[0-9]*' : undefined}
+            className={`w-full rounded-md bg-teal-950 px-4 py-2 pr-10 text-base text-white shadow-sm shadow-white transition-all select-none focus:ring-2 focus:outline-none ${
+               isNearLimit
+                  ? 'ring-2 ring-yellow-500/50 focus:ring-yellow-500'
+                  : 'focus:ring-pink-500'
+            }`}
+         />
+
+         {localValue && (
+            <button
+               onClick={handleClear}
+               aria-label="Limpar filtro"
+               title="Limpar (Esc)"
+               className="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer text-white transition-all hover:scale-150 hover:text-red-500 active:scale-95"
+               type="button"
+            >
+               <IoClose size={20} />
+            </button>
+         )}
+
+         {/* Contador de caracteres quando próximo ao limite */}
+         {maxLength && localValue && isNearLimit && (
+            <div className="absolute right-0 -bottom-5 text-xs font-semibold tracking-widest text-yellow-400 italic">
+               {localValue.length}/{maxLength}
+            </div>
+         )}
+      </div>
+   );
+};
+
+// ================================================================================
+// COMPONENTE PRINCIPAL - WRAPPER QUE DECIDE QUAL RENDERIZAR
+// ================================================================================
+export const FiltrosHeaderTabelaOs = ({
+   value,
+   onChange,
+   type = 'text',
+   columnId,
+}: ExtendedInputFilterProps) => {
+   // Verificar se a coluna usa dropdown SIM/NÃO
+   const isDropdownSimNao = columnId
+      ? DROPDOWN_SIM_NAO_COLUMNS.includes(columnId as any)
+      : false;
+
+   // Se for dropdown SIM/NÃO, renderizar o componente específico
+   if (isDropdownSimNao) {
+      return <SelectSimNaoTabelaOS value={value} onChange={onChange} />;
+   }
+
+   // Caso contrário, renderizar o input normal
+   return (
+      <InputFilterWithDebounce
+         value={value}
+         onChange={onChange}
          type={type}
-         value={localValue}
-         onChange={handleChange}
-         placeholder={isFocused ? '' : placeholder}
-         className="w-full rounded-md bg-teal-950 px-4 py-2 text-base text-white placeholder-slate-400 shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-105 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-         onFocus={() => setIsFocused(true)}
-         onBlur={() => setIsFocused(false)}
+         columnId={columnId}
       />
    );
 };
-// ====================
 
 // ================================================================================
 // CONTROLES DE FILTRO (MOSTRAR/OCULTAR E LIMPAR)
@@ -77,6 +243,14 @@ export const FilterControls = ({
    clearFilters,
    dataLength,
 }: FilterControlsProps) => {
+   const isDisabled = dataLength <= 1;
+
+   const handleToggleFilters = useCallback(() => {
+      if (!isDisabled) {
+         setShowFilters(!showFilters);
+      }
+   }, [isDisabled, showFilters, setShowFilters]);
+
    return (
       <div className="group flex w-full flex-col gap-1">
          <label className="flex items-center gap-2 text-base font-extrabold tracking-widest text-black uppercase select-none">
@@ -86,35 +260,38 @@ export const FilterControls = ({
          <div className="flex items-center gap-6">
             {/* Botão mostrar/ocultar filtros */}
             <button
-               onClick={() => setShowFilters(!showFilters)}
-               disabled={dataLength <= 1}
-               className={`w-[250px] cursor-pointer rounded-sm px-6 py-2.5 text-base tracking-widest transition-all select-none ${
+               onClick={handleToggleFilters}
+               disabled={isDisabled}
+               aria-label={showFilters ? 'Ocultar filtros' : 'Mostrar filtros'}
+               aria-expanded={showFilters}
+               className={`w-[300px] cursor-pointer rounded-sm px-6 py-3 text-base tracking-widest transition-all ${
                   showFilters
-                     ? 'border-none bg-blue-600 font-extrabold text-white italic shadow-md shadow-black hover:bg-blue-700'
-                     : 'border-none bg-white font-bold text-black italic shadow-md shadow-black hover:bg-white/70'
+                     ? 'border-none bg-teal-800 font-extrabold text-white italic shadow-lg shadow-black hover:bg-teal-950'
+                     : 'border-none bg-white font-bold text-black italic shadow-lg shadow-black hover:bg-white/60'
                } ${
-                  dataLength <= 1
+                  isDisabled
                      ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
-                     : 'hover:scale-105 active:scale-95'
+                     : 'active:scale-95'
                }`}
             >
-               {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+               {showFilters ? 'Ocultar Filtros' : 'Mostrar + Filtros'}
             </button>
 
             {/* Botão limpar filtros */}
             {totalActiveFilters > 0 && (
                <button
                   onClick={clearFilters}
-                  className="cursor-pointer rounded-sm border-none bg-red-600 px-6 py-2.5 text-base font-extrabold tracking-widest text-white italic shadow-md shadow-black transition-all select-none hover:scale-105 hover:bg-red-700 active:scale-95"
+                  aria-label={`Limpar ${totalActiveFilters} filtro${totalActiveFilters > 1 ? 's' : ''}`}
+                  className="cursor-pointer rounded-sm border-none bg-red-800 px-6 py-3 text-base font-extrabold tracking-widest text-white italic shadow-lg shadow-black transition-all hover:bg-red-950 active:scale-95"
                >
-                  Limpar Filtros
+                  Limpar Filtros{' '}
+                  {totalActiveFilters > 1 && `(${totalActiveFilters})`}
                </button>
             )}
          </div>
       </div>
    );
 };
-// ====================
 
 // ================================================================================
 // HOOK PERSONALIZADO PARA FUNÇÕES DE FILTRO
@@ -125,25 +302,12 @@ export const useFiltrosHeaderTabelaOSy = () => {
          if (!filterValue) return true;
 
          const searchValue = filterValue.toLowerCase().trim();
-         const searchableColumns = [
-            'CHAMADO_OS',
-            'COD_OS',
-            'DTINI_OS',
-            'DTINC_OS',
-            'COMP_OS',
-            'NOME_CLIENTE',
-            'FATURADO_OS',
-            'NOME_RECURSO',
-            'VALID_OS',
-            'TAREFA_COMPLETA',
-            'PROJETO_COMPLETO',
-         ];
 
-         return searchableColumns.some(colId => {
-            const cellValue = row.getValue(colId);
+         return SEARCHABLE_COLUMNS.some(colId => {
+            const cellValue = getCellValue(row, colId);
 
             // Para campos de data, usar normalização
-            if (colId === 'DTINI_OS' || colId === 'DTINC_OS') {
+            if (DATE_COLUMNS.includes(colId as any)) {
                const dateFormats = normalizeDate(cellValue);
                return dateFormats.some(dateFormat =>
                   dateFormat.toLowerCase().includes(searchValue)
@@ -151,7 +315,7 @@ export const useFiltrosHeaderTabelaOSy = () => {
             }
 
             // Para outros campos, busca normal
-            const cellString = String(cellValue || '').toLowerCase();
+            const cellString = cellValue.toLowerCase();
             return cellString.includes(searchValue);
          });
       },
@@ -162,26 +326,33 @@ export const useFiltrosHeaderTabelaOSy = () => {
       (row: any, columnId: string, filterValue: string) => {
          if (!filterValue || filterValue === '') return true;
 
-         const cellValue = row.getValue(columnId);
-         const filterString = String(filterValue).toLowerCase().trim();
+         const cellValue = getCellValue(row, columnId);
+         const filterString = String(filterValue).trim();
 
          // Tratamento especial para campos de data
-         if (columnId === 'DTINI_OS' || columnId === 'DTINC_OS') {
+         if (DATE_COLUMNS.includes(columnId as any)) {
             const dateFormats = normalizeDate(cellValue);
             return dateFormats.some(dateFormat =>
-               dateFormat.toLowerCase().includes(filterString)
+               dateFormat.toLowerCase().includes(filterString.toLowerCase())
             );
          }
 
-         // Para campos numéricos (como código do chamado)
-         if (columnId === 'COD_OS' || columnId === 'CHAMADO_OS') {
-            const cellString = String(cellValue || '');
-            return cellString.includes(filterString);
+         // Tratamento para colunas uppercase (FATURADO_OS, VALID_OS)
+         if (UPPERCASE_COLUMNS.includes(columnId as any)) {
+            const normalizedCell = normalizeString(cellValue);
+            const normalizedFilter = normalizeString(filterString);
+            return normalizedCell.includes(normalizedFilter);
          }
 
-         // Para outros campos de texto
-         const cellString = String(cellValue || '').toLowerCase();
-         return cellString.includes(filterString);
+         // Tratamento para colunas numéricas
+         if (NUMERIC_COLUMNS.includes(columnId as any)) {
+            return cellValue.includes(filterString);
+         }
+
+         // Tratamento padrão para texto
+         const cellLower = cellValue.toLowerCase();
+         const filterLower = filterString.toLowerCase();
+         return cellLower.includes(filterLower);
       },
       []
    );

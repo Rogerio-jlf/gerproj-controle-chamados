@@ -103,20 +103,76 @@ export function FiltrosTabelaOS({ onFiltersChange }: FiltrosProps) {
       }
    }, [ano, mes, dia, getDiasParaSelect, getMostrarTodos]);
 
-   // Handler específico para o dia que trata a mudança de valor
+   // ===== HANDLER ESPECIAL PARA ANO =====
+   const handleAnoChange = useCallback(
+      async (novoAno: number | 'todos') => {
+         if (novoAno === 'todos') {
+            // 1. Primeiro reseta mês e dia para valores atuais
+            setMes(hoje.getMonth() + 1);
+            setDia(hoje.getDate());
+
+            // 2. Aguarda o próximo ciclo de renderização
+            await new Promise(resolve => setTimeout(resolve, 0));
+
+            // 3. Só então atualiza o ano para "todos"
+            setAno('todos');
+         } else {
+            // Se não é "todos", atualiza normalmente
+            setAno(novoAno);
+         }
+      },
+      [hoje]
+   );
+
+   // ===== HANDLER ESPECIAL PARA MÊS =====
+   const handleMesChange = useCallback(
+      async (novoMes: number | 'todos') => {
+         if (novoMes === 'todos') {
+            // 1. Primeiro reseta ano e dia para valores atuais
+            setAno(hoje.getFullYear());
+            setDia(hoje.getDate());
+
+            // 2. Aguarda o próximo ciclo de renderização
+            await new Promise(resolve => setTimeout(resolve, 0));
+
+            // 3. Só então atualiza o mês para "todos"
+            setMes('todos');
+         } else {
+            // Se não é "todos", atualiza normalmente
+            setMes(novoMes);
+         }
+      },
+      [hoje]
+   );
+
+   // ===== HANDLER ESPECIAL PARA DIA =====
    const handleDiaChange = useCallback(
-      (novoDia: number | 'todos') => {
+      async (novoDia: number | 'todos') => {
          const mostrarTodosOpcao = getMostrarTodos();
 
          // Se não mostra opção "todos", força para número
          if (!mostrarTodosOpcao && novoDia === 'todos') {
             const diasAtuais = getDiasParaSelect();
             setDia(diasAtuais[0] || 1);
+            return;
+         }
+
+         if (novoDia === 'todos') {
+            // 1. Primeiro reseta ano e mês para valores atuais
+            setAno(hoje.getFullYear());
+            setMes(hoje.getMonth() + 1);
+
+            // 2. Aguarda o próximo ciclo de renderização
+            await new Promise(resolve => setTimeout(resolve, 0));
+
+            // 3. Só então atualiza o dia para "todos"
+            setDia('todos');
          } else {
+            // Se não é "todos", atualiza normalmente
             setDia(novoDia);
          }
       },
-      [getMostrarTodos, getDiasParaSelect]
+      [getMostrarTodos, getDiasParaSelect, hoje]
    );
 
    // Atualiza contexto quando os valores com debounce mudarem
@@ -148,15 +204,15 @@ export function FiltrosTabelaOS({ onFiltersChange }: FiltrosProps) {
 
    return (
       <div className="flex w-full gap-6">
-         <div className="w-[250px]">
-            <SelectAnoTabelaOS value={ano} onChange={setAno} />
+         <div className="w-[300px]">
+            <SelectAnoTabelaOS value={ano} onChange={handleAnoChange} />
          </div>
 
-         <div className="w-[250px]">
-            <SelectMesTabelaOS value={mes} onChange={setMes} />
+         <div className="w-[300px]">
+            <SelectMesTabelaOS value={mes} onChange={handleMesChange} />
          </div>
 
-         <div className="w-[250px]">
+         <div className="w-[300px]">
             <SelectDiaTabelaOS
                value={dia}
                onChange={handleDiaChange}

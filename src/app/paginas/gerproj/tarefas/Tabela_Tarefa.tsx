@@ -40,22 +40,22 @@ import { FaExclamationTriangle, FaTasks } from 'react-icons/fa';
 // ================================================================================
 const MODAL_MAX_HEIGHT = 'calc(100vh - 500px)';
 const DEBOUNCE_DELAY = 800;
-const ANIMATION_DURATION = 300;
+const ANIMATION_DURATION = 100;
 const CACHE_TIME = 1000 * 60 * 5;
 const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 const COLUMN_WIDTHS: Record<string, string> = {
    TAREFA_COMPLETA: '19%',
    PROJETO_COMPLETO: '19%',
-   NOME_RECURSO: '11%',
-   NOME_CLIENTE: '11%',
+   NOME_RECURSO: '10%',
+   NOME_CLIENTE: '10%',
    DTSOL_TAREFA: '6%',
    DTAPROV_TAREFA: '6%',
    DTPREVENT_TAREFA: '6%',
    HREST_TAREFA: '6%',
-   STATUS_TAREFA: '5%',
+   STATUS_TAREFA: '6%',
    DTINC_TAREFA: '6%',
-   FATURA_TAREFA: '5%',
+   FATURA_TAREFA: '6%',
 };
 
 // ================================================================================
@@ -219,10 +219,10 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
             state: inputFilterDtPreventTarefa,
             setter: setInputFilterDtPreventTarefa,
          },
-         HREST_TAREFA: {
-            state: inputFilterHrEstTarefa,
-            setter: setInputFilterHrEstTarefa,
-         },
+         // HREST_TAREFA: {
+         //    state: inputFilterHrEstTarefa,
+         //    setter: setInputFilterHrEstTarefa,
+         // },
          STATUS_TAREFA: {
             state: inputFilterStatusTarefa,
             setter: setInputFilterStatusTarefa,
@@ -244,7 +244,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
          inputFilterDtSolTarefa,
          inputFilterDtAprovTarefa,
          inputFilterDtPreventTarefa,
-         inputFilterHrEstTarefa,
+         // inputFilterHrEstTarefa,
          inputFilterStatusTarefa,
          inputFilterDtIncTarefa,
          inputFilterFaturaTarefa,
@@ -326,7 +326,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
 
       // Filtros de coluna
       const filterMappings = [
-         { filter: filterTarefaCompleta, param: 'filter_COD_TAREFA' },
+         { filter: filterTarefaCompleta, param: 'filter_NOME_TAREFA' },
          { filter: filterProjetoCompleto, param: 'filter_NOME_PROJETO' },
          { filter: filterNomeRecurso, param: 'filter_NOME_RECURSO' },
          { filter: filterNomeCliente, param: 'filter_NOME_CLIENTE' },
@@ -511,11 +511,17 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    if (!isOpen) return null;
 
    if (!user || !token) {
-      return <IsError error={new Error('Usuário não autenticado')} />;
+      return <IsError error={new Error('Usuário não autenticado.')} />;
    }
 
    if (isError) {
       return <IsError error={error as Error} />;
+   }
+
+   if (isLoading) {
+      return (
+         <IsLoading isLoading={true} title="Aguarde, carregando Tarefas..." />
+      );
    }
 
    // ================================================================================
@@ -547,7 +553,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                   <button
                      onClick={handleCloseTabelaTarefa}
                      aria-label="Fechar modal de tarefas"
-                     className={`group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 ${
+                     className={`group cursor-pointer rounded-full bg-red-500/50 p-3 text-white transition-all hover:scale-125 hover:bg-red-500 active:scale-95 ${
                         isClosing ? 'animate-spin' : ''
                      }`}
                   >
@@ -824,7 +830,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
          {/* LOADING */}
          <IsLoading
             isLoading={isLoading}
-            title={`Buscando Tarefas para o período: ${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${ano}`}
+            title={`Buscando Tarefas para o período: ${dia === 'todos' ? '' : String(dia).padStart(2, '0')}/${mes === 'todos' ? '' : String(mes).padStart(2, '0')}/${ano === 'todos' ? '' : ano}.`}
          />
       </div>
    );

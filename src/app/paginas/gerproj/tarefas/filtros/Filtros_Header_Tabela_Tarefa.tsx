@@ -42,21 +42,22 @@ const UPPERCASE_COLUMNS = ['FATURA_TAREFA'] as const;
 
 // Limites de caracteres baseados no banco de dados
 export const COLUMN_MAX_LENGTH: Record<string, number> = {
+   TAREFA_COMPLETA: 15, // Concatenação testada
+   PROJETO_COMPLETO: 15, // Concatenação testada
+   NOME_RECURSO: 20, // Assumindo limite
+   NOME_CLIENTE: 20, // Assumindo limite
+   DTSOL_TAREFA: 10, // DATE (formato DD/MM/YYYY)
+   DTAPROV_TAREFA: 10, // DATE
+   DTPREVENT_TAREFA: 10, // DATE
+   // HREST_TAREFA: 18, // NUMERIC(15,2)
+   STATUS_TAREFA: 1, // INTEGER
+   DTINC_TAREFA: 10, // DATE
+   FATURA_TAREFA: 3, // CHAR(3)
+   // =====
    COD_TAREFA: 10, // INTEGER
    NOME_TAREFA: 50, // VARCHAR(50)
    CODPRO_TAREFA: 10, // INTEGER
    CODREC_TAREFA: 10, // INTEGER
-   DTSOL_TAREFA: 10, // DATE (formato DD/MM/YYYY)
-   DTAPROV_TAREFA: 10, // DATE
-   DTPREVENT_TAREFA: 10, // DATE
-   HREST_TAREFA: 18, // NUMERIC(15,2)
-   STATUS_TAREFA: 10, // INTEGER
-   DTINC_TAREFA: 10, // DATE
-   FATURA_TAREFA: 3, // CHAR(3)
-   TAREFA_COMPLETA: 15, // Concatenação testada
-   PROJETO_COMPLETO: 15, // Concatenação testada
-   NOME_RECURSO: 30, // Assumindo limite
-   NOME_CLIENTE: 30, // Assumindo limite
 };
 
 // ================================================================================
@@ -95,7 +96,6 @@ const getCellValue = (row: any, columnId: string): string => {
 export const FiltrosHeaderTabelaTarefa = ({
    value,
    onChange,
-   placeholder = 'Filtrar...',
    type = 'text',
    columnId,
 }: ExtendedInputFilterProps) => {
@@ -173,8 +173,6 @@ export const FiltrosHeaderTabelaTarefa = ({
             value={localValue}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            placeholder={isFocused ? '' : placeholder}
-            aria-label={placeholder}
             maxLength={maxLength}
             className={`w-full rounded-md bg-teal-950 px-4 py-2 pr-10 text-base text-white placeholder-slate-400 shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:outline-none ${
                isNearLimit
