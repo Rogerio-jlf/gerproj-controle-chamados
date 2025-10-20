@@ -1,9 +1,18 @@
-import { ColumnDef } from '@tanstack/react-table';
+// imports
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipProvider,
+   TooltipTrigger,
+} from '../../../../components/ui/tooltip';
 import { useMemo } from 'react';
-// ================================================================================
+import { ColumnDef } from '@tanstack/react-table';
+
+// Components
 import { TabelaOSProps } from '../../../../types/types';
-import { ModalEditarCellFaturadoOSValidOS } from './Modal_Editar_Cell_FaturadoOS_ValidOS';
-// ================================================================================
+import { ModalEditarCellFaturadoOSValidOS } from './modais/Modal_Editar_Cell_FaturadoOS_ValidOS';
+
+// Formatters
 import {
    formatarDataParaBR,
    formatarDataHoraParaBR,
@@ -12,17 +21,14 @@ import {
    formatarHorasTotaisHorasDecimais,
 } from '../../../../utils/formatters';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipProvider,
-   TooltipTrigger,
-} from '../../../../components/ui/tooltip';
+
+// Icons
+import { FaEye } from 'react-icons/fa';
 
 // ================================================================================
 // CONSTANTES
 // ================================================================================
-const FATURADO_CONFIG = {
+const FATURADO_OS_CONFIG = {
    SIM: {
       label: 'SIM',
       bgColor: 'bg-blue-600',
@@ -40,20 +46,23 @@ const FATURADO_CONFIG = {
    },
 } as const;
 
-const VALID_CONFIG = {
+const VALID_OS_CONFIG = {
    SIM: {
       label: 'SIM',
       bgColor: 'bg-blue-600',
+      hoverBg: 'bg-blue-700',
       textColor: 'text-white',
    },
    NAO: {
       label: 'NÃO',
       bgColor: 'bg-red-600',
+      hoverBg: 'bg-red-700',
       textColor: 'text-white',
    },
    DEFAULT: {
       label: 'N/A',
       bgColor: 'bg-white/50',
+      hoverBg: 'bg-gray-200',
       textColor: 'text-black',
    },
 } as const;
@@ -69,6 +78,7 @@ interface ColunasProps {
       field: string,
       value: any
    ) => Promise<void>;
+   onVisualizarOS?: (codOs: number) => void; // NOVA PROP
 }
 
 // ================================================================================
@@ -123,80 +133,6 @@ const CellText = ({
             </span>
          )}
       </div>
-   );
-};
-
-/**
- * Componente para células de texto com Tooltip
- */
-interface CellTextWithTooltipProps {
-   value: string | null | undefined;
-   maxWords?: number;
-   align?: 'left' | 'center';
-}
-
-const CellTextWithTooltip = ({
-   value,
-   maxWords,
-   align = 'left',
-}: CellTextWithTooltipProps) => {
-   const isEmpty = !value || value.trim() === '';
-
-   const processedValue = useMemo(() => {
-      if (isEmpty) return null;
-
-      // Limita a quantidade de palavras se especificado
-      if (maxWords && maxWords > 0) {
-         return value.split(' ').slice(0, maxWords).join(' ');
-      }
-
-      return value;
-   }, [value, maxWords, isEmpty]);
-
-   const alignClass =
-      align === 'center'
-         ? 'justify-center text-center'
-         : 'justify-start pl-2 text-left';
-
-   // Se estiver vazio, retorna sem tooltip
-   if (isEmpty) {
-      return (
-         <div
-            className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
-         >
-            {EMPTY_VALUE}
-         </div>
-      );
-   }
-
-   // Se o texto foi truncado ou limitado, mostra o tooltip
-   const isTruncated = maxWords
-      ? value.split(' ').length > maxWords
-      : value.replace(/\s+/g, '').length > 27;
-
-   return (
-      <TooltipProvider delayDuration={300}>
-         <Tooltip>
-            <TooltipTrigger asChild>
-               <div
-                  className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass} cursor-help`}
-               >
-                  <span className="block w-full truncate">
-                     {processedValue}
-                  </span>
-               </div>
-            </TooltipTrigger>
-            {isTruncated && (
-               <TooltipContent
-                  side="top"
-                  align="center"
-                  className="max-w-lg border-none bg-slate-600 font-semibold tracking-wider break-words text-white italic shadow-sm shadow-black"
-               >
-                  <p className="text-sm">{value}</p>
-               </TooltipContent>
-            )}
-         </Tooltip>
-      </TooltipProvider>
    );
 };
 
@@ -293,8 +229,8 @@ interface CellFaturadoReadOnlyProps {
 const CellFaturadoReadOnly = ({ value }: CellFaturadoReadOnlyProps) => {
    const valueUpper = value
       ?.toUpperCase()
-      .trim() as keyof typeof FATURADO_CONFIG;
-   const config = FATURADO_CONFIG[valueUpper] || FATURADO_CONFIG.DEFAULT;
+      .trim() as keyof typeof FATURADO_OS_CONFIG;
+   const config = FATURADO_OS_CONFIG[valueUpper] || FATURADO_OS_CONFIG.DEFAULT;
 
    return (
       <div
@@ -314,8 +250,10 @@ interface CellValidReadOnlyProps {
 }
 
 const CellValidReadOnly = ({ value }: CellValidReadOnlyProps) => {
-   const valueUpper = value?.toUpperCase().trim() as keyof typeof VALID_CONFIG;
-   const config = VALID_CONFIG[valueUpper] || VALID_CONFIG.DEFAULT;
+   const valueUpper = value
+      ?.toUpperCase()
+      .trim() as keyof typeof VALID_OS_CONFIG;
+   const config = VALID_OS_CONFIG[valueUpper] || VALID_OS_CONFIG.DEFAULT;
 
    return (
       <div
@@ -351,6 +289,44 @@ const CellEditable = ({
          onUpdate={onUpdate}
          disabled={false}
       />
+   );
+};
+
+/**
+ * Componente para célula de ações
+ * NOVO COMPONENTE
+ */
+interface CellAcoesProps {
+   codOs: number;
+   onVisualizarOS?: (codOs: number) => void;
+}
+
+const CellAcoes = ({ codOs, onVisualizarOS }: CellAcoesProps) => {
+   return (
+      <div className="flex items-center justify-center">
+         {onVisualizarOS && (
+            <TooltipProvider>
+               <Tooltip>
+                  <TooltipTrigger asChild>
+                     <button
+                        onClick={() => onVisualizarOS(codOs)}
+                        className="inline-flex cursor-pointer items-center justify-center text-white transition-all hover:scale-150 active:scale-95"
+                     >
+                        <FaEye className="text-white" size={32} />
+                     </button>
+                  </TooltipTrigger>
+                  <TooltipContent
+                     side="right"
+                     align="start"
+                     sideOffset={8}
+                     className="border-t-8 border-cyan-500 bg-white text-sm font-extrabold tracking-widest text-black italic shadow-sm shadow-black select-none"
+                  >
+                     Visualizar OS
+                  </TooltipContent>
+               </Tooltip>
+            </TooltipProvider>
+         )}
+      </div>
    );
 };
 
@@ -466,15 +442,6 @@ export const colunasTabelaOS = (
          },
       },
 
-      // Cliente
-      {
-         accessorKey: 'NOME_CLIENTE',
-         header: () => <HeaderCenter>cliente</HeaderCenter>,
-         cell: ({ getValue }) => (
-            <CellText value={getValue() as string} maxWords={2} correctText />
-         ),
-      },
-
       // Cliente Paga (Faturado)
       {
          accessorKey: 'FATURADO_OS',
@@ -498,12 +465,24 @@ export const colunasTabelaOS = (
             );
          },
       },
+
+      // AÇÕES - NOVA COLUNA
+      {
+         id: 'acoes',
+         header: () => <HeaderCenter>ações</HeaderCenter>,
+         cell: ({ row }) => (
+            <CellAcoes
+               codOs={row.original.COD_OS}
+               onVisualizarOS={props?.onVisualizarOS}
+            />
+         ),
+      },
    ];
 };
 
 // ================================================================================
 // EXPORT DE TIPOS ÚTEIS
 // ================================================================================
-export type FaturadoType = keyof typeof FATURADO_CONFIG;
-export type ValidType = keyof typeof VALID_CONFIG;
-export { FATURADO_CONFIG, VALID_CONFIG, EMPTY_VALUE };
+export type FaturadoType = keyof typeof FATURADO_OS_CONFIG;
+export type ValidType = keyof typeof VALID_OS_CONFIG;
+export { FATURADO_OS_CONFIG, VALID_OS_CONFIG, EMPTY_VALUE };

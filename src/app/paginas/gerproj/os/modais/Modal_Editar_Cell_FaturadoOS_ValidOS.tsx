@@ -4,11 +4,11 @@ import {
    TooltipContent,
    TooltipProvider,
    TooltipTrigger,
-} from '../../../../components/ui/tooltip';
+} from '../../../../../components/ui/tooltip';
 import { IoClose } from 'react-icons/io5';
-import { LoadingButton } from '../../../../components/Loading';
+import { LoadingButton } from '../../../../../components/Loading';
 import { MdEditSquare } from 'react-icons/md';
-import { formatarCodNumber } from '../../../../utils/formatters';
+import { formatarCodNumber } from '../../../../../utils/formatters';
 import { FaArrowsAltH } from 'react-icons/fa';
 import { IoIosSave } from 'react-icons/io';
 
@@ -263,12 +263,12 @@ export function ModalEditarCellFaturadoOSValidOS({
    // Estilos baseados no valor
    const getStyles = (val: SimNaoValue) => {
       if (val === 'SIM') {
-         return 'bg-blue-600 text-white border-[1px] border-blue-700';
+         return 'bg-blue-600 text-white border-[1px] border-blue-700 hover:bg-blue-800';
       }
       if (val === 'NAO') {
-         return 'bg-red-600 text-white border-[1px] border-red-700';
+         return 'bg-red-600 text-white border-[1px] border-red-700 hover:bg-red-800';
       }
-      return 'bg-gray-600 text-gray-700 border-[1px] border-gray-700';
+      return 'bg-gray-600 text-gray-700 border-[1px] border-gray-700 hover:bg-gray-500';
    };
 
    const fieldLabel =
@@ -334,10 +334,10 @@ export function ModalEditarCellFaturadoOSValidOS({
                         </div>
                      </TooltipTrigger>
                      <TooltipContent
-                        side="right"
+                        side="left"
                         align="start"
                         sideOffset={8}
-                        className="border-t-8 border-blue-600 bg-white text-sm font-extrabold tracking-widest text-black shadow-sm shadow-black select-none"
+                        className="border-t-8 border-cyan-500 bg-white text-sm font-extrabold tracking-widest text-black italic shadow-sm shadow-black select-none"
                      >
                         <div className="text-sm font-semibold tracking-wider text-black italic select-none">
                            {isLoading

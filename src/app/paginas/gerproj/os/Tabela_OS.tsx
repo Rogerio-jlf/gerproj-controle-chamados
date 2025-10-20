@@ -22,6 +22,7 @@ import { IsLoading } from '../../../../components/IsLoading';
 import { colunasTabelaOS } from './Colunas_Tabela_OS';
 import { formatarCodNumber } from '../../../../utils/formatters';
 import { FiltrosTabelaOS } from './filtros/Filtros_Tabela_OS';
+import { ModalVisualizarOS } from './modais/Modal_Vizualizar_OS';
 
 // Hooks & Types
 import { useAuth } from '../../../../hooks/useAuth';
@@ -50,14 +51,14 @@ const COLUMN_WIDTHS: Record<string, string> = {
    CODTRF_OS: '7%',
    CHAMADO_OS: '7%',
    DTINI_OS: '7%',
-   HRINI_OS: '6%',
-   HRFIM_OS: '6%',
-   QTD_HR_OS: '6%',
+   HRINI_OS: '7%',
+   HRFIM_OS: '7%',
+   QTD_HR_OS: '7%',
    DTINC_OS: '10%',
-   NOME_RECURSO: '15%',
-   VALID_OS: '7%',
-   NOME_CLIENTE: '15%',
-   FATURADO_OS: '7%',
+   NOME_RECURSO: '16%',
+   VALID_OS: '10%',
+   FATURADO_OS: '10%',
+   acoes: '5%',
 };
 
 // ================================================================================
@@ -117,6 +118,9 @@ export function TabelaOS({ isOpen, onClose }: Props) {
    const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
+   const [selectedOS, setSelectedOS] = useState<TabelaOSProps | null>(null);
+   const [openModalVisualizarOS, setOpenModalVisualizarOS] = useState(false);
+
    // ================================================================================
    // ESTADOS - FILTROS (INPUTS SEM DEBOUNCE)
    // ================================================================================
@@ -127,7 +131,6 @@ export function TabelaOS({ isOpen, onClose }: Props) {
    const [inputFilterDtincOs, setInputFilterDtincOs] = useState('');
    const [inputFilterNomeRecurso, setInputFilterNomeRecurso] = useState('');
    const [inputFilterValidOs, setInputFilterValidOs] = useState('');
-   const [inputFilterNomeCliente, setInputFilterNomeCliente] = useState('');
    const [inputFilterFaturadoOs, setInputFilterFaturadoOs] = useState('');
    useState('');
 
@@ -139,7 +142,6 @@ export function TabelaOS({ isOpen, onClose }: Props) {
    const filterDtincOs = useDebouncedValue(inputFilterDtincOs);
    const filterNomeRecurso = useDebouncedValue(inputFilterNomeRecurso);
    const filterValidOs = useDebouncedValue(inputFilterValidOs);
-   const filterNomeCliente = useDebouncedValue(inputFilterNomeCliente);
    const filterFaturadoOs = useDebouncedValue(inputFilterFaturadoOs);
 
    // ================================================================================
@@ -222,10 +224,6 @@ export function TabelaOS({ isOpen, onClose }: Props) {
             state: inputFilterValidOs,
             setter: setInputFilterValidOs,
          },
-         NOME_CLIENTE: {
-            state: inputFilterNomeCliente,
-            setter: setInputFilterNomeCliente,
-         },
          FATURADO_OS: {
             state: inputFilterFaturadoOs,
             setter: setInputFilterFaturadoOs,
@@ -239,7 +237,6 @@ export function TabelaOS({ isOpen, onClose }: Props) {
          inputFilterDtincOs,
          inputFilterNomeRecurso,
          inputFilterValidOs,
-         inputFilterNomeCliente,
          inputFilterFaturadoOs,
       ]
    );
@@ -271,7 +268,6 @@ export function TabelaOS({ isOpen, onClose }: Props) {
          filterDtincOs,
          filterNomeRecurso,
          filterValidOs,
-         filterNomeCliente,
          filterFaturadoOs,
       ];
       return filters.filter(f => f?.trim()).length;
@@ -283,7 +279,6 @@ export function TabelaOS({ isOpen, onClose }: Props) {
       filterDtincOs,
       filterNomeRecurso,
       filterValidOs,
-      filterNomeCliente,
       filterFaturadoOs,
    ]);
 
@@ -322,7 +317,6 @@ export function TabelaOS({ isOpen, onClose }: Props) {
          { filter: filterDtincOs, param: 'filter_DTINC_OS' },
          { filter: filterNomeRecurso, param: 'filter_NOME_RECURSO' },
          { filter: filterValidOs, param: 'filter_VALID_OS' },
-         { filter: filterNomeCliente, param: 'filter_NOME_CLIENTE' },
          { filter: filterFaturadoOs, param: 'filter_FATURADO_OS' },
       ];
 
@@ -347,7 +341,6 @@ export function TabelaOS({ isOpen, onClose }: Props) {
       filterDtincOs,
       filterNomeRecurso,
       filterValidOs,
-      filterNomeCliente,
       filterFaturadoOs,
    ]);
 
@@ -411,7 +404,6 @@ export function TabelaOS({ isOpen, onClose }: Props) {
       filterDtincOs,
       filterNomeRecurso,
       filterValidOs,
-      filterNomeCliente,
       filterFaturadoOs,
    ]);
 
@@ -426,7 +418,6 @@ export function TabelaOS({ isOpen, onClose }: Props) {
       setInputFilterDtincOs('');
       setInputFilterNomeRecurso('');
       setInputFilterValidOs('');
-      setInputFilterNomeCliente('');
       setInputFilterFaturadoOs('');
       setCurrentPage(1);
    }, []);
@@ -467,6 +458,23 @@ export function TabelaOS({ isOpen, onClose }: Props) {
          onClose();
       }, ANIMATION_DURATION);
    }, [onClose]);
+   // =====
+
+   const handleOpenModalVisualizarOS = useCallback(
+      (codOs: number) => {
+         const os = data.find(os => os.COD_OS === codOs);
+         if (os) {
+            setSelectedOS(os);
+            setOpenModalVisualizarOS(true);
+         }
+      },
+      [data]
+   );
+
+   const handleCloseModalVisualizarOS = useCallback(() => {
+      setOpenModalVisualizarOS(false);
+      setSelectedOS(null);
+   }, []);
 
    // ================================================================================
    // HANDLERS - UPDATE FIELD
@@ -506,8 +514,12 @@ export function TabelaOS({ isOpen, onClose }: Props) {
    // CONFIGURAÇÃO DA TABELA
    // ================================================================================
    const colunas = useMemo(
-      () => colunasTabelaOS({ handleUpdateField }),
-      [handleUpdateField]
+      () =>
+         colunasTabelaOS({
+            handleUpdateField,
+            onVisualizarOS: handleOpenModalVisualizarOS,
+         }),
+      [handleUpdateField, handleOpenModalVisualizarOS]
    );
 
    const table = useReactTable({
@@ -724,7 +736,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                               onChange={e =>
                                  handlePageSizeChange(Number(e.target.value))
                               }
-                              className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+                              className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
                            >
                               {PAGE_SIZE_OPTIONS.map(size => (
                                  <option
@@ -744,7 +756,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                               onClick={() => handlePageChange(1)}
                               disabled={!paginationInfo.hasPrevPage}
                               aria-label="Ir para primeira página"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsLeft
                                  className="text-black group-disabled:text-red-500"
@@ -756,7 +768,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                               onClick={() => handlePageChange(currentPage - 1)}
                               disabled={!paginationInfo.hasPrevPage}
                               aria-label="Página anterior"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronLeft
                                  className="text-black group-disabled:text-red-500"
@@ -773,7 +785,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                                        handlePageChange(Number(e.target.value))
                                     }
                                     aria-label="Selecionar página"
-                                    className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+                                    className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
                                  >
                                     {Array.from(
                                        { length: paginationInfo.totalPages },
@@ -800,7 +812,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                               onClick={() => handlePageChange(currentPage + 1)}
                               disabled={!paginationInfo.hasNextPage}
                               aria-label="Próxima página"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronRight
                                  className="text-black group-disabled:text-red-500"
@@ -814,7 +826,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                               }
                               disabled={!paginationInfo.hasNextPage}
                               aria-label="Ir para última página"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsRight
                                  className="text-black group-disabled:text-red-500"
@@ -841,10 +853,25 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                )}
          </div>
 
+         {/* MODAL VISUALIZAR OS */}
+         {openModalVisualizarOS && selectedOS && (
+            <ModalVisualizarOS
+               isOpen={openModalVisualizarOS}
+               onClose={handleCloseModalVisualizarOS}
+               os={selectedOS}
+            />
+         )}
+
          {/* LOADING */}
          <IsLoading
             isLoading={isLoading}
-            title={`Buscando OS's para o período: ${dia === 'todos' ? '' : String(dia).padStart(2, '0')}/${mes === 'todos' ? '' : String(mes).padStart(2, '0')}/${ano === 'todos' ? '' : ano}.`}
+            title={`Buscando OS's para o período: ${[
+               dia === 'todos' ? '' : String(dia).padStart(2, '0'),
+               mes === 'todos' ? '' : String(mes).padStart(2, '0'),
+               ano === 'todos' ? '' : String(ano),
+            ]
+               .filter(part => part !== '')
+               .join('/')}.`}
          />
       </div>
    );

@@ -41,7 +41,7 @@ export interface TabelaOSProps {
    DTINI_OS: string;
    HRINI_OS: string;
    HRFIM_OS: string;
-   OBS_OS?: string | null;
+   OBS_OS: string | null;
    STATUS_OS: number;
    PRODUTIVO_OS: 'SIM' | 'NAO';
    CODREC_OS: number;
@@ -49,19 +49,17 @@ export interface TabelaOSProps {
    RESPCLI_OS: string;
    REMDES_OS: 'SIM' | 'NAO';
    ABONO_OS: 'SIM' | 'NAO';
-   DESLOC_OS?: string | null;
-   OBS?: string | null;
+   DESLOC_OS: string | null;
+   OBS: string | null;
    DTINC_OS: string;
    FATURADO_OS: 'SIM' | 'NAO';
    PERC_OS: number;
-   COD_FATURAMENTO?: number | null;
-   COMP_OS?: string | null;
+   COD_FATURAMENTO: number | null;
+   COMP_OS: string | null;
    VALID_OS: 'SIM' | 'NAO';
    VRHR_OS: number;
-   NUM_OS?: string | null;
-   CHAMADO_OS?: string | null;
-   // =====
-   COD_CHAMADO: number;
+   NUM_OS: string | null;
+   CHAMADO_OS: string | null;
    // =====
    COD_RECURSO: number;
    NOME_RECURSO: string;
@@ -69,10 +67,14 @@ export interface TabelaOSProps {
    COD_CLIENTE: number;
    NOME_CLIENTE: string;
    // =====
-   COD_TAREFA: number;
    NOME_TAREFA: string;
+   TAREFA_COMPLETA: string;
    // =====
-   QTD_HR_OS?: number;
+   COD_PROJETO: number;
+   NOME_PROJETO: string;
+   PROJETO_COMPLETO: string;
+   // =====
+   QTD_HR_OS: number | null;
 }
 // ================================================================================
 

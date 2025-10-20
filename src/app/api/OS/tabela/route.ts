@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { NextResponse } from 'next/server';
 import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
+import { TabelaOSProps } from '../../../../types/types';
 
 // ==================== TYPES ====================
 interface TokenPayload {
@@ -8,28 +9,6 @@ interface TokenPayload {
    recurso?: {
       id: number;
    };
-}
-
-interface OSRecord {
-   COD_OS: number;
-   CODTRF_OS: number | null;
-   DTINI_OS: Date | null;
-   HRINI_OS: string | null;
-   HRFIM_OS: string | null;
-   CODREC_OS: number | null;
-   DTINC_OS: Date | null;
-   FATURADO_OS: string | null;
-   COMP_OS: string | null;
-   VALID_OS: string | null;
-   CHAMADO_OS: string | null;
-   COD_RECURSO: number | null;
-   NOME_RECURSO: string | null;
-   COD_CLIENTE: number | null;
-   NOME_CLIENTE: string | null;
-}
-
-interface OSRecordWithHours extends OSRecord {
-   QTD_HR_OS: number | null;
 }
 
 interface PaginationInfo {
@@ -218,7 +197,7 @@ function buildDateFilter(fieldName: string, searchValue: string): DateFilter {
    } else {
       return {
          condition: `CAST(${fieldName} AS VARCHAR(50)) LIKE ?`,
-         params: [], // Retorna vazio, mas será tratado no buildWhereConditions
+         params: [],
       };
    }
 }
@@ -449,20 +428,48 @@ function buildQuery(
          os.DTINI_OS,
          os.HRINI_OS,
          os.HRFIM_OS,
+         CAST(os.OBS_OS AS VARCHAR(8000)) AS OBS_OS,
+         os.STATUS_OS,
+         os.PRODUTIVO_OS,
          os.CODREC_OS,
+         os.PRODUTIVO2_OS,
+         os.RESPCLI_OS,
+         os.REMDES_OS,
+         os.ABONO_OS,
+         os.DESLOC_OS,
+         CAST(os.OBS AS VARCHAR(8000)) AS OBS,
          os.DTINC_OS,
          os.FATURADO_OS,
+         os.PERC_OS,
+         os.COD_FATURAMENTO,
          os.COMP_OS,
          os.VALID_OS,
+         os.VRHR_OS,
+         os.NUM_OS,
          os.CHAMADO_OS,
          Recurso.COD_RECURSO,
          Recurso.NOME_RECURSO,
          Cliente.COD_CLIENTE,
-         Cliente.NOME_CLIENTE
+         Cliente.NOME_CLIENTE,
+         Tarefa.NOME_TAREFA,
+         CASE 
+            WHEN os.CODTRF_OS IS NOT NULL AND Tarefa.NOME_TAREFA IS NOT NULL 
+            THEN os.CODTRF_OS || ' - ' || Tarefa.NOME_TAREFA
+            ELSE NULL
+         END AS TAREFA_COMPLETA,
+         Projeto.COD_PROJETO,
+         Projeto.NOME_PROJETO,
+         CASE 
+            WHEN Projeto.COD_PROJETO IS NOT NULL AND Projeto.NOME_PROJETO IS NOT NULL 
+            THEN Projeto.COD_PROJETO || ' - ' || Projeto.NOME_PROJETO
+            ELSE NULL
+         END AS PROJETO_COMPLETO
       FROM OS os
       LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = os.CODREC_OS
       LEFT JOIN CHAMADO Chamado ON Chamado.COD_CHAMADO = os.CHAMADO_OS
       LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
+      LEFT JOIN TAREFA Tarefa ON Tarefa.COD_TAREFA = os.CODTRF_OS
+      LEFT JOIN PROJETO Projeto ON Projeto.COD_PROJETO = Tarefa.CODPRO_TAREFA
       ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
       ORDER BY os.COD_OS DESC, os.DTINI_OS DESC
       ROWS ${startRow} TO ${endRow};
@@ -476,6 +483,8 @@ function buildCountQuery(whereConditions: string[]): string {
       LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = os.CODREC_OS
       LEFT JOIN CHAMADO Chamado ON Chamado.COD_CHAMADO = os.CHAMADO_OS
       LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
+      LEFT JOIN TAREFA Tarefa ON Tarefa.COD_TAREFA = os.CODTRF_OS
+      LEFT JOIN PROJETO Projeto ON Projeto.COD_PROJETO = Tarefa.CODPRO_TAREFA
       ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
    `;
 }
@@ -563,8 +572,8 @@ export async function GET(request: Request) {
       ]);
 
       // Processamento de dados
-      const osData: OSRecordWithHours[] = (rawOsData || []).map(
-         (record: OSRecord) => ({
+      const osData: TabelaOSProps[] = (rawOsData || []).map(
+         (record: TabelaOSProps) => ({
             ...record,
             QTD_HR_OS: calculateHours(record.HRINI_OS, record.HRFIM_OS),
          })
@@ -574,7 +583,7 @@ export async function GET(request: Request) {
       const total = countResult[0].TOTAL;
       const totalPages = Math.ceil(total / limit);
 
-      const response: ApiResponse<OSRecordWithHours[]> = {
+      const response: ApiResponse<TabelaOSProps[]> = {
          data: osData,
          pagination: {
             currentPage: page,
