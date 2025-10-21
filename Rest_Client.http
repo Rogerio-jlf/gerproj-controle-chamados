@@ -1,4 +1,4 @@
-### REALIZAR LOGIN / TOKEN JWT
+### REALIZAR LOGIN E GERAR TOKEN JWT
 POST http://localhost:3000/api/login
 Content-Type: application/json
 
@@ -7,26 +7,20 @@ Content-Type: application/json
   "senha": "&"
 }
 
-# BUSCAR TODOS OS REGISTROS DA TABELA OS - FILTRANDO ANO / MES / DIA - OK
+# BUSCAR TODOS OS REGISTROS DA TABELA OS - FILTRANDO POR = ANO / MES / DIA
 ###
 GET http://localhost:3000/api/os/tabela?page=1&limit=20&ano=2025&mes=9&dia=1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MDk1OTgyOSwiZXhwIjoxNzYwOTcwNjI5fQ.pcvpNbjuZ-b6_veV9UL50Y0BRoMK42089zf4F9rayME
-
-# BUSCAR TODOS OS REGISTROS DA TABELA OS - FILTRANDO ANO / MES / TODOS - OK
-###
-GET http://localhost:3000/api/os/tabela?page=1&limit=20&ano=2025&mes=10&dia=todos
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MDk1OTgyOSwiZXhwIjoxNzYwOTcwNjI5fQ.pcvpNbjuZ-b6_veV9UL50Y0BRoMK42089zf4F9rayME
-
-# BUSCAR TODOS OS REGISTROS DA TABELA OS - FILTRANDO ANO / TODOS / DIA - OK
-###
-GET http://localhost:3000/api/os/tabela?page=1&limit=20&ano=2025&mes=todos&dia=1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MDk1OTgyOSwiZXhwIjoxNzYwOTcwNjI5fQ.pcvpNbjuZ-b6_veV9UL50Y0BRoMK42089zf4F9rayME
-
-# BUSCAR TODOS OS REGISTROS DA TABELA OS - FILTRANDO TODOS / MES / DIA - OK
-###
-GET http://localhost:3000/api/os/tabela?page=1&limit=20&ano=todos&mes=9&dia=1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MDk1OTgyOSwiZXhwIjoxNzYwOTcwNjI5fQ.pcvpNbjuZ-b6_veV9UL50Y0BRoMK42089zf4F9rayME
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MTA2ODk5NCwiZXhwIjoxNzYxMDc5Nzk0fQ.DllmltaHR1TrCUK3Is2SF-z46OUcspYdmRkcnYGRsoM
 # ===========================================================================================================================
 
+# BUSCAR TODOS OS REGISTROS DA TABELA TAREFA
+###
+GET http://localhost:3000/api/tarefa/tabela
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MTA2ODk5NCwiZXhwIjoxNzYxMDc5Nzk0fQ.DllmltaHR1TrCUK3Is2SF-z46OUcspYdmRkcnYGRsoM
+# ===========================================================================================================================
 
+# BUSCAR TODOS OS REGISTROS DA TABELA PROJETO
+###
+GET http://localhost:3000/api/projeto/tabela
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MTA2ODk5NCwiZXhwIjoxNzYxMDc5Nzk0fQ.DllmltaHR1TrCUK3Is2SF-z46OUcspYdmRkcnYGRsoM
+# ===========================================================================================================================

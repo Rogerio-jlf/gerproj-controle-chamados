@@ -1,55 +1,58 @@
 'use client';
+import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 // TYPES
-import { TabelaOSProps } from '../../../../../types/types';
-
-// HELPERS
-import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+import { TabelaTarefaProps } from '../../../../types/types';
 
 // FORMATTERS
 import {
    formatarCodNumber,
    formatarCodString,
    formatarDataParaBR,
-   formatarHora,
    formatarHorasTotaisHorasDecimais,
-} from '../../../../../utils/formatters';
+} from '../../../../utils/formatters';
 
 // COMPONENTS
-import { ConditionalTooltip } from '../Tooltip_Condicional';
+import { TooltipCondicionalTabelaTarefa } from '../tarefas/Tooltip_Condicional_Tabela_Tarefa';
 
 // ICONS
+import {
+   FaUser,
+   FaClock,
+   FaDollarSign,
+   FaCheck,
+   FaInfo,
+   FaTasks,
+} from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
-import { GrServices } from 'react-icons/gr';
 import { MdDescription } from 'react-icons/md';
-import { FaUser, FaClock, FaDollarSign, FaCheck, FaInfo } from 'react-icons/fa';
 
 // ================================================================================
 // INTERFACES
 // ================================================================================
-interface ModalVisualizarOSProps {
+interface ModalVisualizarTarefaProps {
    isOpen: boolean;
    onClose: () => void;
-   os: TabelaOSProps | null;
+   tarefa: TabelaTarefaProps | null;
 }
 
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export function ModalVisualizarOS({
+export function ModalVisualizarTarefa({
    isOpen,
    onClose,
-   os,
-}: ModalVisualizarOSProps) {
+   tarefa,
+}: ModalVisualizarTarefaProps) {
    // ==========
 
    // Função para fechar o modal
-   const handleCloseModalVisualizarOS = () => {
+   const handleCloseModalVisualizarTarefa = () => {
       onClose();
    };
    // ==========
 
-   // Se o modal não estiver aberto ou a OS for nula, não renderiza nada
-   if (!isOpen || !os) return null;
+   // Se o modal não estiver aberto ou a tarefa for nula, não renderiza nada
+   if (!isOpen || !tarefa) return null;
 
    // Função auxiliar para formatar valores SIM/NAO
    const formatarSimNao = (value: 'SIM' | 'NAO') => {
@@ -68,13 +71,17 @@ export function ModalVisualizarOS({
    const getStatusStyle = (status: number) => {
       switch (status) {
          case 0:
-            return 'bg-yellow-600 text-white';
+            return 'bg-yellow-500 text-black';
          case 1:
-            return 'bg-green-600 text-black';
-         case 2:
             return 'bg-blue-600 text-white';
+         case 2:
+            return 'bg-green-600 text-white';
+         case 3:
+            return 'bg-red-600 text-white';
+         case 4:
+            return 'bg-purple-600 text-white';
          default:
-            return 'bg-gray-600 text-white';
+            return 'bg-gray-400 text-white';
       }
    };
 
@@ -83,9 +90,13 @@ export function ModalVisualizarOS({
          case 0:
             return 'Pendente';
          case 1:
-            return 'Concluída';
-         case 2:
             return 'Em Andamento';
+         case 2:
+            return 'Concluído';
+         case 3:
+            return 'Cancelado';
+         case 4:
+            return 'Finalizado';
          default:
             return 'Desconhecido';
       }
@@ -105,22 +116,22 @@ export function ModalVisualizarOS({
             <header className="relative flex items-center justify-between bg-gradient-to-r from-teal-600 to-teal-700 p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
                   <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
-                     <GrServices className="text-black" size={28} />
+                     <FaTasks className="text-black" size={28} />
                   </div>
                   {/* ===== */}
                   <div className="flex flex-col">
                      <h1 className="text-3xl font-extrabold tracking-wider text-black uppercase select-none">
-                        Ordem de Serviço
+                        Tarefa
                      </h1>
                      <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
-                        Código #{formatarCodNumber(os.COD_OS)}
+                        Código #{formatarCodNumber(tarefa.COD_TAREFA)}
                      </p>
                   </div>
                </div>
                {/* ========== */}
 
                <button
-                  onClick={handleCloseModalVisualizarOS}
+                  onClick={handleCloseModalVisualizarTarefa}
                   className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                >
                   <IoClose size={24} />
@@ -142,29 +153,18 @@ export function ModalVisualizarOS({
                            </h2>
                         </div>
                         <div className="space-y-3 p-4">
-                           {/* COD_OS */}
-                           <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 OS
-                              </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {formatarCodNumber(os.COD_OS)}
-                              </span>
-                           </div>
-                           {/* ===== */}
-
                            {/* TAREFA_COMPLETA */}
                            <div className="flex items-center justify-between gap-10 border-b border-slate-200 py-2">
                               <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
                                  Tarefa
                               </span>
-                              <ConditionalTooltip
-                                 content={os.TAREFA_COMPLETA || ''}
+                              <TooltipCondicionalTabelaTarefa
+                                 content={tarefa.TAREFA_COMPLETA || ''}
                               >
                                  <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
-                                    {os.TAREFA_COMPLETA}
+                                    {tarefa.TAREFA_COMPLETA}
                                  </span>
-                              </ConditionalTooltip>
+                              </TooltipCondicionalTabelaTarefa>
                            </div>
                            {/* ===== */}
 
@@ -173,34 +173,56 @@ export function ModalVisualizarOS({
                               <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
                                  Projeto
                               </span>
-                              <ConditionalTooltip
-                                 content={os.PROJETO_COMPLETO || ''}
+                              <TooltipCondicionalTabelaTarefa
+                                 content={tarefa.PROJETO_COMPLETO || ''}
                               >
                                  <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
-                                    {os.PROJETO_COMPLETO}
+                                    {tarefa.PROJETO_COMPLETO}
                                  </span>
-                              </ConditionalTooltip>
+                              </TooltipCondicionalTabelaTarefa>
                            </div>
                            {/* ===== */}
 
-                           {/* NUM_OS */}
+                           {/* ORDEM_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Número OS
+                                 Ordem
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {os.NUM_OS || '---'}
+                                 {formatarCodNumber(tarefa.ORDEM_TAREFA)}
                               </span>
                            </div>
                            {/* ===== */}
 
-                           {/* CHAMADO_OS */}
-                           <div className="flex items-center justify-between py-2">
+                           {/* COD_AREA */}
+                           <div className="flex items-center justify-between border-b border-slate-200 py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Chamado
+                                 Área
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {formatarCodString(os.CHAMADO_OS) ?? '---'}
+                                 {formatarCodNumber(tarefa.COD_AREA)}
+                              </span>
+                           </div>
+                           {/* ===== */}
+
+                           {/* COD_TIPOTRF */}
+                           <div className="flex items-center justify-between border-b border-slate-200 py-2">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                                 Tipo
+                              </span>
+                              <span className="text-base font-bold tracking-widest text-black select-none">
+                                 {tarefa.TIPO_TAREFA_COMPLETO}
+                              </span>
+                           </div>
+                           {/* ===== */}
+
+                           {/* COD_FASE */}
+                           <div className="flex items-center justify-between py-2">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                                 Fase
+                              </span>
+                              <span className="text-base font-bold tracking-widest text-black select-none">
+                                 {formatarCodNumber(tarefa.COD_FASE)}
                               </span>
                            </div>
                         </div>
@@ -216,60 +238,86 @@ export function ModalVisualizarOS({
                            </h2>
                         </div>
                         <div className="space-y-3 p-4">
-                           {/* DTINI_OS */}
+                           {/* DTSOL_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Data Início
+                                 Data Solicitação
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {formatarDataParaBR(os.DTINI_OS)}
+                                 {tarefa.DTSOL_TAREFA
+                                    ? formatarDataParaBR(
+                                         tarefa.DTSOL_TAREFA.toString()
+                                      )
+                                    : '---'}
                               </span>
                            </div>
                            {/* ===== */}
 
-                           {/* HRINI_OS */}
+                           {/* DTAPROV_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Hora Início
+                                 Data Aprovação
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {formatarHora(os.HRINI_OS)}h
+                                 {tarefa.DTAPROV_TAREFA
+                                    ? formatarDataParaBR(
+                                         tarefa.DTAPROV_TAREFA.toString()
+                                      )
+                                    : '---'}
                               </span>
                            </div>
                            {/* ===== */}
 
-                           {/* HRFIM_OS */}
+                           {/* DTPREVENT_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Hora Fim
+                                 Data Previsão
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {formatarHora(os.HRFIM_OS)}h
+                                 {tarefa.DTPREVENT_TAREFA
+                                    ? formatarDataParaBR(
+                                         tarefa.DTPREVENT_TAREFA.toString()
+                                      )
+                                    : '---'}
                               </span>
                            </div>
                            {/* ===== */}
 
-                           {/* QTD_HR_OS */}
+                           {/* DTINC_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Total Horas
-                              </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {formatarHorasTotaisHorasDecimais(
-                                    os.QTD_HR_OS?.toString()
-                                 )}
-                                 h
-                              </span>
-                           </div>
-                           {/* ===== */}
-
-                           {/* DTINC_OS */}
-                           <div className="flex items-center justify-between py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
                                  Data Inclusão
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {formatarDataParaBR(os.DTINC_OS)}
+                                 {formatarDataParaBR(
+                                    tarefa.DTINC_TAREFA.toString()
+                                 )}
+                              </span>
+                           </div>
+                           {/* ===== */}
+
+                           {/* VALINI_TAREFA */}
+                           <div className="flex items-center justify-between border-b border-slate-200 py-2">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                                 Validade Início
+                              </span>
+                              <span className="text-base font-bold tracking-widest text-black select-none">
+                                 {formatarDataParaBR(
+                                    tarefa.VALINI_TAREFA.toString()
+                                 )}
+                              </span>
+                           </div>
+                           {/* ===== */}
+
+                           {/* VALFIM_TAREFA */}
+                           <div className="flex items-center justify-between py-2">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                                 Validade Fim
+                              </span>
+                              <span className="text-base font-bold tracking-widest text-black select-none">
+                                 {formatarDataParaBR(
+                                    tarefa.VALFIM_TAREFA.toString()
+                                 )}
                               </span>
                            </div>
                         </div>
@@ -279,6 +327,79 @@ export function ModalVisualizarOS({
 
                   {/* ===== COLUNA MEIO ===== */}
                   <div className="space-y-6">
+                     {/* ===== CARD: HORAS ===== */}
+                     <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-sm shadow-black">
+                           <FaClock className="text-white" size={24} />
+                           <h2 className="text-lg font-bold tracking-widest text-white select-none">
+                              Horas
+                           </h2>
+                        </div>
+                        <div className="space-y-3 p-4">
+                           {/* HREST_TAREFA */}
+                           <div className="flex items-center justify-between border-b border-slate-200 py-2">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                                 QTD. Horas Estimadas
+                              </span>
+                              <span className="text-base font-bold tracking-widest text-black select-none">
+                                 {tarefa.HREST_TAREFA
+                                    ? formatarHorasTotaisHorasDecimais(
+                                         tarefa.HREST_TAREFA.toString()
+                                      )
+                                    : '---'}
+                                 h
+                              </span>
+                           </div>
+                           {/* ===== */}
+
+                           {/* HRATESC_TAREFA */}
+                           <div className="flex items-center justify-between border-b border-slate-200 py-2">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                                 Horas Até Estimar
+                              </span>
+                              <span className="text-base font-bold tracking-widest text-black select-none">
+                                 {tarefa.HRATESC_TAREFA
+                                    ? formatarHorasTotaisHorasDecimais(
+                                         tarefa.HRATESC_TAREFA.toString()
+                                      )
+                                    : '---'}
+                                 h
+                              </span>
+                           </div>
+                           {/* ===== */}
+
+                           {/* HRREAL_TAREFA */}
+                           <div className="flex items-center justify-between border-b border-slate-200 py-2">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                                 QTD. Horas Reais
+                              </span>
+                              <span className="text-base font-bold tracking-widest text-black select-none">
+                                 {tarefa.HRREAL_TAREFA
+                                    ? formatarHorasTotaisHorasDecimais(
+                                         tarefa.HRREAL_TAREFA.toString()
+                                      )
+                                    : '---'}
+                                 h
+                              </span>
+                           </div>
+                           {/* ===== */}
+
+                           {/* QTD_HRS_GASTAS */}
+                           <div className="flex items-center justify-between py-2">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                                 QTD. Horas Gastas
+                              </span>
+                              <span className="text-base font-bold tracking-widest text-black select-none">
+                                 {formatarHorasTotaisHorasDecimais(
+                                    tarefa.QTD_HRS_GASTAS.toString()
+                                 )}
+                                 h
+                              </span>
+                           </div>
+                        </div>
+                     </div>
+                     {/* ========== */}
+
                      {/* ===== CARD: INDICADORES ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
                         <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-sm shadow-black">
@@ -288,110 +409,124 @@ export function ModalVisualizarOS({
                            </h2>
                         </div>
                         <div className="space-y-3 p-4">
-                           {/* PRODUTIVO_OS */}
+                           {/* MARGEM_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Produtivo
+                                 Margem
                               </span>
-                              {formatarSimNao(os.PRODUTIVO_OS)}
+                              {formatarSimNao(tarefa.MARGEM_TAREFA)}
                            </div>
                            {/* ===== */}
 
-                           {/* PRODUTIVO2_OS */}
+                           {/* ESTIMADO_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Produtivo 2
+                                 Estimado
                               </span>
-                              {formatarSimNao(os.PRODUTIVO2_OS)}
+                              {formatarSimNao(tarefa.ESTIMADO_TAREFA)}
                            </div>
                            {/* ===== */}
 
-                           {/* REMDES_OS */}
+                           {/* FATEST_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Remuneração
+                                 Faturar Estimativa
                               </span>
-                              {formatarSimNao(os.REMDES_OS)}
+                              {formatarSimNao(tarefa.FATEST_TAREFA)}
                            </div>
                            {/* ===== */}
 
-                           {/* ABONO_OS */}
+                           {/* PERIMP_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Abono
+                                 Permitir Importação
                               </span>
-                              {formatarSimNao(os.ABONO_OS)}
+                              {formatarSimNao(tarefa.PERIMP_TAREFA)}
                            </div>
                            {/* ===== */}
 
-                           {/* FATURADO_OS */}
-                           <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Cliente Paga
-                              </span>
-                              {formatarSimNao(os.FATURADO_OS)}
-                           </div>
-                           {/* ===== */}
-
-                           {/* VALID_OS */}
+                           {/* FATURA_TAREFA */}
                            <div className="flex items-center justify-between py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Consultor Recebe
+                                 Faturar
                               </span>
-                              {formatarSimNao(os.VALID_OS)}
+                              {formatarSimNao(tarefa.FATURA_TAREFA)}
                            </div>
                         </div>
                      </div>
                      {/* ========== */}
 
-                     {/* ===== CARD: FINANCEIRO ===== */}
-                     <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-sm shadow-black">
-                           <FaDollarSign className="text-white" size={24} />
-                           <h2 className="text-lg font-bold tracking-widest text-white select-none">
-                              Informações Financeiras
-                           </h2>
-                        </div>
-                        <div className="space-y-3 p-4">
-                           {/* VRHR_OS */}
-                           <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Valor Hora
-                              </span>
-                              <span className="text-lg font-bold tracking-widest text-black italic select-none">
-                                 R$ {os.VRHR_OS.toFixed(2)}
-                              </span>
-                           </div>
-                           {/* ===== */}
-
-                           {/* PERC_OS */}
-                           <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Percentual
-                              </span>
-                              <span className="text-lg font-bold tracking-widest text-black italic select-none">
-                                 {os.PERC_OS}%
-                              </span>
-                           </div>
-                           {/* ===== */}
-
-                           {/* COD_FATURAMENTO */}
-                           <div className="flex items-center justify-between py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Código Faturamento
-                              </span>
-                              <span className="text-lg font-bold tracking-widest text-black italic select-none">
-                                 {os.COD_FATURAMENTO || '---'}
-                              </span>
-                           </div>
-                        </div>
-                     </div>
+                     {/* STATUS_TAREFA
+                     <div className="flex items-center justify-center pt-6">
+                        <span
+                           className={`rounded-full px-14 py-2 text-4xl font-bold tracking-widest italic shadow-lg shadow-black select-none ${getStatusStyle(
+                              tarefa.STATUS_TAREFA
+                           )}`}
+                        >
+                           {getStatusText(tarefa.STATUS_TAREFA)}
+                        </span>
+                     </div> */}
                   </div>
                   {/* ==================== */}
 
                   {/* ===== COLUNA DIREITA ===== */}
                   <div className="space-y-6">
-                     {/* ===== CARD: RECURSOS E RESPONSÁVEIS ===== */}
+                     {/* ===== CARD: FINANCEIRO ===== */}
+                     <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 shadow-sm shadow-black">
+                           <FaDollarSign className="text-white" size={24} />
+                           <h2 className="text-lg font-bold tracking-widest text-white select-none">
+                              Financeiro
+                           </h2>
+                        </div>
+                        <div className="space-y-3 p-4">
+                           {/* VRHR_TAREFA */}
+                           <div className="flex items-center justify-between border-b border-slate-200 py-2">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                                 Valor Hora
+                              </span>
+                              <span className="text-lg font-bold tracking-widest text-black italic select-none">
+                                 R$ {tarefa.VRHR_TAREFA.toFixed(2)}
+                              </span>
+                           </div>
+                           {/* ===== */}
+
+                           {/* PERC_TAREFA */}
+                           <div className="flex items-center justify-between border-b border-slate-200 py-2">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                                 Percentual
+                              </span>
+                              <span className="text-lg font-bold tracking-widest text-black italic select-none">
+                                 {tarefa.PERC_TAREFA}%
+                              </span>
+                           </div>
+                           {/* ===== */}
+
+                           {/* LIMMES_TAREFA */}
+                           <div className="flex items-center justify-between border-b border-slate-200 py-2">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                                 Limite Mensal
+                              </span>
+                              <span className="text-lg font-bold tracking-widest text-black italic select-none">
+                                 {tarefa.LIMMES_TAREFA ?? '---'}
+                              </span>
+                           </div>
+                           {/* ===== */}
+
+                           {/* VALIDA_TAREFA */}
+                           <div className="flex items-center justify-between py-2">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                                 Validação
+                              </span>
+                              <span className="text-lg font-bold tracking-widest text-black italic select-none">
+                                 {tarefa.VALIDA_TAREFA}
+                              </span>
+                           </div>
+                        </div>
+                     </div>
+                     {/* ========== */}
+
+                     {/* ===== CARD: RECURSO, CLIENTE E RESPONSÁVEL ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
                         <div className="flex items-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 shadow-sm shadow-black">
                            <FaUser className="text-white" size={24} />
@@ -403,10 +538,24 @@ export function ModalVisualizarOS({
                            {/* NOME_RECURSO */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Consultor
+                                 Consultor Tarefa
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {os.NOME_RECURSO.trim()
+                                 {tarefa.NOME_RECURSO.trim()
+                                    .split(/\s+/)
+                                    .slice(0, 2)
+                                    .join(' ')}
+                              </span>
+                           </div>
+                           {/* ===== */}
+
+                           {/* CODRECRESP_TAREFA */}
+                           <div className="flex items-center justify-between border-b border-slate-200 py-2">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                                 Consultor Responsável
+                              </span>
+                              <span className="text-base font-bold tracking-widest text-black select-none">
+                                 {tarefa.NOME_RECURSO_RESPONSAVEL.trim()
                                     .split(/\s+/)
                                     .slice(0, 2)
                                     .join(' ')}
@@ -415,33 +564,23 @@ export function ModalVisualizarOS({
                            {/* ===== */}
 
                            {/* NOME_CLIENTE */}
-                           <div className="flex items-center justify-between border-b border-slate-200 py-2">
+                           <div className="flex items-center justify-between py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
                                  Cliente
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {os.NOME_CLIENTE.trim()
+                                 {tarefa.NOME_CLIENTE.trim()
                                     .split(/\s+/)
                                     .slice(0, 2)
                                     .join(' ')}
                               </span>
                            </div>
                            {/* ===== */}
-
-                           {/* RESPCLI_OS */}
-                           <div className="flex items-center justify-between py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Responsável
-                              </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {corrigirTextoCorrompido(os.RESPCLI_OS)}
-                              </span>
-                           </div>
                         </div>
                      </div>
                      {/* ========== */}
 
-                     {/* ===== CARD: OBSERVAÇÕES E OUTROS ===== */}
+                     {/* ===== CARD OBSERVAÇÕES ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
                         <div className="flex items-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 shadow-sm shadow-black">
                            <MdDescription className="text-white" size={24} />
@@ -450,78 +589,35 @@ export function ModalVisualizarOS({
                            </h2>
                         </div>
                         <div className="space-y-3 p-4">
-                           {/* OBS_OS */}
-                           <div className="flex items-center justify-between gap-10 border-b border-slate-200 py-2">
+                           {/* OBS_TAREFA */}
+                           <div className="flex items-center justify-between gap-10 py-2">
                               <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
                                  Observações
                               </span>
-                              <ConditionalTooltip
+                              <TooltipCondicionalTabelaTarefa
                                  content={corrigirTextoCorrompido(
-                                    os.OBS_OS || '---'
+                                    tarefa.OBS_TAREFA || '---'
                                  )}
                               >
                                  <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
                                     {corrigirTextoCorrompido(
-                                       os.OBS_OS || '---'
+                                       tarefa.OBS_TAREFA || '---'
                                     )}
                                  </span>
-                              </ConditionalTooltip>
+                              </TooltipCondicionalTabelaTarefa>
                            </div>
-                           {/* ===== */}
 
-                           {/* DESLOC_OS */}
-                           <div className="flex items-center justify-between border-b border-slate-200 py-2">
+                           {/* EXIBECHAM_TAREFA */}
+                           <div className="flex items-center justify-between border-t border-slate-200 pt-3">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Deslocamento
+                                 Exibir Chamado
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {corrigirTextoCorrompido(
-                                    os.DESLOC_OS || '---'
-                                 )}
-                              </span>
-                           </div>
-                           {/* ===== */}
-
-                           {/* OBS */}
-                           <div className="flex items-center justify-between gap-10 border-b border-slate-200 py-2">
-                              <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Outras Observações
-                              </span>
-                              <ConditionalTooltip
-                                 content={corrigirTextoCorrompido(
-                                    os.OBS || '---'
-                                 )}
-                              >
-                                 <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
-                                    {corrigirTextoCorrompido(os.OBS || '---')}
-                                 </span>
-                              </ConditionalTooltip>
-                           </div>
-                           {/* ===== */}
-
-                           {/* COMP_OS */}
-                           <div className="flex items-center justify-between py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Competência
-                              </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {os.COMP_OS || '---'}
+                                 {tarefa.EXIBECHAM_TAREFA ?? '---'}
                               </span>
                            </div>
                         </div>
                      </div>
-                     {/* ========== */}
-
-                     {/* STATUS_OS
-                     <div className="flex items-center justify-center pt-6">
-                        <span
-                           className={`rounded-full px-14 py-2 text-4xl font-bold tracking-widest italic shadow-lg shadow-black select-none ${getStatusStyle(
-                              os.STATUS_OS
-                           )}`}
-                        >
-                           {getStatusText(os.STATUS_OS)}
-                        </span>
-                     </div> */}
                      {/* ==================== */}
                   </div>
                </div>

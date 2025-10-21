@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { FaFilter } from 'react-icons/fa6';
+import { FaFilter } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import { IoIosArrowDown } from 'react-icons/io';
 

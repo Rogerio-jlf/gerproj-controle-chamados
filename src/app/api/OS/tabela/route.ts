@@ -454,14 +454,14 @@ function buildQuery(
          Tarefa.NOME_TAREFA,
          CASE 
             WHEN os.CODTRF_OS IS NOT NULL AND Tarefa.NOME_TAREFA IS NOT NULL 
-            THEN os.CODTRF_OS || ' - ' || Tarefa.NOME_TAREFA
+            THEN CAST(os.CODTRF_OS AS VARCHAR(20)) || CAST(' - ' AS VARCHAR(3)) || CAST(Tarefa.NOME_TAREFA AS VARCHAR(500))
             ELSE NULL
          END AS TAREFA_COMPLETA,
          Projeto.COD_PROJETO,
          Projeto.NOME_PROJETO,
          CASE 
             WHEN Projeto.COD_PROJETO IS NOT NULL AND Projeto.NOME_PROJETO IS NOT NULL 
-            THEN Projeto.COD_PROJETO || ' - ' || Projeto.NOME_PROJETO
+            THEN CAST(Projeto.COD_PROJETO AS VARCHAR(20)) || CAST(' - ' AS VARCHAR(3)) || CAST(Projeto.NOME_PROJETO AS VARCHAR(500))
             ELSE NULL
          END AS PROJETO_COMPLETO
       FROM OS os

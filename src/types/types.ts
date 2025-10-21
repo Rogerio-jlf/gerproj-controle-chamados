@@ -83,11 +83,11 @@ export interface TabelaTarefaProps {
    NOME_TAREFA: string;
    CODPRO_TAREFA: number;
    CODREC_TAREFA: number;
-   DTSOL_TAREFA?: Date | null;
-   DTAPROV_TAREFA?: Date | null;
-   DTPREVENT_TAREFA?: Date | null;
-   HREST_TAREFA?: number | null;
-   HRATESC_TAREFA?: number | null;
+   DTSOL_TAREFA: Date | null;
+   DTAPROV_TAREFA: Date | null;
+   DTPREVENT_TAREFA: Date | null;
+   HREST_TAREFA: number | null;
+   HRATESC_TAREFA: number | null;
    MARGEM_TAREFA: 'SIM' | 'NAO';
    STATUS_TAREFA: number;
    ORDEM_TAREFA: number;
@@ -95,7 +95,7 @@ export interface TabelaTarefaProps {
    ESTIMADO_TAREFA: 'SIM' | 'NAO';
    COD_TIPOTRF: number;
    CODRECRESP_TAREFA: number;
-   HRREAL_TAREFA?: number | null;
+   HRREAL_TAREFA: number | null;
    FATEST_TAREFA: 'SIM' | 'NAO';
    COD_FASE: number;
    VALINI_TAREFA: Date;
@@ -106,12 +106,26 @@ export interface TabelaTarefaProps {
    FATURA_TAREFA: 'SIM' | 'NAO';
    VALIDA_TAREFA: number;
    VRHR_TAREFA: number;
-   OBS_TAREFA?: string | null;
-   LIMMES_TAREFA?: number | null;
-   EXIBECHAM_TAREFA?: number | null;
+   OBS_TAREFA: string | null;
+   LIMMES_TAREFA: number | null;
+   EXIBECHAM_TAREFA: number | null;
    // =====
    COD_RECURSO: number;
    NOME_RECURSO: string;
+   NOME_RECURSO_RESPONSAVEL: string;
+   // =====
+   COD_CLIENTE: number;
+   NOME_CLIENTE: string;
+   // =====
+   TAREFA_COMPLETA: string;
+   // =====
+   COD_PROJETO: number;
+   NOME_PROJETO: string;
+   PROJETO_COMPLETO: string;
+   // =====
+   TIPO_TAREFA_COMPLETO: string;
+   // =====
+   QTD_HRS_GASTAS: number;
 }
 // ================================================================================
 export interface TabelaProjetoProps {
@@ -134,8 +148,8 @@ export interface TabelaProjetoProps {
    NOME_RECURSO: string;
    // =====
    PROJETO_COMPLETO?: string | null;
-   CLIENTE_COMPLETO?: string | null;
-   RECURSO_COMPLETO?: string | null;
+   // =====
+   QTD_HRS_GASTAS?: number;
 }
 // ================================================================================
 

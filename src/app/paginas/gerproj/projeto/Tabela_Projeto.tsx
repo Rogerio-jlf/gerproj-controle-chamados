@@ -1,7 +1,5 @@
 'use client';
-// ================================================================================
 // IMPORTS
-// ================================================================================
 import {
    flexRender,
    getCoreRowModel,
@@ -12,21 +10,25 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 
-// Components
+// COMPONENTS
 import {
    FilterControls,
    FiltrosHeaderTabelaProjeto,
 } from './Filtros_Header_Tabela_Projeto';
+import { colunasTabelaProjeto } from './Colunas_Tabela_Projeto';
 import { IsError } from '../../../../components/IsError';
 import { IsLoading } from '../../../../components/IsLoading';
-import { colunasTabelaProjeto } from './Colunas_Tabela_Projeto';
+
+// FORMATERS
 import { formatarCodNumber } from '../../../../utils/formatters';
 
-// Hooks & Types
+// HOOKS
 import { useAuth } from '../../../../hooks/useAuth';
+
+// TYPES
 import { TabelaProjetoProps } from '../../../../types/types';
 
-// Icons
+// ICONS
 import { IoClose } from 'react-icons/io5';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
@@ -43,12 +45,14 @@ const CACHE_TIME = 1000 * 60 * 5;
 const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 const COLUMN_WIDTHS: Record<string, string> = {
-   PROJETO_COMPLETO: '33%',
-   CLIENTE_COMPLETO: '15%',
-   RESPCLI_PROJETO: '15%',
-   RECURSO_COMPLETO: '15%',
-   QTDHORAS_PROJETO: '15%',
+   PROJETO_COMPLETO: '28%',
+   NOME_CLIENTE: '12%',
+   RESPCLI_PROJETO: '12%',
+   NOME_RECURSO: '12%',
+   QTDHORAS_PROJETO: '12%',
+   QTD_HRS_GASTAS: '12%',
    STATUS_PROJETO: '7%',
+   actions: '5%',
 };
 
 // ================================================================================
@@ -149,33 +153,31 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
    // ================================================================================
    // ESTADOS - FILTROS (INPUTS SEM DEBOUNCE)
    // ================================================================================
-   const [inputFilterProjetoCompleto, setInputFilterProjetoCompleto] =
+   const [inputFilterPROJETO_COMPLETO, setInputFilterPROJETO_COMPLETO] =
       useState('');
-   const [inputFilterClienteCompleto, setInputFilterClienteCompleto] =
+
+   const [inputFilterNOME_CLIENTE, setInputFilterNOME_CLIENTE] = useState('');
+
+   const [inputFilterCODCLI_PROJETO, setInputFilterCODCLI_PROJETO] =
       useState('');
-   const [
-      inputFilterResponsavelClienteProjeto,
-      setInputFilterResponsavelClienteProjeto,
-   ] = useState('');
-   const [inputFilterRecursoCompleto, setInputFilterRecursoCompleto] =
+
+   const [inputFilterNOME_RECURSO, setInputFilterNOME_RECURSO] = useState('');
+
+   const [inputFilterSTATUS_PROJETO, setInputFilterSTATUS_PROJETO] =
       useState('');
-   const [
-      inputFilterQuantidadeHorasProjeto,
-      setInputFilterQuantidadeHorasProjeto,
-   ] = useState('');
-   const [inputFilterStatusProjeto, setInputFilterStatusProjeto] = useState('');
 
    // ESTADOS - FILTROS (COM DEBOUNCE)
-   const filterProjetoCompleto = useDebouncedValue(inputFilterProjetoCompleto);
-   const filterClienteCompleto = useDebouncedValue(inputFilterClienteCompleto);
-   const filterResponsavelClienteProjeto = useDebouncedValue(
-      inputFilterResponsavelClienteProjeto
+   const filterPROJETO_COMPLETO = useDebouncedValue(
+      inputFilterPROJETO_COMPLETO
    );
-   const filterRecursoCompleto = useDebouncedValue(inputFilterRecursoCompleto);
-   const filterQuantidadeHorasProjeto = useDebouncedValue(
-      inputFilterQuantidadeHorasProjeto
-   );
-   const filterStatusProjeto = useDebouncedValue(inputFilterStatusProjeto);
+
+   const filterNOME_CLIENTE = useDebouncedValue(inputFilterNOME_CLIENTE);
+
+   const filterCODCLI_PROJETO = useDebouncedValue(inputFilterCODCLI_PROJETO);
+
+   const filterNOME_RECURSO = useDebouncedValue(inputFilterNOME_RECURSO);
+
+   const filterSTATUS_PROJETO = useDebouncedValue(inputFilterSTATUS_PROJETO);
 
    // ================================================================================
    // MAPEAMENTO DE FILTROS
@@ -183,32 +185,32 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
    const FILTER_MAP = useMemo(
       () => ({
          PROJETO_COMPLETO: {
-            state: inputFilterProjetoCompleto,
-            setter: setInputFilterProjetoCompleto,
+            state: inputFilterPROJETO_COMPLETO,
+            setter: setInputFilterPROJETO_COMPLETO,
          },
-         CLIENTE_COMPLETO: {
-            state: inputFilterClienteCompleto,
-            setter: setInputFilterClienteCompleto,
+         NOME_CLIENTE: {
+            state: inputFilterNOME_CLIENTE,
+            setter: setInputFilterNOME_CLIENTE,
          },
          RESPCLI_PROJETO: {
-            state: inputFilterResponsavelClienteProjeto,
-            setter: setInputFilterResponsavelClienteProjeto,
+            state: inputFilterCODCLI_PROJETO,
+            setter: setInputFilterCODCLI_PROJETO,
          },
-         RECURSO_COMPLETO: {
-            state: inputFilterRecursoCompleto,
-            setter: setInputFilterRecursoCompleto,
+         NOME_RECURSO: {
+            state: inputFilterNOME_RECURSO,
+            setter: setInputFilterNOME_RECURSO,
          },
          STATUS_PROJETO: {
-            state: inputFilterStatusProjeto,
-            setter: setInputFilterStatusProjeto,
+            state: inputFilterSTATUS_PROJETO,
+            setter: setInputFilterSTATUS_PROJETO,
          },
       }),
       [
-         inputFilterProjetoCompleto,
-         inputFilterClienteCompleto,
-         inputFilterResponsavelClienteProjeto,
-         inputFilterRecursoCompleto,
-         inputFilterStatusProjeto,
+         inputFilterPROJETO_COMPLETO,
+         inputFilterNOME_CLIENTE,
+         inputFilterCODCLI_PROJETO,
+         inputFilterNOME_RECURSO,
+         inputFilterSTATUS_PROJETO,
       ]
    );
 
@@ -232,21 +234,19 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
    // ================================================================================
    const totalActiveFilters = useMemo(() => {
       const filters = [
-         filterProjetoCompleto,
-         filterClienteCompleto,
-         filterResponsavelClienteProjeto,
-         filterRecursoCompleto,
-         filterQuantidadeHorasProjeto,
-         filterStatusProjeto,
+         filterPROJETO_COMPLETO,
+         filterNOME_CLIENTE,
+         filterCODCLI_PROJETO,
+         filterNOME_RECURSO,
+         filterSTATUS_PROJETO,
       ];
       return filters.filter(f => f?.trim()).length;
    }, [
-      filterProjetoCompleto,
-      filterClienteCompleto,
-      filterResponsavelClienteProjeto,
-      filterRecursoCompleto,
-      filterQuantidadeHorasProjeto,
-      filterStatusProjeto,
+      filterPROJETO_COMPLETO,
+      filterNOME_CLIENTE,
+      filterCODCLI_PROJETO,
+      filterNOME_RECURSO,
+      filterSTATUS_PROJETO,
    ]);
 
    // ================================================================================
@@ -262,18 +262,14 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
 
       // Filtros de coluna
       const filterMappings = [
-         { filter: filterProjetoCompleto, param: 'filter_NOME_PROJETO' },
-         { filter: filterClienteCompleto, param: 'filter_NOME_CLIENTE' },
+         { filter: filterPROJETO_COMPLETO, param: 'filter_NOME_PROJETO' },
+         { filter: filterNOME_CLIENTE, param: 'filter_NOME_CLIENTE' },
          {
-            filter: filterResponsavelClienteProjeto,
+            filter: filterCODCLI_PROJETO,
             param: 'filter_RESPCLI_PROJETO',
          },
-         { filter: filterRecursoCompleto, param: 'filter_NOME_RECURSO' },
-         {
-            filter: filterQuantidadeHorasProjeto,
-            param: 'filter_QTDHORAS_PROJETO',
-         },
-         { filter: filterStatusProjeto, param: 'filter_STATUS_PROJETO' },
+         { filter: filterNOME_RECURSO, param: 'filter_NOME_RECURSO' },
+         { filter: filterSTATUS_PROJETO, param: 'filter_STATUS_PROJETO' },
       ];
 
       filterMappings.forEach(({ filter, param }) => {
@@ -287,12 +283,11 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
       user,
       currentPage,
       pageSize,
-      filterProjetoCompleto,
-      filterClienteCompleto,
-      filterResponsavelClienteProjeto,
-      filterRecursoCompleto,
-      filterQuantidadeHorasProjeto,
-      filterStatusProjeto,
+      filterPROJETO_COMPLETO,
+      filterNOME_CLIENTE,
+      filterCODCLI_PROJETO,
+      filterNOME_RECURSO,
+      filterSTATUS_PROJETO,
    ]);
 
    async function fetchOS(
@@ -348,24 +343,22 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
    useEffect(() => {
       setCurrentPage(1);
    }, [
-      filterProjetoCompleto,
-      filterClienteCompleto,
-      filterResponsavelClienteProjeto,
-      filterRecursoCompleto,
-      filterQuantidadeHorasProjeto,
-      filterStatusProjeto,
+      filterPROJETO_COMPLETO,
+      filterNOME_CLIENTE,
+      filterCODCLI_PROJETO,
+      filterNOME_RECURSO,
+      filterSTATUS_PROJETO,
    ]);
 
    // ================================================================================
    // HANDLERS - FILTROS
    // ================================================================================
    const clearFilters = useCallback(() => {
-      setInputFilterProjetoCompleto('');
-      setInputFilterClienteCompleto('');
-      setInputFilterResponsavelClienteProjeto('');
-      setInputFilterRecursoCompleto('');
-      setInputFilterQuantidadeHorasProjeto('');
-      setInputFilterStatusProjeto('');
+      setInputFilterPROJETO_COMPLETO('');
+      setInputFilterNOME_CLIENTE('');
+      setInputFilterCODCLI_PROJETO('');
+      setInputFilterNOME_RECURSO('');
+      setInputFilterSTATUS_PROJETO('');
       setCurrentPage(1);
    }, []);
 

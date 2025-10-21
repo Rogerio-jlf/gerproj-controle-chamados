@@ -156,12 +156,12 @@ export const colunasTabelaProjeto = (): ColumnDef<TabelaProjetoProps>[] => [
 
    // Cliente completo
    {
-      accessorKey: 'CLIENTE_COMPLETO',
+      accessorKey: 'NOME_CLIENTE',
       header: () => <HeaderCenter>Cliente</HeaderCenter>,
       cell: ({ getValue }) => (
          <CellText
             value={getValue() as string}
-            maxWords={4}
+            maxWords={2}
             applyCorrection={true}
          />
       ),
@@ -172,30 +172,41 @@ export const colunasTabelaProjeto = (): ColumnDef<TabelaProjetoProps>[] => [
       accessorKey: 'RESPCLI_PROJETO',
       header: () => <HeaderCenter>Responsável</HeaderCenter>,
       cell: ({ getValue }) => (
-         <CellText value={getValue() as string} maxWords={2} />
+         <CellText
+            value={getValue() as string}
+            maxWords={2}
+            applyCorrection={true}
+         />
       ),
    },
 
    // Consultor (Recurso)
    {
-      accessorKey: 'RECURSO_COMPLETO',
+      accessorKey: 'NOME_RECURSO',
       header: () => <HeaderCenter>Consultor</HeaderCenter>,
       cell: ({ getValue }) => (
-         <CellText value={getValue() as string} maxWords={4} />
+         <CellText value={getValue() as string} maxWords={2} applyCorrection />
       ),
    },
 
    // Quantidade de Horas
    {
       accessorKey: 'QTDHORAS_PROJETO',
-      header: () => <HeaderCenter>QTD. Horas</HeaderCenter>,
+      header: () => <HeaderCenter>QTD. HORAS</HeaderCenter>,
+      cell: ({ getValue }) => <CellHours value={getValue() as string} />,
+   },
+
+   // Quantidade de Horas
+   {
+      accessorKey: 'QTD_HRS_GASTAS',
+      header: () => <HeaderCenter>QTD. HORAS GASTAS</HeaderCenter>,
       cell: ({ getValue }) => <CellHours value={getValue() as string} />,
    },
 
    // Status do Projeto
    {
       accessorKey: 'STATUS_PROJETO',
-      header: () => <HeaderCenter>Status</HeaderCenter>,
+      header: () => <HeaderCenter>STATUS</HeaderCenter>,
       cell: ({ getValue }) => <CellStatus value={getValue() as string} />,
    },
 ];

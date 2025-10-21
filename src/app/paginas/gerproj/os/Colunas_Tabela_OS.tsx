@@ -1,18 +1,20 @@
-// imports
+// IMPORTS
+import { useMemo } from 'react';
+import { ColumnDef } from '@tanstack/react-table';
+
+// COMPONENTS
 import {
    Tooltip,
    TooltipContent,
    TooltipProvider,
    TooltipTrigger,
 } from '../../../../components/ui/tooltip';
-import { useMemo } from 'react';
-import { ColumnDef } from '@tanstack/react-table';
-
-// Components
-import { TabelaOSProps } from '../../../../types/types';
 import { ModalEditarCellFaturadoOSValidOS } from './modais/Modal_Editar_Cell_FaturadoOS_ValidOS';
 
-// Formatters
+// TYPES
+import { TabelaOSProps } from '../../../../types/types';
+
+// FORMATERS
 import {
    formatarDataParaBR,
    formatarDataHoraParaBR,
@@ -22,7 +24,7 @@ import {
 } from '../../../../utils/formatters';
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 
-// Icons
+// ICONS
 import { FaEye } from 'react-icons/fa';
 
 // ================================================================================

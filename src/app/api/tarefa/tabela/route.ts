@@ -1,532 +1,615 @@
 import jwt from 'jsonwebtoken';
 import { NextResponse } from 'next/server';
 import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
+import { TabelaTarefaProps } from '../../../../types/types';
 
+// ==================== TYPES ====================
+interface TokenPayload {
+   tipo: string;
+   recurso?: {
+      id: number;
+   };
+}
+
+interface PaginationInfo {
+   currentPage: number;
+   totalPages: number;
+   totalRecords: number;
+   recordsPerPage: number;
+   hasNextPage: boolean;
+   hasPrevPage: boolean;
+}
+
+interface ApiResponse<T> {
+   data?: T;
+   pagination?: PaginationInfo;
+   error?: string;
+}
+
+// ==================== CONSTANTS ====================
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 20;
+const MAX_LIMIT = 100;
+
+// ==================== ERROR HANDLING ====================
+class ApiError extends Error {
+   constructor(
+      public statusCode: number,
+      message: string
+   ) {
+      super(message);
+      this.name = 'ApiError';
+   }
+}
+
+// ==================== UTILITY FUNCTIONS ====================
+function getCleanParam(param: string | null | undefined): string | null {
+   if (!param) return null;
+   const cleaned = param.trim();
+   return cleaned.length > 0 ? cleaned : null;
+}
+
+function formatDateSearchValue(searchValue: string): string {
+   let value = searchValue;
+
+   if (/^\d+$/.test(value)) {
+      if (value.length === 2) {
+         return value;
+      } else if (value.length === 4) {
+         return `${value.substring(0, 2)}.${value.substring(2, 4)}`;
+      } else if (value.length === 8 || value.length === 10) {
+         return `${value.substring(0, 2)}.${value.substring(2, 4)}.${value.substring(4, 8)}`;
+      }
+   }
+
+   return value;
+}
+
+function buildDateFilter(
+   fieldName: string,
+   searchValue: string
+): { condition: string; params: number[] } {
+   const formattedValue = formatDateSearchValue(
+      searchValue.trim().replace(/\//g, '.')
+   );
+   const parts = formattedValue.split('.');
+
+   if (parts.length === 1 && /^\d{1,2}$/.test(parts[0])) {
+      return {
+         condition: `EXTRACT(DAY FROM ${fieldName}) = ?`,
+         params: [parseInt(parts[0])],
+      };
+   } else if (
+      parts.length === 2 &&
+      /^\d{1,2}$/.test(parts[0]) &&
+      /^\d{1,2}$/.test(parts[1])
+   ) {
+      return {
+         condition: `(EXTRACT(DAY FROM ${fieldName}) = ? AND EXTRACT(MONTH FROM ${fieldName}) = ?)`,
+         params: [parseInt(parts[0]), parseInt(parts[1])],
+      };
+   } else if (
+      parts.length === 3 &&
+      /^\d{1,2}$/.test(parts[0]) &&
+      /^\d{1,2}$/.test(parts[1]) &&
+      /^\d{4}$/.test(parts[2])
+   ) {
+      return {
+         condition: `(EXTRACT(DAY FROM ${fieldName}) = ? AND EXTRACT(MONTH FROM ${fieldName}) = ? AND EXTRACT(YEAR FROM ${fieldName}) = ?)`,
+         params: [parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2])],
+      };
+   } else {
+      return {
+         condition: `CAST(${fieldName} AS VARCHAR(50)) LIKE ?`,
+         params: [],
+      };
+   }
+}
+
+function validatePagination(page: number, limit: number): void {
+   if (page < 1 || limit < 1 || limit > MAX_LIMIT) {
+      throw new ApiError(
+         400,
+         `Parâmetros de paginação inválidos. Page deve ser >= 1, limit entre 1 e ${MAX_LIMIT}`
+      );
+   }
+}
+
+// ==================== QUERY BUILDING ====================
+function buildWhereConditions(
+   searchParams: URLSearchParams,
+   isAdmin: boolean,
+   codRecurso: number | undefined
+): { conditions: string[]; params: any[] } {
+   const conditions: string[] = [];
+   const params: any[] = [];
+
+   // Filtro padrão: apenas tarefas dos últimos 5 anos para evitar dados corrompidos
+   // conditions.push('EXTRACT(YEAR FROM TAREFA.DTSOL_TAREFA) >= ?');
+   // params.push(new Date().getFullYear() - 5);
+
+   // Filtro por recurso
+   if (!isAdmin && codRecurso) {
+      conditions.push('TAREFA.CODREC_TAREFA = ?');
+      params.push(Number(codRecurso));
+   }
+
+   // Filtro por código da tarefa
+   const codTarefaQuery = searchParams.get('codTarefa')?.trim();
+   if (codTarefaQuery) {
+      conditions.push('TAREFA.COD_TAREFA = ?');
+      params.push(Number(codTarefaQuery));
+   }
+
+   // ===== FILTROS DE COLUNA =====
+   // filter_COD_TAREFA
+   const filterCodTarefa = getCleanParam(searchParams.get('filter_COD_TAREFA'));
+   if (filterCodTarefa) {
+      const cleanCodTarefa = filterCodTarefa.replace(/[^\d]/g, '');
+      if (cleanCodTarefa.length > 0) {
+         conditions.push('CAST(TAREFA.COD_TAREFA AS VARCHAR(20)) LIKE ?');
+         params.push(`%${cleanCodTarefa}%`);
+      }
+   }
+   // =====
+
+   // filter_NOME_TAREFA
+   const filterNomeTarefa = getCleanParam(
+      searchParams.get('filter_NOME_TAREFA')
+   );
+
+   if (filterNomeTarefa) {
+      conditions.push(
+         '(UPPER(TAREFA.NOME_TAREFA) LIKE ? OR CAST(TAREFA.COD_TAREFA AS VARCHAR(20)) LIKE ?)'
+      );
+      params.push(
+         `%${filterNomeTarefa.toUpperCase()}%`,
+         `%${filterNomeTarefa}%`
+      );
+   }
+   // =====
+
+   // filter_TAREFA_COMPLETA
+   const filterTarefaCompleta = getCleanParam(
+      searchParams.get('filter_TAREFA_COMPLETA')
+   );
+   if (filterTarefaCompleta) {
+      conditions.push(
+         '(CAST(TAREFA.COD_TAREFA AS VARCHAR(20)) LIKE ? OR UPPER(TAREFA.NOME_TAREFA) LIKE ?)'
+      );
+      params.push(
+         `%${filterTarefaCompleta}%`,
+         `%${filterTarefaCompleta.toUpperCase()}%`
+      );
+   }
+   // =====
+
+   // filter_COD_PROJETO
+   const filterCodProjeto = getCleanParam(
+      searchParams.get('filter_COD_PROJETO')
+   );
+   if (filterCodProjeto) {
+      const cleanCodProjeto = filterCodProjeto.replace(/[^\d]/g, '');
+      if (cleanCodProjeto.length > 0) {
+         conditions.push('CAST(PROJETO.COD_PROJETO AS VARCHAR(20)) LIKE ?');
+         params.push(`%${cleanCodProjeto}%`);
+      }
+   }
+   // =====
+
+   // filter_NOME_PROJETO
+   const filterNomeProjeto = getCleanParam(
+      searchParams.get('filter_NOME_PROJETO')
+   );
+   if (filterNomeProjeto) {
+      conditions.push(
+         '(UPPER(PROJETO.NOME_PROJETO) LIKE ? OR CAST(PROJETO.COD_PROJETO AS VARCHAR(20)) LIKE ?)'
+      );
+      params.push(
+         `%${filterNomeProjeto.toUpperCase()}%`,
+         `%${filterNomeProjeto}%`
+      );
+   }
+   // =====
+
+   // filter_PROJETO_COMPLETO
+   const filterProjetoCompleto = getCleanParam(
+      searchParams.get('filter_PROJETO_COMPLETO')
+   );
+   if (filterProjetoCompleto) {
+      conditions.push(
+         '(CAST(PROJETO.COD_PROJETO AS VARCHAR(20)) LIKE ? OR UPPER(PROJETO.NOME_PROJETO) LIKE ?)'
+      );
+      params.push(
+         `%${filterProjetoCompleto}%`,
+         `%${filterProjetoCompleto.toUpperCase()}%`
+      );
+   }
+   // =====
+
+   // filter_COD_CLIENTE
+   const filterCodCliente = getCleanParam(
+      searchParams.get('filter_COD_CLIENTE')
+   );
+   if (filterCodCliente) {
+      const cleanCodCliente = filterCodCliente.replace(/[^\d]/g, '');
+      if (cleanCodCliente.length > 0) {
+         conditions.push('CAST(CLIENTE.COD_CLIENTE AS VARCHAR(20)) LIKE ?');
+         params.push(`%${cleanCodCliente}%`);
+      }
+   }
+   // =====
+
+   // filter_NOME_CLIENTE
+   const filterNomeCliente = getCleanParam(
+      searchParams.get('filter_NOME_CLIENTE')
+   );
+   if (filterNomeCliente) {
+      conditions.push('UPPER(CLIENTE.NOME_CLIENTE) LIKE ?');
+      params.push(`%${filterNomeCliente.toUpperCase()}%`);
+   }
+   // =====
+
+   // filter_COD_RECURSO
+   const filterCodRecurso = getCleanParam(
+      searchParams.get('filter_COD_RECURSO')
+   );
+   if (filterCodRecurso) {
+      const cleanCodRecurso = filterCodRecurso.replace(/[^\d]/g, '');
+      if (cleanCodRecurso.length > 0) {
+         conditions.push('CAST(RECURSO.COD_RECURSO AS VARCHAR(20)) LIKE ?');
+         params.push(`%${cleanCodRecurso}%`);
+      }
+   }
+   // =====
+
+   // filter_NOME_RECURSO
+   const filterNomeRecurso = getCleanParam(
+      searchParams.get('filter_NOME_RECURSO')
+   );
+   if (filterNomeRecurso) {
+      conditions.push('UPPER(RECURSO.NOME_RECURSO) LIKE ?');
+      params.push(`%${filterNomeRecurso.toUpperCase()}%`);
+   }
+   // =====
+
+   // filter_DTSOL_TAREFA
+   const filterDtsolTarefa = getCleanParam(
+      searchParams.get('filter_DTSOL_TAREFA')
+   );
+   if (filterDtsolTarefa) {
+      const dateFilter = buildDateFilter(
+         'TAREFA.DTSOL_TAREFA',
+         filterDtsolTarefa
+      );
+      if (dateFilter.params.length > 0) {
+         conditions.push(dateFilter.condition);
+         params.push(...dateFilter.params);
+      } else {
+         const searchValue = formatDateSearchValue(
+            filterDtsolTarefa.trim().replace(/\//g, '.')
+         );
+         conditions.push('CAST(TAREFA.DTSOL_TAREFA AS VARCHAR(50)) LIKE ?');
+         params.push(`%${searchValue}%`);
+      }
+   }
+   // =====
+
+   // filter_DTAPROV_TAREFA
+   const filterDtaprovTarefa = getCleanParam(
+      searchParams.get('filter_DTAPROV_TAREFA')
+   );
+   if (filterDtaprovTarefa) {
+      const dateFilter = buildDateFilter(
+         'TAREFA.DTAPROV_TAREFA',
+         filterDtaprovTarefa
+      );
+      if (dateFilter.params.length > 0) {
+         conditions.push(dateFilter.condition);
+         params.push(...dateFilter.params);
+      } else {
+         const searchValue = formatDateSearchValue(
+            filterDtaprovTarefa.trim().replace(/\//g, '.')
+         );
+         conditions.push('CAST(TAREFA.DTAPROV_TAREFA AS VARCHAR(50)) LIKE ?');
+         params.push(`%${searchValue}%`);
+      }
+   }
+   // =====
+
+   // filter_DTPREVENT_TAREFA
+   const filterDtpreventTarefa = getCleanParam(
+      searchParams.get('filter_DTPREVENT_TAREFA')
+   );
+   if (filterDtpreventTarefa) {
+      const dateFilter = buildDateFilter(
+         'TAREFA.DTPREVENT_TAREFA',
+         filterDtpreventTarefa
+      );
+      if (dateFilter.params.length > 0) {
+         conditions.push(dateFilter.condition);
+         params.push(...dateFilter.params);
+      } else {
+         const searchValue = formatDateSearchValue(
+            filterDtpreventTarefa.trim().replace(/\//g, '.')
+         );
+         conditions.push('CAST(TAREFA.DTPREVENT_TAREFA AS VARCHAR(50)) LIKE ?');
+         params.push(`%${searchValue}%`);
+      }
+   }
+   // =====
+
+   // filter_HREST_TAREFA
+   const filterHrestTarefa = getCleanParam(
+      searchParams.get('filter_HREST_TAREFA')
+   );
+   if (filterHrestTarefa) {
+      const cleanHrest = filterHrestTarefa.replace(/[^\d.,]/g, '');
+      if (cleanHrest.length > 0) {
+         conditions.push('CAST(TAREFA.HREST_TAREFA AS VARCHAR(20)) LIKE ?');
+         params.push(`%${cleanHrest}%`);
+      }
+   }
+   // =====
+
+   // filter_QTD_HRS_GASTAS
+   const filterStatusTarefa = getCleanParam(
+      searchParams.get('filter_STATUS_TAREFA')
+   );
+   if (filterStatusTarefa) {
+      const cleanStatus = filterStatusTarefa.replace(/[^\d]/g, '');
+      if (cleanStatus.length > 0) {
+         conditions.push('CAST(TAREFA.STATUS_TAREFA AS VARCHAR(10)) LIKE ?');
+         params.push(`%${cleanStatus}%`);
+      }
+   }
+   // =====
+
+   // filter_TIPO_TAREFA_COMPLETO
+   const filterTipoTarefaCompleto = getCleanParam(
+      searchParams.get('filter_TIPO_TAREFA_COMPLETO')
+   );
+   if (filterTipoTarefaCompleto) {
+      conditions.push(
+         '(CAST(TIPOTRF.COD_TIPOTRF AS VARCHAR(20)) LIKE ? OR UPPER(TIPOTRF.NOME_TIPOTRF) LIKE ?)'
+      );
+      params.push(
+         `%${filterTipoTarefaCompleto}%`,
+         `%${filterTipoTarefaCompleto.toUpperCase()}%`
+      );
+   }
+   // ====
+
+   return { conditions, params };
+}
+
+function buildQuery(
+   whereConditions: string[],
+   startRow: number,
+   endRow: number
+): string {
+   return `
+      SELECT
+         tarefa.COD_TAREFA,
+         tarefa.NOME_TAREFA,
+         CASE 
+            WHEN tarefa.COD_TAREFA IS NOT NULL AND tarefa.NOME_TAREFA IS NOT NULL 
+            THEN CAST(tarefa.COD_TAREFA AS VARCHAR(20)) || CAST(' - ' AS VARCHAR(3)) || CAST(tarefa.NOME_TAREFA AS VARCHAR(500))
+            ELSE NULL
+         END AS TAREFA_COMPLETA,
+         tarefa.CODPRO_TAREFA,
+         tarefa.CODREC_TAREFA,
+         tarefa.DTSOL_TAREFA,
+         tarefa.HREST_TAREFA,
+         tarefa.HRATESC_TAREFA,
+         tarefa.MARGEM_TAREFA,
+         tarefa.STATUS_TAREFA,
+         tarefa.ORDEM_TAREFA,
+         tarefa.COD_AREA,
+         tarefa.ESTIMADO_TAREFA,
+         tarefa.COD_TIPOTRF,
+         tarefa.CODRECRESP_TAREFA,
+         tarefa.HRREAL_TAREFA,
+         tarefa.FATEST_TAREFA,
+         tarefa.COD_FASE,
+         tarefa.VALINI_TAREFA,
+         tarefa.VALFIM_TAREFA,
+         tarefa.PERIMP_TAREFA,
+         tarefa.DTAPROV_TAREFA,
+         tarefa.DTPREVENT_TAREFA,
+         tarefa.DTINC_TAREFA,
+         tarefa.PERC_TAREFA,
+         tarefa.FATURA_TAREFA,
+         tarefa.VALIDA_TAREFA,
+         tarefa.VRHR_TAREFA,
+         CAST(tarefa.OBS_TAREFA AS VARCHAR(8000)) AS OBS_TAREFA,
+         tarefa.LIMMES_TAREFA,
+         tarefa.EXIBECHAM_TAREFA,
+         
+         COALESCE((
+            SELECT SUM(
+               (CAST(SUBSTRING(OS.HRFIM_OS FROM 1 FOR 2) AS INTEGER) * 60 + 
+                CAST(SUBSTRING(OS.HRFIM_OS FROM 3 FOR 2) AS INTEGER))
+               -
+               (CAST(SUBSTRING(OS.HRINI_OS FROM 1 FOR 2) AS INTEGER) * 60 + 
+                CAST(SUBSTRING(OS.HRINI_OS FROM 3 FOR 2) AS INTEGER))
+            ) / 60.0
+            FROM OS
+            WHERE OS.CODTRF_OS = tarefa.COD_TAREFA
+               AND OS.HRINI_OS IS NOT NULL 
+               AND OS.HRFIM_OS IS NOT NULL
+               AND TRIM(OS.HRINI_OS) <> ''
+               AND TRIM(OS.HRFIM_OS) <> ''
+         ), 0) AS QTD_HRS_GASTAS,
+         
+         Recurso.COD_RECURSO,
+         Recurso.NOME_RECURSO,
+         RecursoResponsavel.NOME_RECURSO AS NOME_RECURSO_RESPONSAVEL,
+
+         Projeto.COD_PROJETO,
+         Projeto.NOME_PROJETO,
+         CASE 
+         WHEN Projeto.COD_PROJETO IS NOT NULL AND Projeto.NOME_PROJETO IS NOT NULL
+         THEN CAST(Projeto.COD_PROJETO AS VARCHAR(20)) || CAST(' - ' AS VARCHAR(3)) || CAST(Projeto.NOME_PROJETO AS VARCHAR(500))
+         ELSE NULL
+         END AS PROJETO_COMPLETO,
+         Projeto.CODCLI_PROJETO,
+
+         Cliente.COD_CLIENTE,
+         Cliente.NOME_CLIENTE,
+         
+         TipoTrf.COD_TIPOTRF AS TIPOTRF_COD_TIPOTRF,
+         TipoTrf.NOME_TIPOTRF,
+         CASE 
+            WHEN TipoTrf.COD_TIPOTRF IS NOT NULL AND TipoTrf.NOME_TIPOTRF IS NOT NULL
+            THEN CAST(TipoTrf.COD_TIPOTRF AS VARCHAR(20)) || CAST(' - ' AS VARCHAR(3)) || CAST(TipoTrf.NOME_TIPOTRF AS VARCHAR(500))
+            ELSE NULL
+         END AS TIPO_TAREFA_COMPLETO
+         
+      FROM TAREFA tarefa
+      LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = tarefa.CODREC_TAREFA
+      LEFT JOIN RECURSO RecursoResponsavel ON RecursoResponsavel.COD_RECURSO = tarefa.CODRECRESP_TAREFA
+      LEFT JOIN PROJETO Projeto ON Projeto.COD_PROJETO = tarefa.CODPRO_TAREFA
+      LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Projeto.CODCLI_PROJETO
+      LEFT JOIN TIPOTRF TipoTrf ON TipoTrf.COD_TIPOTRF = tarefa.COD_TIPOTRF      
+      ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
+      ORDER BY tarefa.COD_TAREFA DESC
+      ROWS ${startRow} TO ${endRow};
+   `;
+}
+
+function buildCountQuery(whereConditions: string[]): string {
+   return `
+      SELECT COUNT(*) as TOTAL
+      FROM TAREFA tarefa
+      LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = tarefa.CODREC_TAREFA
+      LEFT JOIN RECURSO RecursoResponsavel ON RecursoResponsavel.COD_RECURSO = tarefa.CODRECRESP_TAREFA
+      LEFT JOIN PROJETO Projeto ON Projeto.COD_PROJETO = tarefa.CODPRO_TAREFA
+      LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Projeto.CODCLI_PROJETO
+      LEFT JOIN TIPOTRF TipoTrf ON TipoTrf.COD_TIPOTRF = tarefa.COD_TIPOTRF
+      ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
+   `;
+}
+
+// ==================== AUTH ====================
+function verifyToken(authHeader: string | null): TokenPayload {
+   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new ApiError(401, 'Token não fornecido');
+   }
+
+   const token = authHeader.replace('Bearer ', '');
+
+   if (!process.env.JWT_SECRET) {
+      throw new ApiError(500, 'Configuração de segurança inválida');
+   }
+
+   try {
+      return jwt.verify(token, process.env.JWT_SECRET) as TokenPayload;
+   } catch (err) {
+      throw new ApiError(401, 'Token inválido');
+   }
+}
+
+// ==================== MAIN HANDLER ====================
 export async function GET(request: Request) {
    try {
-      const authHeader = request.headers.get('Authorization');
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-         return NextResponse.json(
-            { error: 'Token não fornecido' },
-            { status: 401 }
-         );
-      }
-
-      const token = authHeader.replace('Bearer ', '');
-      let decoded: any;
-
-      try {
-         decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET || 'minha_chave_secreta'
-         );
-      } catch (err) {
-         return NextResponse.json({ error: 'Token inválido' }, { status: 401 });
-      }
-
+      // Autenticação
+      const decoded = verifyToken(request.headers.get('Authorization'));
       const isAdmin = decoded.tipo === 'ADM';
       const codRecurso = decoded.recurso?.id;
 
+      // Parse URL params
       const { searchParams } = new URL(request.url);
-      const mesParam = searchParams.get('mes');
-      const anoParam = searchParams.get('ano');
-      const diaParam = searchParams.get('dia');
-      const codTarefaQuery = searchParams.get('codTarefa')?.trim();
 
-      // Paginação
-      const page = parseInt(searchParams.get('page') || '1', 10);
-      const limit = parseInt(searchParams.get('limit') || '20', 10);
-
-      // ===== FILTROS DE COLUNA =====
-      const filterCodTarefa = searchParams.get('filter_COD_TAREFA')?.trim();
-      const filterNomeTarefa = searchParams.get('filter_NOME_TAREFA')?.trim();
-      const filterCodRecurso = searchParams.get('filter_COD_RECURSO')?.trim();
-      const filterNomeRecurso = searchParams.get('filter_NOME_RECURSO')?.trim();
-      const filterDtsolTarefa = searchParams.get('filter_DTSOL_TAREFA')?.trim();
-      const filterHrestTarefa = searchParams.get('filter_HREST_TAREFA')?.trim();
-      const filterStatusTarefa = searchParams
-         .get('filter_STATUS_TAREFA')
-         ?.trim();
-      const filterNomeProjeto = searchParams.get('filter_NOME_PROJETO')?.trim();
-      const filterDtaprovTarefa = searchParams
-         .get('filter_DTAPROV_TAREFA')
-         ?.trim();
-      const filterDtpreventTarefa = searchParams
-         .get('filter_DTPREVENT_TAREFA')
-         ?.trim();
-      const filterDtincTarefa = searchParams.get('filter_DTINC_TAREFA')?.trim();
-      const filterFaturaTarefa = searchParams
-         .get('filter_FATURA_TAREFA')
-         ?.trim();
-
-      if (page < 1 || limit < 1 || limit > 100) {
-         return NextResponse.json(
-            {
-               error: 'Parâmetros de paginação inválidos. Page deve ser >= 1, limit entre 1 e 100',
-            },
-            { status: 400 }
-         );
-      }
+      // Validação de paginação
+      const page = parseInt(
+         searchParams.get('page') || String(DEFAULT_PAGE),
+         10
+      );
+      const limit = parseInt(
+         searchParams.get('limit') || String(DEFAULT_LIMIT),
+         10
+      );
+      validatePagination(page, limit);
 
       const startRow = (page - 1) * limit + 1;
       const endRow = page * limit;
 
-      // Validação mês/ano/dia
-      let mesNumber: number | null = null;
-      if (mesParam && mesParam !== 'todos') {
-         mesNumber = Number(mesParam);
-         if (isNaN(mesNumber) || mesNumber < 1 || mesNumber > 12) {
-            return NextResponse.json(
-               { error: "Parâmetro 'mês' inválido" },
-               { status: 400 }
-            );
-         }
-      }
-
-      let anoNumber: number | null = null;
-      if (anoParam && anoParam !== 'todos') {
-         anoNumber = Number(anoParam);
-         if (isNaN(anoNumber) || anoNumber < 2000 || anoNumber > 3000) {
-            return NextResponse.json(
-               { error: "Parâmetro 'ano' inválido" },
-               { status: 400 }
-            );
-         }
-      }
-
-      let diaNumber: number | null = null;
-      if (diaParam && diaParam !== 'todos') {
-         diaNumber = Number(diaParam);
-         if (isNaN(diaNumber) || diaNumber < 1 || diaNumber > 31) {
-            return NextResponse.json(
-               { error: "Parâmetro 'dia' inválido" },
-               { status: 400 }
-            );
-         }
-      }
-
+      // Validação de acesso
       if (!isAdmin && !codRecurso) {
-         return NextResponse.json(
-            { error: 'Usuário não admin precisa ter codRecurso definido' },
-            { status: 400 }
+         throw new ApiError(
+            400,
+            'Usuário não admin precisa ter codRecurso definido'
          );
       }
 
-      const whereConditions: string[] = [];
-      const params: any[] = [];
+      // Construção de condições WHERE
+      const { conditions: whereConditions, params } = buildWhereConditions(
+         searchParams,
+         isAdmin,
+         codRecurso
+      );
 
-      // Condição de STATUS_TAREFA <> 4 removida completamente
-      // Agora todas as tarefas serão retornadas, independente do status
+      // Construção de queries
+      const sql = buildQuery(whereConditions, startRow, endRow);
+      const countSql = buildCountQuery(whereConditions);
 
-      // Filtro por data (ano, mês, dia) - DTSOL_TAREFA
-      // Agora inclui registros com DTSOL_TAREFA NULL quando não há filtro de data
-      if (anoNumber && mesNumber && diaNumber) {
-         whereConditions.push(
-            'EXTRACT(YEAR FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(MONTH FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(DAY FROM TAREFA.DTSOL_TAREFA) = ?'
-         );
-         params.push(anoNumber, mesNumber, diaNumber);
-      } else if (anoNumber && mesNumber && !diaNumber) {
-         whereConditions.push(
-            'EXTRACT(YEAR FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(MONTH FROM TAREFA.DTSOL_TAREFA) = ?'
-         );
-         params.push(anoNumber, mesNumber);
-      } else if (anoNumber && !mesNumber && !diaNumber) {
-         whereConditions.push('EXTRACT(YEAR FROM TAREFA.DTSOL_TAREFA) = ?');
-         params.push(anoNumber);
-      } else if (!anoNumber && mesNumber && !diaNumber) {
-         whereConditions.push('EXTRACT(MONTH FROM TAREFA.DTSOL_TAREFA) = ?');
-         params.push(mesNumber);
-      } else if (!anoNumber && !mesNumber && diaNumber) {
-         whereConditions.push('EXTRACT(DAY FROM TAREFA.DTSOL_TAREFA) = ?');
-         params.push(diaNumber);
-      } else if (!anoNumber && mesNumber && diaNumber) {
-         whereConditions.push(
-            'EXTRACT(MONTH FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(DAY FROM TAREFA.DTSOL_TAREFA) = ?'
-         );
-         params.push(mesNumber, diaNumber);
-      } else if (anoNumber && !mesNumber && diaNumber) {
-         whereConditions.push(
-            'EXTRACT(YEAR FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(DAY FROM TAREFA.DTSOL_TAREFA) = ?'
-         );
-         params.push(anoNumber, diaNumber);
-      }
-
-      // Filtro por recurso (não admin)
-      if (!isAdmin && codRecurso) {
-         whereConditions.push('TAREFA.CODREC_TAREFA = ?');
-         params.push(Number(codRecurso));
-      }
-
-      // Filtro por código da tarefa (query parameter)
-      if (codTarefaQuery) {
-         whereConditions.push('TAREFA.COD_TAREFA = ?');
-         params.push(Number(codTarefaQuery));
-      }
-
-      // ===== FILTROS DE COLUNA =====
-
-      if (filterCodTarefa) {
-         const cleanCodTarefa = filterCodTarefa.replace(/[^\d]/g, '');
-         whereConditions.push('CAST(TAREFA.COD_TAREFA AS VARCHAR(20)) LIKE ?');
-         params.push(`%${cleanCodTarefa}%`);
-      }
-
-      // Filtro por nome da tarefa (busca no nome E no código)
-      if (filterNomeTarefa) {
-         whereConditions.push(
-            '(UPPER(TAREFA.NOME_TAREFA) LIKE ? OR CAST(TAREFA.COD_TAREFA AS VARCHAR(20)) LIKE ?)'
-         );
-         params.push(
-            `%${filterNomeTarefa.toUpperCase()}%`,
-            `%${filterNomeTarefa}%`
-         );
-      }
-
-      if (filterCodRecurso) {
-         const cleanCodRecurso = filterCodRecurso.replace(/[^\d]/g, '');
-         whereConditions.push(
-            'CAST(RECURSO.COD_RECURSO AS VARCHAR(20)) LIKE ?'
-         );
-         params.push(`%${cleanCodRecurso}%`);
-      }
-
-      if (filterNomeRecurso) {
-         whereConditions.push('UPPER(RECURSO.NOME_RECURSO) LIKE ?');
-         params.push(`%${filterNomeRecurso.toUpperCase()}%`);
-      }
-
-      if (filterDtsolTarefa) {
-         let searchValue = filterDtsolTarefa.trim().replace(/\//g, '.');
-
-         // Se só tem números, formata com pontos
-         if (/^\d+$/.test(searchValue)) {
-            if (searchValue.length === 2) {
-               searchValue = searchValue;
-            } else if (searchValue.length === 4) {
-               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}`;
-            } else if (searchValue.length === 8) {
-               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}.${searchValue.substring(4, 8)}`;
-            }
-         }
-
-         const parts = searchValue.split('.');
-
-         if (parts.length === 1 && /^\d{1,2}$/.test(parts[0])) {
-            whereConditions.push('EXTRACT(DAY FROM TAREFA.DTSOL_TAREFA) = ?');
-            params.push(parseInt(parts[0]));
-         } else if (
-            parts.length === 2 &&
-            /^\d{1,2}$/.test(parts[0]) &&
-            /^\d{1,2}$/.test(parts[1])
-         ) {
-            whereConditions.push(
-               '(EXTRACT(DAY FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(MONTH FROM TAREFA.DTSOL_TAREFA) = ?)'
-            );
-            params.push(parseInt(parts[0]), parseInt(parts[1]));
-         } else if (
-            parts.length === 3 &&
-            /^\d{1,2}$/.test(parts[0]) &&
-            /^\d{1,2}$/.test(parts[1]) &&
-            /^\d{4}$/.test(parts[2])
-         ) {
-            whereConditions.push(
-               '(EXTRACT(DAY FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(MONTH FROM TAREFA.DTSOL_TAREFA) = ? AND EXTRACT(YEAR FROM TAREFA.DTSOL_TAREFA) = ?)'
-            );
-            params.push(
-               parseInt(parts[0]),
-               parseInt(parts[1]),
-               parseInt(parts[2])
-            );
-         } else {
-            whereConditions.push(
-               `CAST(TAREFA.DTSOL_TAREFA AS VARCHAR(50)) LIKE ?`
-            );
-            params.push(`%${searchValue}%`);
-         }
-      }
-
-      if (filterHrestTarefa) {
-         const cleanHrest = filterHrestTarefa.replace(/[^\d.,]/g, '');
-         whereConditions.push(
-            'CAST(TAREFA.HREST_TAREFA AS VARCHAR(20)) LIKE ?'
-         );
-         params.push(`%${cleanHrest}%`);
-      }
-
-      if (filterStatusTarefa) {
-         const cleanStatus = filterStatusTarefa.replace(/[^\d]/g, '');
-         if (cleanStatus) {
-            whereConditions.push(
-               'CAST(TAREFA.STATUS_TAREFA AS VARCHAR(10)) LIKE ?'
-            );
-            params.push(`%${cleanStatus}%`);
-         }
-      }
-
-      if (filterNomeProjeto) {
-         // Busca tanto no código quanto no nome do projeto
-         whereConditions.push(
-            '(UPPER(PROJETO.NOME_PROJETO) LIKE ? OR CAST(PROJETO.COD_PROJETO AS VARCHAR(20)) LIKE ?)'
-         );
-         params.push(
-            `%${filterNomeProjeto.toUpperCase()}%`,
-            `%${filterNomeProjeto}%`
-         );
-      }
-
-      if (filterDtaprovTarefa) {
-         let searchValue = filterDtaprovTarefa.trim().replace(/\//g, '.');
-
-         if (/^\d+$/.test(searchValue)) {
-            if (searchValue.length === 2) {
-               searchValue = searchValue;
-            } else if (searchValue.length === 4) {
-               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}`;
-            } else if (searchValue.length === 8) {
-               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}.${searchValue.substring(4, 8)}`;
-            }
-         }
-
-         const parts = searchValue.split('.');
-
-         if (parts.length === 1 && /^\d{1,2}$/.test(parts[0])) {
-            whereConditions.push('EXTRACT(DAY FROM TAREFA.DTAPROV_TAREFA) = ?');
-            params.push(parseInt(parts[0]));
-         } else if (
-            parts.length === 2 &&
-            /^\d{1,2}$/.test(parts[0]) &&
-            /^\d{1,2}$/.test(parts[1])
-         ) {
-            whereConditions.push(
-               '(EXTRACT(DAY FROM TAREFA.DTAPROV_TAREFA) = ? AND EXTRACT(MONTH FROM TAREFA.DTAPROV_TAREFA) = ?)'
-            );
-            params.push(parseInt(parts[0]), parseInt(parts[1]));
-         } else if (
-            parts.length === 3 &&
-            /^\d{1,2}$/.test(parts[0]) &&
-            /^\d{1,2}$/.test(parts[1]) &&
-            /^\d{4}$/.test(parts[2])
-         ) {
-            whereConditions.push(
-               '(EXTRACT(DAY FROM TAREFA.DTAPROV_TAREFA) = ? AND EXTRACT(MONTH FROM TAREFA.DTAPROV_TAREFA) = ? AND EXTRACT(YEAR FROM TAREFA.DTAPROV_TAREFA) = ?)'
-            );
-            params.push(
-               parseInt(parts[0]),
-               parseInt(parts[1]),
-               parseInt(parts[2])
-            );
-         } else {
-            whereConditions.push(
-               `CAST(TAREFA.DTAPROV_TAREFA AS VARCHAR(50)) LIKE ?`
-            );
-            params.push(`%${searchValue}%`);
-         }
-      }
-
-      if (filterDtpreventTarefa) {
-         let searchValue = filterDtpreventTarefa.trim().replace(/\//g, '.');
-
-         if (/^\d+$/.test(searchValue)) {
-            if (searchValue.length === 2) {
-               searchValue = searchValue;
-            } else if (searchValue.length === 4) {
-               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}`;
-            } else if (searchValue.length === 8) {
-               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}.${searchValue.substring(4, 8)}`;
-            }
-         }
-
-         const parts = searchValue.split('.');
-
-         if (parts.length === 1 && /^\d{1,2}$/.test(parts[0])) {
-            whereConditions.push(
-               'EXTRACT(DAY FROM TAREFA.DTPREVENT_TAREFA) = ?'
-            );
-            params.push(parseInt(parts[0]));
-         } else if (
-            parts.length === 2 &&
-            /^\d{1,2}$/.test(parts[0]) &&
-            /^\d{1,2}$/.test(parts[1])
-         ) {
-            whereConditions.push(
-               '(EXTRACT(DAY FROM TAREFA.DTPREVENT_TAREFA) = ? AND EXTRACT(MONTH FROM TAREFA.DTPREVENT_TAREFA) = ?)'
-            );
-            params.push(parseInt(parts[0]), parseInt(parts[1]));
-         } else if (
-            parts.length === 3 &&
-            /^\d{1,2}$/.test(parts[0]) &&
-            /^\d{1,2}$/.test(parts[1]) &&
-            /^\d{4}$/.test(parts[2])
-         ) {
-            whereConditions.push(
-               '(EXTRACT(DAY FROM TAREFA.DTPREVENT_TAREFA) = ? AND EXTRACT(MONTH FROM TAREFA.DTPREVENT_TAREFA) = ? AND EXTRACT(YEAR FROM TAREFA.DTPREVENT_TAREFA) = ?)'
-            );
-            params.push(
-               parseInt(parts[0]),
-               parseInt(parts[1]),
-               parseInt(parts[2])
-            );
-         } else {
-            whereConditions.push(
-               `CAST(TAREFA.DTPREVENT_TAREFA AS VARCHAR(50)) LIKE ?`
-            );
-            params.push(`%${searchValue}%`);
-         }
-      }
-
-      if (filterDtincTarefa) {
-         let searchValue = filterDtincTarefa.trim().replace(/\//g, '.');
-
-         if (/^\d+$/.test(searchValue)) {
-            if (searchValue.length === 2) {
-               searchValue = searchValue;
-            } else if (searchValue.length === 4) {
-               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}`;
-            } else if (searchValue.length === 8) {
-               searchValue = `${searchValue.substring(0, 2)}.${searchValue.substring(2, 4)}.${searchValue.substring(4, 8)}`;
-            }
-         }
-
-         const parts = searchValue.split('.');
-
-         if (parts.length === 1 && /^\d{1,2}$/.test(parts[0])) {
-            whereConditions.push('EXTRACT(DAY FROM TAREFA.DTINC_TAREFA) = ?');
-            params.push(parseInt(parts[0]));
-         } else if (
-            parts.length === 2 &&
-            /^\d{1,2}$/.test(parts[0]) &&
-            /^\d{1,2}$/.test(parts[1])
-         ) {
-            whereConditions.push(
-               '(EXTRACT(DAY FROM TAREFA.DTINC_TAREFA) = ? AND EXTRACT(MONTH FROM TAREFA.DTINC_TAREFA) = ?)'
-            );
-            params.push(parseInt(parts[0]), parseInt(parts[1]));
-         } else if (
-            parts.length === 3 &&
-            /^\d{1,2}$/.test(parts[0]) &&
-            /^\d{1,2}$/.test(parts[1]) &&
-            /^\d{4}$/.test(parts[2])
-         ) {
-            whereConditions.push(
-               '(EXTRACT(DAY FROM TAREFA.DTINC_TAREFA) = ? AND EXTRACT(MONTH FROM TAREFA.DTINC_TAREFA) = ? AND EXTRACT(YEAR FROM TAREFA.DTINC_TAREFA) = ?)'
-            );
-            params.push(
-               parseInt(parts[0]),
-               parseInt(parts[1]),
-               parseInt(parts[2])
-            );
-         } else {
-            whereConditions.push(
-               `CAST(TAREFA.DTINC_TAREFA AS VARCHAR(50)) LIKE ?`
-            );
-            params.push(`%${searchValue}%`);
-         }
-      }
-
-      if (filterFaturaTarefa) {
-         whereConditions.push('UPPER(TRIM(TAREFA.FATURA_TAREFA)) = UPPER(?)');
-         params.push(filterFaturaTarefa.trim());
-      }
-
-      const sql = `
-         SELECT
-            TAREFA.COD_TAREFA,
-            TAREFA.NOME_TAREFA,
-            TAREFA.CODPRO_TAREFA,
-            TAREFA.CODREC_TAREFA,
-            TAREFA.DTSOL_TAREFA,
-            TAREFA.DTAPROV_TAREFA,
-            TAREFA.DTPREVENT_TAREFA,
-            TAREFA.HREST_TAREFA,
-            TAREFA.STATUS_TAREFA,
-            TAREFA.DTINC_TAREFA,
-            TAREFA.FATURA_TAREFA,
-            PROJETO.COD_PROJETO,
-            PROJETO.NOME_PROJETO,
-            PROJETO.CODCLI_PROJETO,
-            RECURSO.COD_RECURSO,
-            RECURSO.NOME_RECURSO,
-            CLIENTE.COD_CLIENTE,
-            CLIENTE.NOME_CLIENTE
-         FROM TAREFA
-         LEFT JOIN PROJETO ON TAREFA.CODPRO_TAREFA = PROJETO.COD_PROJETO
-         LEFT JOIN RECURSO ON TAREFA.CODREC_TAREFA = RECURSO.COD_RECURSO
-         LEFT JOIN CLIENTE ON PROJETO.CODCLI_PROJETO = CLIENTE.COD_CLIENTE
-         ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
-         ORDER BY TAREFA.COD_TAREFA DESC, TAREFA.DTSOL_TAREFA DESC
-         ROWS ${startRow} TO ${endRow};
-      `;
-
-      const countSql = `
-         SELECT COUNT(*) as TOTAL
-         FROM TAREFA
-         LEFT JOIN PROJETO ON TAREFA.CODPRO_TAREFA = PROJETO.COD_PROJETO
-         LEFT JOIN RECURSO ON TAREFA.CODREC_TAREFA = RECURSO.COD_RECURSO
-         LEFT JOIN CLIENTE ON PROJETO.CODCLI_PROJETO = CLIENTE.COD_CLIENTE
-         ${whereConditions.length ? 'WHERE ' + whereConditions.join(' AND ') : ''}
-      `;
-
-      console.log('DEBUG - SQL:', sql);
-      console.log('DEBUG - Params completos:', params);
-      console.log('DEBUG - whereConditions:', whereConditions);
-
+      // Execução paralela
       const [rawTarefasData, countResult] = await Promise.all([
          firebirdQuery(sql, params),
          firebirdQuery(countSql, params),
       ]);
 
-      // Processa os dados para adicionar os campos compostos
-      const tarefasData = (rawTarefasData || []).map((record: any) => {
-         const tarefaCompleta =
-            record.COD_TAREFA && record.NOME_TAREFA
-               ? `${record.COD_TAREFA} - ${record.NOME_TAREFA}`
-               : null;
-
-         const projetoCompleto =
-            record.COD_PROJETO && record.NOME_PROJETO
-               ? `${record.COD_PROJETO} - ${record.NOME_PROJETO}`
-               : null;
-
-         const recursoCompleto =
-            record.COD_RECURSO && record.NOME_RECURSO
-               ? `${record.COD_RECURSO} - ${record.NOME_RECURSO}`
-               : null;
-
-         return {
+      // Processamento de dados
+      const tarefasData: TabelaTarefaProps[] = rawTarefasData.map(
+         (record: TabelaTarefaProps) => ({
             ...record,
-            TAREFA_COMPLETA: tarefaCompleta,
-            PROJETO_COMPLETO: projetoCompleto,
-            RECURSO_COMPLETO: recursoCompleto,
-         };
-      });
+         })
+      );
 
+      // Cálculo de paginação
       const total = countResult[0].TOTAL;
       const totalPages = Math.ceil(total / limit);
 
-      return NextResponse.json(
-         {
-            data: tarefasData,
-            pagination: {
-               currentPage: page,
-               totalPages,
-               totalRecords: total,
-               recordsPerPage: limit,
-               hasNextPage: page < totalPages,
-               hasPrevPage: page > 1,
-            },
+      const response: ApiResponse<TabelaTarefaProps[]> = {
+         data: tarefasData,
+         pagination: {
+            currentPage: page,
+            totalPages,
+            totalRecords: total,
+            recordsPerPage: limit,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1,
          },
-         { status: 200 }
-      );
+      };
+
+      return NextResponse.json(response, { status: 200 });
    } catch (error) {
-      console.error('Erro ao buscar dados de tarefas:', error);
+      console.error('=== ERRO NA REQUISIÇÃO ===');
+      console.error('Tipo de erro:', error?.constructor?.name);
+      console.error('Erro completo:', error);
+
+      if (error instanceof ApiError) {
+         console.error('ApiError detectado:', error.message);
+         return NextResponse.json(
+            { error: error.message },
+            { status: error.statusCode }
+         );
+      }
 
       if (error instanceof Error) {
-         console.error('DEBUG - Mensagem de erro:', error.message);
-         console.error('DEBUG - Stack trace:', error.stack);
+         console.error('Error genérico:');
+         console.error('- Mensagem:', error.message);
+         console.error('- Stack:', error.stack);
+         console.error('- Nome:', error.name);
       }
 
       return NextResponse.json(
-         { error: 'Erro interno no servidor' },
+         {
+            error: 'Erro interno no servidor',
+            details:
+               error instanceof Error ? error.message : 'Erro desconhecido',
+         },
          { status: 500 }
       );
    }

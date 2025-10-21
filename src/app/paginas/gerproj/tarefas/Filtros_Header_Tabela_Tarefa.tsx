@@ -1,14 +1,16 @@
 'use client';
-// ================================================================================
 // IMPORTS
-// ================================================================================
 import { debounce } from 'lodash';
 import { useMemo, useState, useCallback, useEffect } from 'react';
-// ================================================================================
-import { InputFilterTableHeaderProps } from '../../../../../types/types';
-import { normalizeDate } from '../../../../../utils/formatters';
-// ================================================================================
-import { FaPlus } from 'react-icons/fa';
+
+// TYPES
+import { InputFilterTableHeaderProps } from '../../../../types/types';
+
+// FORMATERS
+import { normalizeDate } from '../../../../utils/formatters';
+
+// ICONS
+import { FaFilter } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 
 // ================================================================================
@@ -19,45 +21,34 @@ const DEBOUNCE_DELAY = 200;
 const SEARCHABLE_COLUMNS = [
    'TAREFA_COMPLETA',
    'PROJETO_COMPLETO',
-   'NOME_RECURSO',
    'NOME_CLIENTE',
+   'NOME_RECURSO',
    'DTSOL_TAREFA',
    'DTAPROV_TAREFA',
    'DTPREVENT_TAREFA',
    'HREST_TAREFA',
-   'STATUS_TAREFA',
-   'DTINC_TAREFA',
-   'FATURA_TAREFA',
+   'QTD_HRS_TAREFA',
+   'TIPO_TAREFA_COMPLETO',
 ] as const;
 
 const DATE_COLUMNS = [
    'DTSOL_TAREFA',
    'DTAPROV_TAREFA',
    'DTPREVENT_TAREFA',
-   'DTINC_TAREFA',
 ] as const;
 
-const NUMERIC_COLUMNS = ['HREST_TAREFA', 'STATUS_TAREFA'] as const;
-const UPPERCASE_COLUMNS = ['FATURA_TAREFA'] as const;
+const NUMERIC_COLUMNS = ['HREST_TAREFA'] as const;
 
 // Limites de caracteres baseados no banco de dados
 export const COLUMN_MAX_LENGTH: Record<string, number> = {
    TAREFA_COMPLETA: 15, // Concatenação testada
    PROJETO_COMPLETO: 15, // Concatenação testada
-   NOME_RECURSO: 20, // Assumindo limite
-   NOME_CLIENTE: 20, // Assumindo limite
+   NOME_CLIENTE: 12, // Assumindo limite
+   NOME_RECURSO: 12, // Assumindo limite
    DTSOL_TAREFA: 10, // DATE (formato DD/MM/YYYY)
    DTAPROV_TAREFA: 10, // DATE
    DTPREVENT_TAREFA: 10, // DATE
-   // HREST_TAREFA: 18, // NUMERIC(15,2)
-   STATUS_TAREFA: 1, // INTEGER
-   DTINC_TAREFA: 10, // DATE
-   FATURA_TAREFA: 3, // CHAR(3)
-   // =====
-   COD_TAREFA: 10, // INTEGER
-   NOME_TAREFA: 50, // VARCHAR(50)
-   CODPRO_TAREFA: 10, // INTEGER
-   CODREC_TAREFA: 10, // INTEGER
+   TIPO_TAREFA_COMPLETO: 12, // CHAR(12)
 };
 
 // ================================================================================
@@ -129,7 +120,13 @@ export const FiltrosHeaderTabelaTarefa = ({
    // Handlers
    const handleChange = useCallback(
       (e: React.ChangeEvent<HTMLInputElement>) => {
-         const inputValue = e.target.value;
+         let inputValue = e.target.value;
+
+         // Validação especial para campos de data - apenas números e /
+         if (columnId && DATE_COLUMNS.includes(columnId as any)) {
+            // Remove qualquer caractere que não seja número ou /
+            inputValue = inputValue.replace(/[^\d/]/g, '');
+         }
 
          // Validar o limite de caracteres se definido
          if (maxLength && inputValue.length > maxLength) {
@@ -139,7 +136,7 @@ export const FiltrosHeaderTabelaTarefa = ({
          setLocalValue(inputValue);
          debouncedOnChange(inputValue);
       },
-      [debouncedOnChange, maxLength]
+      [debouncedOnChange, maxLength, columnId]
    );
 
    const handleClear = useCallback(() => {
@@ -147,9 +144,6 @@ export const FiltrosHeaderTabelaTarefa = ({
       onChange('');
       debouncedOnChange.cancel();
    }, [onChange, debouncedOnChange]);
-
-   const handleFocus = useCallback(() => setIsFocused(true), []);
-   const handleBlur = useCallback(() => setIsFocused(false), []);
 
    // Atalho de teclado para limpar (Escape)
    const handleKeyDown = useCallback(
@@ -174,13 +168,11 @@ export const FiltrosHeaderTabelaTarefa = ({
             onChange={handleChange}
             onKeyDown={handleKeyDown}
             maxLength={maxLength}
-            className={`w-full rounded-md bg-teal-950 px-4 py-2 pr-10 text-base text-white placeholder-slate-400 shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:outline-none ${
+            className={`w-full rounded-md border border-teal-950 bg-teal-900 px-4 py-2 pr-10 text-base text-white transition-all select-none hover:bg-teal-950 focus:ring-2 focus:outline-none ${
                isNearLimit
                   ? 'ring-2 ring-yellow-500/50 focus:ring-yellow-500'
                   : 'focus:ring-pink-500'
             }`}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
          />
 
          {localValue && (
@@ -225,8 +217,8 @@ export const FilterControls = ({
 
    return (
       <div className="group flex w-full flex-col gap-1">
-         <label className="flex items-center gap-2 text-base font-extrabold tracking-widest text-black uppercase select-none">
-            <FaPlus className="text-black" size={16} /> Filtros
+         <label className="flex items-center gap-3 text-base font-extrabold tracking-widest text-black uppercase select-none">
+            <FaFilter className="text-black" size={16} /> Filtros
          </label>
 
          <div className="flex items-center gap-6">
@@ -236,7 +228,7 @@ export const FilterControls = ({
                disabled={isDisabled}
                aria-label={showFilters ? 'Ocultar filtros' : 'Mostrar filtros'}
                aria-expanded={showFilters}
-               className={`w-[250px] cursor-pointer rounded-sm px-6 py-2.5 text-base tracking-widest transition-all select-none ${
+               className={`w-[300px] cursor-pointer rounded-md px-6 py-2.5 text-lg tracking-widest transition-all ${
                   showFilters
                      ? 'border-none bg-blue-600 font-extrabold text-white italic shadow-md shadow-black hover:bg-blue-700'
                      : 'border-none bg-white font-bold text-black italic shadow-md shadow-black hover:bg-white/70'
@@ -307,13 +299,6 @@ export const useFiltrosHeaderTabelaTarefay = () => {
             return dateFormats.some(dateFormat =>
                dateFormat.toLowerCase().includes(filterString.toLowerCase())
             );
-         }
-
-         // Tratamento para colunas uppercase (FATURA_TAREFA)
-         if (UPPERCASE_COLUMNS.includes(columnId as any)) {
-            const normalizedCell = normalizeString(cellValue);
-            const normalizedFilter = normalizeString(filterString);
-            return normalizedCell.includes(normalizedFilter);
          }
 
          // Tratamento para colunas numéricas

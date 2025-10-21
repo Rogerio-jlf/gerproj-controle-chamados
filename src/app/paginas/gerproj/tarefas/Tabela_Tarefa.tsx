@@ -1,7 +1,5 @@
 'use client';
-// ================================================================================
 // IMPORTS
-// ================================================================================
 import {
    flexRender,
    getCoreRowModel,
@@ -12,23 +10,29 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 
-// Components
+// COMPONENTS
 import {
    FilterControls,
    FiltrosHeaderTabelaTarefa,
-} from './filtros/Filtros_Header_Tabela_Tarefa';
+} from './Filtros_Header_Tabela_Tarefa';
+import { colunasTabelaTarefa } from './Colunas_Tabela_Tarefa';
+import { ModalVisualizarTarefa } from './Modal_Visualizar_Tarefa';
 import { IsError } from '../../../../components/IsError';
 import { IsLoading } from '../../../../components/IsLoading';
-import { colunasTabelaTarefa } from './Colunas_Tabela_Tarefa';
-import { formatarCodNumber } from '../../../../utils/formatters';
-import { FiltrosTabelaTarefa } from './filtros/Filtros_Tabela_Tarefa';
 
-// Hooks & Types
+// FORMATERS
+import { formatarCodNumber } from '../../../../utils/formatters';
+
+// HOOKS
 import { useAuth } from '../../../../hooks/useAuth';
-import { TabelaTarefaProps } from '../../../../types/types';
+
+// CONTEXTS
 import { useFiltersTabelaTarefa } from '../../../../contexts/Filters_Context_Tabela_Tarefa';
 
-// Icons
+// TYPES
+import { TabelaTarefaProps } from '../../../../types/types';
+
+// ICONS
 import { IoClose } from 'react-icons/io5';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
@@ -45,17 +49,17 @@ const CACHE_TIME = 1000 * 60 * 5;
 const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 const COLUMN_WIDTHS: Record<string, string> = {
-   TAREFA_COMPLETA: '19%',
-   PROJETO_COMPLETO: '19%',
-   NOME_RECURSO: '10%',
+   TAREFA_COMPLETA: '17%',
+   PROJETO_COMPLETO: '17%',
    NOME_CLIENTE: '10%',
-   DTSOL_TAREFA: '6%',
-   DTAPROV_TAREFA: '6%',
+   NOME_RECURSO: '10%',
+   DTSOL_TAREFA: '7%',
+   DTAPROV_TAREFA: '7%',
    DTPREVENT_TAREFA: '6%',
    HREST_TAREFA: '6%',
-   STATUS_TAREFA: '6%',
-   DTINC_TAREFA: '6%',
-   FATURA_TAREFA: '6%',
+   QTD_HRS_GASTAS: '6%',
+   TIPO_TAREFA_COMPLETO: '9%',
+   acoes: '5%',
 };
 
 // ================================================================================
@@ -155,6 +159,11 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
+   const [selectedTarefa, setSelectedTarefa] =
+      useState<TabelaTarefaProps | null>(null);
+   const [openModalVisualizarTarefa, setOpenModalVisualizarTarefa] =
+      useState(false);
+
    // ================================================================================
    // ESTADOS - FILTROS (INPUTS SEM DEBOUNCE)
    // ================================================================================
@@ -162,29 +171,35 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
       useState('');
    const [inputFilterProjetoCompleto, setInputFilterProjetoCompleto] =
       useState('');
-   const [inputFilterNomeRecurso, setInputFilterNomeRecurso] = useState('');
    const [inputFilterNomeCliente, setInputFilterNomeCliente] = useState('');
+   const [inputFilterNomeRecurso, setInputFilterNomeRecurso] = useState('');
    const [inputFilterDtSolTarefa, setInputFilterDtSolTarefa] = useState('');
    const [inputFilterDtAprovTarefa, setInputFilterDtAprovTarefa] = useState('');
    const [inputFilterDtPreventTarefa, setInputFilterDtPreventTarefa] =
       useState('');
    const [inputFilterHrEstTarefa, setInputFilterHrEstTarefa] = useState('');
+   const [inputFilterQtdHrsGastasTarefa, setInputFilterQtdHrsGastasTarefa] =
+      useState('');
    const [inputFilterStatusTarefa, setInputFilterStatusTarefa] = useState('');
-   const [inputFilterDtIncTarefa, setInputFilterDtIncTarefa] = useState('');
-   const [inputFilterFaturaTarefa, setInputFilterFaturaTarefa] = useState('');
+   const [inputFilterTipoTarefaCompleto, setInputFilterTipoTarefaCompleto] =
+      useState('');
 
    // ESTADOS - FILTROS (COM DEBOUNCE)
    const filterTarefaCompleta = useDebouncedValue(inputFilterTarefaCompleta);
    const filterProjetoCompleto = useDebouncedValue(inputFilterProjetoCompleto);
-   const filterNomeRecurso = useDebouncedValue(inputFilterNomeRecurso);
    const filterNomeCliente = useDebouncedValue(inputFilterNomeCliente);
+   const filterNomeRecurso = useDebouncedValue(inputFilterNomeRecurso);
    const filterDtSolTarefa = useDebouncedValue(inputFilterDtSolTarefa);
    const filterDtAprovTarefa = useDebouncedValue(inputFilterDtAprovTarefa);
    const filterDtPreventTarefa = useDebouncedValue(inputFilterDtPreventTarefa);
    const filterHrEstTarefa = useDebouncedValue(inputFilterHrEstTarefa);
+   const filterQtdHrsGastasTarefa = useDebouncedValue(
+      inputFilterQtdHrsGastasTarefa
+   );
    const filterStatusTarefa = useDebouncedValue(inputFilterStatusTarefa);
-   const filterDtIncTarefa = useDebouncedValue(inputFilterDtIncTarefa);
-   const filterFaturaTarefa = useDebouncedValue(inputFilterFaturaTarefa);
+   const filterTipoTarefaCompleto = useDebouncedValue(
+      inputFilterTipoTarefaCompleto
+   );
 
    // ================================================================================
    // MAPEAMENTO DE FILTROS
@@ -199,13 +214,13 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
             state: inputFilterProjetoCompleto,
             setter: setInputFilterProjetoCompleto,
          },
-         NOME_RECURSO: {
-            state: inputFilterNomeRecurso,
-            setter: setInputFilterNomeRecurso,
-         },
          NOME_CLIENTE: {
             state: inputFilterNomeCliente,
             setter: setInputFilterNomeCliente,
+         },
+         NOME_RECURSO: {
+            state: inputFilterNomeRecurso,
+            setter: setInputFilterNomeRecurso,
          },
          DTSOL_TAREFA: {
             state: inputFilterDtSolTarefa,
@@ -223,31 +238,31 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
          //    state: inputFilterHrEstTarefa,
          //    setter: setInputFilterHrEstTarefa,
          // },
+         // QTD_HRS_GASTAS: {
+         //    state: inputFilterQtdHrsGastasTarefa,
+         //    setter: setInputFilterQtdHrsGastasTarefa,
+         // },
          STATUS_TAREFA: {
             state: inputFilterStatusTarefa,
             setter: setInputFilterStatusTarefa,
          },
-         DTINC_TAREFA: {
-            state: inputFilterDtIncTarefa,
-            setter: setInputFilterDtIncTarefa,
-         },
-         FATURA_TAREFA: {
-            state: inputFilterFaturaTarefa,
-            setter: setInputFilterFaturaTarefa,
+         TIPO_TAREFA_COMPLETO: {
+            state: inputFilterTipoTarefaCompleto,
+            setter: setInputFilterTipoTarefaCompleto,
          },
       }),
       [
          inputFilterTarefaCompleta,
          inputFilterProjetoCompleto,
-         inputFilterNomeRecurso,
          inputFilterNomeCliente,
+         inputFilterNomeRecurso,
          inputFilterDtSolTarefa,
          inputFilterDtAprovTarefa,
          inputFilterDtPreventTarefa,
          // inputFilterHrEstTarefa,
+         // inputFilterQtdHrsGastasTarefa,
          inputFilterStatusTarefa,
-         inputFilterDtIncTarefa,
-         inputFilterFaturaTarefa,
+         inputFilterTipoTarefaCompleto,
       ]
    );
 
@@ -273,29 +288,29 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
       const filters = [
          filterTarefaCompleta,
          filterProjetoCompleto,
-         filterNomeRecurso,
          filterNomeCliente,
+         filterNomeRecurso,
          filterDtSolTarefa,
          filterDtAprovTarefa,
          filterDtPreventTarefa,
          filterHrEstTarefa,
+         filterQtdHrsGastasTarefa,
          filterStatusTarefa,
-         filterDtIncTarefa,
-         filterFaturaTarefa,
+         filterTipoTarefaCompleto,
       ];
       return filters.filter(f => f?.trim()).length;
    }, [
       filterTarefaCompleta,
       filterProjetoCompleto,
-      filterNomeRecurso,
       filterNomeCliente,
+      filterNomeRecurso,
       filterDtSolTarefa,
       filterDtAprovTarefa,
       filterDtPreventTarefa,
       filterHrEstTarefa,
+      filterQtdHrsGastasTarefa,
       filterStatusTarefa,
-      filterDtIncTarefa,
-      filterFaturaTarefa,
+      filterTipoTarefaCompleto,
    ]);
 
    // ================================================================================
@@ -328,15 +343,21 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
       const filterMappings = [
          { filter: filterTarefaCompleta, param: 'filter_NOME_TAREFA' },
          { filter: filterProjetoCompleto, param: 'filter_NOME_PROJETO' },
-         { filter: filterNomeRecurso, param: 'filter_NOME_RECURSO' },
          { filter: filterNomeCliente, param: 'filter_NOME_CLIENTE' },
+         { filter: filterNomeRecurso, param: 'filter_NOME_RECURSO' },
          { filter: filterDtSolTarefa, param: 'filter_DTSOL_TAREFA' },
          { filter: filterDtAprovTarefa, param: 'filter_DTAPROV_TAREFA' },
          { filter: filterDtPreventTarefa, param: 'filter_DTPREVENT_TAREFA' },
          { filter: filterHrEstTarefa, param: 'filter_HREST_TAREFA' },
+         {
+            filter: filterQtdHrsGastasTarefa,
+            param: 'filter_QTDHRS_GASTAS_TAREFA',
+         },
          { filter: filterStatusTarefa, param: 'filter_STATUS_TAREFA' },
-         { filter: filterDtIncTarefa, param: 'filter_DTINC_TAREFA' },
-         { filter: filterFaturaTarefa, param: 'filter_FATURA_TAREFA' },
+         {
+            filter: filterTipoTarefaCompleto,
+            param: 'filter_TIPO_TAREFA_COMPLETO',
+         },
       ];
 
       filterMappings.forEach(({ filter, param }) => {
@@ -355,15 +376,15 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
       dia,
       filterTarefaCompleta,
       filterProjetoCompleto,
-      filterNomeRecurso,
       filterNomeCliente,
+      filterNomeRecurso,
       filterDtSolTarefa,
       filterDtAprovTarefa,
       filterDtPreventTarefa,
       filterHrEstTarefa,
+      filterQtdHrsGastasTarefa,
       filterStatusTarefa,
-      filterDtIncTarefa,
-      filterFaturaTarefa,
+      filterTipoTarefaCompleto,
    ]);
 
    async function fetchOS(
@@ -421,15 +442,15 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    }, [
       filterTarefaCompleta,
       filterProjetoCompleto,
-      filterNomeRecurso,
       filterNomeCliente,
+      filterNomeRecurso,
       filterDtSolTarefa,
       filterDtAprovTarefa,
       filterDtPreventTarefa,
       filterHrEstTarefa,
+      filterQtdHrsGastasTarefa,
       filterStatusTarefa,
-      filterDtIncTarefa,
-      filterFaturaTarefa,
+      filterTipoTarefaCompleto,
    ]);
 
    // ================================================================================
@@ -438,15 +459,15 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    const clearFilters = useCallback(() => {
       setInputFilterTarefaCompleta('');
       setInputFilterProjetoCompleto('');
-      setInputFilterNomeRecurso('');
       setInputFilterNomeCliente('');
+      setInputFilterNomeRecurso('');
       setInputFilterDtSolTarefa('');
       setInputFilterDtAprovTarefa('');
       setInputFilterDtPreventTarefa('');
       setInputFilterHrEstTarefa('');
+      setInputFilterQtdHrsGastasTarefa('');
       setInputFilterStatusTarefa('');
-      setInputFilterDtIncTarefa('');
-      setInputFilterFaturaTarefa('');
+      setInputFilterTipoTarefaCompleto('');
       setCurrentPage(1);
    }, []);
 
@@ -487,10 +508,32 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
       }, ANIMATION_DURATION);
    }, [onClose]);
 
+   const handleOpenModalVisualizarTarefa = useCallback(
+      (codTarefa: number) => {
+         const tarefa = data.find(tarefa => tarefa.COD_TAREFA === codTarefa);
+         if (tarefa) {
+            setSelectedTarefa(tarefa);
+            setOpenModalVisualizarTarefa(true);
+         }
+      },
+      [data]
+   );
+
+   const handleCloseModalVisualizarTarefa = useCallback(() => {
+      setOpenModalVisualizarTarefa(false);
+      setSelectedTarefa(null);
+   }, []);
+
    // ================================================================================
    // CONFIGURAÇÃO DA TABELA
    // ================================================================================
-   const colunas = useMemo(() => colunasTabelaTarefa(), []);
+   const colunas = useMemo(
+      () =>
+         colunasTabelaTarefa({
+            onVisualizarTarefa: handleOpenModalVisualizarTarefa,
+         }),
+      [handleOpenModalVisualizarTarefa]
+   );
 
    const table = useReactTable({
       data: data ?? [],
@@ -553,7 +596,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                   <button
                      onClick={handleCloseTabelaTarefa}
                      aria-label="Fechar modal de tarefas"
-                     className={`group cursor-pointer rounded-full bg-red-500/50 p-3 text-white transition-all hover:scale-125 hover:bg-red-500 active:scale-95 ${
+                     className={`group cursor-pointer rounded-full bg-red-500/50 p-3 text-white transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 ${
                         isClosing ? 'animate-spin' : ''
                      }`}
                   >
@@ -563,11 +606,6 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
 
                {/* FILTROS HEADER */}
                <div className="flex items-center gap-6">
-                  <div className="flex w-[800px] items-center">
-                     <FiltrosTabelaTarefa
-                        onFiltersChange={handleFiltersChange}
-                     />
-                  </div>
                   <div className="flex items-center">
                      <FilterControls
                         showFilters={showFilters}
@@ -710,7 +748,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                               onChange={e =>
                                  handlePageSizeChange(Number(e.target.value))
                               }
-                              className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none"
+                              className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
                            >
                               {PAGE_SIZE_OPTIONS.map(size => (
                                  <option
@@ -730,7 +768,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                               onClick={() => handlePageChange(1)}
                               disabled={!paginationInfo.hasPrevPage}
                               aria-label="Ir para primeira página"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsLeft
                                  className="text-black group-disabled:text-red-500"
@@ -742,7 +780,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                               onClick={() => handlePageChange(currentPage - 1)}
                               disabled={!paginationInfo.hasPrevPage}
                               aria-label="Página anterior"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronLeft
                                  className="text-black group-disabled:text-red-500"
@@ -759,7 +797,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                                        handlePageChange(Number(e.target.value))
                                     }
                                     aria-label="Selecionar página"
-                                    className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none"
+                                    className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
                                  >
                                     {Array.from(
                                        { length: paginationInfo.totalPages },
@@ -786,7 +824,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                               onClick={() => handlePageChange(currentPage + 1)}
                               disabled={!paginationInfo.hasNextPage}
                               aria-label="Próxima página"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronRight
                                  className="text-black group-disabled:text-red-500"
@@ -800,7 +838,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                               }
                               disabled={!paginationInfo.hasNextPage}
                               aria-label="Ir para última página"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsRight
                                  className="text-black group-disabled:text-red-500"
@@ -827,10 +865,25 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                )}
          </div>
 
+         {/* MODAL VISUALIZAR TAREFA */}
+         {openModalVisualizarTarefa && selectedTarefa && (
+            <ModalVisualizarTarefa
+               isOpen={openModalVisualizarTarefa}
+               onClose={handleCloseModalVisualizarTarefa}
+               tarefa={selectedTarefa}
+            />
+         )}
+
          {/* LOADING */}
          <IsLoading
             isLoading={isLoading}
-            title={`Buscando Tarefas para o período: ${dia === 'todos' ? '' : String(dia).padStart(2, '0')}/${mes === 'todos' ? '' : String(mes).padStart(2, '0')}/${ano === 'todos' ? '' : ano}.`}
+            title={`Buscando Tarefas para o período: ${[
+               dia === 'todos' ? '' : String(dia).padStart(2, '0'),
+               mes === 'todos' ? '' : String(mes).padStart(2, '0'),
+               ano === 'todos' ? '' : String(ano),
+            ]
+               .filter(part => part !== '')
+               .join('/')}.`}
          />
       </div>
    );

@@ -9,6 +9,7 @@ import { InputFilterTableHeaderProps } from '../../../../types/types';
 // ================================================================================
 import { FaPlus } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
+import { SelectAtiEncTabelaProjeto } from './Select_ATI_ENC_Tabela_Projeto';
 
 // ================================================================================
 // CONSTANTES
@@ -17,31 +18,24 @@ const DEBOUNCE_DELAY = 200;
 
 const SEARCHABLE_COLUMNS = [
    'PROJETO_COMPLETO',
-   'CLIENTE_COMPLETO',
+   'NOME_CLIENTE',
    'RESPCLI_PROJETO',
-   'RECURSO_COMPLETO',
-   'QTDHORAS_PROJETO',
+   'NOME_RECURSO',
    'STATUS_PROJETO',
 ] as const;
 
-const NUMERIC_COLUMNS = ['QTDHORAS_PROJETO'] as const;
 const UPPERCASE_COLUMNS = ['STATUS_PROJETO'] as const;
+
+// Colunas que usam dropdown SIM/NÃO
+const DROPDOWN_SIM_NAO_COLUMNS = ['STATUS_PROJETO'] as const;
 
 // Limites de caracteres baseados no banco de dados
 export const COLUMN_MAX_LENGTH: Record<string, number> = {
    PROJETO_COMPLETO: 15, // Concatenação: código + nome
-   CLIENTE_COMPLETO: 15, // Concatenação: código + nome
-   RESPCLI_PROJETO: 20, // VARCHAR(50)
-   RECURSO_COMPLETO: 15, // Concatenação: código + nome
-   // QTDHORAS_PROJETO: 18, // NUMERIC(15,2) = 15 dígitos + 1 vírgula + 2 decimais
+   NOME_CLIENTE: 15, // Concatenação: código + nome
+   RESPCLI_PROJETO: 15, // VARCHAR(50)
+   NOME_RECURSO: 15, // Concatenação: código + nome
    STATUS_PROJETO: 3, // CHAR(3)
-   // =====
-   COD_PROJETO: 10, // INTEGER (máximo ~10 dígitos)
-   NOME_PROJETO: 50, // VARCHAR(50)
-   COD_CLIENTE: 10, // INTEGER (máximo ~10 dígitos)
-   NOME_CLIENTE: 50, // Assumindo mesmo tamanho
-   COD_RECURSO: 10, // INTEGER (máximo ~10 dígitos)
-   NOME_RECURSO: 50, // Assumindo mesmo tamanho
 };
 
 // ================================================================================
@@ -77,14 +71,13 @@ const getCellValue = (row: any, columnId: string): string => {
 // ================================================================================
 // COMPONENTE INPUT FILTRO POR COLUNA COM DEBOUNCE E MAXLENGTH
 // ================================================================================
-export const FiltrosHeaderTabelaProjeto = ({
+export const InputFilterWithDebounce = ({
    value,
    onChange,
    type = 'text',
    columnId,
 }: ExtendedInputFilterProps) => {
    const [localValue, setLocalValue] = useState(value);
-   const [isFocused, setIsFocused] = useState(false);
 
    // Obter o limite máximo para a coluna específica
    const maxLength = columnId ? COLUMN_MAX_LENGTH[columnId] : undefined;
@@ -132,9 +125,6 @@ export const FiltrosHeaderTabelaProjeto = ({
       debouncedOnChange.cancel();
    }, [onChange, debouncedOnChange]);
 
-   const handleFocus = useCallback(() => setIsFocused(true), []);
-   const handleBlur = useCallback(() => setIsFocused(false), []);
-
    // Atalho de teclado para limpar (Escape)
    const handleKeyDown = useCallback(
       (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -163,8 +153,6 @@ export const FiltrosHeaderTabelaProjeto = ({
                   ? 'ring-2 ring-yellow-500/50 focus:ring-yellow-500'
                   : 'focus:ring-pink-500'
             }`}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
          />
 
          {localValue && (
@@ -186,6 +174,36 @@ export const FiltrosHeaderTabelaProjeto = ({
             </div>
          )}
       </div>
+   );
+};
+
+// ================================================================================
+// COMPONENTE PRINCIPAL - WRAPPER QUE DECIDE QUAL RENDERIZAR
+// ================================================================================
+export const FiltrosHeaderTabelaProjeto = ({
+   value,
+   onChange,
+   type = 'text',
+   columnId,
+}: ExtendedInputFilterProps) => {
+   // Verificar se a coluna usa dropdown SIM/NÃO
+   const isDropdownSimNao = columnId
+      ? DROPDOWN_SIM_NAO_COLUMNS.includes(columnId as any)
+      : false;
+
+   // Se for dropdown SIM/NÃO, renderizar o componente específico
+   if (isDropdownSimNao) {
+      return <SelectAtiEncTabelaProjeto value={value} onChange={onChange} />;
+   }
+
+   // Caso contrário, renderizar o input normal
+   return (
+      <InputFilterWithDebounce
+         value={value}
+         onChange={onChange}
+         type={type}
+         columnId={columnId}
+      />
    );
 };
 
@@ -280,11 +298,6 @@ export const useFiltrosHeaderTabelaTarefay = () => {
             const normalizedCell = normalizeString(cellValue);
             const normalizedFilter = normalizeString(filterString);
             return normalizedCell.includes(normalizedFilter);
-         }
-
-         // Tratamento para colunas numéricas (sem conversão para lowercase)
-         if (NUMERIC_COLUMNS.includes(columnId as any)) {
-            return cellValue.includes(filterString);
          }
 
          // Tratamento padrão para texto
