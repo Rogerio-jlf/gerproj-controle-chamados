@@ -346,6 +346,9 @@ export async function GET(request: Request) {
       const projetosData: TabelaProjetoProps[] = rawProjetosData.map(
          (record: TabelaProjetoProps) => ({
             ...record,
+            QTD_HRS_GASTAS: record.QTD_HRS_GASTAS
+               ? parseFloat(record.QTD_HRS_GASTAS.toFixed(2))
+               : 0.0,
          })
       );
 

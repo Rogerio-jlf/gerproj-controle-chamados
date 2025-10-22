@@ -1,8 +1,9 @@
+// IMPORTS
 import { ColumnDef } from '@tanstack/react-table';
 import { useMemo, useRef, useState, useEffect } from 'react';
 import * as Tooltip from '@radix-ui/react-tooltip';
 
-// COMPONENTS
+// TYPES
 import { TabelaTarefaProps } from '../../../../types/types';
 
 // FORMATTERS
@@ -11,7 +12,11 @@ import {
    formatarDataParaBR,
    formatarHorasTotaisHorasDecimais,
 } from '../../../../utils/formatters';
+
+// HELPERS
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
+
+// ICONS
 import { FaEye } from 'react-icons/fa';
 
 // ================================================================================
@@ -50,35 +55,12 @@ const STATUS_TAREFA_CONFIG = {
    },
 } as const;
 
-const FATURA_TAREFA_CONFIG = {
-   SIM: {
-      label: 'SIM',
-      bgColor: 'bg-blue-600',
-      textColor: 'text-white',
-   },
-   NAO: {
-      label: 'NÃO',
-      bgColor: 'bg-red-600',
-      textColor: 'text-white',
-   },
-   DEFAULT: {
-      label: 'N/A',
-      bgColor: 'bg-gray-400',
-      textColor: 'text-white',
-   },
-} as const;
-
 const EMPTY_VALUE = '---';
 
 // ================================================================================
 // INTERFACES
 // ================================================================================
 interface ColunasProps {
-   handleUpdateField?: (
-      codTarefa: number,
-      field: string,
-      value: any
-   ) => Promise<void>;
    onVisualizarTarefa?: (codTarefa: number) => void;
 }
 
@@ -93,22 +75,35 @@ interface CellTextProps {
    value: string | null | undefined;
    maxWords?: number;
    align?: 'left' | 'center';
+   applyCorrection?: boolean;
 }
 
-const CellText = ({ value, maxWords, align = 'left' }: CellTextProps) => {
+const CellText = ({
+   value,
+   maxWords,
+   align = 'left',
+   applyCorrection = false,
+}: CellTextProps) => {
+   const isEmpty = !value || value.trim() === '';
    const textRef = useRef<HTMLSpanElement>(null);
    const [showTooltip, setShowTooltip] = useState(false);
-   const isEmpty = !value || value.trim() === '';
 
    const processedValue = useMemo(() => {
       if (isEmpty) return null;
+
+      let processed = value;
 
       if (maxWords && maxWords > 0) {
          return value.split(' ').slice(0, maxWords).join(' ');
       }
 
-      return value;
-   }, [value, maxWords, isEmpty]);
+      // Aplica correção de texto se necessário
+      if (applyCorrection) {
+         processed = corrigirTextoCorrompido(processed);
+      }
+
+      return processed;
+   }, [value, maxWords, applyCorrection, isEmpty]);
 
    const alignClass =
       align === 'center'
@@ -275,30 +270,6 @@ const CellStatusTarefa = ({ value }: CellStatusTarefaProps) => {
 };
 
 /**
- * Componente para célula de fatura
- */
-interface CellFaturaProps {
-   value: string | null | undefined;
-}
-
-const CellFatura = ({ value }: CellFaturaProps) => {
-   const valueUpper = value
-      ?.toUpperCase()
-      .trim() as keyof typeof FATURA_TAREFA_CONFIG;
-   const config =
-      FATURA_TAREFA_CONFIG[valueUpper] || FATURA_TAREFA_CONFIG.DEFAULT;
-
-   return (
-      <div
-         className={`flex items-center justify-center rounded-md p-2 text-center font-bold ${config.bgColor} ${config.textColor}`}
-         title={config.label}
-      >
-         {valueUpper || EMPTY_VALUE}
-      </div>
-   );
-};
-
-/**
  * Componente para célula de ações
  * NOVO COMPONENTE
  */
@@ -328,6 +299,7 @@ const CellAcoes = ({ codTarefa, onVisualizarTarefa }: CellAcoesProps) => {
                      className="border-t-8 border-cyan-500 bg-white text-sm font-extrabold tracking-widest text-black italic shadow-sm shadow-black select-none"
                   >
                      Visualizar OS
+                     <Tooltip.Arrow className="fill-red-500" />
                   </Tooltip.Content>
                </Tooltip.Root>
             </Tooltip.Provider>
@@ -440,5 +412,4 @@ export const colunasTabelaTarefa = (
 // EXPORT DE TIPOS ÚTEIS
 // ================================================================================
 export type StatusTarefaType = keyof typeof STATUS_TAREFA_CONFIG;
-export type FaturaType = keyof typeof FATURA_TAREFA_CONFIG;
-export { STATUS_TAREFA_CONFIG, FATURA_TAREFA_CONFIG, EMPTY_VALUE };
+export { STATUS_TAREFA_CONFIG, EMPTY_VALUE };

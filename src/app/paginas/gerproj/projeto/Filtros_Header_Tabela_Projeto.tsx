@@ -7,7 +7,7 @@ import { useMemo, useState, useCallback, useEffect } from 'react';
 // ================================================================================
 import { InputFilterTableHeaderProps } from '../../../../types/types';
 // ================================================================================
-import { FaPlus } from 'react-icons/fa';
+import { FaFilter, FaPlus } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import { SelectAtiEncTabelaProjeto } from './Select_ATI_ENC_Tabela_Projeto';
 
@@ -148,7 +148,7 @@ export const InputFilterWithDebounce = ({
             onChange={handleChange}
             onKeyDown={handleKeyDown}
             maxLength={maxLength}
-            className={`w-full rounded-md bg-teal-950 px-4 py-2 pr-10 text-base text-white placeholder-slate-400 shadow-sm shadow-white transition-all select-none hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:outline-none ${
+            className={`w-full rounded-md border border-teal-950 bg-teal-900 px-4 py-2 pr-10 text-base text-white transition-all select-none hover:bg-teal-950 focus:ring-2 focus:outline-none ${
                isNearLimit
                   ? 'ring-2 ring-yellow-500/50 focus:ring-yellow-500'
                   : 'focus:ring-pink-500'
@@ -227,8 +227,8 @@ export const FilterControls = ({
 
    return (
       <div className="group flex w-full flex-col gap-1">
-         <label className="flex items-center gap-2 text-base font-extrabold tracking-widest text-black uppercase select-none">
-            <FaPlus className="text-black" size={16} /> Filtros
+         <label className="flex items-center gap-3 text-base font-extrabold tracking-widest text-black uppercase select-none">
+            <FaFilter className="text-black" size={16} /> Filtros
          </label>
 
          <div className="flex items-center gap-6">
@@ -238,7 +238,7 @@ export const FilterControls = ({
                disabled={isDisabled}
                aria-label={showFilters ? 'Ocultar filtros' : 'Mostrar filtros'}
                aria-expanded={showFilters}
-               className={`w-[250px] cursor-pointer rounded-sm px-6 py-2.5 text-base tracking-widest transition-all select-none ${
+               className={`w-[300px] cursor-pointer rounded-md px-6 py-2.5 text-lg tracking-widest transition-all ${
                   showFilters
                      ? 'border-none bg-blue-600 font-extrabold text-white italic shadow-md shadow-black hover:bg-blue-700'
                      : 'border-none bg-white font-bold text-black italic shadow-md shadow-black hover:bg-white/70'
@@ -270,7 +270,7 @@ export const FilterControls = ({
 // ================================================================================
 // HOOK PERSONALIZADO PARA FUNÇÕES DE FILTRO
 // ================================================================================
-export const useFiltrosHeaderTabelaTarefay = () => {
+export const useFiltrosHeaderTabelaProjeto = () => {
    const globalFilterFn = useCallback(
       (row: any, columnId: string, filterValue: string) => {
          if (!filterValue) return true;

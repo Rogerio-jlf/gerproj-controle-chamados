@@ -131,14 +131,21 @@ export interface TabelaTarefaProps {
 export interface TabelaProjetoProps {
    COD_PROJETO: number;
    NOME_PROJETO: string;
+
    CODCLI_PROJETO: number;
    RESPCLI_PROJETO: string;
+
    PROPOSTA_PROJETO: string | null;
+
    CODREC_PROJETO: number;
+
    PERC_PROJETO: number;
+
    LOGINC_PROJETO: string | null;
    LOGALT_PROJETO: string | null;
+
    QTDHORAS_PROJETO: number;
+
    STATUS_PROJETO: 'ATI' | 'ENC';
    // =====
    COD_CLIENTE: number;
@@ -147,9 +154,9 @@ export interface TabelaProjetoProps {
    COD_RECURSO: number;
    NOME_RECURSO: string;
    // =====
-   PROJETO_COMPLETO?: string | null;
+   PROJETO_COMPLETO: string;
    // =====
-   QTD_HRS_GASTAS?: number;
+   QTD_HRS_GASTAS: number;
 }
 // ================================================================================
 

@@ -1,18 +1,27 @@
+// IMPORTS
 import { ColumnDef } from '@tanstack/react-table';
-import { useMemo } from 'react';
-// ================================================================================
+import { useMemo, useRef, useState, useEffect } from 'react';
+import * as Tooltip from '@radix-ui/react-tooltip';
+
+// TYPES
 import { TabelaProjetoProps } from '../../../../types/types';
-// ================================================================================
+
+// FORMATTERS
 import {
    formatarDataParaBR,
    formatarHorasTotaisHorasDecimais,
 } from '../../../../utils/formatters';
+
+// HELPERS
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
+
+// ICONS
+import { FaEye } from 'react-icons/fa';
 
 // ================================================================================
 // CONSTANTES
 // ================================================================================
-const STATUS_CONFIG = {
+const STATUS_PROJETO_CONFIG = {
    ATI: {
       label: 'ATIVO',
       bgColor: 'bg-blue-600',
@@ -31,6 +40,13 @@ const STATUS_CONFIG = {
 } as const;
 
 const EMPTY_VALUE = '-----';
+
+// ================================================================================
+// INTERFACES
+// ================================================================================
+interface ColunasProps {
+   onVisualizarProjeto?: (codProjeto: number) => void;
+}
 
 // ================================================================================
 // COMPONENTES AUXILIARES REUTILIZÁVEIS
@@ -53,15 +69,16 @@ const CellText = ({
    applyCorrection = false,
 }: CellTextProps) => {
    const isEmpty = !value || value.trim() === '';
+   const textRef = useRef<HTMLSpanElement>(null);
+   const [showTooltip, setShowTooltip] = useState(false);
 
    const processedValue = useMemo(() => {
       if (isEmpty) return null;
 
       let processed = value;
 
-      // Limita a quantidade de palavras se especificado
       if (maxWords && maxWords > 0) {
-         processed = processed.split(' ').slice(0, maxWords).join(' ');
+         return value.split(' ').slice(0, maxWords).join(' ');
       }
 
       // Aplica correção de texto se necessário
@@ -77,17 +94,80 @@ const CellText = ({
          ? 'justify-center text-center'
          : 'justify-start pl-2 text-left';
 
+   useEffect(() => {
+      const checkOverflow = () => {
+         if (textRef.current && value) {
+            const isOverflowing =
+               textRef.current.scrollWidth > textRef.current.clientWidth ||
+               textRef.current.scrollHeight > textRef.current.clientHeight;
+            setShowTooltip(isOverflowing);
+         }
+      };
+
+      // Pequeno delay para garantir que o DOM foi renderizado
+      const timeoutId = setTimeout(checkOverflow, 100);
+
+      window.addEventListener('resize', checkOverflow);
+
+      return () => {
+         clearTimeout(timeoutId);
+         window.removeEventListener('resize', checkOverflow);
+      };
+   }, [value, processedValue]);
+
+   if (isEmpty) {
+      return (
+         <div
+            className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
+         >
+            {EMPTY_VALUE}
+         </div>
+      );
+   }
+
+   // Se não há overflow, renderiza sem tooltip
+   if (!showTooltip) {
+      return (
+         <div
+            className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
+         >
+            <span ref={textRef} className="block w-full truncate">
+               {corrigirTextoCorrompido(processedValue ?? '')}
+            </span>
+         </div>
+      );
+   }
+
+   // Se há overflow, renderiza com tooltip
    return (
       <div
          className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
       >
-         {isEmpty ? (
-            EMPTY_VALUE
-         ) : (
-            <span className="block w-full truncate" title={value}>
-               {processedValue}
-            </span>
-         )}
+         <Tooltip.Provider delayDuration={200}>
+            <Tooltip.Root>
+               <Tooltip.Trigger asChild>
+                  <span
+                     ref={textRef}
+                     className="block w-full cursor-help truncate"
+                  >
+                     {corrigirTextoCorrompido(processedValue ?? '')}
+                  </span>
+               </Tooltip.Trigger>
+               <Tooltip.Portal>
+                  <Tooltip.Content
+                     side="top"
+                     align="start"
+                     className="animate-in fade-in-0 zoom-in-95 z-[70] max-w-[800px] rounded-lg border border-pink-500 bg-white px-6 py-2 text-sm font-semibold tracking-widest text-black italic shadow-sm shadow-black select-none"
+                     sideOffset={10}
+                  >
+                     <div className="break-words">
+                        {corrigirTextoCorrompido(value)}
+                     </div>
+                     <Tooltip.Arrow className="fill-black" />
+                  </Tooltip.Content>
+               </Tooltip.Portal>
+            </Tooltip.Root>
+         </Tooltip.Provider>
       </div>
    );
 };
@@ -95,13 +175,16 @@ const CellText = ({
 /**
  * Componente para célula de status com badge colorido
  */
-interface CellStatusProps {
+interface CellStatusProjetoProps {
    value: string | null | undefined;
 }
 
-const CellStatus = ({ value }: CellStatusProps) => {
-   const status = value?.toUpperCase().trim() as keyof typeof STATUS_CONFIG;
-   const config = STATUS_CONFIG[status] || STATUS_CONFIG.DEFAULT;
+const CellStatusProjeto = ({ value }: CellStatusProjetoProps) => {
+   const status = value
+      ?.toUpperCase()
+      .trim() as keyof typeof STATUS_PROJETO_CONFIG;
+   const config =
+      STATUS_PROJETO_CONFIG[status] || STATUS_PROJETO_CONFIG.DEFAULT;
 
    return (
       <div
@@ -135,6 +218,45 @@ const CellHours = ({ value }: CellHoursProps) => {
 };
 
 /**
+ * Componente para célula de ações
+ * NOVO COMPONENTE
+ */
+interface CellAcoesProps {
+   codProjeto: number;
+   onVisualizarProjeto?: (codProjeto: number) => void;
+}
+
+const CellAcoes = ({ codProjeto, onVisualizarProjeto }: CellAcoesProps) => {
+   return (
+      <div className="flex items-center justify-center">
+         {onVisualizarProjeto && (
+            <Tooltip.Provider>
+               <Tooltip.Root>
+                  <Tooltip.Trigger asChild>
+                     <button
+                        onClick={() => onVisualizarProjeto(codProjeto)}
+                        className="inline-flex cursor-pointer items-center justify-center text-white transition-all hover:scale-150 active:scale-95"
+                     >
+                        <FaEye className="text-white" size={32} />
+                     </button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content
+                     side="right"
+                     align="start"
+                     sideOffset={8}
+                     className="border-t-8 border-cyan-500 bg-white text-sm font-extrabold tracking-widest text-black italic shadow-sm shadow-black select-none"
+                  >
+                     Visualizar Projeto
+                     <Tooltip.Arrow className="fill-red-500" />
+                  </Tooltip.Content>
+               </Tooltip.Root>
+            </Tooltip.Provider>
+         )}
+      </div>
+   );
+};
+
+/**
  * Componente para cabeçalho centralizado
  */
 const HeaderCenter = ({ children }: { children: React.ReactNode }) => (
@@ -144,8 +266,10 @@ const HeaderCenter = ({ children }: { children: React.ReactNode }) => (
 // ================================================================================
 // DEFINIÇÃO DAS COLUNAS
 // ================================================================================
-export const colunasTabelaProjeto = (): ColumnDef<TabelaProjetoProps>[] => [
-   // Projeto completo
+export const colunasTabelaProjeto = (
+   props?: ColunasProps
+): ColumnDef<TabelaProjetoProps>[] => [
+   // PROJETO_COMPLETO
    {
       accessorKey: 'PROJETO_COMPLETO',
       header: () => <HeaderCenter>Projeto</HeaderCenter>,
@@ -154,7 +278,7 @@ export const colunasTabelaProjeto = (): ColumnDef<TabelaProjetoProps>[] => [
       ),
    },
 
-   // Cliente completo
+   // NOME_CLIENTE
    {
       accessorKey: 'NOME_CLIENTE',
       header: () => <HeaderCenter>Cliente</HeaderCenter>,
@@ -167,7 +291,7 @@ export const colunasTabelaProjeto = (): ColumnDef<TabelaProjetoProps>[] => [
       ),
    },
 
-   // Responsável pelo projeto
+   // RESPONSÁVEL PELO PROJETO
    {
       accessorKey: 'RESPCLI_PROJETO',
       header: () => <HeaderCenter>Responsável</HeaderCenter>,
@@ -180,7 +304,7 @@ export const colunasTabelaProjeto = (): ColumnDef<TabelaProjetoProps>[] => [
       ),
    },
 
-   // Consultor (Recurso)
+   // NOME_RECURSO
    {
       accessorKey: 'NOME_RECURSO',
       header: () => <HeaderCenter>Consultor</HeaderCenter>,
@@ -189,30 +313,44 @@ export const colunasTabelaProjeto = (): ColumnDef<TabelaProjetoProps>[] => [
       ),
    },
 
-   // Quantidade de Horas
+   // QTDHORAS_PROJETO
    {
       accessorKey: 'QTDHORAS_PROJETO',
       header: () => <HeaderCenter>QTD. HORAS</HeaderCenter>,
       cell: ({ getValue }) => <CellHours value={getValue() as string} />,
    },
 
-   // Quantidade de Horas
+   // QTD_HRS_GASTAS
    {
       accessorKey: 'QTD_HRS_GASTAS',
       header: () => <HeaderCenter>QTD. HORAS GASTAS</HeaderCenter>,
       cell: ({ getValue }) => <CellHours value={getValue() as string} />,
    },
 
-   // Status do Projeto
+   // STATUS_PROJETO
    {
       accessorKey: 'STATUS_PROJETO',
       header: () => <HeaderCenter>STATUS</HeaderCenter>,
-      cell: ({ getValue }) => <CellStatus value={getValue() as string} />,
+      cell: ({ getValue }) => (
+         <CellStatusProjeto value={getValue() as string} />
+      ),
+   },
+
+   // AÇÕES
+   {
+      id: 'acoes',
+      header: () => <HeaderCenter>ações</HeaderCenter>,
+      cell: ({ row }) => (
+         <CellAcoes
+            codProjeto={row.original.COD_PROJETO}
+            onVisualizarProjeto={props?.onVisualizarProjeto}
+         />
+      ),
    },
 ];
 
 // ================================================================================
 // EXPORT DE TIPOS ÚTEIS
 // ================================================================================
-export type StatusType = keyof typeof STATUS_CONFIG;
-export { STATUS_CONFIG, EMPTY_VALUE };
+export type StatusType = keyof typeof STATUS_PROJETO_CONFIG;
+export { STATUS_PROJETO_CONFIG, EMPTY_VALUE };

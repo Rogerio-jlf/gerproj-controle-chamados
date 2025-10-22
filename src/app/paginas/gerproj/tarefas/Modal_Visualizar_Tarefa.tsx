@@ -1,18 +1,19 @@
 'use client';
-import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
+// COMPONENTS
+import { TooltipCondicionalTabelaTarefa } from '../tarefas/Tooltip_Condicional_Tabela_Tarefa';
+
 // TYPES
 import { TabelaTarefaProps } from '../../../../types/types';
+
+// HELPERS
+import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 
 // FORMATTERS
 import {
    formatarCodNumber,
-   formatarCodString,
    formatarDataParaBR,
    formatarHorasTotaisHorasDecimais,
 } from '../../../../utils/formatters';
-
-// COMPONENTS
-import { TooltipCondicionalTabelaTarefa } from '../tarefas/Tooltip_Condicional_Tabela_Tarefa';
 
 // ICONS
 import {
@@ -65,41 +66,6 @@ export function ModalVisualizarTarefa({
             NÃO
          </span>
       );
-   };
-
-   // Função para obter estilo do status
-   const getStatusStyle = (status: number) => {
-      switch (status) {
-         case 0:
-            return 'bg-yellow-500 text-black';
-         case 1:
-            return 'bg-blue-600 text-white';
-         case 2:
-            return 'bg-green-600 text-white';
-         case 3:
-            return 'bg-red-600 text-white';
-         case 4:
-            return 'bg-purple-600 text-white';
-         default:
-            return 'bg-gray-400 text-white';
-      }
-   };
-
-   const getStatusText = (status: number) => {
-      switch (status) {
-         case 0:
-            return 'Pendente';
-         case 1:
-            return 'Em Andamento';
-         case 2:
-            return 'Concluído';
-         case 3:
-            return 'Cancelado';
-         case 4:
-            return 'Finalizado';
-         default:
-            return 'Desconhecido';
-      }
    };
 
    // ================================================================================

@@ -30,10 +30,11 @@ import { TabelaProjetoProps } from '../../../../types/types';
 
 // ICONS
 import { IoClose } from 'react-icons/io5';
-import { FaExclamationTriangle } from 'react-icons/fa';
+import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
-import { FaFilterCircleXmark, FaDiagramProject } from 'react-icons/fa6';
+import { FaExclamationTriangle, FaProjectDiagram } from 'react-icons/fa';
+import { ModalVisualizarProjeto } from './Modal_Visualizar_Projeto';
 
 // ================================================================================
 // CONSTANTES
@@ -150,19 +151,20 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
    const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
+   const [selectedProjeto, setSelectedProjeto] =
+      useState<TabelaProjetoProps | null>(null);
+   const [openModalVisualizarProjeto, setOpenModalVisualizarProjeto] =
+      useState(false);
+
    // ================================================================================
    // ESTADOS - FILTROS (INPUTS SEM DEBOUNCE)
    // ================================================================================
    const [inputFilterPROJETO_COMPLETO, setInputFilterPROJETO_COMPLETO] =
       useState('');
-
    const [inputFilterNOME_CLIENTE, setInputFilterNOME_CLIENTE] = useState('');
-
    const [inputFilterCODCLI_PROJETO, setInputFilterCODCLI_PROJETO] =
       useState('');
-
    const [inputFilterNOME_RECURSO, setInputFilterNOME_RECURSO] = useState('');
-
    const [inputFilterSTATUS_PROJETO, setInputFilterSTATUS_PROJETO] =
       useState('');
 
@@ -170,13 +172,9 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
    const filterPROJETO_COMPLETO = useDebouncedValue(
       inputFilterPROJETO_COMPLETO
    );
-
    const filterNOME_CLIENTE = useDebouncedValue(inputFilterNOME_CLIENTE);
-
    const filterCODCLI_PROJETO = useDebouncedValue(inputFilterCODCLI_PROJETO);
-
    const filterNOME_RECURSO = useDebouncedValue(inputFilterNOME_RECURSO);
-
    const filterSTATUS_PROJETO = useDebouncedValue(inputFilterSTATUS_PROJETO);
 
    // ================================================================================
@@ -224,7 +222,7 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
    // ESTADOS - TABELA
    // ================================================================================
    const [sorting, setSorting] = useState<SortingState>([
-      { id: 'COD_PROJETO', desc: true },
+      { id: 'PROJETO_COMPLETO', desc: true },
    ]);
    const [showFilters, setShowFilters] = useState(false);
    const [isClosing, setIsClosing] = useState(false);
@@ -252,6 +250,10 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
    // ================================================================================
    // QUERY PARAMS E API
    // ================================================================================
+   const enabled = useMemo(() => {
+      return !!(token && user);
+   }, [token, user]);
+
    const queryParams = useMemo(() => {
       if (!user) return new URLSearchParams();
 
@@ -290,7 +292,7 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
       filterSTATUS_PROJETO,
    ]);
 
-   async function fetchOS(
+   async function fetchProjeto(
       params: URLSearchParams,
       token: string
    ): Promise<ApiResponse> {
@@ -327,11 +329,11 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
       isError,
       error,
    } = useQuery({
-      queryKey: ['tarefaData', queryParams.toString(), token],
-      queryFn: () => fetchOS(queryParams, token!),
+      queryKey: ['projetoData', queryParams.toString(), token],
+      queryFn: () => fetchProjeto(queryParams, token!),
+      enabled,
       staleTime: CACHE_TIME,
       retry: 2,
-      enabled: !!user && !!token,
    });
 
    const data = useMemo(() => apiResponse?.data || [], [apiResponse]);
@@ -377,7 +379,7 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
    // ================================================================================
    // HANDLERS - MODAL
    // ================================================================================
-   const handleCloseTabelaTarefa = useCallback(() => {
+   const handleCloseTabelaProjeto = useCallback(() => {
       setIsClosing(true);
       setTimeout(() => {
          setIsClosing(false);
@@ -385,10 +387,34 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
       }, ANIMATION_DURATION);
    }, [onClose]);
 
+   const handleOpenModalVisualizarProjeto = useCallback(
+      (codProjeto: number) => {
+         const projeto = data.find(
+            projeto => projeto.COD_PROJETO === codProjeto
+         );
+         if (projeto) {
+            setSelectedProjeto(projeto);
+            setOpenModalVisualizarProjeto(true);
+         }
+      },
+      [data]
+   );
+
+   const handleCloseModalVisualizarProjeto = useCallback(() => {
+      setOpenModalVisualizarProjeto(false);
+      setSelectedProjeto(null);
+   }, []);
+
    // ================================================================================
    // CONFIGURAÇÃO DA TABELA
    // ================================================================================
-   const colunas = useMemo(() => colunasTabelaProjeto(), []);
+   const colunas = useMemo(
+      () =>
+         colunasTabelaProjeto({
+            onVisualizarProjeto: handleOpenModalVisualizarProjeto,
+         }),
+      [handleOpenModalVisualizarProjeto]
+   );
    const table = useReactTable({
       data: data ?? [],
       columns: colunas,
@@ -440,7 +466,7 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
                <div className="flex items-center justify-between gap-8">
                   <div className="flex items-center justify-center gap-6">
                      <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
-                        <FaDiagramProject className="text-black" size={28} />
+                        <FaProjectDiagram className="text-black" size={28} />
                      </div>
                      <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
                         Projetos
@@ -448,9 +474,9 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
                   </div>
 
                   <button
-                     onClick={handleCloseTabelaTarefa}
+                     onClick={handleCloseTabelaProjeto}
                      aria-label="Fechar modal de projetos"
-                     className={`group cursor-pointer rounded-full bg-red-500/50 p-3 text-white transition-all hover:scale-125 hover:bg-red-500 active:scale-95 ${
+                     className={`group cursor-pointer rounded-full bg-red-500/50 p-3 text-white transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 ${
                         isClosing ? 'animate-spin' : ''
                      }`}
                   >
@@ -535,6 +561,7 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
                      {/* CORPO DA TABELA */}
                      <tbody>
                         {table.getRowModel().rows.length > 0 &&
+                           !isLoading &&
                            table.getRowModel().rows.map((row, rowIndex) => (
                               <tr
                                  key={row.id}
@@ -599,7 +626,7 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
                               onChange={e =>
                                  handlePageSizeChange(Number(e.target.value))
                               }
-                              className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none"
+                              className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
                            >
                               {PAGE_SIZE_OPTIONS.map(size => (
                                  <option
@@ -619,7 +646,7 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
                               onClick={() => handlePageChange(1)}
                               disabled={!paginationInfo.hasPrevPage}
                               aria-label="Ir para primeira página"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsLeft
                                  className="text-black group-disabled:text-red-500"
@@ -631,7 +658,7 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
                               onClick={() => handlePageChange(currentPage - 1)}
                               disabled={!paginationInfo.hasPrevPage}
                               aria-label="Página anterior"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronLeft
                                  className="text-black group-disabled:text-red-500"
@@ -648,7 +675,7 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
                                        handlePageChange(Number(e.target.value))
                                     }
                                     aria-label="Selecionar página"
-                                    className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none"
+                                    className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
                                  >
                                     {Array.from(
                                        { length: paginationInfo.totalPages },
@@ -675,7 +702,7 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
                               onClick={() => handlePageChange(currentPage + 1)}
                               disabled={!paginationInfo.hasNextPage}
                               aria-label="Próxima página"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronRight
                                  className="text-black group-disabled:text-red-500"
@@ -689,7 +716,7 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
                               }
                               disabled={!paginationInfo.hasNextPage}
                               aria-label="Ir para última página"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsRight
                                  className="text-black group-disabled:text-red-500"
@@ -702,8 +729,8 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
                </div>
             )}
 
-            {/* ===== MENSAGEM QUANDO NÃO HÁ TAREFAS ===== */}
-            {data && data.length === 0 && <EmptyState />}
+            {/* ===== MENSAGEM QUANDO NÃO HÁ RESULTADOS ===== */}
+            {data && data.length === 0 && !isLoading && <EmptyState />}
 
             {/* MENSAGEM QUANDO OS FILTROS NÃO RETORNAM RESULTADOS */}
             {paginationInfo &&
@@ -715,6 +742,15 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
                   />
                )}
          </div>
+
+         {/* MODAL VISUALIZAR PROJETO */}
+         {openModalVisualizarProjeto && selectedProjeto && (
+            <ModalVisualizarProjeto
+               isOpen={openModalVisualizarProjeto}
+               onClose={handleCloseModalVisualizarProjeto}
+               projeto={selectedProjeto}
+            />
+         )}
       </div>
    );
 }

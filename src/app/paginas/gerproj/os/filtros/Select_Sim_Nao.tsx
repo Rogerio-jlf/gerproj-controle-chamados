@@ -59,7 +59,7 @@ export function SelectSimNaoTabelaOS({ value, onChange }: SelectSimNaoProps) {
          {/* Button */}
          <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex w-full cursor-pointer items-center justify-between rounded-md bg-teal-950 px-4 py-2.5 text-base text-white shadow-sm shadow-white transition-all focus:ring-2 focus:ring-pink-500 focus:outline-none"
+            className="flex w-full cursor-pointer items-center justify-between rounded-md border border-teal-950 bg-teal-900 px-4 py-2.5 text-base text-white transition-all hover:bg-teal-950 focus:ring-2 focus:ring-pink-500 focus:outline-none"
          >
             <span className={value ? 'text-white' : 'text-slate-400'}>
                {selectedOption?.name}
@@ -90,7 +90,7 @@ export function SelectSimNaoTabelaOS({ value, onChange }: SelectSimNaoProps) {
                   <button
                      key={option.code}
                      onClick={() => handleSelect(option.code)}
-                     className={`w-full px-4 py-2.5 text-left text-base font-medium transition-all duration-200 ${
+                     className={`w-full px-4 py-2.5 text-left text-base font-semibold tracking-widest italic transition-all ${
                         value === option.code
                            ? 'bg-blue-500 text-white'
                            : 'text-black hover:bg-black hover:text-white'

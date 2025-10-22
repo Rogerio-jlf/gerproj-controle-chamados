@@ -26,9 +26,6 @@ import { formatarCodNumber } from '../../../../utils/formatters';
 // HOOKS
 import { useAuth } from '../../../../hooks/useAuth';
 
-// CONTEXTS
-import { useFiltersTabelaTarefa } from '../../../../contexts/Filters_Context_Tabela_Tarefa';
-
 // TYPES
 import { TabelaTarefaProps } from '../../../../types/types';
 
@@ -154,8 +151,6 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    // HOOKS E CONTEXTOS
    // ================================================================================
    const { user } = useAuth();
-   const { filters, setFilters } = useFiltersTabelaTarefa();
-   const { ano, mes, dia } = filters;
    const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
@@ -169,34 +164,55 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    // ================================================================================
    const [inputFilterTarefaCompleta, setInputFilterTarefaCompleta] =
       useState('');
+
    const [inputFilterProjetoCompleto, setInputFilterProjetoCompleto] =
       useState('');
+
    const [inputFilterNomeCliente, setInputFilterNomeCliente] = useState('');
+
    const [inputFilterNomeRecurso, setInputFilterNomeRecurso] = useState('');
+
    const [inputFilterDtSolTarefa, setInputFilterDtSolTarefa] = useState('');
+
    const [inputFilterDtAprovTarefa, setInputFilterDtAprovTarefa] = useState('');
+
    const [inputFilterDtPreventTarefa, setInputFilterDtPreventTarefa] =
       useState('');
+
    const [inputFilterHrEstTarefa, setInputFilterHrEstTarefa] = useState('');
+
    const [inputFilterQtdHrsGastasTarefa, setInputFilterQtdHrsGastasTarefa] =
       useState('');
+
    const [inputFilterStatusTarefa, setInputFilterStatusTarefa] = useState('');
+
    const [inputFilterTipoTarefaCompleto, setInputFilterTipoTarefaCompleto] =
       useState('');
+   // ====================
 
    // ESTADOS - FILTROS (COM DEBOUNCE)
    const filterTarefaCompleta = useDebouncedValue(inputFilterTarefaCompleta);
+
    const filterProjetoCompleto = useDebouncedValue(inputFilterProjetoCompleto);
+
    const filterNomeCliente = useDebouncedValue(inputFilterNomeCliente);
+
    const filterNomeRecurso = useDebouncedValue(inputFilterNomeRecurso);
+
    const filterDtSolTarefa = useDebouncedValue(inputFilterDtSolTarefa);
+
    const filterDtAprovTarefa = useDebouncedValue(inputFilterDtAprovTarefa);
+
    const filterDtPreventTarefa = useDebouncedValue(inputFilterDtPreventTarefa);
+
    const filterHrEstTarefa = useDebouncedValue(inputFilterHrEstTarefa);
+
    const filterQtdHrsGastasTarefa = useDebouncedValue(
       inputFilterQtdHrsGastasTarefa
    );
+
    const filterStatusTarefa = useDebouncedValue(inputFilterStatusTarefa);
+
    const filterTipoTarefaCompleto = useDebouncedValue(
       inputFilterTipoTarefaCompleto
    );
@@ -276,7 +292,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    // ESTADOS - TABELA
    // ================================================================================
    const [sorting, setSorting] = useState<SortingState>([
-      { id: 'COD_TAREFA', desc: true },
+      { id: 'TAREFA_COMPLETA', desc: true },
    ]);
    const [showFilters, setShowFilters] = useState(false);
    const [isClosing, setIsClosing] = useState(false);
@@ -317,14 +333,8 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    // QUERY PARAMS E API
    // ================================================================================
    const enabled = useMemo(() => {
-      return !!(
-         (ano === 'todos' || typeof ano === 'number') &&
-         (mes === 'todos' || typeof mes === 'number') &&
-         (dia === 'todos' || typeof dia === 'number') &&
-         token &&
-         user
-      );
-   }, [ano, mes, dia, token, user]);
+      return !!(token && user);
+   }, [token, user]);
 
    const queryParams = useMemo(() => {
       if (!user) return new URLSearchParams();
@@ -333,11 +343,6 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
          page: String(currentPage),
          limit: String(pageSize),
       });
-
-      // Filtros de data
-      params.append('ano', ano === 'todos' ? 'todos' : String(ano));
-      params.append('mes', mes === 'todos' ? 'todos' : String(mes));
-      params.append('dia', dia === 'todos' ? 'todos' : String(dia));
 
       // Filtros de coluna
       const filterMappings = [
@@ -371,9 +376,6 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
       user,
       currentPage,
       pageSize,
-      ano,
-      mes,
-      dia,
       filterTarefaCompleta,
       filterProjetoCompleto,
       filterNomeCliente,
@@ -387,7 +389,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
       filterTipoTarefaCompleto,
    ]);
 
-   async function fetchOS(
+   async function fetchTarefa(
       params: URLSearchParams,
       token: string
    ): Promise<ApiResponse> {
@@ -425,7 +427,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
       error,
    } = useQuery({
       queryKey: ['tarefaData', queryParams.toString(), token],
-      queryFn: () => fetchOS(queryParams, token!),
+      queryFn: () => fetchTarefa(queryParams, token!),
       enabled,
       staleTime: CACHE_TIME,
       retry: 2,
@@ -470,20 +472,6 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
       setInputFilterTipoTarefaCompleto('');
       setCurrentPage(1);
    }, []);
-
-   const handleFiltersChange = useCallback(
-      (newFilters: {
-         ano: number | 'todos';
-         mes: number | 'todos';
-         dia: number | 'todos';
-      }) => {
-         setFilters(prevFilters => ({
-            ...prevFilters,
-            ...newFilters,
-         }));
-      },
-      [setFilters]
-   );
 
    // ================================================================================
    // HANDLERS - PAGINAÇÃO
@@ -605,16 +593,14 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                </div>
 
                {/* FILTROS HEADER */}
-               <div className="flex items-center gap-6">
-                  <div className="flex items-center">
-                     <FilterControls
-                        showFilters={showFilters}
-                        setShowFilters={setShowFilters}
-                        totalActiveFilters={totalActiveFilters}
-                        clearFilters={clearFilters}
-                        dataLength={paginationInfo?.totalRecords || 0}
-                     />
-                  </div>
+               <div className="flex items-center">
+                  <FilterControls
+                     showFilters={showFilters}
+                     setShowFilters={setShowFilters}
+                     totalActiveFilters={totalActiveFilters}
+                     clearFilters={clearFilters}
+                     dataLength={paginationInfo?.totalRecords || 0}
+                  />
                </div>
             </header>
 
@@ -851,7 +837,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                </div>
             )}
 
-            {/* ===== MENSAGEM QUANDO NÃO HÁ TAREFAS ===== */}
+            {/* ===== MENSAGEM QUANDO NÃO HÁ RESULTADOS ===== */}
             {data && data.length === 0 && !isLoading && <EmptyState />}
 
             {/* MENSAGEM QUANDO OS FILTROS NÃO RETORNAM RESULTADOS */}
@@ -873,18 +859,6 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                tarefa={selectedTarefa}
             />
          )}
-
-         {/* LOADING */}
-         <IsLoading
-            isLoading={isLoading}
-            title={`Buscando Tarefas para o período: ${[
-               dia === 'todos' ? '' : String(dia).padStart(2, '0'),
-               mes === 'todos' ? '' : String(mes).padStart(2, '0'),
-               ano === 'todos' ? '' : String(ano),
-            ]
-               .filter(part => part !== '')
-               .join('/')}.`}
-         />
       </div>
    );
 }
