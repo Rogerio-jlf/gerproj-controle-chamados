@@ -214,7 +214,7 @@ export function ModalVisualizarTarefa({
                                     ? formatarDataParaBR(
                                          tarefa.DTSOL_TAREFA.toString()
                                       )
-                                    : '---'}
+                                    : 'n/a'}
                               </span>
                            </div>
                            {/* ===== */}
@@ -229,7 +229,7 @@ export function ModalVisualizarTarefa({
                                     ? formatarDataParaBR(
                                          tarefa.DTAPROV_TAREFA.toString()
                                       )
-                                    : '---'}
+                                    : 'n/a'}
                               </span>
                            </div>
                            {/* ===== */}
@@ -244,7 +244,7 @@ export function ModalVisualizarTarefa({
                                     ? formatarDataParaBR(
                                          tarefa.DTPREVENT_TAREFA.toString()
                                       )
-                                    : '---'}
+                                    : 'n/a'}
                               </span>
                            </div>
                            {/* ===== */}
@@ -312,7 +312,7 @@ export function ModalVisualizarTarefa({
                                     ? formatarHorasTotaisHorasDecimais(
                                          tarefa.HREST_TAREFA.toString()
                                       )
-                                    : '---'}
+                                    : 'n/a'}
                                  h
                               </span>
                            </div>
@@ -328,8 +328,7 @@ export function ModalVisualizarTarefa({
                                     ? formatarHorasTotaisHorasDecimais(
                                          tarefa.HRATESC_TAREFA.toString()
                                       )
-                                    : '---'}
-                                 h
+                                    : 'n/a'}
                               </span>
                            </div>
                            {/* ===== */}
@@ -344,7 +343,7 @@ export function ModalVisualizarTarefa({
                                     ? formatarHorasTotaisHorasDecimais(
                                          tarefa.HRREAL_TAREFA.toString()
                                       )
-                                    : '---'}
+                                    : 'n/a'}
                                  h
                               </span>
                            </div>
@@ -421,17 +420,6 @@ export function ModalVisualizarTarefa({
                         </div>
                      </div>
                      {/* ========== */}
-
-                     {/* STATUS_TAREFA
-                     <div className="flex items-center justify-center pt-6">
-                        <span
-                           className={`rounded-full px-14 py-2 text-4xl font-bold tracking-widest italic shadow-lg shadow-black select-none ${getStatusStyle(
-                              tarefa.STATUS_TAREFA
-                           )}`}
-                        >
-                           {getStatusText(tarefa.STATUS_TAREFA)}
-                        </span>
-                     </div> */}
                   </div>
                   {/* ==================== */}
 
@@ -439,7 +427,7 @@ export function ModalVisualizarTarefa({
                   <div className="space-y-6">
                      {/* ===== CARD: FINANCEIRO ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 shadow-sm shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-sm shadow-black">
                            <FaDollarSign className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
                               Financeiro
@@ -474,7 +462,7 @@ export function ModalVisualizarTarefa({
                                  Limite Mensal
                               </span>
                               <span className="text-lg font-bold tracking-widest text-black italic select-none">
-                                 {tarefa.LIMMES_TAREFA ?? '---'}
+                                 {tarefa.LIMMES_TAREFA ?? 'n/a'}
                               </span>
                            </div>
                            {/* ===== */}
@@ -562,12 +550,12 @@ export function ModalVisualizarTarefa({
                               </span>
                               <TooltipCondicionalTabelaTarefa
                                  content={corrigirTextoCorrompido(
-                                    tarefa.OBS_TAREFA || '---'
+                                    tarefa.OBS_TAREFA || 'n/a'
                                  )}
                               >
                                  <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
                                     {corrigirTextoCorrompido(
-                                       tarefa.OBS_TAREFA || '---'
+                                       tarefa.OBS_TAREFA || 'n/a'
                                     )}
                                  </span>
                               </TooltipCondicionalTabelaTarefa>
@@ -579,7 +567,7 @@ export function ModalVisualizarTarefa({
                                  Exibir Chamado
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {tarefa.EXIBECHAM_TAREFA ?? '---'}
+                                 {tarefa.EXIBECHAM_TAREFA ?? 'n/a'}
                               </span>
                            </div>
                         </div>

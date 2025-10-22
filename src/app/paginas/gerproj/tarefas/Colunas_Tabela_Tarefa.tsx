@@ -8,7 +8,6 @@ import { TabelaTarefaProps } from '../../../../types/types';
 
 // FORMATTERS
 import {
-   formatarCodNumber,
    formatarDataParaBR,
    formatarHorasTotaisHorasDecimais,
 } from '../../../../utils/formatters';
@@ -55,7 +54,7 @@ const STATUS_TAREFA_CONFIG = {
    },
 } as const;
 
-const EMPTY_VALUE = '---';
+const EMPTY_VALUE = 'n/a';
 
 // ================================================================================
 // INTERFACES
@@ -189,26 +188,6 @@ const CellText = ({
 };
 
 /**
- * Componente para célula de número formatado
- */
-interface CellNumberProps {
-   value: number | null | undefined;
-}
-
-const CellNumber = ({ value }: CellNumberProps) => {
-   const formattedNumber = useMemo(() => {
-      if (!value && value !== 0) return null;
-      return formatarCodNumber(value);
-   }, [value]);
-
-   return (
-      <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-         {formattedNumber || EMPTY_VALUE}
-      </div>
-   );
-};
-
-/**
  * Componente para célula de data formatada
  */
 interface CellDateProps {
@@ -244,27 +223,6 @@ const CellHours = ({ value }: CellHoursProps) => {
    return (
       <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
          {formattedHours ? `${formattedHours}h` : EMPTY_VALUE}
-      </div>
-   );
-};
-
-/**
- * Componente para célula de status da tarefa
- */
-interface CellStatusTarefaProps {
-   value: number | null | undefined;
-}
-
-const CellStatusTarefa = ({ value }: CellStatusTarefaProps) => {
-   const status = value as keyof typeof STATUS_TAREFA_CONFIG;
-   const config = STATUS_TAREFA_CONFIG[status] || STATUS_TAREFA_CONFIG.DEFAULT;
-
-   return (
-      <div
-         className={`flex items-center justify-center rounded-md p-2 text-center font-bold ${config.bgColor} ${config.textColor}`}
-         title={config.label}
-      >
-         {value !== null && value !== undefined ? value : EMPTY_VALUE}
       </div>
    );
 };
@@ -391,14 +349,14 @@ export const colunasTabelaTarefa = (
    // Tipo da tarefa
    {
       accessorKey: 'TIPO_TAREFA_COMPLETO',
-      header: () => <HeaderCenter>Tipo Tarefa</HeaderCenter>,
+      header: () => <HeaderCenter>TIPO TAREFA</HeaderCenter>,
       cell: ({ getValue }) => <CellText value={getValue() as string} />,
    },
 
    // AÇÕES - NOVA COLUNA
    {
       id: 'acoes',
-      header: () => <HeaderCenter>ações</HeaderCenter>,
+      header: () => <HeaderCenter>AÇÕES</HeaderCenter>,
       cell: ({ row }) => (
          <CellAcoes
             codTarefa={row.original.COD_TAREFA}

@@ -69,13 +69,6 @@ interface ExtendedInputFilterProps extends InputFilterTableHeaderProps {
 // ================================================================================
 // FUNÇÕES UTILITÁRIAS
 // ================================================================================
-const normalizeString = (str: string): string => {
-   return str
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toUpperCase();
-};
-
 const getCellValue = (row: any, columnId: string): string => {
    const value = row.getValue(columnId);
    return String(value || '');

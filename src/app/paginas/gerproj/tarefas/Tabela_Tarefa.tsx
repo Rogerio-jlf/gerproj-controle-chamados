@@ -15,10 +15,10 @@ import {
    FilterControls,
    FiltrosHeaderTabelaTarefa,
 } from './Filtros_Header_Tabela_Tarefa';
-import { colunasTabelaTarefa } from './Colunas_Tabela_Tarefa';
-import { ModalVisualizarTarefa } from './Modal_Visualizar_Tarefa';
 import { IsError } from '../../../../components/IsError';
 import { IsLoading } from '../../../../components/IsLoading';
+import { colunasTabelaTarefa } from './Colunas_Tabela_Tarefa';
+import { ModalVisualizarTarefa } from './Modal_Visualizar_Tarefa';
 
 // FORMATERS
 import { formatarCodNumber } from '../../../../utils/formatters';
@@ -33,8 +33,8 @@ import { TabelaTarefaProps } from '../../../../types/types';
 import { IoClose } from 'react-icons/io5';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
-import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { FaExclamationTriangle, FaTasks } from 'react-icons/fa';
+import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 
 // ================================================================================
 // CONSTANTES
@@ -162,59 +162,37 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    // ================================================================================
    // ESTADOS - FILTROS (INPUTS SEM DEBOUNCE)
    // ================================================================================
-   const [inputFilterTarefaCompleta, setInputFilterTarefaCompleta] =
+   const [inputFilterTAREFA_COMPLETA, setInputFilterTAREFA_COMPLETA] =
       useState('');
-
-   const [inputFilterProjetoCompleto, setInputFilterProjetoCompleto] =
+   const [inputFilterPROJETO_COMPLETO, setInputFilterPROJETO_COMPLETO] =
       useState('');
-
-   const [inputFilterNomeCliente, setInputFilterNomeCliente] = useState('');
-
-   const [inputFilterNomeRecurso, setInputFilterNomeRecurso] = useState('');
-
-   const [inputFilterDtSolTarefa, setInputFilterDtSolTarefa] = useState('');
-
-   const [inputFilterDtAprovTarefa, setInputFilterDtAprovTarefa] = useState('');
-
-   const [inputFilterDtPreventTarefa, setInputFilterDtPreventTarefa] =
+   const [inputFilterNOME_CLIENTE, setInputFilterNOME_CLIENTE] = useState('');
+   const [inputFilterNOME_RECURSO, setInputFilterNOME_RECURSO] = useState('');
+   const [inputFilterDTSOL_TAREFA, setInputFilterDTSOL_TAREFA] = useState('');
+   const [inputFilterDTAPROV_TAREFA, setInputFilterDTAPROV_TAREFA] =
       useState('');
-
-   const [inputFilterHrEstTarefa, setInputFilterHrEstTarefa] = useState('');
-
-   const [inputFilterQtdHrsGastasTarefa, setInputFilterQtdHrsGastasTarefa] =
+   const [inputFilterDTPREVENT_TAREFA, setInputFilterDTPREVENT_TAREFA] =
       useState('');
-
-   const [inputFilterStatusTarefa, setInputFilterStatusTarefa] = useState('');
-
-   const [inputFilterTipoTarefaCompleto, setInputFilterTipoTarefaCompleto] =
+   const [inputFilterSTATUS_TAREFA, setInputFilterSTATUS_TAREFA] = useState('');
+   const [inputFilterTIPO_TAREFA_COMPLETO, setInputFilterTIPO_TAREFA_COMPLETO] =
       useState('');
    // ====================
 
    // ESTADOS - FILTROS (COM DEBOUNCE)
-   const filterTarefaCompleta = useDebouncedValue(inputFilterTarefaCompleta);
-
-   const filterProjetoCompleto = useDebouncedValue(inputFilterProjetoCompleto);
-
-   const filterNomeCliente = useDebouncedValue(inputFilterNomeCliente);
-
-   const filterNomeRecurso = useDebouncedValue(inputFilterNomeRecurso);
-
-   const filterDtSolTarefa = useDebouncedValue(inputFilterDtSolTarefa);
-
-   const filterDtAprovTarefa = useDebouncedValue(inputFilterDtAprovTarefa);
-
-   const filterDtPreventTarefa = useDebouncedValue(inputFilterDtPreventTarefa);
-
-   const filterHrEstTarefa = useDebouncedValue(inputFilterHrEstTarefa);
-
-   const filterQtdHrsGastasTarefa = useDebouncedValue(
-      inputFilterQtdHrsGastasTarefa
+   const filterTAREFA_COMPLETA = useDebouncedValue(inputFilterTAREFA_COMPLETA);
+   const filterPROJETO_COMPLETO = useDebouncedValue(
+      inputFilterPROJETO_COMPLETO
    );
-
-   const filterStatusTarefa = useDebouncedValue(inputFilterStatusTarefa);
-
-   const filterTipoTarefaCompleto = useDebouncedValue(
-      inputFilterTipoTarefaCompleto
+   const filterNOME_CLIENTE = useDebouncedValue(inputFilterNOME_CLIENTE);
+   const filterNOME_RECURSO = useDebouncedValue(inputFilterNOME_RECURSO);
+   const filterDTSOL_TAREFA = useDebouncedValue(inputFilterDTSOL_TAREFA);
+   const filterDTAPROV_TAREFA = useDebouncedValue(inputFilterDTAPROV_TAREFA);
+   const filterDTPREVENT_TAREFA = useDebouncedValue(
+      inputFilterDTPREVENT_TAREFA
+   );
+   const filterSTATUS_TAREFA = useDebouncedValue(inputFilterSTATUS_TAREFA);
+   const filterTIPO_TAREFA_COMPLETO = useDebouncedValue(
+      inputFilterTIPO_TAREFA_COMPLETO
    );
 
    // ================================================================================
@@ -223,62 +201,52 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    const FILTER_MAP = useMemo(
       () => ({
          TAREFA_COMPLETA: {
-            state: inputFilterTarefaCompleta,
-            setter: setInputFilterTarefaCompleta,
+            state: inputFilterTAREFA_COMPLETA,
+            setter: setInputFilterTAREFA_COMPLETA,
          },
          PROJETO_COMPLETO: {
-            state: inputFilterProjetoCompleto,
-            setter: setInputFilterProjetoCompleto,
+            state: inputFilterPROJETO_COMPLETO,
+            setter: setInputFilterPROJETO_COMPLETO,
          },
          NOME_CLIENTE: {
-            state: inputFilterNomeCliente,
-            setter: setInputFilterNomeCliente,
+            state: inputFilterNOME_CLIENTE,
+            setter: setInputFilterNOME_CLIENTE,
          },
          NOME_RECURSO: {
-            state: inputFilterNomeRecurso,
-            setter: setInputFilterNomeRecurso,
+            state: inputFilterNOME_RECURSO,
+            setter: setInputFilterNOME_RECURSO,
          },
          DTSOL_TAREFA: {
-            state: inputFilterDtSolTarefa,
-            setter: setInputFilterDtSolTarefa,
+            state: inputFilterDTSOL_TAREFA,
+            setter: setInputFilterDTSOL_TAREFA,
          },
          DTAPROV_TAREFA: {
-            state: inputFilterDtAprovTarefa,
-            setter: setInputFilterDtAprovTarefa,
+            state: inputFilterDTAPROV_TAREFA,
+            setter: setInputFilterDTAPROV_TAREFA,
          },
          DTPREVENT_TAREFA: {
-            state: inputFilterDtPreventTarefa,
-            setter: setInputFilterDtPreventTarefa,
+            state: inputFilterDTPREVENT_TAREFA,
+            setter: setInputFilterDTPREVENT_TAREFA,
          },
-         // HREST_TAREFA: {
-         //    state: inputFilterHrEstTarefa,
-         //    setter: setInputFilterHrEstTarefa,
-         // },
-         // QTD_HRS_GASTAS: {
-         //    state: inputFilterQtdHrsGastasTarefa,
-         //    setter: setInputFilterQtdHrsGastasTarefa,
-         // },
          STATUS_TAREFA: {
-            state: inputFilterStatusTarefa,
-            setter: setInputFilterStatusTarefa,
+            state: inputFilterSTATUS_TAREFA,
+            setter: setInputFilterSTATUS_TAREFA,
          },
          TIPO_TAREFA_COMPLETO: {
-            state: inputFilterTipoTarefaCompleto,
-            setter: setInputFilterTipoTarefaCompleto,
+            state: inputFilterTIPO_TAREFA_COMPLETO,
+            setter: setInputFilterTIPO_TAREFA_COMPLETO,
          },
       }),
       [
-         inputFilterTarefaCompleta,
-         inputFilterProjetoCompleto,
-         inputFilterNomeCliente,
-         inputFilterNomeRecurso,
-         inputFilterDtSolTarefa,
-         inputFilterDtAprovTarefa,
-         inputFilterDtPreventTarefa,
-         // inputFilterHrEstTarefa,
-         // inputFilterQtdHrsGastasTarefa,
-         inputFilterStatusTarefa,
-         inputFilterTipoTarefaCompleto,
+         inputFilterTAREFA_COMPLETA,
+         inputFilterPROJETO_COMPLETO,
+         inputFilterNOME_CLIENTE,
+         inputFilterNOME_RECURSO,
+         inputFilterDTSOL_TAREFA,
+         inputFilterDTAPROV_TAREFA,
+         inputFilterDTPREVENT_TAREFA,
+         inputFilterSTATUS_TAREFA,
+         inputFilterTIPO_TAREFA_COMPLETO,
       ]
    );
 
@@ -302,31 +270,27 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    // ================================================================================
    const totalActiveFilters = useMemo(() => {
       const filters = [
-         filterTarefaCompleta,
-         filterProjetoCompleto,
-         filterNomeCliente,
-         filterNomeRecurso,
-         filterDtSolTarefa,
-         filterDtAprovTarefa,
-         filterDtPreventTarefa,
-         filterHrEstTarefa,
-         filterQtdHrsGastasTarefa,
-         filterStatusTarefa,
-         filterTipoTarefaCompleto,
+         filterTAREFA_COMPLETA,
+         filterPROJETO_COMPLETO,
+         filterNOME_CLIENTE,
+         filterNOME_RECURSO,
+         filterDTSOL_TAREFA,
+         filterDTAPROV_TAREFA,
+         filterDTPREVENT_TAREFA,
+         filterSTATUS_TAREFA,
+         filterTIPO_TAREFA_COMPLETO,
       ];
       return filters.filter(f => f?.trim()).length;
    }, [
-      filterTarefaCompleta,
-      filterProjetoCompleto,
-      filterNomeCliente,
-      filterNomeRecurso,
-      filterDtSolTarefa,
-      filterDtAprovTarefa,
-      filterDtPreventTarefa,
-      filterHrEstTarefa,
-      filterQtdHrsGastasTarefa,
-      filterStatusTarefa,
-      filterTipoTarefaCompleto,
+      filterTAREFA_COMPLETA,
+      filterPROJETO_COMPLETO,
+      filterNOME_CLIENTE,
+      filterNOME_RECURSO,
+      filterDTSOL_TAREFA,
+      filterDTAPROV_TAREFA,
+      filterDTPREVENT_TAREFA,
+      filterSTATUS_TAREFA,
+      filterTIPO_TAREFA_COMPLETO,
    ]);
 
    // ================================================================================
@@ -346,21 +310,16 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
 
       // Filtros de coluna
       const filterMappings = [
-         { filter: filterTarefaCompleta, param: 'filter_NOME_TAREFA' },
-         { filter: filterProjetoCompleto, param: 'filter_NOME_PROJETO' },
-         { filter: filterNomeCliente, param: 'filter_NOME_CLIENTE' },
-         { filter: filterNomeRecurso, param: 'filter_NOME_RECURSO' },
-         { filter: filterDtSolTarefa, param: 'filter_DTSOL_TAREFA' },
-         { filter: filterDtAprovTarefa, param: 'filter_DTAPROV_TAREFA' },
-         { filter: filterDtPreventTarefa, param: 'filter_DTPREVENT_TAREFA' },
-         { filter: filterHrEstTarefa, param: 'filter_HREST_TAREFA' },
+         { filter: filterTAREFA_COMPLETA, param: 'filter_NOME_TAREFA' },
+         { filter: filterPROJETO_COMPLETO, param: 'filter_NOME_PROJETO' },
+         { filter: filterNOME_CLIENTE, param: 'filter_NOME_CLIENTE' },
+         { filter: filterNOME_RECURSO, param: 'filter_NOME_RECURSO' },
+         { filter: filterDTSOL_TAREFA, param: 'filter_DTSOL_TAREFA' },
+         { filter: filterDTAPROV_TAREFA, param: 'filter_DTAPROV_TAREFA' },
+         { filter: filterDTPREVENT_TAREFA, param: 'filter_DTPREVENT_TAREFA' },
+         { filter: filterSTATUS_TAREFA, param: 'filter_STATUS_TAREFA' },
          {
-            filter: filterQtdHrsGastasTarefa,
-            param: 'filter_QTDHRS_GASTAS_TAREFA',
-         },
-         { filter: filterStatusTarefa, param: 'filter_STATUS_TAREFA' },
-         {
-            filter: filterTipoTarefaCompleto,
+            filter: filterTIPO_TAREFA_COMPLETO,
             param: 'filter_TIPO_TAREFA_COMPLETO',
          },
       ];
@@ -376,17 +335,15 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
       user,
       currentPage,
       pageSize,
-      filterTarefaCompleta,
-      filterProjetoCompleto,
-      filterNomeCliente,
-      filterNomeRecurso,
-      filterDtSolTarefa,
-      filterDtAprovTarefa,
-      filterDtPreventTarefa,
-      filterHrEstTarefa,
-      filterQtdHrsGastasTarefa,
-      filterStatusTarefa,
-      filterTipoTarefaCompleto,
+      filterTAREFA_COMPLETA,
+      filterPROJETO_COMPLETO,
+      filterNOME_CLIENTE,
+      filterNOME_RECURSO,
+      filterDTSOL_TAREFA,
+      filterDTAPROV_TAREFA,
+      filterDTPREVENT_TAREFA,
+      filterSTATUS_TAREFA,
+      filterTIPO_TAREFA_COMPLETO,
    ]);
 
    async function fetchTarefa(
@@ -442,34 +399,30 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    useEffect(() => {
       setCurrentPage(1);
    }, [
-      filterTarefaCompleta,
-      filterProjetoCompleto,
-      filterNomeCliente,
-      filterNomeRecurso,
-      filterDtSolTarefa,
-      filterDtAprovTarefa,
-      filterDtPreventTarefa,
-      filterHrEstTarefa,
-      filterQtdHrsGastasTarefa,
-      filterStatusTarefa,
-      filterTipoTarefaCompleto,
+      filterTAREFA_COMPLETA,
+      filterPROJETO_COMPLETO,
+      filterNOME_CLIENTE,
+      filterNOME_RECURSO,
+      filterDTSOL_TAREFA,
+      filterDTAPROV_TAREFA,
+      filterDTPREVENT_TAREFA,
+      filterSTATUS_TAREFA,
+      filterTIPO_TAREFA_COMPLETO,
    ]);
 
    // ================================================================================
    // HANDLERS - FILTROS
    // ================================================================================
    const clearFilters = useCallback(() => {
-      setInputFilterTarefaCompleta('');
-      setInputFilterProjetoCompleto('');
-      setInputFilterNomeCliente('');
-      setInputFilterNomeRecurso('');
-      setInputFilterDtSolTarefa('');
-      setInputFilterDtAprovTarefa('');
-      setInputFilterDtPreventTarefa('');
-      setInputFilterHrEstTarefa('');
-      setInputFilterQtdHrsGastasTarefa('');
-      setInputFilterStatusTarefa('');
-      setInputFilterTipoTarefaCompleto('');
+      setInputFilterTAREFA_COMPLETA('');
+      setInputFilterPROJETO_COMPLETO('');
+      setInputFilterNOME_CLIENTE('');
+      setInputFilterNOME_RECURSO('');
+      setInputFilterDTSOL_TAREFA('');
+      setInputFilterDTAPROV_TAREFA('');
+      setInputFilterDTPREVENT_TAREFA('');
+      setInputFilterSTATUS_TAREFA('');
+      setInputFilterTIPO_TAREFA_COMPLETO('');
       setCurrentPage(1);
    }, []);
 
@@ -618,7 +571,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                               {headerGroup.headers.map(header => (
                                  <th
                                     key={header.id}
-                                    className="bg-teal-800 py-6 font-extrabold tracking-wider text-white uppercase select-none"
+                                    className="bg-teal-800 py-6 font-extrabold tracking-wider text-white select-none"
                                     style={{
                                        width: getColumnWidth(header.column.id),
                                     }}

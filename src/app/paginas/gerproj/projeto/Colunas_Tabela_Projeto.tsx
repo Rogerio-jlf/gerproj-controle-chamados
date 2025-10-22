@@ -36,7 +36,7 @@ const STATUS_PROJETO_CONFIG = {
    },
 } as const;
 
-const EMPTY_VALUE = '-----';
+const EMPTY_VALUE = 'n/a';
 
 // ================================================================================
 // INTERFACES
@@ -197,18 +197,18 @@ const CellStatusProjeto = ({ value }: CellStatusProjetoProps) => {
  * Componente para célula de horas
  */
 interface CellHoursProps {
-   value: string | number | null | undefined;
+   value: number | string | null | undefined;
 }
 
 const CellHours = ({ value }: CellHoursProps) => {
-   const formattedValue = useMemo(
-      () => formatarHorasTotaisHorasDecimais(value),
-      [value]
-   );
+   const formattedHours = useMemo(() => {
+      if (!value) return null;
+      return formatarHorasTotaisHorasDecimais(value);
+   }, [value]);
 
    return (
       <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-         {formattedValue !== '-' ? `${formattedValue}h` : EMPTY_VALUE}
+         {formattedHours ? `${formattedHours}h` : EMPTY_VALUE}
       </div>
    );
 };
@@ -312,14 +312,14 @@ export const colunasTabelaProjeto = (
    // QTDHORAS_PROJETO
    {
       accessorKey: 'QTDHORAS_PROJETO',
-      header: () => <HeaderCenter>QTD. HORAS</HeaderCenter>,
+      header: () => <HeaderCenter>QTD. HR's ESTIMADAS</HeaderCenter>,
       cell: ({ getValue }) => <CellHours value={getValue() as string} />,
    },
 
    // QTD_HRS_GASTAS
    {
       accessorKey: 'QTD_HRS_GASTAS',
-      header: () => <HeaderCenter>QTD. HORAS GASTAS</HeaderCenter>,
+      header: () => <HeaderCenter>QTD. HR's GASTAS</HeaderCenter>,
       cell: ({ getValue }) => <CellHours value={getValue() as string} />,
    },
 

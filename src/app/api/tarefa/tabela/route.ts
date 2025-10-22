@@ -564,6 +564,9 @@ export async function GET(request: Request) {
       const tarefasData: TabelaTarefaProps[] = rawTarefasData.map(
          (record: TabelaTarefaProps) => ({
             ...record,
+            QTD_HRS_GASTAS: record.QTD_HRS_GASTAS
+               ? Number(record.QTD_HRS_GASTAS)
+               : 0,
          })
       );
 

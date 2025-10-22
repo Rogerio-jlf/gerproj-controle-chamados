@@ -1,13 +1,20 @@
 'use client';
 
+// IMPORTS
 import { useRef, useState, useEffect } from 'react';
 import * as Tooltip from '@radix-ui/react-tooltip';
 
+// ================================================================================
+// INTERFACES
+// ================================================================================
 interface ConditionalTooltipProps {
    content: string;
    children: React.ReactNode;
 }
 
+// ================================================================================
+// COMPONENTE PRINCIPAL
+// ================================================================================
 export function TooltipCondicionalTabelaTarefa({
    content,
    children,
@@ -39,6 +46,9 @@ export function TooltipCondicionalTabelaTarefa({
       );
    }
 
+   // ================================================================================
+   // RENDERIZAÇÃO
+   // ================================================================================
    return (
       <Tooltip.Provider delayDuration={200}>
          <Tooltip.Root>
