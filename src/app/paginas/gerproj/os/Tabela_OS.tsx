@@ -1,7 +1,6 @@
 'use client';
-// ================================================================================
+
 // IMPORTS
-// ================================================================================
 import {
    flexRender,
    getCoreRowModel,
@@ -12,7 +11,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 
-// Components
+// COMPONENTS
 import {
    FilterControls,
    FiltrosHeaderTabelaOs,
@@ -20,22 +19,28 @@ import {
 import { IsError } from '../../../../components/IsError';
 import { IsLoading } from '../../../../components/IsLoading';
 import { colunasTabelaOS } from './Colunas_Tabela_OS';
-import { formatarCodNumber } from '../../../../utils/formatters';
 import { FiltrosTabelaOS } from './filtros/Filtros_Tabela_OS';
 import { ModalVisualizarOS } from './modais/Modal_Vizualizar_OS';
 
-// Hooks & Types
+// FORMATERS
+import { formatarCodNumber } from '../../../../utils/formatters';
+
+// HOOKS
 import { useAuth } from '../../../../hooks/useAuth';
+
+// TYPES
 import { TabelaOSProps } from '../../../../types/types';
+
+// CONTEXTS
 import { useFiltersTabelaOs } from '../../../../contexts/Filters_Context_Tabela_OS';
 
-// Icons
+// ICONS
 import { IoClose } from 'react-icons/io5';
 import { GrServices } from 'react-icons/gr';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
+import { FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
-import { FaExclamationTriangle } from 'react-icons/fa';
 
 // ================================================================================
 // CONSTANTES
@@ -84,6 +89,47 @@ interface Props {
 }
 
 // ================================================================================
+// COMPONENTES AUXILIARES
+// ================================================================================
+const EmptyState = () => (
+   <section className="bg-black py-72 text-center">
+      <FaExclamationTriangle
+         className="mx-auto mb-6 text-yellow-500"
+         size={80}
+      />
+      <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
+         Nenhuma Tarefa foi encontrada no momento.
+      </h3>
+   </section>
+);
+
+const NoResultsState = ({
+   totalActiveFilters,
+   clearFilters,
+}: {
+   totalActiveFilters: number;
+   clearFilters: () => void;
+}) => (
+   <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-72 text-center">
+      <FaFilterCircleXmark className="mx-auto text-red-600" size={100} />
+      <h3 className="text-3xl font-extrabold tracking-wider text-white italic select-none">
+         Nenhum registro encontrado para os filtros aplicados.
+      </h3>
+      <p className="text-base font-semibold tracking-wider text-white italic select-none">
+         Tente ajustar os filtros ou limpe-os para visualizar registros.
+      </p>
+      {totalActiveFilters > 0 && (
+         <button
+            onClick={clearFilters}
+            className="cursor-pointer rounded-md border-none bg-red-600 px-6 py-2 text-base font-extrabold tracking-widest text-white italic shadow-md shadow-black transition-all hover:scale-105 hover:bg-red-700 active:scale-95"
+         >
+            Limpar Filtros
+         </button>
+      )}
+   </div>
+);
+
+// ================================================================================
 // FUNÇÕES UTILITÁRIAS
 // ================================================================================
 function getColumnWidth(columnId: string): string {
@@ -124,72 +170,25 @@ export function TabelaOS({ isOpen, onClose }: Props) {
    // ================================================================================
    // ESTADOS - FILTROS (INPUTS SEM DEBOUNCE)
    // ================================================================================
-   const [inputFilterCodOs, setInputFilterCodOs] = useState('');
-   const [inputFilterCodTrfOs, setInputFilterCodTrfOs] = useState('');
-   const [inputFilterChamadoOs, setInputFilterChamadoOs] = useState('');
-   const [inputFilterDtiniOs, setInputFilterDtiniOs] = useState('');
-   const [inputFilterDtincOs, setInputFilterDtincOs] = useState('');
-   const [inputFilterNomeRecurso, setInputFilterNomeRecurso] = useState('');
-   const [inputFilterValidOs, setInputFilterValidOs] = useState('');
-   const [inputFilterFaturadoOs, setInputFilterFaturadoOs] = useState('');
+   const [inputFilterCOD_OS, setInputFilterCOD_OS] = useState('');
+   const [inputFilterCODTRF_OS, setInputFilterCODTRF_OS] = useState('');
+   const [inputFilterCHAMADO_OS, setInputFilterCHAMADO_OS] = useState('');
+   const [inputFilterDTINI_OS, setInputFilterDTINI_OS] = useState('');
+   const [inputFilterDTINC_OS, setInputFilterDTINC_OS] = useState('');
+   const [inputFilterNOME_RECURSO, setInputFilterNOME_RECURSO] = useState('');
+   const [inputFilterVALID_OS, setInputFilterVALID_OS] = useState('');
+   const [inputFilterFATURADO_OS, setInputFilterFATURADO_OS] = useState('');
    useState('');
 
    // ESTADOS - FILTROS (COM DEBOUNCE)
-   const filterCodOs = useDebouncedValue(inputFilterCodOs);
-   const filterChamadoOs = useDebouncedValue(inputFilterChamadoOs);
-   const filterCodTrfOs = useDebouncedValue(inputFilterCodTrfOs);
-   const filterDtiniOs = useDebouncedValue(inputFilterDtiniOs);
-   const filterDtincOs = useDebouncedValue(inputFilterDtincOs);
-   const filterNomeRecurso = useDebouncedValue(inputFilterNomeRecurso);
-   const filterValidOs = useDebouncedValue(inputFilterValidOs);
-   const filterFaturadoOs = useDebouncedValue(inputFilterFaturadoOs);
-
-   // ================================================================================
-   // COMPONENTES AUXILIARES
-   // ================================================================================
-   const EmptyState = () => (
-      <section className="bg-black py-72 text-center">
-         <FaExclamationTriangle
-            className="mx-auto mb-6 text-yellow-500"
-            size={80}
-         />
-         <h3 className="text-3xl font-extrabold tracking-wider text-white italic select-none">
-            {`Nenhum Chamado foi encontrado para o período: ${[
-               dia === 'todos' ? '' : String(dia).padStart(2, '0'),
-               mes === 'todos' ? '' : String(mes).padStart(2, '0'),
-               ano === 'todos' ? '' : String(ano),
-            ]
-               .filter(part => part !== '')
-               .join('/')}.`}
-         </h3>
-      </section>
-   );
-
-   const NoResultsState = ({
-      totalActiveFilters,
-      clearFilters,
-   }: {
-      totalActiveFilters: number;
-      clearFilters: () => void;
-   }) => (
-      <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-72 text-center">
-         <FaFilterCircleXmark className="mx-auto text-red-600" size={100} />
-         <h3 className="text-3xl font-extrabold tracking-wider text-white italic select-none">
-            Nenhum registro encontrado para os filtros aplicados.
-         </h3>
-         <p className="text-base font-semibold tracking-wider text-white italic select-none">
-            Tente ajustar os filtros ou limpe-os para visualizar registros.
-         </p>
-         {totalActiveFilters > 0 && (
-            <button
-               onClick={clearFilters}
-               className="cursor-pointer rounded-md border-none bg-red-600 px-6 py-2 text-base font-extrabold tracking-widest text-white italic shadow-md shadow-black transition-all hover:scale-105 hover:bg-red-700 active:scale-95"
-            >
-               Limpar Filtros
-            </button>
-         )}
-      </div>
-   );
+   const filterCOD_OS = useDebouncedValue(inputFilterCOD_OS);
+   const filterCHAMADO_OS = useDebouncedValue(inputFilterCHAMADO_OS);
+   const filterCODTRF_OS = useDebouncedValue(inputFilterCODTRF_OS);
+   const filterDTINI_OS = useDebouncedValue(inputFilterDTINI_OS);
+   const filterDTINC_OS = useDebouncedValue(inputFilterDTINC_OS);
+   const filterNOME_RECURSO = useDebouncedValue(inputFilterNOME_RECURSO);
+   const filterVALID_OS = useDebouncedValue(inputFilterVALID_OS);
+   const filterFATURADO_OS = useDebouncedValue(inputFilterFATURADO_OS);
 
    // ================================================================================
    // MAPEAMENTO DE FILTROS
@@ -197,47 +196,47 @@ export function TabelaOS({ isOpen, onClose }: Props) {
    const FILTER_MAP = useMemo(
       () => ({
          COD_OS: {
-            state: inputFilterCodOs,
-            setter: setInputFilterCodOs,
+            state: inputFilterCOD_OS,
+            setter: setInputFilterCOD_OS,
          },
          CODTRF_OS: {
-            state: inputFilterCodTrfOs,
-            setter: setInputFilterCodTrfOs,
+            state: inputFilterCODTRF_OS,
+            setter: setInputFilterCODTRF_OS,
          },
          CHAMADO_OS: {
-            state: inputFilterChamadoOs,
-            setter: setInputFilterChamadoOs,
+            state: inputFilterCHAMADO_OS,
+            setter: setInputFilterCHAMADO_OS,
          },
          DTINI_OS: {
-            state: inputFilterDtiniOs,
-            setter: setInputFilterDtiniOs,
+            state: inputFilterDTINI_OS,
+            setter: setInputFilterDTINI_OS,
          },
          DTINC_OS: {
-            state: inputFilterDtincOs,
-            setter: setInputFilterDtincOs,
+            state: inputFilterDTINC_OS,
+            setter: setInputFilterDTINC_OS,
          },
          NOME_RECURSO: {
-            state: inputFilterNomeRecurso,
-            setter: setInputFilterNomeRecurso,
+            state: inputFilterNOME_RECURSO,
+            setter: setInputFilterNOME_RECURSO,
          },
          VALID_OS: {
-            state: inputFilterValidOs,
-            setter: setInputFilterValidOs,
+            state: inputFilterVALID_OS,
+            setter: setInputFilterVALID_OS,
          },
          FATURADO_OS: {
-            state: inputFilterFaturadoOs,
-            setter: setInputFilterFaturadoOs,
+            state: inputFilterFATURADO_OS,
+            setter: setInputFilterFATURADO_OS,
          },
       }),
       [
-         inputFilterCodOs,
-         inputFilterChamadoOs,
-         inputFilterCodTrfOs,
-         inputFilterDtiniOs,
-         inputFilterDtincOs,
-         inputFilterNomeRecurso,
-         inputFilterValidOs,
-         inputFilterFaturadoOs,
+         inputFilterCOD_OS,
+         inputFilterCHAMADO_OS,
+         inputFilterCODTRF_OS,
+         inputFilterDTINI_OS,
+         inputFilterDTINC_OS,
+         inputFilterNOME_RECURSO,
+         inputFilterVALID_OS,
+         inputFilterFATURADO_OS,
       ]
    );
 
@@ -261,25 +260,25 @@ export function TabelaOS({ isOpen, onClose }: Props) {
    // ================================================================================
    const totalActiveFilters = useMemo(() => {
       const filters = [
-         filterCodOs,
-         filterCodTrfOs,
-         filterChamadoOs,
-         filterDtiniOs,
-         filterDtincOs,
-         filterNomeRecurso,
-         filterValidOs,
-         filterFaturadoOs,
+         filterCOD_OS,
+         filterCODTRF_OS,
+         filterCHAMADO_OS,
+         filterDTINI_OS,
+         filterDTINC_OS,
+         filterNOME_RECURSO,
+         filterVALID_OS,
+         filterFATURADO_OS,
       ];
       return filters.filter(f => f?.trim()).length;
    }, [
-      filterCodOs,
-      filterCodTrfOs,
-      filterChamadoOs,
-      filterDtiniOs,
-      filterDtincOs,
-      filterNomeRecurso,
-      filterValidOs,
-      filterFaturadoOs,
+      filterCOD_OS,
+      filterCODTRF_OS,
+      filterCHAMADO_OS,
+      filterDTINI_OS,
+      filterDTINC_OS,
+      filterNOME_RECURSO,
+      filterVALID_OS,
+      filterFATURADO_OS,
    ]);
 
    // ================================================================================
@@ -310,14 +309,14 @@ export function TabelaOS({ isOpen, onClose }: Props) {
 
       // Filtros de coluna
       const filterMappings = [
-         { filter: filterCodOs, param: 'filter_COD_OS' },
-         { filter: filterCodTrfOs, param: 'filter_CODTRF_OS' },
-         { filter: filterChamadoOs, param: 'filter_CHAMADO_OS' },
-         { filter: filterDtiniOs, param: 'filter_DTINI_OS' },
-         { filter: filterDtincOs, param: 'filter_DTINC_OS' },
-         { filter: filterNomeRecurso, param: 'filter_NOME_RECURSO' },
-         { filter: filterValidOs, param: 'filter_VALID_OS' },
-         { filter: filterFaturadoOs, param: 'filter_FATURADO_OS' },
+         { filter: filterCOD_OS, param: 'filter_COD_OS' },
+         { filter: filterCODTRF_OS, param: 'filter_CODTRF_OS' },
+         { filter: filterCHAMADO_OS, param: 'filter_CHAMADO_OS' },
+         { filter: filterDTINI_OS, param: 'filter_DTINI_OS' },
+         { filter: filterDTINC_OS, param: 'filter_DTINC_OS' },
+         { filter: filterNOME_RECURSO, param: 'filter_NOME_RECURSO' },
+         { filter: filterVALID_OS, param: 'filter_VALID_OS' },
+         { filter: filterFATURADO_OS, param: 'filter_FATURADO_OS' },
       ];
 
       filterMappings.forEach(({ filter, param }) => {
@@ -334,14 +333,14 @@ export function TabelaOS({ isOpen, onClose }: Props) {
       ano,
       mes,
       dia,
-      filterCodOs,
-      filterCodTrfOs,
-      filterChamadoOs,
-      filterDtiniOs,
-      filterDtincOs,
-      filterNomeRecurso,
-      filterValidOs,
-      filterFaturadoOs,
+      filterCOD_OS,
+      filterCODTRF_OS,
+      filterCHAMADO_OS,
+      filterDTINI_OS,
+      filterDTINC_OS,
+      filterNOME_RECURSO,
+      filterVALID_OS,
+      filterFATURADO_OS,
    ]);
 
    async function fetchOS(
@@ -397,28 +396,28 @@ export function TabelaOS({ isOpen, onClose }: Props) {
    useEffect(() => {
       setCurrentPage(1);
    }, [
-      filterCodOs,
-      filterCodTrfOs,
-      filterChamadoOs,
-      filterDtiniOs,
-      filterDtincOs,
-      filterNomeRecurso,
-      filterValidOs,
-      filterFaturadoOs,
+      filterCOD_OS,
+      filterCODTRF_OS,
+      filterCHAMADO_OS,
+      filterDTINI_OS,
+      filterDTINC_OS,
+      filterNOME_RECURSO,
+      filterVALID_OS,
+      filterFATURADO_OS,
    ]);
 
    // ================================================================================
    // HANDLERS - FILTROS
    // ================================================================================
    const clearFilters = useCallback(() => {
-      setInputFilterCodOs('');
-      setInputFilterCodTrfOs('');
-      setInputFilterChamadoOs('');
-      setInputFilterDtiniOs('');
-      setInputFilterDtincOs('');
-      setInputFilterNomeRecurso('');
-      setInputFilterValidOs('');
-      setInputFilterFaturadoOs('');
+      setInputFilterCOD_OS('');
+      setInputFilterCODTRF_OS('');
+      setInputFilterCHAMADO_OS('');
+      setInputFilterDTINI_OS('');
+      setInputFilterDTINC_OS('');
+      setInputFilterNOME_RECURSO('');
+      setInputFilterVALID_OS('');
+      setInputFilterFATURADO_OS('');
       setCurrentPage(1);
    }, []);
 
@@ -620,7 +619,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                               {headerGroup.headers.map(header => (
                                  <th
                                     key={header.id}
-                                    className="bg-teal-800 py-6 font-extrabold tracking-wider text-white uppercase select-none"
+                                    className="bg-teal-800 py-6 font-extrabold tracking-wider text-white select-none"
                                     style={{
                                        width: getColumnWidth(header.column.id),
                                     }}

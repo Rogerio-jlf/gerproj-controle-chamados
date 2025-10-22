@@ -1,4 +1,7 @@
+// IMPORTS
 import { useState, useRef, useEffect } from 'react';
+
+// ICONS
 import { IoClose } from 'react-icons/io5';
 import { IoIosArrowDown } from 'react-icons/io';
 

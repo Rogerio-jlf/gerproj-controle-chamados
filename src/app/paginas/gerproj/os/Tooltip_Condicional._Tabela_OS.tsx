@@ -1,14 +1,21 @@
 'use client';
 
+// IMPORTS
 import { useRef, useState, useEffect } from 'react';
 import * as Tooltip from '@radix-ui/react-tooltip';
 
+// ================================================================================
+// INTERFACES
+// ================================================================================
 interface ConditionalTooltipProps {
    content: string;
    children: React.ReactNode;
 }
 
-export function ConditionalTooltip({
+// ================================================================================
+// COMPONENTE PRINCIPAL
+// ================================================================================
+export function TooltipCondicionalTabelaOS({
    content,
    children,
 }: ConditionalTooltipProps) {
@@ -39,6 +46,9 @@ export function ConditionalTooltip({
       );
    }
 
+   // ================================================================================
+   // RENDERIZAÇÃO
+   // ================================================================================
    return (
       <Tooltip.Provider delayDuration={200}>
          <Tooltip.Root>

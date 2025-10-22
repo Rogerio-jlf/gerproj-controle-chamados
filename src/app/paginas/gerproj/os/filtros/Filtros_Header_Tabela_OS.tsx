@@ -10,7 +10,7 @@ import { InputFilterTableHeaderProps } from '../../../../../types/types';
 import { normalizeDate } from '../../../../../utils/formatters';
 
 // COMPONENTS
-import { SelectSimNaoTabelaOS } from './Select_Sim_Nao';
+import { SelectSimNaoTabelaOS } from './Select_Sim_Nao_Tabela_OS';
 
 // ICONS
 import { FaPlus } from 'react-icons/fa';
@@ -36,7 +36,7 @@ const SEARCHABLE_COLUMNS = [
 const DATE_COLUMNS = ['DTINI_OS', 'DTINC_OS'] as const;
 
 const NUMERIC_COLUMNS = ['COD_OS', 'CHAMADO_OS'] as const;
-const NUMERIC_ONLY_COLUMNS = ['COD_OS', 'CODTRF_OS'] as const;
+const NUMERIC_ONLY_COLUMNS = ['COD_OS', 'CODTRF_OS', 'CHAMADO_OS'] as const;
 const UPPERCASE_COLUMNS = ['FATURADO_OS', 'VALID_OS'] as const;
 
 // Colunas que usam dropdown SIM/NÃO
@@ -129,11 +129,17 @@ const InputFilterWithDebounce = ({
    // Handlers
    const handleChange = useCallback(
       (e: React.ChangeEvent<HTMLInputElement>) => {
-         const inputValue = e.target.value;
+         let inputValue = e.target.value;
 
          // Validar apenas números se for coluna numérica
          if (isNumericOnly && inputValue && !/^\d*$/.test(inputValue)) {
             return; // Não permite caracteres não numéricos
+         }
+
+         // Validação especial para campos de data - apenas números e /
+         if (columnId && DATE_COLUMNS.includes(columnId as any)) {
+            // Remove qualquer caractere que não seja número ou /
+            inputValue = inputValue.replace(/[^\d/]/g, '');
          }
 
          // Validar o limite de caracteres se definido
@@ -144,7 +150,7 @@ const InputFilterWithDebounce = ({
          setLocalValue(inputValue);
          debouncedOnChange(inputValue);
       },
-      [debouncedOnChange, maxLength, isNumericOnly]
+      [debouncedOnChange, maxLength, isNumericOnly, columnId]
    );
 
    const handleClear = useCallback(() => {
@@ -270,12 +276,12 @@ export const FilterControls = ({
                aria-expanded={showFilters}
                className={`w-[300px] cursor-pointer rounded-md px-6 py-2.5 text-lg tracking-widest transition-all ${
                   showFilters
-                     ? 'border-none bg-teal-800 font-extrabold text-white italic shadow-lg shadow-black hover:bg-teal-950'
-                     : 'border-none bg-white font-bold text-black italic shadow-lg shadow-black hover:bg-white/60'
+                     ? 'border-none bg-blue-600 font-extrabold text-white italic shadow-md shadow-black hover:bg-blue-700'
+                     : 'border-none bg-white font-bold text-black italic shadow-md shadow-black hover:bg-white/70'
                } ${
                   isDisabled
                      ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
-                     : 'active:scale-95'
+                     : 'hover:scale-105 active:scale-95'
                }`}
             >
                {showFilters ? 'Ocultar Filtros' : 'Mostrar + Filtros'}
@@ -286,7 +292,7 @@ export const FilterControls = ({
                <button
                   onClick={clearFilters}
                   aria-label={`Limpar ${totalActiveFilters} filtro${totalActiveFilters > 1 ? 's' : ''}`}
-                  className="cursor-pointer rounded-sm border-none bg-red-800 px-6 py-3 text-base font-extrabold tracking-widest text-white italic shadow-lg shadow-black transition-all hover:bg-red-950 active:scale-95"
+                  className="cursor-pointer rounded-sm border-none bg-red-600 px-6 py-2.5 text-base font-extrabold tracking-widest text-white italic shadow-md shadow-black transition-all select-none hover:scale-105 hover:bg-red-700 active:scale-95"
                >
                   Limpar Filtros{' '}
                   {totalActiveFilters > 1 && `(${totalActiveFilters})`}
@@ -300,7 +306,7 @@ export const FilterControls = ({
 // ================================================================================
 // HOOK PERSONALIZADO PARA FUNÇÕES DE FILTRO
 // ================================================================================
-export const useFiltrosHeaderTabelaOSy = () => {
+export const useFiltrosHeaderTabelaOS = () => {
    const globalFilterFn = useCallback(
       (row: any, columnId: string, filterValue: string) => {
          if (!filterValue) return true;

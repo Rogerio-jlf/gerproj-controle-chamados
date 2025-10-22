@@ -272,7 +272,9 @@ export function ModalEditarCellFaturadoOSValidOS({
    };
 
    const fieldLabel =
-      fieldName === 'FATURADO_OS' ? '"Cliente Paga"' : '"Consultor Recebe"';
+      fieldName === 'FATURADO_OS'
+         ? '"Cliente Paga OS"'
+         : '"Consultor Recebe OS"';
 
    return (
       <>

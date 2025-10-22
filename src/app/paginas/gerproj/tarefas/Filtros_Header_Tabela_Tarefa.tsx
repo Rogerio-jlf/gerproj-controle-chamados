@@ -84,7 +84,6 @@ export const FiltrosHeaderTabelaTarefa = ({
    columnId,
 }: ExtendedInputFilterProps) => {
    const [localValue, setLocalValue] = useState(value);
-   const [isFocused, setIsFocused] = useState(false);
 
    // Obter o limite máximo para a coluna específica
    const maxLength = columnId ? COLUMN_MAX_LENGTH[columnId] : undefined;
@@ -253,7 +252,7 @@ export const FilterControls = ({
 // ================================================================================
 // HOOK PERSONALIZADO PARA FUNÇÕES DE FILTRO
 // ================================================================================
-export const useFiltrosHeaderTabelaTarefay = () => {
+export const useFiltrosHeaderTabelaTarefa = () => {
    const globalFilterFn = useCallback(
       (row: any, columnId: string, filterValue: string) => {
          if (!filterValue) return true;

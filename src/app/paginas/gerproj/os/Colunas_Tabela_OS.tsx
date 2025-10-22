@@ -1,6 +1,7 @@
 // IMPORTS
-import { useMemo } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
+import { useMemo, useRef, useState, useEffect } from 'react';
+import * as TooltipRadix from '@radix-ui/react-tooltip';
 
 // COMPONENTS
 import {
@@ -80,7 +81,7 @@ interface ColunasProps {
       field: string,
       value: any
    ) => Promise<void>;
-   onVisualizarOS?: (codOs: number) => void; // NOVA PROP
+   onVisualizarOS?: (codOs: number) => void;
 }
 
 // ================================================================================
@@ -94,46 +95,115 @@ interface CellTextProps {
    value: string | null | undefined;
    maxWords?: number;
    align?: 'left' | 'center';
-   correctText?: boolean;
+   applyCorrection?: boolean;
 }
 
 const CellText = ({
    value,
    maxWords,
    align = 'left',
-   correctText = false,
+   applyCorrection = false,
 }: CellTextProps) => {
    const isEmpty = !value || value.trim() === '';
+   const textRef = useRef<HTMLSpanElement>(null);
+   const [showTooltip, setShowTooltip] = useState(false);
 
    const processedValue = useMemo(() => {
       if (isEmpty) return null;
 
-      let processedText = correctText ? corrigirTextoCorrompido(value) : value;
+      let processed = value;
 
-      // Limita a quantidade de palavras se especificado
       if (maxWords && maxWords > 0) {
-         return processedText.split(' ').slice(0, maxWords).join(' ');
+         return value.split(' ').slice(0, maxWords).join(' ');
       }
 
-      return processedText;
-   }, [value, maxWords, isEmpty, correctText]);
+      // Aplica correção de texto se necessário
+      if (applyCorrection) {
+         processed = corrigirTextoCorrompido(processed);
+      }
+
+      return processed;
+   }, [value, maxWords, applyCorrection, isEmpty]);
 
    const alignClass =
       align === 'center'
          ? 'justify-center text-center'
          : 'justify-start pl-2 text-left';
 
+   useEffect(() => {
+      const checkOverflow = () => {
+         if (textRef.current && value) {
+            const isOverflowing =
+               textRef.current.scrollWidth > textRef.current.clientWidth ||
+               textRef.current.scrollHeight > textRef.current.clientHeight;
+            setShowTooltip(isOverflowing);
+         }
+      };
+
+      // Pequeno delay para garantir que o DOM foi renderizado
+      const timeoutId = setTimeout(checkOverflow, 100);
+
+      window.addEventListener('resize', checkOverflow);
+
+      return () => {
+         clearTimeout(timeoutId);
+         window.removeEventListener('resize', checkOverflow);
+      };
+   }, [value, processedValue]);
+
+   if (isEmpty) {
+      return (
+         <div
+            className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
+         >
+            {EMPTY_VALUE}
+         </div>
+      );
+   }
+
+   // Se não há overflow, renderiza sem tooltip
+   if (!showTooltip) {
+      return (
+         <div
+            className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
+         >
+            <span ref={textRef} className="block w-full truncate">
+               {corrigirTextoCorrompido(processedValue ?? '')}
+            </span>
+         </div>
+      );
+   }
+
+   // Se há overflow, renderiza com tooltip
    return (
       <div
          className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
       >
-         {isEmpty ? (
-            EMPTY_VALUE
-         ) : (
-            <span className="block w-full truncate" title={value}>
-               {processedValue}
-            </span>
-         )}
+         <TooltipRadix.Provider delayDuration={200}>
+            <TooltipRadix.Root>
+               <TooltipRadix.Trigger asChild>
+                  <span
+                     ref={textRef}
+                     className="block w-full cursor-help truncate"
+                  >
+                     {corrigirTextoCorrompido(processedValue ?? '')}
+                  </span>
+               </TooltipRadix.Trigger>
+               <TooltipRadix.Portal>
+                  <TooltipRadix.Content
+                     side="top"
+                     align="start"
+                     className="animate-in fade-in-0 zoom-in-95 z-[70] max-w-[800px] rounded-lg border border-pink-500 bg-white px-6 py-2 text-sm font-semibold tracking-widest text-black italic shadow-sm shadow-black select-none"
+                     sideOffset={10}
+                  >
+                     <div className="break-words">
+                        {corrigirTextoCorrompido(value)}
+                     </div>
+                     <TooltipRadix.Arrow className="fill-black" />
+                  </TooltipRadix.Content>
+               </TooltipRadix.Portal>
+            </TooltipRadix.Root>
+         </TooltipRadix.Provider>
       </div>
    );
 };
@@ -351,49 +421,49 @@ export const colunasTabelaOS = (
       // OS
       {
          accessorKey: 'COD_OS',
-         header: () => <HeaderCenter>os</HeaderCenter>,
+         header: () => <HeaderCenter>OS</HeaderCenter>,
          cell: ({ getValue }) => <CellNumber value={getValue() as number} />,
       },
 
       // Tarefa completa
       {
          accessorKey: 'CODTRF_OS',
-         header: () => <HeaderCenter>tarefa</HeaderCenter>,
+         header: () => <HeaderCenter>TAREFA</HeaderCenter>,
          cell: ({ getValue }) => <CellNumber value={getValue() as number} />,
       },
 
       // Chamado
       {
          accessorKey: 'CHAMADO_OS',
-         header: () => <HeaderCenter>chamado</HeaderCenter>,
+         header: () => <HeaderCenter>CHAMADO</HeaderCenter>,
          cell: ({ getValue }) => <CellNumber value={getValue() as number} />,
       },
 
       // Data Início
       {
          accessorKey: 'DTINI_OS',
-         header: () => <HeaderCenter>dt. início</HeaderCenter>,
+         header: () => <HeaderCenter>DT. INÍCIO</HeaderCenter>,
          cell: ({ getValue }) => <CellDate value={getValue() as string} />,
       },
 
       // Hora Início
       {
          accessorKey: 'HRINI_OS',
-         header: () => <HeaderCenter>hr. início</HeaderCenter>,
+         header: () => <HeaderCenter>HR. INÍCIO</HeaderCenter>,
          cell: ({ getValue }) => <CellTime value={getValue() as string} />,
       },
 
       // Hora Fim
       {
          accessorKey: 'HRFIM_OS',
-         header: () => <HeaderCenter>hr. final</HeaderCenter>,
+         header: () => <HeaderCenter>HR. FINAL</HeaderCenter>,
          cell: ({ getValue }) => <CellTime value={getValue() as string} />,
       },
 
       // Total Horas
       {
          accessorKey: 'QTD_HR_OS',
-         header: () => <HeaderCenter>total hr's</HeaderCenter>,
+         header: () => <HeaderCenter>TOTAL HR's</HeaderCenter>,
          cell: ({ getValue }) => (
             <CellTotalHours value={getValue() as number} />
          ),
@@ -402,7 +472,7 @@ export const colunasTabelaOS = (
       // Data Apontamento
       {
          accessorKey: 'DTINC_OS',
-         header: () => <HeaderCenter>dt. apontamento</HeaderCenter>,
+         header: () => <HeaderCenter>DT. APONTAMENTO</HeaderCenter>,
          cell: ({ getValue }) => (
             <CellDate value={getValue() as string} includeTime />
          ),
@@ -411,19 +481,19 @@ export const colunasTabelaOS = (
       // Consultor
       {
          accessorKey: 'NOME_RECURSO',
-         header: () => <HeaderCenter>consultor</HeaderCenter>,
+         header: () => <HeaderCenter>CONSULTOR</HeaderCenter>,
          cell: ({ getValue }) => {
             const value = getValue() as string;
             if (!value) return null;
 
-            return <CellText value={value} maxWords={2} correctText />;
+            return <CellText value={value} maxWords={2} applyCorrection />;
          },
       },
 
       // Consultor Recebe (Valid)
       {
          accessorKey: 'VALID_OS',
-         header: () => <HeaderCenter>consultor recebe</HeaderCenter>,
+         header: () => <HeaderCenter>CONSULTOR RECEBE OS</HeaderCenter>,
          cell: ({ row, getValue }) => {
             const value = getValue() as string;
 
@@ -447,7 +517,7 @@ export const colunasTabelaOS = (
       // Cliente Paga (Faturado)
       {
          accessorKey: 'FATURADO_OS',
-         header: () => <HeaderCenter>cliente paga</HeaderCenter>,
+         header: () => <HeaderCenter>CLIENTE PAGA OS</HeaderCenter>,
          cell: ({ row, getValue }) => {
             const value = getValue() as string;
 
@@ -471,7 +541,7 @@ export const colunasTabelaOS = (
       // AÇÕES - NOVA COLUNA
       {
          id: 'acoes',
-         header: () => <HeaderCenter>ações</HeaderCenter>,
+         header: () => <HeaderCenter>AÇÕES</HeaderCenter>,
          cell: ({ row }) => (
             <CellAcoes
                codOs={row.original.COD_OS}

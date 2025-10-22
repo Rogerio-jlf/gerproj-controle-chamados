@@ -241,3 +241,48 @@ export const formatarHorasTotaisHorasDecimais = (
 
    return `${hoursFormatted}:${minutesFormatted}`;
 };
+
+export function formatarMoeda(
+   value: number | string | null | undefined,
+   options?: {
+      simbolo?: boolean; // Exibir símbolo "R$" (padrão: true)
+      casasDecimais?: number; // Número de casas decimais (padrão: 2)
+      valorPadrao?: string; // Valor a retornar se inválido (padrão: "R$ 0,00")
+   }
+): string {
+   const {
+      simbolo = true,
+      casasDecimais = 2,
+      valorPadrao = simbolo ? 'R$ 0,00' : '0,00',
+   } = options || {};
+
+   // Validação e conversão
+   let numericValue: number;
+
+   if (value == null || value === '') {
+      return valorPadrao;
+   }
+
+   if (typeof value === 'string') {
+      // Remove tudo exceto números, vírgula e ponto
+      const cleaned = value.replace(/[^\d.,-]/g, '');
+      // Substitui vírgula por ponto para conversão
+      const normalized = cleaned.replace(',', '.');
+      numericValue = parseFloat(normalized);
+   } else {
+      numericValue = value;
+   }
+
+   // Verifica se é um número válido
+   if (isNaN(numericValue)) {
+      return valorPadrao;
+   }
+
+   // Formata usando Intl.NumberFormat
+   const formatted = new Intl.NumberFormat('pt-BR', {
+      minimumFractionDigits: casasDecimais,
+      maximumFractionDigits: casasDecimais,
+   }).format(numericValue);
+
+   return simbolo ? `R$ ${formatted}` : formatted;
+}

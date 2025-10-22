@@ -13,6 +13,7 @@ import {
    formatarCodNumber,
    formatarDataParaBR,
    formatarHorasTotaisHorasDecimais,
+   formatarMoeda,
 } from '../../../../utils/formatters';
 
 // ICONS
@@ -86,7 +87,7 @@ export function ModalVisualizarTarefa({
                   </div>
                   {/* ===== */}
                   <div className="flex flex-col">
-                     <h1 className="text-3xl font-extrabold tracking-wider text-black uppercase select-none">
+                     <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
                         Tarefa
                      </h1>
                      <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
@@ -430,7 +431,7 @@ export function ModalVisualizarTarefa({
                         <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-sm shadow-black">
                            <FaDollarSign className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
-                              Financeiro
+                              Informações Financeiras
                            </h2>
                         </div>
                         <div className="space-y-3 p-4">
@@ -440,7 +441,7 @@ export function ModalVisualizarTarefa({
                                  Valor Hora
                               </span>
                               <span className="text-lg font-bold tracking-widest text-black italic select-none">
-                                 R$ {tarefa.VRHR_TAREFA.toFixed(2)}
+                                 {formatarMoeda(tarefa.VRHR_TAREFA)}
                               </span>
                            </div>
                            {/* ===== */}
@@ -485,14 +486,14 @@ export function ModalVisualizarTarefa({
                         <div className="flex items-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 shadow-sm shadow-black">
                            <FaUser className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
-                              Recurso, Cliente e Responsável
+                              Consultor, Cliente e Responsável
                            </h2>
                         </div>
                         <div className="space-y-3 p-4">
                            {/* NOME_RECURSO */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Consultor Tarefa
+                                 Nome Consultor
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
                                  {tarefa.NOME_RECURSO.trim()
@@ -506,7 +507,7 @@ export function ModalVisualizarTarefa({
                            {/* CODRECRESP_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Consultor Responsável
+                                 Responsável Consultor
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
                                  {tarefa.NOME_RECURSO_RESPONSAVEL.trim()
@@ -564,7 +565,7 @@ export function ModalVisualizarTarefa({
                            {/* EXIBECHAM_TAREFA */}
                            <div className="flex items-center justify-between border-t border-slate-200 pt-3">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Exibir Chamado
+                                 Exibi Chamado
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
                                  {tarefa.EXIBECHAM_TAREFA ?? 'n/a'}

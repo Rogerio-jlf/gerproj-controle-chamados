@@ -1,7 +1,15 @@
 // IMPORTS
 import { ColumnDef } from '@tanstack/react-table';
 import { useMemo, useRef, useState, useEffect } from 'react';
-import * as Tooltip from '@radix-ui/react-tooltip';
+import * as TooltipRadix from '@radix-ui/react-tooltip';
+
+// COMPONENTS
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipProvider,
+   TooltipTrigger,
+} from '../../../../components/ui/tooltip';
 
 // TYPES
 import { TabelaProjetoProps } from '../../../../types/types';
@@ -140,18 +148,18 @@ const CellText = ({
       <div
          className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
       >
-         <Tooltip.Provider delayDuration={200}>
-            <Tooltip.Root>
-               <Tooltip.Trigger asChild>
+         <TooltipRadix.Provider delayDuration={200}>
+            <TooltipRadix.Root>
+               <TooltipRadix.Trigger asChild>
                   <span
                      ref={textRef}
                      className="block w-full cursor-help truncate"
                   >
                      {corrigirTextoCorrompido(processedValue ?? '')}
                   </span>
-               </Tooltip.Trigger>
-               <Tooltip.Portal>
-                  <Tooltip.Content
+               </TooltipRadix.Trigger>
+               <TooltipRadix.Portal>
+                  <TooltipRadix.Content
                      side="top"
                      align="start"
                      className="animate-in fade-in-0 zoom-in-95 z-[70] max-w-[800px] rounded-lg border border-pink-500 bg-white px-6 py-2 text-sm font-semibold tracking-widest text-black italic shadow-sm shadow-black select-none"
@@ -160,11 +168,11 @@ const CellText = ({
                      <div className="break-words">
                         {corrigirTextoCorrompido(value)}
                      </div>
-                     <Tooltip.Arrow className="fill-black" />
-                  </Tooltip.Content>
-               </Tooltip.Portal>
-            </Tooltip.Root>
-         </Tooltip.Provider>
+                     <TooltipRadix.Arrow className="fill-black" />
+                  </TooltipRadix.Content>
+               </TooltipRadix.Portal>
+            </TooltipRadix.Root>
+         </TooltipRadix.Provider>
       </div>
    );
 };
@@ -226,27 +234,26 @@ const CellAcoes = ({ codProjeto, onVisualizarProjeto }: CellAcoesProps) => {
    return (
       <div className="flex items-center justify-center">
          {onVisualizarProjeto && (
-            <Tooltip.Provider>
-               <Tooltip.Root>
-                  <Tooltip.Trigger asChild>
+            <TooltipProvider>
+               <Tooltip>
+                  <TooltipTrigger asChild>
                      <button
                         onClick={() => onVisualizarProjeto(codProjeto)}
                         className="inline-flex cursor-pointer items-center justify-center text-white transition-all hover:scale-150 active:scale-95"
                      >
                         <FaEye className="text-white" size={32} />
                      </button>
-                  </Tooltip.Trigger>
-                  <Tooltip.Content
+                  </TooltipTrigger>
+                  <TooltipContent
                      side="right"
                      align="start"
                      sideOffset={8}
                      className="border-t-8 border-cyan-500 bg-white text-sm font-extrabold tracking-widest text-black italic shadow-sm shadow-black select-none"
                   >
                      Visualizar Projeto
-                     <Tooltip.Arrow className="fill-red-500" />
-                  </Tooltip.Content>
-               </Tooltip.Root>
-            </Tooltip.Provider>
+                  </TooltipContent>
+               </Tooltip>
+            </TooltipProvider>
          )}
       </div>
    );

@@ -12,10 +12,11 @@ import {
    formatarDataParaBR,
    formatarHora,
    formatarHorasTotaisHorasDecimais,
+   formatarMoeda,
 } from '../../../../../utils/formatters';
 
 // COMPONENTS
-import { ConditionalTooltip } from '../Tooltip_Condicional';
+import { TooltipCondicionalTabelaOS } from '../Tooltip_Condicional._Tabela_OS';
 
 // ICONS
 import { IoClose } from 'react-icons/io5';
@@ -109,7 +110,7 @@ export function ModalVisualizarOS({
                   </div>
                   {/* ===== */}
                   <div className="flex flex-col">
-                     <h1 className="text-3xl font-extrabold tracking-wider text-black uppercase select-none">
+                     <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
                         Ordem de Serviço
                      </h1>
                      <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
@@ -158,13 +159,13 @@ export function ModalVisualizarOS({
                               <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
                                  Tarefa
                               </span>
-                              <ConditionalTooltip
+                              <TooltipCondicionalTabelaOS
                                  content={os.TAREFA_COMPLETA || ''}
                               >
                                  <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
                                     {os.TAREFA_COMPLETA}
                                  </span>
-                              </ConditionalTooltip>
+                              </TooltipCondicionalTabelaOS>
                            </div>
                            {/* ===== */}
 
@@ -173,13 +174,13 @@ export function ModalVisualizarOS({
                               <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
                                  Projeto
                               </span>
-                              <ConditionalTooltip
+                              <TooltipCondicionalTabelaOS
                                  content={os.PROJETO_COMPLETO || ''}
                               >
                                  <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
                                     {os.PROJETO_COMPLETO}
                                  </span>
-                              </ConditionalTooltip>
+                              </TooltipCondicionalTabelaOS>
                            </div>
                            {/* ===== */}
 
@@ -189,7 +190,7 @@ export function ModalVisualizarOS({
                                  Número OS
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {os.NUM_OS || '---'}
+                                 {os.NUM_OS || 'n/a'}
                               </span>
                            </div>
                            {/* ===== */}
@@ -200,7 +201,7 @@ export function ModalVisualizarOS({
                                  Chamado
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {formatarCodString(os.CHAMADO_OS) ?? '---'}
+                                 {formatarCodString(os.CHAMADO_OS) ?? 'n/a'}
                               </span>
                            </div>
                         </div>
@@ -359,7 +360,7 @@ export function ModalVisualizarOS({
                                  Valor Hora
                               </span>
                               <span className="text-lg font-bold tracking-widest text-black italic select-none">
-                                 R$ {os.VRHR_OS.toFixed(2)}
+                                 {formatarMoeda(os.VRHR_OS)}
                               </span>
                            </div>
                            {/* ===== */}
@@ -381,7 +382,7 @@ export function ModalVisualizarOS({
                                  Código Faturamento
                               </span>
                               <span className="text-lg font-bold tracking-widest text-black italic select-none">
-                                 {os.COD_FATURAMENTO || '---'}
+                                 {os.COD_FATURAMENTO || 'n/a'}
                               </span>
                            </div>
                         </div>
@@ -396,14 +397,14 @@ export function ModalVisualizarOS({
                         <div className="flex items-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 shadow-sm shadow-black">
                            <FaUser className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
-                              Recurso, Cliente e Responsável
+                              Consultor, Cliente e Responsável
                            </h2>
                         </div>
                         <div className="space-y-3 p-4">
                            {/* NOME_RECURSO */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Consultor
+                                 Nome Consultor
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
                                  {os.NOME_RECURSO.trim()
@@ -417,7 +418,7 @@ export function ModalVisualizarOS({
                            {/* NOME_CLIENTE */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Cliente
+                                 Nome Cliente
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
                                  {os.NOME_CLIENTE.trim()
@@ -431,7 +432,7 @@ export function ModalVisualizarOS({
                            {/* RESPCLI_OS */}
                            <div className="flex items-center justify-between py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Responsável
+                                 Responsável Cliente
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
                                  {corrigirTextoCorrompido(os.RESPCLI_OS)}
@@ -455,17 +456,17 @@ export function ModalVisualizarOS({
                               <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
                                  Observações
                               </span>
-                              <ConditionalTooltip
+                              <TooltipCondicionalTabelaOS
                                  content={corrigirTextoCorrompido(
-                                    os.OBS_OS || '---'
+                                    os.OBS_OS || 'n/a'
                                  )}
                               >
                                  <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
                                     {corrigirTextoCorrompido(
-                                       os.OBS_OS || '---'
+                                       os.OBS_OS || 'n/a'
                                     )}
                                  </span>
-                              </ConditionalTooltip>
+                              </TooltipCondicionalTabelaOS>
                            </div>
                            {/* ===== */}
 
@@ -476,7 +477,7 @@ export function ModalVisualizarOS({
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
                                  {corrigirTextoCorrompido(
-                                    os.DESLOC_OS || '---'
+                                    os.DESLOC_OS || 'n/a'
                                  )}
                               </span>
                            </div>
@@ -487,15 +488,15 @@ export function ModalVisualizarOS({
                               <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
                                  Outras Observações
                               </span>
-                              <ConditionalTooltip
+                              <TooltipCondicionalTabelaOS
                                  content={corrigirTextoCorrompido(
-                                    os.OBS || '---'
+                                    os.OBS || 'n/a'
                                  )}
                               >
                                  <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
-                                    {corrigirTextoCorrompido(os.OBS || '---')}
+                                    {corrigirTextoCorrompido(os.OBS || 'n/a')}
                                  </span>
-                              </ConditionalTooltip>
+                              </TooltipCondicionalTabelaOS>
                            </div>
                            {/* ===== */}
 
@@ -505,24 +506,12 @@ export function ModalVisualizarOS({
                                  Competência
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {os.COMP_OS || '---'}
+                                 {os.COMP_OS || 'n/a'}
                               </span>
                            </div>
                         </div>
                      </div>
                      {/* ========== */}
-
-                     {/* STATUS_OS
-                     <div className="flex items-center justify-center pt-6">
-                        <span
-                           className={`rounded-full px-14 py-2 text-4xl font-bold tracking-widest italic shadow-lg shadow-black select-none ${getStatusStyle(
-                              os.STATUS_OS
-                           )}`}
-                        >
-                           {getStatusText(os.STATUS_OS)}
-                        </span>
-                     </div> */}
-                     {/* ==================== */}
                   </div>
                </div>
             </main>

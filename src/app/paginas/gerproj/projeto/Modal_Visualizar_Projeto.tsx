@@ -114,7 +114,7 @@ export function ModalVisualizarProjeto({
                         <div className="flex items-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 shadow-sm shadow-black">
                            <FaInfo className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
-                              Informações do Projeto
+                              Informações Gerais
                            </h2>
                         </div>
                         <div className="space-y-3 p-4">
