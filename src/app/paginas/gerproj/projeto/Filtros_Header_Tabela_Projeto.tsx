@@ -1,15 +1,17 @@
 'use client';
-// ================================================================================
 // IMPORTS
-// ================================================================================
 import { debounce } from 'lodash';
 import { useMemo, useState, useCallback, useEffect } from 'react';
-// ================================================================================
-import { InputFilterTableHeaderProps } from '../../../../types/types';
-// ================================================================================
-import { FaFilter, FaPlus } from 'react-icons/fa';
-import { IoClose } from 'react-icons/io5';
+
+// COMPONENTS
 import { SelectAtiEncTabelaProjeto } from './Select_ATI_ENC_Tabela_Projeto';
+
+// TYPES
+import { InputFilterTableHeaderProps } from '../../../../types/types';
+
+// ICONS
+import { FaFilter } from 'react-icons/fa';
+import { IoClose } from 'react-icons/io5';
 
 // ================================================================================
 // CONSTANTES
@@ -178,7 +180,7 @@ export const InputFilterWithDebounce = ({
 };
 
 // ================================================================================
-// COMPONENTE PRINCIPAL - WRAPPER QUE DECIDE QUAL RENDERIZAR
+// COMPONENTE PRINCIPAL
 // ================================================================================
 export const FiltrosHeaderTabelaProjeto = ({
    value,

@@ -60,6 +60,13 @@ export function ModalVisualizarProjeto({
       );
    };
 
+   console.log('QTD_HRS_GASTAS:', projeto.QTD_HRS_GASTAS);
+   console.log('Tipo:', typeof projeto.QTD_HRS_GASTAS);
+   console.log(
+      'Formatado:',
+      formatarHorasTotaisHorasDecimais(projeto.QTD_HRS_GASTAS?.toString())
+   );
+
    // ================================================================================
    // RENDERIZAÇÃO
    // ================================================================================
@@ -132,12 +139,20 @@ export function ModalVisualizarProjeto({
 
                            {/* PROPOSTA_PROJETO */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
                                  Proposta
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {projeto.PROPOSTA_PROJETO || 'N/A'}
-                              </span>
+                              <TooltipCondicionalTabelaProjeto
+                                 content={corrigirTextoCorrompido(
+                                    projeto.PROPOSTA_PROJETO || 'n/a'
+                                 )}
+                              >
+                                 <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
+                                    {corrigirTextoCorrompido(
+                                       projeto.PROPOSTA_PROJETO || 'n/a'
+                                    )}
+                                 </span>
+                              </TooltipCondicionalTabelaProjeto>
                            </div>
                            {/* ===== */}
 
@@ -174,7 +189,7 @@ export function ModalVisualizarProjeto({
                               <span className="text-base font-bold tracking-widest text-black select-none">
                                  {projeto.QTD_HRS_GASTAS
                                     ? formatarHorasTotaisHorasDecimais(
-                                         projeto.QTD_HRS_GASTAS.toString()
+                                         projeto.QTD_HRS_GASTAS
                                       )
                                     : '0,00'}
                                  h

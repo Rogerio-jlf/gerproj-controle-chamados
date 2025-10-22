@@ -7,10 +7,7 @@ import * as Tooltip from '@radix-ui/react-tooltip';
 import { TabelaProjetoProps } from '../../../../types/types';
 
 // FORMATTERS
-import {
-   formatarDataParaBR,
-   formatarHorasTotaisHorasDecimais,
-} from '../../../../utils/formatters';
+import { formatarHorasTotaisHorasDecimais } from '../../../../utils/formatters';
 
 // HELPERS
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
@@ -204,15 +201,14 @@ interface CellHoursProps {
 }
 
 const CellHours = ({ value }: CellHoursProps) => {
-   const formattedValue = useMemo(() => {
-      if (!value) return null;
-      const dataFormatada = formatarDataParaBR(String(value));
-      return formatarHorasTotaisHorasDecimais(dataFormatada);
-   }, [value]);
+   const formattedValue = useMemo(
+      () => formatarHorasTotaisHorasDecimais(value),
+      [value]
+   );
 
    return (
       <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-         {formattedValue ? `${formattedValue}h` : EMPTY_VALUE}
+         {formattedValue !== '-' ? `${formattedValue}h` : EMPTY_VALUE}
       </div>
    );
 };
@@ -272,7 +268,7 @@ export const colunasTabelaProjeto = (
    // PROJETO_COMPLETO
    {
       accessorKey: 'PROJETO_COMPLETO',
-      header: () => <HeaderCenter>Projeto</HeaderCenter>,
+      header: () => <HeaderCenter>PROJETO</HeaderCenter>,
       cell: ({ getValue }) => (
          <CellText value={getValue() as string} applyCorrection={true} />
       ),
@@ -281,7 +277,7 @@ export const colunasTabelaProjeto = (
    // NOME_CLIENTE
    {
       accessorKey: 'NOME_CLIENTE',
-      header: () => <HeaderCenter>Cliente</HeaderCenter>,
+      header: () => <HeaderCenter>CLIENTE</HeaderCenter>,
       cell: ({ getValue }) => (
          <CellText
             value={getValue() as string}
@@ -294,7 +290,7 @@ export const colunasTabelaProjeto = (
    // RESPONSÁVEL PELO PROJETO
    {
       accessorKey: 'RESPCLI_PROJETO',
-      header: () => <HeaderCenter>Responsável</HeaderCenter>,
+      header: () => <HeaderCenter>RESPONSÁVEL</HeaderCenter>,
       cell: ({ getValue }) => (
          <CellText
             value={getValue() as string}
@@ -307,7 +303,7 @@ export const colunasTabelaProjeto = (
    // NOME_RECURSO
    {
       accessorKey: 'NOME_RECURSO',
-      header: () => <HeaderCenter>Consultor</HeaderCenter>,
+      header: () => <HeaderCenter>CONSULTOR</HeaderCenter>,
       cell: ({ getValue }) => (
          <CellText value={getValue() as string} maxWords={2} applyCorrection />
       ),
@@ -339,7 +335,7 @@ export const colunasTabelaProjeto = (
    // AÇÕES
    {
       id: 'acoes',
-      header: () => <HeaderCenter>ações</HeaderCenter>,
+      header: () => <HeaderCenter>AÇÕES</HeaderCenter>,
       cell: ({ row }) => (
          <CellAcoes
             codProjeto={row.original.COD_PROJETO}

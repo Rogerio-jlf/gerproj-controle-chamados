@@ -347,8 +347,8 @@ export async function GET(request: Request) {
          (record: TabelaProjetoProps) => ({
             ...record,
             QTD_HRS_GASTAS: record.QTD_HRS_GASTAS
-               ? parseFloat(record.QTD_HRS_GASTAS.toFixed(2))
-               : 0.0,
+               ? Number(record.QTD_HRS_GASTAS)
+               : 0,
          })
       );
 

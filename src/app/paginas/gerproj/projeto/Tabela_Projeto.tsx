@@ -15,9 +15,9 @@ import {
    FilterControls,
    FiltrosHeaderTabelaProjeto,
 } from './Filtros_Header_Tabela_Projeto';
-import { colunasTabelaProjeto } from './Colunas_Tabela_Projeto';
 import { IsError } from '../../../../components/IsError';
 import { IsLoading } from '../../../../components/IsLoading';
+import { colunasTabelaProjeto } from './Colunas_Tabela_Projeto';
 
 // FORMATERS
 import { formatarCodNumber } from '../../../../utils/formatters';
@@ -33,8 +33,8 @@ import { IoClose } from 'react-icons/io5';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
-import { FaExclamationTriangle, FaProjectDiagram } from 'react-icons/fa';
 import { ModalVisualizarProjeto } from './Modal_Visualizar_Projeto';
+import { FaExclamationTriangle, FaProjectDiagram } from 'react-icons/fa';
 
 // ================================================================================
 // CONSTANTES
@@ -510,7 +510,7 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
                               {headerGroup.headers.map(header => (
                                  <th
                                     key={header.id}
-                                    className="bg-teal-800 py-6 font-extrabold tracking-wider text-white uppercase select-none"
+                                    className="bg-teal-800 py-6 font-extrabold tracking-wider text-white select-none"
                                     style={{
                                        width: getColumnWidth(header.column.id),
                                     }}
