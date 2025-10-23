@@ -37,6 +37,11 @@ export async function POST(request: Request) {
             minute: '2-digit',
          });
 
+      const horaFormatada = agora.toLocaleTimeString('pt-BR', {
+         hour: '2-digit',
+         minute: '2-digit',
+      });
+
       // Buscar o assunto atual do chamado
       const chamadoResult = await firebirdQuery(
          `SELECT FIRST 1 ASSUNTO_CHAMADO FROM CHAMADO WHERE COD_CHAMADO = ?`,
@@ -165,7 +170,8 @@ export async function POST(request: Request) {
          try {
             const mensagemWhatsApp = gerarMensagemWhatsApp({
                codChamado: codChamadoNum,
-               nomeCliente,
+               dataChamado: dataFormatada,
+               horaChamado: horaFormatada,
                nomeRecurso,
                assuntoChamado: novoAssunto,
             });
@@ -191,10 +197,7 @@ export async function POST(request: Request) {
                      ]
                   );
                } catch (logError) {
-                  console.log(
-                     'Erro ao registrar log WhatsApp (não crítico):',
-                     logError
-                  );
+                  console.error('Erro ao logar WhatsApp no banco:', logError);
                }
             } else {
                resultadosNotificacoes.whatsapp.erro =

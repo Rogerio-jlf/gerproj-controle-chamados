@@ -26,8 +26,7 @@ class WhatsAppClient {
    }: WhatsAppMessage): Promise<WhatsAppResponse> {
       try {
          // Se WhatsApp não estiver configurado, retorna sucesso falso silenciosamente
-         if (!this.apiUrl || !this.apiKey) {
-            console.log('WhatsApp não configurado, pulando envio');
+         if (!this.apiUrl || !this.apiKey || !this.instanceId) {
             return { success: false, error: 'WhatsApp não configurado' };
          }
 
@@ -37,31 +36,37 @@ class WhatsAppClient {
             return { success: false, error: 'Número inválido' };
          }
 
+         // Payload correto conforme a API espera
          const payload = {
-            number: numeroFormatado,
-            message: message,
             instance: this.instanceId,
+            type: 'text',
+            content: {
+               telephone: numeroFormatado,
+               message: message,
+            },
          };
 
-         const response = await fetch(`${this.apiUrl}/send-message`, {
+         const response = await fetch(this.apiUrl, {
             method: 'POST',
             headers: {
                'Content-Type': 'application/json',
-               Authorization: `Bearer ${this.apiKey}`,
+               'x-api-key': this.apiKey,
             },
             body: JSON.stringify(payload),
          });
 
-         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Erro ao enviar WhatsApp');
-         }
-
          const data = await response.json();
+
+         if (!response.ok) {
+            console.error('Erro na resposta WhatsApp:', data);
+            throw new Error(
+               data.message || `Erro ${response.status}: ${response.statusText}`
+            );
+         }
 
          return {
             success: true,
-            messageId: data.messageId,
+            messageId: data.messageId || data.id || 'success',
          };
       } catch (error) {
          console.error('Erro ao enviar WhatsApp:', error);
@@ -78,6 +83,9 @@ class WhatsAppClient {
 
       // Valida se tem pelo menos 10 dígitos
       if (apenasNumeros.length < 10 || apenasNumeros.length > 13) {
+         console.warn(
+            `Número inválido: ${numero} (${apenasNumeros.length} dígitos)`
+         );
          return null;
       }
 
@@ -87,6 +95,21 @@ class WhatsAppClient {
       }
 
       return apenasNumeros;
+   }
+
+   // Método para testar a configuração
+   async testarConexao(): Promise<boolean> {
+      try {
+         if (!this.apiUrl || !this.apiKey || !this.instanceId) {
+            console.error('Configurações do WhatsApp ausentes');
+            return false;
+         }
+
+         return true;
+      } catch (error) {
+         console.error('Erro ao testar conexão WhatsApp:', error);
+         return false;
+      }
    }
 }
 

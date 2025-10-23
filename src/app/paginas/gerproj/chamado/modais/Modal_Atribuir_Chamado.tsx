@@ -8,6 +8,10 @@ import { TabelaChamadoProps } from '../../../../../types/types';
 // ================================================================================
 import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
 import { useEmailAtribuirChamados } from '../../../../../hooks/useEmailAtribuirChamados';
+import {
+   DropdownRecomendacao,
+   DropdownCliente,
+} from '../Dropdowns_Atribuir_Chamado';
 // ================================================================================
 import { Loader2 } from 'lucide-react';
 import { IoIosSave } from 'react-icons/io';
@@ -15,7 +19,10 @@ import { ImUsers, ImTarget } from 'react-icons/im';
 import { BsAwardFill, BsFillSendFill } from 'react-icons/bs';
 import { IoBarChart, IoClose } from 'react-icons/io5';
 import { FaExclamationTriangle, FaUser, FaUsers } from 'react-icons/fa';
-import { formatCodChamado } from '../../../../../utils/formatters';
+import {
+   formatarCodNumber,
+   formatCodChamado,
+} from '../../../../../utils/formatters';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
 import { FaEraser } from 'react-icons/fa';
 import { IoIosSearch } from 'react-icons/io';
@@ -559,24 +566,24 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
    // RENDERIZAÇÃO
    // ================================================================================
    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-         {/* OVERLAY */}
+      <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
+         {/* ===== OVERLAY ===== */}
          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
 
-         {/* MODAL */}
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 mx-4 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl border-0 bg-white/10 shadow-sm shadow-black transition-all duration-500 ease-out">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl border-0 bg-transparent transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
-            <header className="relative flex items-center justify-between bg-teal-600 p-6 shadow-sm shadow-black">
+            <header className="relative flex items-center justify-between bg-gradient-to-r from-teal-600 to-teal-700 p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
-                  <RiDeleteBin5Fill className="text-black" size={60} />
+                  <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
+                     <RiDeleteBin5Fill className="text-black" size={28} />
+                  </div>
                   {/* ===== */}
                   <div className="flex flex-col">
-                     <h1 className="text-3xl font-extrabold tracking-wider text-black select-none">
+                     <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
                         Atribuir Chamado
                      </h1>
-
                      <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
-                        Chamado #{formatCodChamado(chamado.COD_CHAMADO)}
+                        Código #{formatarCodNumber(chamado.COD_CHAMADO)}
                      </p>
                   </div>
                </div>
@@ -587,7 +594,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                      handleLimparFormulario();
                      onClose();
                   }}
-                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                >
                   <IoClose size={24} />
                </button>
@@ -597,52 +604,31 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
             {/* ===== COLUNAS ===== */}
             <div className="flex h-full gap-6 overflow-hidden p-6">
                {/* ===== COLUNA RECURSOS ===== */}
-               <section className="flex-[0_0_40%] overflow-hidden rounded-xl bg-white/95 p-6 shadow-sm shadow-black">
+               <section className="flex-[0_0_40%] overflow-hidden rounded-xl bg-white p-6 shadow-lg shadow-black">
                   <div className="flex flex-col gap-10">
                      <div className="flex flex-col gap-10">
                         {/* Header */}
-                        <div className="flex items-center justify-between">
-                           <div className="flex items-center gap-4">
-                              <div className="rounded-lg border-[1px] border-blue-700 bg-blue-600 p-2 shadow-md shadow-black">
-                                 <FaUsers className="text-white" size={24} />
-                              </div>
-                              <h2 className="text-2xl font-extrabold tracking-widest text-black uppercase">
-                                 Consultores do Sistema
-                              </h2>
+                        <div className="flex items-center gap-4">
+                           <div className="rounded-sm bg-blue-600 p-2 shadow-xs shadow-black">
+                              <FaUsers className="text-white" size={24} />
                            </div>
-                           {/* ===== */}
-
-                           {/* Botão limpar filtros */}
-                           <button
-                              onClick={handleLimparFiltros}
-                              className="group cursor-pointer rounded-lg border-[1px] border-blue-700 bg-blue-600 p-2 shadow-md shadow-black transition-all hover:-translate-y-1 hover:scale-105 hover:bg-blue-800 active:scale-95"
-                           >
-                              <FaEraser
-                                 size={24}
-                                 className="text-white group-hover:scale-125"
-                              />
-                           </button>
+                           <h2 className="text-2xl font-extrabold tracking-widest text-black uppercase">
+                              Consultores
+                           </h2>
                         </div>
                         {/* ===== */}
 
                         {/* Filtros */}
                         <div className="flex items-center gap-6">
                            {/* Input de busca */}
-                           <div className="group relative flex-1 transition-all hover:-translate-y-1 hover:scale-102">
+                           <div className="group relative flex-1 transition-all hover:scale-102">
                               <IoIosSearch
-                                 className="absolute top-1/2 left-4 -translate-y-1/2 text-black"
+                                 aria-hidden="true"
+                                 className="pointer-events-none absolute top-1/2 left-4 z-10 -translate-y-1/2 text-black transition-transform group-hover:scale-110"
                                  size={24}
                               />
                               <input
                                  type="text"
-                                 placeholder={
-                                    searchTerm === '' &&
-                                    !document.activeElement?.matches(
-                                       '.input-busca-recurso'
-                                    )
-                                       ? 'Buscar recurso...'
-                                       : ''
-                                 }
                                  value={searchTerm}
                                  onChange={e => setSearchTerm(e.target.value)}
                                  onFocus={e => (e.target.placeholder = '')}
@@ -651,56 +637,17 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                        e.target.placeholder =
                                           'Buscar recurso...';
                                  }}
-                                 className="input-busca-recurso w-full rounded-md border-[1px] border-black/20 bg-black/10 py-1.5 pl-12 text-base font-semibold tracking-wider text-black shadow-md shadow-black select-none placeholder:text-black placeholder:italic focus:ring-2 focus:outline-none"
+                                 placeholder="Buscar recurso..."
+                                 className="input-busca-recurso w-full rounded-md border-t border-black/10 bg-white py-3 pl-12 font-bold tracking-widest text-black shadow-md shadow-black transition-all placeholder:tracking-widest placeholder:text-slate-500 placeholder:italic focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
                               />
                            </div>
                            {/* ===== */}
 
                            {/* Select de filtro */}
-                           <div className="group relative w-[300px] transition-all hover:-translate-y-1 hover:scale-102">
-                              <CiFilter
-                                 className="absolute top-1/2 left-4 -translate-y-1/2 text-black"
-                                 size={24}
-                              />
-                              <select
-                                 value={filtroRecomendacao}
-                                 onChange={e =>
-                                    setFiltroRecomendacao(e.target.value)
-                                 }
-                                 className="input-busca-recurso w-full cursor-pointer rounded-md border-[1px] border-black/20 bg-black/10 py-2 pl-11 text-base font-semibold tracking-wider text-black italic shadow-md shadow-black select-none focus:ring-2 focus:outline-none"
-                              >
-                                 <option
-                                    className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
-                                    value="TODOS"
-                                 >
-                                    Todos
-                                 </option>
-                                 <option
-                                    className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
-                                    value="DISPONÍVEL"
-                                 >
-                                    Disponível
-                                 </option>
-                                 <option
-                                    className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
-                                    value="MODERADO"
-                                 >
-                                    Moderado
-                                 </option>
-                                 <option
-                                    className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
-                                    value="SOBRECARREGADO"
-                                 >
-                                    Sobrecarregado
-                                 </option>
-                                 <option
-                                    className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
-                                    value="CRÍTICO"
-                                 >
-                                    Crítico
-                                 </option>
-                              </select>
-                           </div>
+                           <DropdownRecomendacao
+                              value={filtroRecomendacao}
+                              onChange={setFiltroRecomendacao}
+                           />
                         </div>
                         {/* ===== */}
                      </div>
@@ -710,7 +657,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                         {recursosFiltrados.map((recurso: RecursoStats) => (
                            <div
                               key={recurso.COD_RECURSO}
-                              className="flex cursor-pointer flex-col gap-4 rounded-lg bg-white p-4 shadow-sm shadow-black transition-all outline-none hover:-translate-y-1 hover:scale-102 active:scale-95"
+                              className="flex cursor-pointer flex-col gap-4 rounded-lg border-t border-black/10 bg-white p-4 shadow-md shadow-black transition-all outline-none hover:scale-102 active:scale-95"
                               onClick={() =>
                                  handleSelectRecurso(recurso.COD_RECURSO)
                               }
@@ -724,7 +671,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                        )}
                                     </h3>
                                     <div
-                                       className={`inline-flex items-center rounded-full ${getRecomendacaoColor(recurso.RECOMENDACAO)} px-6 py-1 text-sm font-semibold tracking-widest italic shadow-sm shadow-black select-none`}
+                                       className={`inline-flex items-center rounded-full ${getRecomendacaoColor(recurso.RECOMENDACAO)} px-6 py-1 text-sm font-semibold tracking-widest italic shadow-xs shadow-black select-none`}
                                     >
                                        <span>{recurso.RECOMENDACAO}</span>
                                     </div>
@@ -738,27 +685,24 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                        label: 'Ativos',
                                        value: recurso.TOTAL_CHAMADOS_ATIVOS,
                                        bg: 'bg-blue-500/70',
-                                       border: 'border-[1px] border-blue-600',
                                     },
                                     {
                                        label: 'Alta Prioridade',
                                        value: recurso.CHAMADOS_ALTA_PRIORIDADE,
                                        bg: 'bg-yellow-500/70',
-                                       border: 'border-[1px] border-yellow-600',
                                     },
                                     {
                                        label: 'Críticos',
                                        value: recurso.CHAMADOS_CRITICOS,
                                        bg: 'bg-red-500/70',
-                                       border: 'border-[1px] border-red-600',
                                     },
                                  ].map((metric, idx) => (
                                     <div
                                        key={idx}
-                                       className={`rounded-md ${metric.bg} p-1.5 text-center shadow-md shadow-black ${metric.border}`}
+                                       className={`rounded-md ${metric.bg} p-1.5 text-center shadow-xs shadow-black`}
                                     >
                                        <p
-                                          className={`text-sm font-bold tracking-widest text-black italic select-none`}
+                                          className={`text-sm font-bold tracking-widest text-black select-none`}
                                        >
                                           {metric.label}
                                        </p>
@@ -776,22 +720,22 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                {/* ==================== */}
 
                {/* ===== COLUNA DETALHES/SUGESTÃO ===== */}
-               <section className="flex-[0_0_25%] overflow-hidden rounded-xl bg-white/95 p-6 shadow-sm shadow-black">
+               <section className="flex-[0_0_25%] overflow-hidden rounded-xl bg-white p-6 shadow-lg shadow-black">
                   <div className="flex flex-col gap-10">
                      {/* Botão sugestão consultor */}
                      <div className="flex items-center gap-4">
                         <button
                            onClick={() => setShowSugestao(!showSugestao)}
-                           className="group cursor-pointer rounded-lg border-[1px] border-blue-700 bg-blue-600 p-2 shadow-md shadow-black transition-all hover:-translate-y-1 hover:scale-105 hover:bg-blue-800 active:scale-95"
+                           className="group cursor-pointer rounded-sm bg-blue-600 p-2 shadow-md shadow-black transition-all hover:scale-105 hover:bg-blue-800 active:scale-95"
                         >
                            <ImTarget
                               size={24}
-                              className="text-white group-hover:scale-125 hover:text-white"
+                              className="text-white group-hover:scale-110"
                            />
                         </button>
                         {showSugestao && (
                            <h3 className="text-2xl font-extrabold tracking-widest text-black uppercase select-none">
-                              Sugestão de Consultor
+                              Sugestão
                            </h3>
                         )}
                      </div>
@@ -805,46 +749,20 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                               <label className="text-lg font-extrabold tracking-widest text-black italic select-none">
                                  Cliente
                               </label>
-                              <div className="group relative flex w-full transition-all hover:-translate-y-1 hover:scale-102">
-                                 <CiFilter
-                                    className="absolute top-1/2 left-4 -translate-y-1/2 text-black"
-                                    size={24}
-                                 />
-
-                                 <select
-                                    value={novoChamado.codCliente}
-                                    onChange={e =>
-                                       setNovoChamado(prev => ({
-                                          ...prev,
-                                          codCliente: e.target.value,
-                                       }))
-                                    }
-                                    className="input-busca-recurso w-full cursor-pointer rounded-md border-[1px] border-black/20 bg-black/10 py-2 pl-12 text-base font-semibold tracking-wider text-black italic shadow-md shadow-black select-none focus:ring-2 focus:outline-none"
-                                 >
-                                    <option
-                                       value=""
-                                       className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
-                                    >
-                                       Selecione um cliente
-                                    </option>
-                                    {clientes.map(
-                                       (cliente: {
-                                          cod_cliente: number;
-                                          nome_cliente: string;
-                                       }) => (
-                                          <option
-                                             key={cliente.cod_cliente}
-                                             value={cliente.cod_cliente}
-                                             className="bg-white text-base font-semibold tracking-wider text-black italic select-none"
-                                          >
-                                             {corrigirTextoCorrompido(
-                                                cliente.nome_cliente
-                                             )}
-                                          </option>
-                                       )
-                                    )}
-                                 </select>
-                              </div>
+                              <DropdownCliente
+                                 value={novoChamado.codCliente}
+                                 onChange={value =>
+                                    setNovoChamado(prev => ({
+                                       ...prev,
+                                       codCliente: value,
+                                    }))
+                                 }
+                                 clientes={clientes}
+                                 placeholder="Selecione um cliente"
+                                 corrigirTextoCorrompido={
+                                    corrigirTextoCorrompido
+                                 }
+                              />
                            </div>
                            {/* ===== */}
 
@@ -856,15 +774,15 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
 
                            {/* Resultado da sugestão */}
                            {sugestaoData?.sugestao?.recursoRecomendado && (
-                              <div className="flex flex-col gap-10 rounded-xl border-[1px] border-green-700 bg-green-600/70 p-6 text-black shadow-md shadow-black">
+                              <div className="flex flex-col gap-10 rounded-xl bg-green-600/70 p-6 text-black shadow-xs shadow-black">
                                  <div className="flex items-center gap-4">
-                                    <div className="rounded-lg border-[1px] border-green-700 bg-green-600 p-2 shadow-md shadow-black">
+                                    <div className="rounded-sm bg-green-600 p-2 shadow-xs shadow-black">
                                        <BsAwardFill
                                           className="text-black"
                                           size={24}
                                        />
                                     </div>
-                                    <h4 className="text-2xl font-extrabold tracking-widest text-black select-none">
+                                    <h4 className="text-xl font-extrabold tracking-widest text-black select-none">
                                        Melhor Opção
                                     </h4>
                                  </div>
@@ -872,15 +790,15 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
 
                                  <div className="flex flex-col gap-14">
                                     <div className="flex flex-col gap-2">
-                                       <p className="text-center text-lg font-extrabold tracking-widest text-black select-none">
+                                       <p className="text-center text-lg font-extrabold tracking-widest text-black italic select-none">
                                           {
                                              sugestaoData.sugestao
                                                 .recursoRecomendado.NOME_RECURSO
                                           }
                                        </p>
 
-                                       <div className="rounded-md border-[1px] border-green-700 bg-green-600 p-2 shadow-md shadow-black">
-                                          <p className="text-center text-base font-bold tracking-wider text-white uppercase italic select-none">
+                                       <div className="rounded-sm bg-green-600 p-2 shadow-xs shadow-black">
+                                          <p className="text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
                                              {
                                                 sugestaoData.sugestao
                                                    .recursoRecomendado
@@ -894,7 +812,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                     {sugestaoData.sugestao.recursoRecomendado
                                        .VANTAGENS?.length > 0 && (
                                        <div className="flex flex-col gap-1">
-                                          <p className="text-sm font-extrabold tracking-widest text-black uppercase italic select-none">
+                                          <p className="text-xl font-extrabold tracking-widest text-black select-none">
                                              Vantagens:
                                           </p>
                                           <div className="flex flex-col gap-1">
@@ -925,17 +843,9 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                      selectedRecurso ? (
                         <div className="flex flex-col gap-6">
                            {/* Header */}
-                           <div className="flex items-center gap-4">
-                              <div className="rounded-lg border-[1px] border-orange-700 bg-orange-600 p-2 shadow-md shadow-black">
-                                 <TbListDetails
-                                    className="text-black"
-                                    size={24}
-                                 />
-                              </div>
-                              <h3 className="text-2xl font-extrabold tracking-widest text-black uppercase select-none">
-                                 Detalhes do Recurso
-                              </h3>
-                           </div>
+                           <h3 className="text-2xl font-extrabold tracking-widest text-black uppercase select-none">
+                              Detalhes do Recurso
+                           </h3>
 
                            {/* Conteúdo */}
                            {loadingDetalhe ? (
@@ -945,22 +855,22 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                            ) : recursoDetalhado ? (
                               <div className="flex flex-col gap-6">
                                  {/* Nome e email do recurso */}
-                                 <div className="rounded-lg border-[1px] border-black/20 bg-black/10 p-4 shadow-md shadow-black">
-                                    <div className="flex items-center gap-3">
-                                       <div className="rounded-md border-[1px] border-black/20 bg-black/10 p-2 shadow-md shadow-black">
+                                 <div className="rounded-lg bg-black/10 p-4 shadow-xs shadow-black">
+                                    <div className="flex items-center gap-4">
+                                       <div className="rounded-sm bg-black/10 p-2 shadow-xs shadow-black">
                                           <FaUser
                                              className="text-black"
                                              size={24}
                                           />
                                        </div>
                                        <div className="flex flex-col">
-                                          <h5 className="text-2xl font-extrabold tracking-widest text-black italic select-none">
+                                          <h5 className="text-xl font-extrabold tracking-widest text-black select-none">
                                              {corrigirTextoCorrompido(
                                                 recursoDetalhado.recurso
                                                    .NOME_RECURSO
                                              )}
                                           </h5>
-                                          <p className="text-xs font-semibold tracking-widest select-none">
+                                          <p className="text-sm font-semibold tracking-widest italic select-none">
                                              {
                                                 recursoDetalhado.recurso
                                                    .EMAIL_RECURSO
@@ -972,15 +882,15 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                  {/* ===== */}
 
                                  {/* Resumo da carga */}
-                                 <div className="flex flex-col gap-6 rounded-lg border-[1px] border-teal-700 bg-teal-600/70 p-4 shadow-md shadow-black">
-                                    <div className="flex items-center gap-3">
-                                       <div className="rounded-md border-[1px] border-teal-700 bg-black/10 p-2 shadow-md shadow-black">
+                                 <div className="flex flex-col gap-6 rounded-lg bg-teal-600/70 p-4 shadow-xs shadow-black">
+                                    <div className="flex items-center gap-4">
+                                       <div className="rounded-sm bg-black/10 p-2 shadow-xs shadow-black">
                                           <IoBarChart
                                              className="text-black"
                                              size={24}
                                           />
                                        </div>
-                                       <h5 className="text-2xl font-extrabold tracking-widest text-black italic select-none">
+                                       <h5 className="text-xl font-extrabold tracking-widest text-black select-none">
                                           Resumo da Carga
                                        </h5>
                                     </div>
@@ -1027,12 +937,12 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                        ].map((metric, idx) => (
                                           <div
                                              key={idx}
-                                             className="rounded-md border-[1px] border-teal-700 bg-black/10 p-2 text-center shadow-md shadow-black"
+                                             className="rounded-md bg-black/10 p-2 text-center shadow-xs shadow-black"
                                           >
-                                             <p className="text-sm font-bold tracking-widest text-black italic select-none">
+                                             <p className="text-sm font-bold tracking-widest text-black select-none">
                                                 {metric.label}
                                              </p>
-                                             <p className="text-xl font-extrabold tracking-widest text-black select-none">
+                                             <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
                                                 {metric.value}
                                              </p>
                                           </div>
@@ -1042,15 +952,15 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                  {/* ===== */}
 
                                  {/* Recomendação */}
-                                 <div className="flex flex-col gap-6 rounded-lg border-[1px] border-blue-700 bg-blue-600/70 p-4 shadow-md shadow-black">
-                                    <div className="flex items-center gap-3">
-                                       <div className="rounded-md border-[1px] border-blue-700 bg-black/10 p-2 shadow-md shadow-black">
+                                 <div className="flex flex-col gap-6 rounded-lg bg-blue-600/70 p-4 shadow-xs shadow-black">
+                                    <div className="flex items-center gap-4">
+                                       <div className="rounded-sm bg-black/10 p-2 shadow-xs shadow-black">
                                           <MdRecordVoiceOver
                                              className="text-black"
                                              size={24}
                                           />
                                        </div>
-                                       <h5 className="text-xl font-extrabold tracking-widest text-black italic select-none">
+                                       <h5 className="text-xl font-extrabold tracking-widest text-black select-none">
                                           Recomendação
                                        </h5>
                                     </div>
@@ -1067,15 +977,15 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
 
                                  {/* Alertas */}
                                  {recursoDetalhado.alertas?.length > 0 && (
-                                    <div className="flex flex-col gap-6 rounded-lg border-[1px] border-red-700 bg-red-600/70 p-4 shadow-md shadow-black">
-                                       <div className="flex items-center gap-3">
-                                          <div className="rounded-md border-[1px] border-red-700 bg-black/10 p-2 shadow-md shadow-black">
+                                    <div className="flex flex-col gap-6 rounded-lg bg-red-600/70 p-4 shadow-xs shadow-black">
+                                       <div className="flex items-center gap-4">
+                                          <div className="rounded-sm bg-black/10 p-2 shadow-xs shadow-black">
                                              <FaExclamationTriangle
                                                 className="text-black"
                                                 size={24}
                                              />
                                           </div>
-                                          <h5 className="text-xl font-extrabold tracking-widest text-black italic select-none">
+                                          <h5 className="text-xl font-extrabold tracking-widest text-black select-none">
                                              Alertas
                                           </h5>
                                        </div>
@@ -1112,10 +1022,10 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                  className={theme.primaryText}
                               />
                               <div className="flex flex-col items-center gap-4">
-                                 <p className="text-2xl font-extrabold tracking-widest text-black italic select-none">
+                                 <p className="text-2xl font-extrabold tracking-widest text-black select-none">
                                     Selecione um Consultor
                                  </p>
-                                 <p className="text-sm font-extrabold tracking-widest text-black italic select-none">
+                                 <p className="text-sm font-extrabold tracking-widest text-slate-500 italic select-none">
                                     Clique em um Consultor para ver os detalhes.
                                  </p>
                               </div>
@@ -1127,15 +1037,15 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                {/* ==================== */}
 
                {/* ===== COLUNA FORMULÁRIO ===== */}
-               <section className="flex-[0_0_33%] overflow-hidden rounded-xl bg-white/95 p-6 shadow-sm shadow-black">
+               <section className="flex-[0_0_33%] overflow-hidden rounded-xl bg-white p-6 shadow-lg shadow-black">
                   <div className="flex flex-col gap-10">
                      {/* Header do formulário */}
                      <div className="flex items-center gap-4">
-                        <div className="rounded-lg border-[1px] border-blue-700 bg-blue-600 p-2 shadow-md shadow-black">
+                        <div className="rounded-sm bg-blue-600 p-2 shadow-xs shadow-black">
                            <BsFillSendFill className="text-white" size={24} />
                         </div>
                         <p className="text-2xl font-extrabold tracking-widest text-black uppercase select-none">
-                           Formulário de Atribuição
+                           Atribuição
                         </p>
                      </div>
                      {/* ===== */}
@@ -1144,10 +1054,10 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                      <div className="flex flex-col gap-10">
                         {/* Recurso selecionado */}
                         <div className="flex flex-col gap-1">
-                           <label className="text-lg font-extrabold tracking-widest text-black italic select-none">
+                           <label className="text-lg font-extrabold tracking-widest text-black select-none">
                               Consultor Selecionado
                            </label>
-                           <div className="flex flex-col rounded-md border-[1px] border-black/20 bg-black/10 p-4 shadow-md shadow-black">
+                           <div className="flex flex-col rounded-md border border-slate-300 bg-white p-4">
                               {selectedRecurso ? (
                                  <div className="flex items-center gap-3">
                                     <FaUser size={24} className="text-black" />
@@ -1164,68 +1074,42 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                  </div>
                               ) : (
                                  <div className="flex items-center gap-3">
-                                    <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-black"></div>
-                                    <p className="text-sm font-extrabold tracking-widest text-black select-none">
+                                    <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-slate-500"></div>
+                                    <p className="text-sm font-extrabold tracking-widest text-slate-500 italic select-none">
                                        Selecione um Consultor na lista de
-                                       consultores do sistema.
+                                       Consultores
                                     </p>
                                  </div>
                               )}
                            </div>
                         </div>
-                        {/* ===== */}
+                        {/* ========== */}
 
                         {/* Select cliente formulário */}
                         <div className="flex flex-col gap-1">
-                           <label className="text-lg font-extrabold tracking-widest text-black italic select-none">
+                           <label className="text-lg font-extrabold tracking-widest text-black select-none">
                               Cliente
                            </label>
-                           <div className="group relative flex w-full transition-all hover:-translate-y-1 hover:scale-102">
-                              <CiFilter
-                                 className="absolute top-1/2 left-4 -translate-y-1/2 text-black"
-                                 size={24}
-                              />
 
-                              <select
-                                 value={formData.cliente}
-                                 onChange={e =>
-                                    handleInputChange('cliente', e.target.value)
-                                 }
-                                 className="input-busca-recurso w-full cursor-pointer rounded-md border-[1px] border-black/20 bg-black/10 py-2 pl-12 text-base font-semibold tracking-wider text-black italic shadow-md shadow-black select-none focus:ring-2 focus:outline-none"
-                              >
-                                 <option
-                                    value=""
-                                    className="cursor-pointer font-semibold tracking-wider text-black italic select-none"
-                                 >
-                                    Selecione um cliente
-                                 </option>
-                                 {clientes.map(
-                                    (cliente: {
-                                       cod_cliente: number;
-                                       nome_cliente: string;
-                                    }) => (
-                                       <option
-                                          key={cliente.cod_cliente}
-                                          value={cliente.cod_cliente}
-                                          className="cursor-pointer font-semibold tracking-wider text-black italic select-none"
-                                       >
-                                          {corrigirTextoCorrompido(
-                                             cliente.nome_cliente
-                                          )}
-                                       </option>
-                                    )
-                                 )}
-                              </select>
-                           </div>
+                           <DropdownCliente
+                              value={formData.cliente}
+                              onChange={value =>
+                                 handleInputChange('cliente', value)
+                              }
+                              clientes={clientes}
+                              placeholder="Selecione um cliente"
+                              error={errors.cliente}
+                              corrigirTextoCorrompido={corrigirTextoCorrompido}
+                           />
                         </div>
-                        {/* ===== */}
+                        {/* ========== */}
 
                         {/* Notificações por email */}
                         <div className="flex flex-col gap-1">
-                           <label className="text-lg font-extrabold tracking-widest text-black italic select-none">
+                           <label className="text-lg font-extrabold tracking-widest text-black select-none">
                               Notificações por Email
                            </label>
-                           <div className="flex flex-col gap-6 rounded-md border-[1px] border-black/20 bg-black/10 p-4 shadow-md shadow-black">
+                           <div className="flex flex-col gap-6 rounded-md border-t border-black/10 bg-white p-4 shadow-md shadow-black">
                               <div className="flex flex-col gap-4">
                                  {/* Input enviar email cliente */}
                                  <label className="flex items-start gap-4">
@@ -1238,19 +1122,19 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                              e.target.checked
                                           )
                                        }
-                                       className="mt-1 h-4 w-4 cursor-pointer bg-white text-blue-600 shadow-sm shadow-black"
+                                       className="mt-1 h-4 w-4 cursor-pointer bg-white text-blue-600 shadow-sm shadow-black hover:scale-125"
                                     />
                                     <div>
-                                       <span className="cursor-pointer text-base font-semibold tracking-widest text-black italic select-none">
+                                       <p className="cursor-pointer text-base font-semibold tracking-widest text-black select-none">
                                           Enviar email para o Cliente.
-                                       </span>
-                                       <p className="text-sm font-semibold tracking-wider text-slate-500 select-none">
+                                       </p>
+                                       <span className="pl-3 text-sm font-semibold tracking-widest text-slate-500 italic select-none">
                                           O Cliente receberá uma notificação
                                           sobre a atribuição.
-                                       </p>
+                                       </span>
                                     </div>
                                  </label>
-                                 {/*  */}
+                                 {/* ===== */}
 
                                  {/* Input enviar email consultor */}
                                  <label className="flex items-start gap-4">
@@ -1263,32 +1147,30 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                              e.target.checked
                                           )
                                        }
-                                       className="mt-1 h-4 w-4 cursor-pointer bg-white text-blue-600 shadow-sm shadow-black"
+                                       className="mt-1 h-4 w-4 cursor-pointer bg-white text-blue-600 shadow-sm shadow-black hover:scale-125"
                                     />
                                     <div>
-                                       <span className="cursor-pointer text-base font-semibold tracking-widest text-black italic select-none">
+                                       <p className="cursor-pointer text-base font-semibold tracking-widest text-black select-none">
                                           Enviar email para o Consultor.
-                                       </span>
-                                       <p className="text-sm font-semibold tracking-wider text-slate-500 select-none">
+                                       </p>
+                                       <span className="pl-3 text-sm font-semibold tracking-widest text-slate-500 italic select-none">
                                           O Consultor receberá uma notificação
                                           sobre a atribuição.
-                                       </p>
+                                       </span>
                                     </div>
                                  </label>
                               </div>
-                              {/* ===== */}
                            </div>
-                           {/* ===== */}
                         </div>
-                        {/* ===== */}
+                        {/* ========== */}
 
                         {/* ===== FOOTER ===== */}
-                        <footer className="flex items-center justify-end gap-8">
+                        <footer className="flex items-center justify-end gap-8 border-t-4 border-red-600 p-6">
                            {/* Botão limpar formulário */}
                            <button
                               onClick={handleLimparFormulario}
                               disabled={atribuirMutation.isPending}
-                              className="cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all hover:scale-105 hover:bg-red-800 active:scale-95"
+                              className="cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-105 hover:bg-red-800 active:scale-95"
                            >
                               Limpar
                            </button>
@@ -1300,19 +1182,19 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                               disabled={
                                  !isFormValid() || atribuirMutation.isPending
                               }
-                              className={`cursor-pointer rounded-sm border-none bg-blue-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-sm shadow-black ${
+                              className={`cursor-pointer rounded-sm border-none bg-blue-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all ${
                                  atribuirMutation.isPending || !isFormValid()
                                     ? 'disabled:cursor-not-allowed disabled:opacity-50'
-                                    : 'transition-all hover:scale-105 hover:bg-blue-800 active:scale-95'
+                                    : 'hover:scale-105 hover:bg-blue-800 active:scale-95'
                               }`}
                            >
                               {atribuirMutation.isPending ? (
-                                 <span className="flex items-center justify-center gap-2">
+                                 <span className="flex items-center justify-center gap-3">
                                     <LoadingButton size={20} />
                                     Salvando...
                                  </span>
                               ) : (
-                                 <div className="flex items-center gap-2">
+                                 <div className="flex items-center gap-3">
                                     <IoIosSave
                                        className="mr-2 inline-block"
                                        size={20}

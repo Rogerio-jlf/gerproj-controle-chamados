@@ -112,7 +112,7 @@ const EmptyState = ({
             ano === 'todos' ? '' : String(ano),
          ]
             .filter(part => part !== '')
-            .join('/')}.`}
+            .join('/')}`}
       </h3>
    </section>
 );
