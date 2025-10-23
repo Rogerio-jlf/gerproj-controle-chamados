@@ -2,35 +2,28 @@ export interface TabelaChamadoProps {
    COD_CHAMADO: number;
    DATA_CHAMADO: string;
    HORA_CHAMADO: string;
-   SOLICITACAO_CHAMADO?: string | null;
-   CONCLUSAO_CHAMADO?: string | null;
+   SOLICITACAO_CHAMADO: string | null;
+   CONCLUSAO_CHAMADO: string | null;
    STATUS_CHAMADO: string;
-   DTENVIO_CHAMADO?: string | null;
-   COD_RECURSO?: number | null;
-   CLIENTE_CHAMADO?: string | null;
-   CODTRF_CHAMADO?: number | null;
-   COD_CLIENTE?: number | null;
+   DTENVIO_CHAMADO: string | null;
+   COD_RECURSO: number | null;
+   CLIENTE_CHAMADO: string | null;
+   CODTRF_CHAMADO: number | null;
+   COD_CLIENTE: number | null;
    SOLICITACAO2_CHAMADO?: string | null;
-   ASSUNTO_CHAMADO?: string | null;
-   EMAIL_CHAMADO?: string | null;
-   PRIOR_CHAMADO: number;
-   COD_CLASSIFICACAO: number;
+   ASSUNTO_CHAMADO: string | null;
+   EMAIL_CHAMADO: string | null;
+   PRIOR_CHAMADO: number | null;
+   COD_CLASSIFICACAO: number | null;
    // =====
-   DATA_HORA_CHAMADO?: string | null;
-   // =====
-   NOME_RECURSO?: string | null;
-   // =====
-   NOME_CLIENTE?: string | null;
-   // =====
-   NOME_CLASSIFICACAO?: string | null;
-   // =====
-   NOME_TAREFA?: string | null;
-   // =====
-   TAREFA_COMPLETA?: string | null;
-   // =====
-   NOME_PROJETO?: string | null;
-   // ======
-   PROJETO_COMPLETO?: string | null;
+   DATA_HORA_CHAMADO: string | null;
+   NOME_RECURSO: string | null;
+   NOME_CLIENTE: string | null;
+   NOME_CLASSIFICACAO: string | null;
+   NOME_TAREFA: string | null;
+   TAREFA_COMPLETA: string | null;
+   NOME_PROJETO: string | null;
+   PROJETO_COMPLETO: string | null;
 }
 
 // ================================================================================

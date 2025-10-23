@@ -1,4 +1,7 @@
+// IMPORTS
 import { useState, useRef, useEffect } from 'react';
+
+// ICONS
 import { FaFilter } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import { IoIosArrowDown } from 'react-icons/io';
@@ -12,10 +15,10 @@ interface SelectProps {
 }
 
 // ================================================================================
-// COMPONENTE
+// COMPONENTE PRINCIPAL
 // ================================================================================
 export function SelectMesTabelaOS({ value, onChange }: SelectProps) {
-   const currentMonth = new Date().getMonth() + 1; // 0-11 -> 1-12
+   const currentMonth = new Date().getMonth() + 1;
    const [isOpen, setIsOpen] = useState(false);
    const dropdownRef = useRef<HTMLDivElement>(null);
 

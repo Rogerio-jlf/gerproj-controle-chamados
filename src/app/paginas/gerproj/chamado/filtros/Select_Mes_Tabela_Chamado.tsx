@@ -1,5 +1,8 @@
+// IMPORTS
 import { useState, useRef, useEffect } from 'react';
-import { FaFilter } from 'react-icons/fa6';
+
+// ICONS
+import { FaFilter } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import { IoIosArrowDown } from 'react-icons/io';
 
@@ -12,9 +15,10 @@ interface SelectProps {
 }
 
 // ================================================================================
-// COMPONENTE
+// COMPONENTE PRINCIPAL
 // ================================================================================
 export function SelectMesTabelaChamado({ value, onChange }: SelectProps) {
+   const currentMonth = new Date().getMonth() + 1;
    const [isOpen, setIsOpen] = useState(false);
    const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -57,10 +61,14 @@ export function SelectMesTabelaChamado({ value, onChange }: SelectProps) {
       setIsOpen(false);
    };
 
-   const handleClear = () => {
-      onChange('todos');
+   const handleClear = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onChange(currentMonth);
       setIsOpen(false);
    };
+
+   // Mostrar X sempre que houver um valor selecionado
+   const showClearButton = value !== undefined && value !== null;
 
    // ================================================================================
    // RENDERIZAÇÃO
@@ -76,28 +84,17 @@ export function SelectMesTabelaChamado({ value, onChange }: SelectProps) {
             {/* Input */}
             <button
                onClick={() => setIsOpen(!isOpen)}
-               className="flex w-full items-center justify-between rounded-md bg-white px-4 py-3 font-bold tracking-widest text-black italic shadow-md shadow-black transition-all duration-200 hover:scale-103 focus:scale-103 focus:ring-2 focus:ring-pink-600 focus:outline-none"
+               className="flex w-full cursor-pointer items-center justify-between rounded-md bg-white px-4 py-3 font-bold tracking-widest text-black italic shadow-lg shadow-black transition-all focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
             >
-               <span
-                  className={
-                     selectedOption?.code === 'todos'
-                        ? 'text-gray-500'
-                        : 'text-black'
-                  }
-               >
-                  {selectedOption?.name || 'Selecione o mês'}
-               </span>
+               <span className="text-black">{selectedOption?.name}</span>
                {/* ===== */}
                <div className="flex items-center gap-2">
-                  {value !== 'todos' && (
+                  {showClearButton && (
                      <span
-                        onClick={e => {
-                           e.stopPropagation();
-                           handleClear();
-                        }}
-                        className="cursor-pointer"
+                        onClick={handleClear}
+                        className="cursor-pointer text-black transition-transform hover:scale-150 hover:text-red-500 active:scale-95"
                      >
-                        <IoClose size={24} className="text-black" />
+                        <IoClose size={24} />
                      </span>
                   )}
                   <span

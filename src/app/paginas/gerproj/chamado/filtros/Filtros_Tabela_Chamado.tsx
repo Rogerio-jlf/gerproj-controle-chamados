@@ -148,15 +148,15 @@ export function FiltrosTabelaChamado({ onFiltersChange }: FiltrosProps) {
 
    return (
       <div className="flex w-full gap-6">
-         <div className="w-[250px]">
+         <div className="w-[300px]">
             <SelectAnoTabelaChamado value={ano} onChange={setAno} />
          </div>
 
-         <div className="w-[250px]">
+         <div className="w-[300px]">
             <SelectMesTabelaChamado value={mes} onChange={setMes} />
          </div>
 
-         <div className="w-[250px]">
+         <div className="w-[300px]">
             <SelectDiaTabelaChamado
                value={dia}
                onChange={handleDiaChange}

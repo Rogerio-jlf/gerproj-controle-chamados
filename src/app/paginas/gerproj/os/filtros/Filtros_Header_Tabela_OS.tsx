@@ -34,7 +34,6 @@ const SEARCHABLE_COLUMNS = [
 ] as const;
 
 const DATE_COLUMNS = ['DTINI_OS', 'DTINC_OS'] as const;
-
 const NUMERIC_COLUMNS = ['COD_OS', 'CHAMADO_OS'] as const;
 const NUMERIC_ONLY_COLUMNS = ['COD_OS', 'CODTRF_OS', 'CHAMADO_OS'] as const;
 const UPPERCASE_COLUMNS = ['FATURADO_OS', 'VALID_OS'] as const;

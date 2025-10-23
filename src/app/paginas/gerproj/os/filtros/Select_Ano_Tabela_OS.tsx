@@ -1,4 +1,7 @@
+// IMPORTS
 import { useState, useRef, useEffect } from 'react';
+
+// ICONS
 import { FaFilter } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import { IoIosArrowDown } from 'react-icons/io';
@@ -12,7 +15,7 @@ interface SelectProps {
 }
 
 // ================================================================================
-// COMPONENTE
+// COMPONENTE PRINCIPAL
 // ================================================================================
 export function SelectAnoTabelaOS({ value, onChange }: SelectProps) {
    const currentYear = new Date().getFullYear();

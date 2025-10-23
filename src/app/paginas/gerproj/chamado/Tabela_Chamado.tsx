@@ -1,7 +1,6 @@
 'use client';
-// ================================================================================
+
 // IMPORTS
-// ================================================================================
 import {
    flexRender,
    SortingState,
@@ -13,38 +12,64 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect, Suspense } from 'react';
 
-// Components
+// COMPONENTS
 import {
-   FilterInputTableHeaderDebounce,
+   FiltrosHeaderTabelaChamado,
    FilterControls,
 } from './filtros/Filtros_Header_Tabela_Chamado';
 import { IsError } from '../../../../components/IsError';
 import { IsLoading } from '../../../../components/IsLoading';
-import { TabelaOS } from '../os/Tabela_OS';
 import { SessionExpired } from '../../../../components/IsExpired';
-import { TabelaTarefas } from '../tarefas/Tabela_Tarefa';
 import { RelatorioOS } from '../os/Relatorio_OS';
 import { colunasTabelaChamados } from './Colunas_Tabela_Chamado';
-import { formatarCodNumber } from '../../../../utils/formatters';
 import { DropdownTabelaChamado } from './Dropdown_Tabela_Chamado';
+import { FiltrosTabelaChamado } from './filtros/Filtros_Tabela_Chamado';
+import { TabelaOS } from '../os/Tabela_OS';
+import { TabelaTarefas } from '../tarefas/Tabela_Tarefa';
+import { TabelaProjeto } from '../projeto/Tabela_Projeto';
 import { ModalExcluirChamado } from './modais/Modal_Deletar_Chamado';
 import { ModalAtribuirChamado } from './modais/Modal_Atribuir_Chamado';
-import { FiltrosTabelaChamado } from './filtros/Filtros_Tabela_Chamado';
 import { ModalVisualizarChamado } from './modais/Modal_Visualizar_Chamado';
+import { ModalPermitirRetroativoOsChamado } from './modais/Modal_Permitir_OS_Retroativa_Chamado';
 
-// Hooks & Types
+// FORMATTERS
+import { formatarCodNumber } from '../../../../utils/formatters';
+
+// HOOKS
 import { useAuth } from '../../../../hooks/useAuth';
+
+// TYPES
 import { TabelaChamadoProps } from '../../../../types/types';
+
+// CONTEXTS
 import { useFiltersTabelaChamado } from '../../../../contexts/Filters_Context_Tabela_Chamado';
 
-// Icons
+// ICONS
 import { IoCall } from 'react-icons/io5';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
-import { ModalPermitirRetroativoOsChamado } from './modais/Modal_Permitir_OS_Retroativa_Chamado';
-import { TabelaProjeto } from '../projeto/Tabela_Projeto';
+
+// ================================================================================
+// CONSTANTES
+// ================================================================================
+const MODAL_MAX_HEIGHT = 'calc(100vh - 486px)';
+const DEBOUNCE_DELAY = 500;
+const CACHE_TIME = 1000 * 60 * 5;
+const PAGE_SIZE_OPTIONS = [20, 50, 100];
+
+const COLUMN_WIDTHS: Record<string, string> = {
+   COD_CHAMADO: '7%',
+   DATA_CHAMADO: '7%',
+   ASSUNTO_CHAMADO: '23%',
+   STATUS_CHAMADO: '14%',
+   DTENVIO_CHAMADO: '10%',
+   NOME_RECURSO: '12%',
+   NOME_CLIENTE: '12%',
+   EMAIL_CHAMADO: '10%',
+   actions: '5%',
+};
 
 // ================================================================================
 // INTERFACES
@@ -64,23 +89,69 @@ interface ApiResponse {
 }
 
 // ================================================================================
+// COMPONENTES AUXILIARES
+// ================================================================================
+const EmptyState = ({
+   ano,
+   mes,
+   dia,
+}: {
+   ano: number | 'todos';
+   mes: number | 'todos';
+   dia: number | 'todos';
+}) => (
+   <section className="bg-black py-72 text-center">
+      <FaExclamationTriangle
+         className="mx-auto mb-6 text-yellow-500"
+         size={80}
+      />
+      <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
+         {`Nenhum Chamado foi encontrado para o período: ${[
+            dia === 'todos' ? '' : String(dia).padStart(2, '0'),
+            mes === 'todos' ? '' : String(mes).padStart(2, '0'),
+            ano === 'todos' ? '' : String(ano),
+         ]
+            .filter(part => part !== '')
+            .join('/')}.`}
+      </h3>
+   </section>
+);
+
+const NoResultsState = ({
+   totalActiveFilters,
+   clearFilters,
+}: {
+   totalActiveFilters: number;
+   clearFilters: () => void;
+}) => (
+   <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-72 text-center">
+      <FaFilterCircleXmark className="mx-auto text-red-600" size={100} />
+      <h3 className="text-3xl font-extrabold tracking-wider text-white italic select-none">
+         Nenhum registro encontrado para os filtros aplicados.
+      </h3>
+      <p className="text-base font-semibold tracking-wider text-white italic select-none">
+         Tente ajustar os filtros ou limpe-os para visualizar registros.
+      </p>
+      {totalActiveFilters > 0 && (
+         <button
+            onClick={clearFilters}
+            className="cursor-pointer rounded-md border-none bg-red-600 px-6 py-2 text-base font-extrabold tracking-widest text-white italic shadow-md shadow-black transition-all hover:scale-105 hover:bg-red-700 active:scale-95"
+         >
+            Limpar Filtros
+         </button>
+      )}
+   </div>
+);
+
+// ================================================================================
 // FUNÇÕES UTILITÁRIAS
 // ================================================================================
 function getColumnWidth(columnId: string): string {
-   const widthMap: Record<string, string> = {
-      COD_CHAMADO: '7%',
-      DATA_CHAMADO: '7%',
-      ASSUNTO_CHAMADO: '24%',
-      STATUS_CHAMADO: '16%',
-      DTENVIO_CHAMADO: '10%',
-      NOME_RECURSO: '12%',
-      EMAIL_CHAMADO: '18%',
-      actions: '6%',
-   };
-   return widthMap[columnId] || 'auto';
+   return COLUMN_WIDTHS[columnId] || 'auto';
 }
+// ==========
 
-function useDebouncedValue<T>(value: T, delay: number = 500): T {
+function useDebouncedValue<T>(value: T, delay: number = DEBOUNCE_DELAY): T {
    const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
    useEffect(() => {
@@ -103,8 +174,8 @@ function TabelaChamadoContent() {
    // ================================================================================
    const router = useRouter();
    const searchParams = useSearchParams();
-   const { user, loading: isAuthLoading, isTokenExpired } = useAuth();
    const queryClient = useQueryClient();
+   const { user, loading: isAuthLoading, isTokenExpired } = useAuth();
    const { filters, setFilters } = useFiltersTabelaChamado();
    const { ano, mes, dia } = filters;
    const token =
@@ -113,24 +184,77 @@ function TabelaChamadoContent() {
    // ================================================================================
    // ESTADOS - FILTROS (INPUTS SEM DEBOUNCE)
    // ================================================================================
-   const [inputFilterCodChamado, setInputFilterCodChamado] = useState('');
-   const [inputFilterDataChamado, setInputFilterDataChamado] = useState('');
-   const [inputFilterAssunto, setInputFilterAssunto] = useState('');
-   const [inputFilterStatus, setInputFilterStatus] = useState('');
-   const [inputFilterDataEnvio, setInputFilterDataEnvio] = useState('');
-   const [inputFilterNomeRecurso, setInputFilterNomeRecurso] = useState('');
-   const [inputFilterEmail, setInputFilterEmail] = useState('');
-   const [globalFilter, setGlobalFilter] = useState('');
-   const [codChamadoFilter, setCodChamadoFilter] = useState('');
+   const [inputFilterCOD_CHAMADO, setInputFilterCOD_CHAMADO] = useState('');
+   const [inputFilterDATA_CHAMADO, setInputFilterDATA_CHAMADO] = useState('');
+   const [inputFilterASSUNTO_CHAMADO, setInputFilterASSUNTO_CHAMADO] =
+      useState('');
+   const [inputFilterSTATUS_CHAMADO, setInputFilterSTATUS_CHAMADO] =
+      useState('');
+   const [inputFilterDTENVIO_CHAMADO, setInputFilterDTENVIO_CHAMADO] =
+      useState('');
+   const [inputFilterNOME_RECURSO, setInputFilterNOME_RECURSO] = useState('');
+   const [inputFilterNOME_CLIENTE, setInputFilterNOME_CLIENTE] = useState('');
+   const [inputFilterEMAIL_CHAMADO, setInputFilterEMAIL_CHAMADO] = useState('');
 
    // ESTADOS - FILTROS (COM DEBOUNCE)
-   const filterCodChamado = useDebouncedValue(inputFilterCodChamado, 500);
-   const filterDataChamado = useDebouncedValue(inputFilterDataChamado, 500);
-   const filterAssunto = useDebouncedValue(inputFilterAssunto, 500);
-   const filterStatus = useDebouncedValue(inputFilterStatus, 500);
-   const filterDataEnvio = useDebouncedValue(inputFilterDataEnvio, 500);
-   const filterNomeRecurso = useDebouncedValue(inputFilterNomeRecurso, 500);
-   const filterEmail = useDebouncedValue(inputFilterEmail, 500);
+   const filterCOD_CHAMADO = useDebouncedValue(inputFilterCOD_CHAMADO);
+   const filterDATA_CHAMADO = useDebouncedValue(inputFilterDATA_CHAMADO);
+   const filterASSUNTO_CHAMADO = useDebouncedValue(inputFilterASSUNTO_CHAMADO);
+   const filterSTATUS_CHAMADO = useDebouncedValue(inputFilterSTATUS_CHAMADO);
+   const filterDTENVIO_CHAMADO = useDebouncedValue(inputFilterDTENVIO_CHAMADO);
+   const filterNOME_RECURSO = useDebouncedValue(inputFilterNOME_RECURSO);
+   const filterNOME_CLIENTE = useDebouncedValue(inputFilterNOME_CLIENTE);
+   const filterEMAIL_CHAMADO = useDebouncedValue(inputFilterEMAIL_CHAMADO);
+
+   // ================================================================================
+   // MAPEAMENTO DE FILTROS
+   // ================================================================================
+   const FILTER_MAP = useMemo(
+      () => ({
+         COD_CHAMADO: {
+            state: inputFilterCOD_CHAMADO,
+            setter: setInputFilterCOD_CHAMADO,
+         },
+         DATA_CHAMADO: {
+            state: inputFilterDATA_CHAMADO,
+            setter: setInputFilterDATA_CHAMADO,
+         },
+         ASSUNTO_CHAMADO: {
+            state: inputFilterASSUNTO_CHAMADO,
+            setter: setInputFilterASSUNTO_CHAMADO,
+         },
+         STATUS_CHAMADO: {
+            state: inputFilterSTATUS_CHAMADO,
+            setter: setInputFilterSTATUS_CHAMADO,
+         },
+         DTENVIO_CHAMADO: {
+            state: inputFilterDTENVIO_CHAMADO,
+            setter: setInputFilterDTENVIO_CHAMADO,
+         },
+         NOME_RECURSO: {
+            state: inputFilterNOME_RECURSO,
+            setter: setInputFilterNOME_RECURSO,
+         },
+         NOME_CLIENTE: {
+            state: inputFilterNOME_CLIENTE,
+            setter: setInputFilterNOME_CLIENTE,
+         },
+         EMAIL_CHAMADO: {
+            state: inputFilterEMAIL_CHAMADO,
+            setter: setInputFilterEMAIL_CHAMADO,
+         },
+      }),
+      [
+         inputFilterCOD_CHAMADO,
+         inputFilterDATA_CHAMADO,
+         inputFilterASSUNTO_CHAMADO,
+         inputFilterSTATUS_CHAMADO,
+         inputFilterDTENVIO_CHAMADO,
+         inputFilterNOME_RECURSO,
+         inputFilterNOME_CLIENTE,
+         inputFilterEMAIL_CHAMADO,
+      ]
+   );
 
    // ================================================================================
    // ESTADOS - PAGINAÇÃO
@@ -146,7 +270,9 @@ function TabelaChamadoContent() {
    ]);
    const [showFilters, setShowFilters] = useState(false);
 
-   // Gerenciar activeView baseado em searchParams
+   // ================================================================================
+   // ESTADOS - MODAIS E VIEWS
+   // ================================================================================
    const activeView = searchParams.get('modal') as
       | 'chamados'
       | 'os'
@@ -155,12 +281,6 @@ function TabelaChamadoContent() {
       | 'projetos'
       | null;
 
-   // ================================================================================
-   // ESTADOS - MODAIS E COMPONENTES
-   // ================================================================================
-   const [openTabelaTarefa, setOpenTabelaTarefa] = useState(false);
-   const [openTabelaOs, setOpenTabelaOs] = useState(false);
-   const [openTabelaProjeto, setOpenTabelaProjeto] = useState(false);
    const [OpenModalVizualizarChamado, setOpenModalVizualizarChamado] =
       useState(false);
    const [openModalAtribuirChamado, setOpenModalAtribuirChamado] =
@@ -180,100 +300,95 @@ function TabelaChamadoContent() {
    // COMPUTED VALUES - FILTROS
    // ================================================================================
    const totalActiveFilters = useMemo(() => {
-      let count = 0;
-      if (globalFilter && globalFilter.trim()) count += 1;
-      if (filterCodChamado && filterCodChamado.trim()) count += 1;
-      if (filterDataChamado && filterDataChamado.trim()) count += 1;
-      if (filterAssunto && filterAssunto.trim()) count += 1;
-      if (filterStatus && filterStatus.trim()) count += 1;
-      if (filterDataEnvio && filterDataEnvio.trim()) count += 1;
-      if (filterNomeRecurso && filterNomeRecurso.trim()) count += 1;
-      if (filterEmail && filterEmail.trim()) count += 1;
-      if (codChamadoFilter && codChamadoFilter.trim()) count += 1;
-      return count;
+      const filters = [
+         filterCOD_CHAMADO,
+         filterDATA_CHAMADO,
+         filterASSUNTO_CHAMADO,
+         filterSTATUS_CHAMADO,
+         filterDTENVIO_CHAMADO,
+         filterNOME_RECURSO,
+         filterNOME_CLIENTE,
+         filterEMAIL_CHAMADO,
+      ];
+      return filters.filter(f => f?.trim()).length;
    }, [
-      globalFilter,
-      filterCodChamado,
-      filterDataChamado,
-      filterAssunto,
-      filterStatus,
-      filterDataEnvio,
-      filterNomeRecurso,
-      filterEmail,
-      codChamadoFilter,
+      filterCOD_CHAMADO,
+      filterDATA_CHAMADO,
+      filterASSUNTO_CHAMADO,
+      filterSTATUS_CHAMADO,
+      filterDTENVIO_CHAMADO,
+      filterNOME_RECURSO,
+      filterNOME_CLIENTE,
+      filterEMAIL_CHAMADO,
    ]);
 
    // ================================================================================
    // QUERY PARAMS E API
    // ================================================================================
-   const enabled = !!ano && !!mes && !!token && !!user;
+   const enabled = useMemo(() => {
+      return !!(
+         (ano === 'todos' || typeof ano === 'number') &&
+         (mes === 'todos' || typeof mes === 'number') &&
+         (dia === 'todos' || typeof dia === 'number') &&
+         token &&
+         user
+      );
+   }, [ano, mes, dia, token, user]);
 
    const queryParams = useMemo(() => {
       if (!user) return new URLSearchParams();
+
       const params = new URLSearchParams({
-         ano: String(ano),
-         mes: String(mes),
          page: String(currentPage),
          limit: String(pageSize),
       });
 
-      // ✅ ADICIONE O DIA AQUI
-      if (dia !== 'todos') {
-         params.append('dia', String(dia));
-      }
+      // Filtros de data
+      params.append('ano', ano === 'todos' ? 'todos' : String(ano));
+      params.append('mes', mes === 'todos' ? 'todos' : String(mes));
+      params.append('dia', dia === 'todos' ? 'todos' : String(dia));
 
-      if (globalFilter && globalFilter.trim()) {
-         params.append('globalFilter', globalFilter.trim());
-      }
-      if (filterCodChamado && filterCodChamado.trim()) {
-         params.append('filter_COD_CHAMADO', filterCodChamado.trim());
-      }
-      if (filterDataChamado && filterDataChamado.trim()) {
-         params.append('filter_DATA_CHAMADO', filterDataChamado.trim());
-      }
-      if (filterAssunto && filterAssunto.trim()) {
-         params.append('filter_ASSUNTO_CHAMADO', filterAssunto.trim());
-      }
-      if (filterStatus && filterStatus.trim()) {
-         params.append('filter_STATUS_CHAMADO', filterStatus.trim());
-      }
-      if (filterDataEnvio && filterDataEnvio.trim()) {
-         params.append('filter_DTENVIO_CHAMADO', filterDataEnvio.trim());
-      }
-      if (filterNomeRecurso && filterNomeRecurso.trim()) {
-         params.append('filter_NOME_RECURSO', filterNomeRecurso.trim());
-      }
-      if (filterEmail && filterEmail.trim()) {
-         params.append('filter_EMAIL_RECURSO', filterEmail.trim());
-      }
-      if (codChamadoFilter && codChamadoFilter.trim()) {
-         params.append('codChamado', codChamadoFilter.trim());
-      }
+      // Filtros de coluna
+      const filterMappings = [
+         { filter: filterCOD_CHAMADO, param: 'filter_COD_CHAMADO' },
+         { filter: filterDATA_CHAMADO, param: 'filter_DATA_CHAMADO' },
+         { filter: filterASSUNTO_CHAMADO, param: 'filter_ASSUNTO_CHAMADO' },
+         { filter: filterSTATUS_CHAMADO, param: 'filter_STATUS_CHAMADO' },
+         { filter: filterDTENVIO_CHAMADO, param: 'filter_DTENVIO_CHAMADO' },
+         { filter: filterNOME_RECURSO, param: 'filter_NOME_RECURSO' },
+         { filter: filterNOME_CLIENTE, param: 'filter_NOME_CLIENTE' },
+         { filter: filterEMAIL_CHAMADO, param: 'filter_EMAIL_CHAMADO' },
+      ];
+
+      filterMappings.forEach(({ filter, param }) => {
+         if (filter && filter.trim()) {
+            params.append(param, filter.trim());
+         }
+      });
 
       return params;
    }, [
-      ano,
-      mes,
-      dia, // ✅ Adicione 'dia' aqui também
       user,
       currentPage,
       pageSize,
-      globalFilter,
-      filterCodChamado,
-      filterDataChamado,
-      filterAssunto,
-      filterStatus,
-      filterDataEnvio,
-      filterNomeRecurso,
-      filterEmail,
-      codChamadoFilter,
+      ano,
+      mes,
+      dia,
+      filterCOD_CHAMADO,
+      filterDATA_CHAMADO,
+      filterASSUNTO_CHAMADO,
+      filterSTATUS_CHAMADO,
+      filterDTENVIO_CHAMADO,
+      filterNOME_RECURSO,
+      filterNOME_CLIENTE,
+      filterEMAIL_CHAMADO,
    ]);
 
    async function fetchChamados(
       params: URLSearchParams,
       token: string
    ): Promise<ApiResponse> {
-      const res = await fetch(`/api/chamado/tabela-chamado?${params}`, {
+      const res = await fetch(`/api/chamado/tabela?${params}`, {
          headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -309,7 +424,7 @@ function TabelaChamadoContent() {
       queryKey: ['chamadosAbertos', queryParams.toString(), token],
       queryFn: () => fetchChamados(queryParams, token!),
       enabled,
-      staleTime: 1000 * 60 * 5,
+      staleTime: CACHE_TIME,
       retry: 2,
    });
 
@@ -322,14 +437,14 @@ function TabelaChamadoContent() {
    useEffect(() => {
       setCurrentPage(1);
    }, [
-      filterCodChamado,
-      filterDataChamado,
-      filterAssunto,
-      filterStatus,
-      filterDataEnvio,
-      filterNomeRecurso,
-      filterEmail,
-      globalFilter,
+      filterCOD_CHAMADO,
+      filterDATA_CHAMADO,
+      filterASSUNTO_CHAMADO,
+      filterSTATUS_CHAMADO,
+      filterDTENVIO_CHAMADO,
+      filterNOME_RECURSO,
+      filterNOME_CLIENTE,
+      filterEMAIL_CHAMADO,
    ]);
 
    // ================================================================================
@@ -350,15 +465,14 @@ function TabelaChamadoContent() {
    // HANDLERS - FILTROS
    // ================================================================================
    const clearFilters = useCallback(() => {
-      setGlobalFilter('');
-      setInputFilterCodChamado('');
-      setInputFilterDataChamado('');
-      setInputFilterAssunto('');
-      setInputFilterStatus('');
-      setInputFilterDataEnvio('');
-      setInputFilterNomeRecurso('');
-      setInputFilterEmail('');
-      setCodChamadoFilter('');
+      setInputFilterCOD_CHAMADO('');
+      setInputFilterDATA_CHAMADO('');
+      setInputFilterASSUNTO_CHAMADO('');
+      setInputFilterSTATUS_CHAMADO('');
+      setInputFilterDTENVIO_CHAMADO('');
+      setInputFilterNOME_RECURSO('');
+      setInputFilterNOME_CLIENTE('');
+      setInputFilterEMAIL_CHAMADO('');
       setCurrentPage(1);
    }, []);
 
@@ -389,7 +503,7 @@ function TabelaChamadoContent() {
    }, []);
 
    // ================================================================================
-   // HANDLERS - MODAIS
+   // HANDLERS - MODAIS (VISUALIZAR)
    // ================================================================================
    const handleOpenModalVisualizarChamado = useCallback(
       (codChamado: number) => {
@@ -401,13 +515,26 @@ function TabelaChamadoContent() {
       },
       [data]
    );
-   // ==========
+
    const handleCloseModalVisualizarChamado = useCallback(() => {
       setOpenModalVizualizarChamado(false);
       setSelectedChamado(null);
    }, []);
-   // ====================
 
+   // ================================================================================
+   // HANDLERS - MODAIS (ATRIBUIR)
+   // ================================================================================
+   const handleOpenModalAtribuirChamado = useCallback(
+      (chamado: TabelaChamadoProps) => {
+         setSelectedChamadoParaAtribuir(chamado);
+         setOpenModalAtribuirChamado(true);
+      },
+      []
+   );
+
+   // ================================================================================
+   // HANDLERS - MODAIS (RETROATIVA)
+   // ================================================================================
    const handleOpenModalPermitirOsRetroativa = useCallback(
       (codChamado: number) => {
          const chamado = data?.find(c => c.COD_CHAMADO === codChamado);
@@ -417,17 +544,6 @@ function TabelaChamadoContent() {
          }
       },
       [data]
-   );
-
-   // ================================================================================
-   // HANDLERS - MODAIS (ATRIBUIR CHAMADO)
-   // ================================================================================
-   const handleOpenModalAtribuirChamado = useCallback(
-      (chamado: TabelaChamadoProps) => {
-         setSelectedChamadoParaAtribuir(chamado);
-         setOpenModalAtribuirChamado(true);
-      },
-      []
    );
 
    // ================================================================================
@@ -452,63 +568,21 @@ function TabelaChamadoContent() {
    }, [queryClient, currentPage, data, handleCloseModalExcluirChamado]);
 
    // ================================================================================
-   // HANDLERS - STATUS
-   // ================================================================================
-   const updateStatus = useCallback(
-      async (
-         codChamado: number,
-         newStatus: string,
-         codClassificacao?: number,
-         codTarefa?: number
-      ) => {
-         try {
-            const response = await fetch(
-               `/api/atualizar-status-chamado/${codChamado}`,
-               {
-                  method: 'POST',
-                  headers: {
-                     Authorization: `Bearer ${token}`,
-                     'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                     status: newStatus,
-                     codClassificacao,
-                     codTarefa,
-                  }),
-               }
-            );
-
-            if (!response.ok) {
-               const errorData = await response.json();
-               throw new Error(errorData.error || 'Erro ao atualizar status');
-            }
-
-            queryClient.invalidateQueries({ queryKey: ['chamadosAbertos'] });
-
-            return response.json();
-         } catch (error) {
-            console.error('Erro ao atualizar status:', error);
-            throw error;
-         }
-      },
-      [token, queryClient]
-   );
-
-   // ================================================================================
    // CONFIGURAÇÃO DA TABELA
    // ================================================================================
    const colunas = useMemo(
       () =>
          colunasTabelaChamados({
-            onTabelaOS: () => setOpenTabelaOs(true),
-            onTabelaTarefa: () => setOpenTabelaTarefa(true),
-            onTabelaProjeto: () => setOpenTabelaProjeto(true),
+            onTabelaOS: () => handleOpenView('os'),
+            onTabelaTarefa: () => handleOpenView('tarefas'),
+            onTabelaProjeto: () => handleOpenView('projetos'),
             onVisualizarChamado: handleOpenModalVisualizarChamado,
             onAtribuirChamado: handleOpenModalAtribuirChamado,
             onExcluirChamado: handleOpenModalExcluirChamado,
             onPermitirRetroativa: handleOpenModalPermitirOsRetroativa,
          }),
       [
+         handleOpenView,
          handleOpenModalVisualizarChamado,
          handleOpenModalAtribuirChamado,
          handleOpenModalExcluirChamado,
@@ -521,10 +595,8 @@ function TabelaChamadoContent() {
       columns: colunas,
       getCoreRowModel: getCoreRowModel(),
       getSortedRowModel: getSortedRowModel(),
-      onGlobalFilterChange: setGlobalFilter,
       onSortingChange: setSorting,
       state: {
-         globalFilter,
          sorting,
       },
       manualPagination: true,
@@ -542,6 +614,10 @@ function TabelaChamadoContent() {
       return <SessionExpired isTokenExpired={isTokenExpired} />;
    }
 
+   if (!user || !token) {
+      return <IsError error={new Error('Usuário não autenticado.')} />;
+   }
+
    if (isError) {
       return <IsError error={error as Error} />;
    }
@@ -553,10 +629,9 @@ function TabelaChamadoContent() {
       <div className="flex items-center justify-center">
          {/* VIEW DE CHAMADOS */}
          {(!activeView || activeView === 'chamados') && (
-            <div className="animate-in slide-in-from-bottom-4 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl shadow-md shadow-black transition-all duration-500 ease-out">
+            <div className="animate-in slide-in-from-bottom-4 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl shadow-xl shadow-black transition-all duration-500 ease-out">
                {/* HEADER */}
                <header className="flex flex-col gap-6 bg-white/50 p-6">
-                  {/* HEADER */}
                   <div className="flex items-center justify-between gap-8">
                      <div className="flex items-center justify-center gap-6">
                         <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
@@ -587,7 +662,7 @@ function TabelaChamadoContent() {
 
                   {/* FILTROS HEADER */}
                   <div className="flex items-center gap-6">
-                     <div className="flex w-[800px] items-center">
+                     <div className="flex w-[1000px] items-center">
                         <FiltrosTabelaChamado
                            onFiltersChange={handleFiltersChange}
                         />
@@ -608,7 +683,7 @@ function TabelaChamadoContent() {
                <main className="h-full w-full overflow-hidden bg-black">
                   <div
                      className="h-full overflow-y-auto"
-                     style={{ maxHeight: 'calc(100vh - 500px)' }}
+                     style={{ maxHeight: MODAL_MAX_HEIGHT }}
                   >
                      <table className="w-full table-fixed border-collapse">
                         {/* CABEÇALHO DA TABELA */}
@@ -618,7 +693,7 @@ function TabelaChamadoContent() {
                                  {headerGroup.headers.map(header => (
                                     <th
                                        key={header.id}
-                                       className="bg-teal-800 py-6 font-extrabold tracking-wider text-white uppercase select-none"
+                                       className="bg-teal-800 py-6 font-extrabold tracking-wider text-white select-none"
                                        style={{
                                           width: getColumnWidth(
                                              header.column.id
@@ -636,7 +711,7 @@ function TabelaChamadoContent() {
                               </tr>
                            ))}
 
-                           {/* FILTROS HEADER TABELA */}
+                           {/* ===== FILTROS DA TABELA ===== */}
                            {showFilters && (
                               <tr>
                                  {table.getAllColumns().map(column => (
@@ -647,75 +722,19 @@ function TabelaChamadoContent() {
                                           width: getColumnWidth(column.id),
                                        }}
                                     >
-                                       {column.id === 'COD_CHAMADO' && (
-                                          <FilterInputTableHeaderDebounce
-                                             value={inputFilterCodChamado}
-                                             onChange={value =>
-                                                setInputFilterCodChamado(
-                                                   String(value)
-                                                )
+                                       {column.id in FILTER_MAP && (
+                                          <FiltrosHeaderTabelaChamado
+                                             value={
+                                                FILTER_MAP[
+                                                   column.id as keyof typeof FILTER_MAP
+                                                ].state
                                              }
-                                          />
-                                       )}
-                                       {column.id === 'DATA_CHAMADO' && (
-                                          <FilterInputTableHeaderDebounce
-                                             value={inputFilterDataChamado}
                                              onChange={value =>
-                                                setInputFilterDataChamado(
-                                                   String(value)
-                                                )
+                                                FILTER_MAP[
+                                                   column.id as keyof typeof FILTER_MAP
+                                                ].setter(String(value))
                                              }
-                                             type="text"
-                                          />
-                                       )}
-                                       {column.id === 'ASSUNTO_CHAMADO' && (
-                                          <FilterInputTableHeaderDebounce
-                                             value={inputFilterAssunto}
-                                             onChange={value =>
-                                                setInputFilterAssunto(
-                                                   String(value)
-                                                )
-                                             }
-                                          />
-                                       )}
-                                       {column.id === 'STATUS_CHAMADO' && (
-                                          <FilterInputTableHeaderDebounce
-                                             value={inputFilterStatus}
-                                             onChange={value =>
-                                                setInputFilterStatus(
-                                                   String(value)
-                                                )
-                                             }
-                                          />
-                                       )}
-                                       {column.id === 'DTENVIO_CHAMADO' && (
-                                          <FilterInputTableHeaderDebounce
-                                             value={inputFilterDataEnvio}
-                                             onChange={value =>
-                                                setInputFilterDataEnvio(
-                                                   String(value)
-                                                )
-                                             }
-                                          />
-                                       )}
-                                       {column.id === 'NOME_RECURSO' && (
-                                          <FilterInputTableHeaderDebounce
-                                             value={inputFilterNomeRecurso}
-                                             onChange={value =>
-                                                setInputFilterNomeRecurso(
-                                                   String(value)
-                                                )
-                                             }
-                                          />
-                                       )}
-                                       {column.id === 'EMAIL_CHAMADO' && (
-                                          <FilterInputTableHeaderDebounce
-                                             value={inputFilterEmail}
-                                             onChange={value =>
-                                                setInputFilterEmail(
-                                                   String(value)
-                                                )
-                                             }
+                                             columnId={column.id}
                                           />
                                        )}
                                     </th>
@@ -734,7 +753,7 @@ function TabelaChamadoContent() {
                                     className={`group transition-all ${
                                        rowIndex % 2 === 0
                                           ? 'bg-slate-800'
-                                          : 'bg-slate-800'
+                                          : 'bg-slate-700'
                                     }`}
                                  >
                                     {row.getVisibleCells().map(cell => (
@@ -757,12 +776,46 @@ function TabelaChamadoContent() {
                                     ))}
                                  </tr>
                               ))}
+                           {/* CÉLULAS VAZIAS PARA PREENCHER O ESPAÇO */}
+                           {!isLoading &&
+                              table.getRowModel().rows.length > 0 &&
+                              Array.from({
+                                 length: Math.max(
+                                    0,
+                                    pageSize - table.getRowModel().rows.length
+                                 ),
+                              }).map((_, index) => (
+                                 <tr
+                                    key={`empty-${index}`}
+                                    className={`${
+                                       (table.getRowModel().rows.length +
+                                          index) %
+                                          2 ===
+                                       0
+                                          ? 'bg-slate-800'
+                                          : 'bg-slate-700'
+                                    }`}
+                                 >
+                                    {table.getAllColumns().map(column => (
+                                       <td
+                                          key={column.id}
+                                          className="border border-white/30 bg-black p-2"
+                                          style={{
+                                             width: getColumnWidth(column.id),
+                                             height: '54px', // Altura aproximada de uma linha
+                                          }}
+                                       >
+                                          &nbsp;
+                                       </td>
+                                    ))}
+                                 </tr>
+                              ))}
                         </tbody>
                      </table>
                   </div>
                </main>
 
-               {/* PAGINAÇÃO DA API */}
+               {/* PAGINAÇÃO */}
                {paginationInfo && paginationInfo.totalRecords > 0 && (
                   <div className="bg-white/70 px-12 py-4">
                      <div className="flex items-center justify-between">
@@ -794,9 +847,9 @@ function TabelaChamadoContent() {
                                  onChange={e =>
                                     handlePageSizeChange(Number(e.target.value))
                                  }
-                                 className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none"
+                                 className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
                               >
-                                 {[20, 50, 100].map(size => (
+                                 {PAGE_SIZE_OPTIONS.map(size => (
                                     <option
                                        key={size}
                                        value={size}
@@ -813,7 +866,8 @@ function TabelaChamadoContent() {
                               <button
                                  onClick={() => handlePageChange(1)}
                                  disabled={!paginationInfo.hasPrevPage}
-                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                 aria-label="Ir para primeira página"
+                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                  <FiChevronsLeft
                                     className="text-black group-disabled:text-red-500"
@@ -826,7 +880,8 @@ function TabelaChamadoContent() {
                                     handlePageChange(currentPage - 1)
                                  }
                                  disabled={!paginationInfo.hasPrevPage}
-                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                 aria-label="Página anterior"
+                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                  <MdChevronLeft
                                     className="text-black group-disabled:text-red-500"
@@ -844,7 +899,8 @@ function TabelaChamadoContent() {
                                              Number(e.target.value)
                                           )
                                        }
-                                       className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none"
+                                       aria-label="Selecionar página"
+                                       className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
                                     >
                                        {Array.from(
                                           { length: paginationInfo.totalPages },
@@ -874,7 +930,8 @@ function TabelaChamadoContent() {
                                     handlePageChange(currentPage + 1)
                                  }
                                  disabled={!paginationInfo.hasNextPage}
-                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                 aria-label="Próxima página"
+                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                  <MdChevronRight
                                     className="text-black group-disabled:text-red-500"
@@ -887,7 +944,8 @@ function TabelaChamadoContent() {
                                     handlePageChange(paginationInfo.totalPages)
                                  }
                                  disabled={!paginationInfo.hasNextPage}
-                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-sm shadow-black transition-all hover:-translate-y-1 hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                 aria-label="Ir para última página"
+                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                  <FiChevronsRight
                                     className="text-black group-disabled:text-red-500"
@@ -900,45 +958,19 @@ function TabelaChamadoContent() {
                   </div>
                )}
 
-               {/* MENSAGEM QUANDO NÃO HÁ CHAMADOS */}
-               {(!paginationInfo || paginationInfo.totalRecords === 0) &&
-                  !isLoading && (
-                     <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-64 text-center">
-                        <FaExclamationTriangle
-                           className="mx-auto text-yellow-500"
-                           size={100}
-                        />
-                        <h3 className="text-3xl font-extrabold tracking-wider text-white italic select-none">
-                           {`Nenhum Chamado foi encontrado para o período: ${dia === 'todos' ? '' : String(dia).padStart(2, '0')}/${mes === 'todos' ? '' : String(mes).padStart(2, '0')}/${ano === 'todos' ? '' : ano}.`}
-                        </h3>
-                     </div>
-                  )}
+               {/* ===== MENSAGEM QUANDO NÃO HÁ CHAMADOS ===== */}
+               {data && data.length === 0 && !isLoading && (
+                  <EmptyState ano={ano} mes={mes} dia={dia} />
+               )}
 
                {/* MENSAGEM QUANDO OS FILTROS NÃO RETORNAM RESULTADOS */}
                {paginationInfo &&
                   paginationInfo.totalRecords > 0 &&
                   table.getFilteredRowModel().rows.length === 0 && (
-                     <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-64 text-center">
-                        <FaFilterCircleXmark
-                           className="mx-auto text-red-600"
-                           size={100}
-                        />
-                        <h3 className="text-3xl font-extrabold tracking-wider text-white italic select-none">
-                           Nenhum registro encontrado para os filtros aplicados.
-                        </h3>
-                        <p className="text-base font-semibold tracking-wider text-white italic select-none">
-                           Tente ajustar os filtros ou limpe-os para visualizar
-                           registros.
-                        </p>
-                        {totalActiveFilters > 0 && (
-                           <button
-                              onClick={clearFilters}
-                              className="cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-wider text-white shadow-sm shadow-black transition-all hover:scale-105 hover:bg-red-800 active:scale-95"
-                           >
-                              Limpar Filtros
-                           </button>
-                        )}
-                     </div>
+                     <NoResultsState
+                        totalActiveFilters={totalActiveFilters}
+                        clearFilters={clearFilters}
+                     />
                   )}
             </div>
          )}
@@ -958,67 +990,59 @@ function TabelaChamadoContent() {
             <RelatorioOS isOpen={true} onClose={handleCloseView} />
          )}
 
-         {/* VIEW DROPDOWN DO RELATÓRIO DE PROJETOS */}
+         {/* VIEW DROPDOWN DA TABELA DE PROJETOS */}
          {activeView === 'projetos' && (
             <TabelaProjeto isOpen={true} onClose={handleCloseView} />
          )}
 
-         {/* TABELA OS */}
-         <TabelaOS
-            isOpen={openTabelaOs}
-            onClose={() => setOpenTabelaOs(false)}
-         />
-
-         {/* TABELA TAREFAS */}
-         <TabelaTarefas
-            isOpen={openTabelaTarefa}
-            onClose={() => setOpenTabelaTarefa(false)}
-         />
-
-         {/* TABELA PROJETOS */}
-         <TabelaProjeto
-            isOpen={openTabelaProjeto}
-            onClose={() => setOpenTabelaProjeto(false)}
-         />
-
          {/* MODAL VISUALIZAR CHAMADO */}
-         <ModalVisualizarChamado
-            isOpen={OpenModalVizualizarChamado}
-            onClose={handleCloseModalVisualizarChamado}
-            chamado={selectedChamado}
-         />
+         {OpenModalVizualizarChamado && selectedChamado && (
+            <ModalVisualizarChamado
+               isOpen={OpenModalVizualizarChamado}
+               onClose={handleCloseModalVisualizarChamado}
+               chamado={selectedChamado}
+            />
+         )}
 
          {/* MODAL ATRIBUIR CHAMADO */}
-         <ModalAtribuirChamado
-            isOpen={openModalAtribuirChamado}
-            onClose={() => setOpenModalAtribuirChamado(false)}
-            chamado={selectedChamadoParaAtribuir}
-         />
+         {openModalAtribuirChamado && selectedChamadoParaAtribuir && (
+            <ModalAtribuirChamado
+               isOpen={openModalAtribuirChamado}
+               onClose={() => setOpenModalAtribuirChamado(false)}
+               chamado={selectedChamadoParaAtribuir}
+            />
+         )}
 
          {/* MODAL EXCLUIR CHAMADO */}
-         <ModalExcluirChamado
-            isOpen={!!selectedCodChamadoParaExcluir}
-            onClose={handleCloseModalExcluirChamado}
-            codChamado={selectedCodChamadoParaExcluir}
-            onSuccess={handleExcluirChamadoSuccess}
-         />
+         {selectedCodChamadoParaExcluir && (
+            <ModalExcluirChamado
+               isOpen={!!selectedCodChamadoParaExcluir}
+               onClose={handleCloseModalExcluirChamado}
+               codChamado={selectedCodChamadoParaExcluir}
+               onSuccess={handleExcluirChamadoSuccess}
+            />
+         )}
 
          {/* MODAL PERMITIR OS RETROATIVA */}
-         <ModalPermitirRetroativoOsChamado
-            isOpen={openModalPermitirOsRetroativa}
-            onClose={() => setOpenModalPermitirOsRetroativa(false)}
-            chamadoId={
-               selectedChamadoParaRetroativa
-                  ? String(selectedChamadoParaRetroativa.COD_CHAMADO)
-                  : ''
-            }
-            currentUserId={''}
-         />
+         {openModalPermitirOsRetroativa && selectedChamadoParaRetroativa && (
+            <ModalPermitirRetroativoOsChamado
+               isOpen={openModalPermitirOsRetroativa}
+               onClose={() => setOpenModalPermitirOsRetroativa(false)}
+               chamadoId={String(selectedChamadoParaRetroativa.COD_CHAMADO)}
+               currentUserId={''}
+            />
+         )}
 
          {/* LOADING */}
          <IsLoading
             isLoading={isLoading}
-            title={`Buscando OS's para o período: ${dia === 'todos' ? '' : String(dia).padStart(2, '0')}/${mes === 'todos' ? '' : String(mes).padStart(2, '0')}/${ano === 'todos' ? '' : ano}.`}
+            title={`Buscando chamados para o período: ${[
+               dia === 'todos' ? '' : String(dia).padStart(2, '0'),
+               mes === 'todos' ? '' : String(mes).padStart(2, '0'),
+               ano === 'todos' ? '' : String(ano),
+            ]
+               .filter(part => part !== '')
+               .join('/')}.`}
          />
       </div>
    );

@@ -3,19 +3,21 @@ import { ColumnDef } from '@tanstack/react-table';
 import { useMemo, useRef, useState, useEffect } from 'react';
 import * as TooltipRadix from '@radix-ui/react-tooltip';
 
-// COMPONENTS
+// COMPONENTS UI
 import {
    Tooltip,
    TooltipContent,
    TooltipProvider,
    TooltipTrigger,
 } from '../../../../components/ui/tooltip';
+
+// COMPONENTS
 import { ModalEditarCellFaturadoOSValidOS } from './modais/Modal_Editar_Cell_FaturadoOS_ValidOS';
 
 // TYPES
 import { TabelaOSProps } from '../../../../types/types';
 
-// FORMATERS
+// FORMATTERS
 import {
    formatarDataParaBR,
    formatarDataHoraParaBR,
@@ -23,6 +25,8 @@ import {
    formatarCodNumber,
    formatarHorasTotaisHorasDecimais,
 } from '../../../../utils/formatters';
+
+// HELPERS
 import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 
 // ICONS

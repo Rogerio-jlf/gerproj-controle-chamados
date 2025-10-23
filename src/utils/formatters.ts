@@ -106,7 +106,7 @@ export const getStylesStatus = (status: string | undefined) => {
          return 'bg-red-500 text-black italic';
 
       case 'EM ATENDIMENTO':
-         return 'bg-blue-500 text-black italic';
+         return 'bg-blue-500 text-white italic';
 
       case 'FINALIZADO':
          return 'bg-green-500 text-black italic';
@@ -121,7 +121,7 @@ export const getStylesStatus = (status: string | undefined) => {
          return 'bg-teal-500 text-black italic';
 
       case 'AGUARDANDO VALIDACAO':
-         return 'bg-purple-500 text-black italic';
+         return 'bg-purple-500 text-white italic';
 
       default:
          return 'bg-gray-500 text-black italic';
