@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import transporter from '@/lib/email/transporter';
-import { firebirdQuery } from '../../../../lib/firebird/firebird-client';
+import { firebirdQuery } from '../../../../../lib/firebird/firebird-client';
 import {
    gerarTemplateEmailCliente,
    gerarTemplateEmailConsultor,
@@ -68,10 +68,12 @@ export async function POST(request: Request) {
          const nomeCompleto = clienteAssuntoResult[0].NOME_CLIENTE;
          const primeiroNome = nomeCompleto.split(' ')[0].toUpperCase();
 
-         // Verificar se o assunto já não tem o prefixo do cliente
-         if (!assuntoAtual.startsWith(`[${primeiroNome}]`)) {
-            novoAssunto = `[${primeiroNome}] - ${assuntoAtual}`;
-         }
+         // Remover qualquer prefixo de cliente existente no formato [NOME] -
+         // Esta regex remove: [qualquer texto] - do início do assunto
+         let assuntoLimpo = assuntoAtual.replace(/^\[.*?\]\s*-\s*/, '');
+
+         // Adicionar o novo prefixo do cliente
+         novoAssunto = `[${primeiroNome}] - ${assuntoLimpo}`;
       }
 
       // Atualizar o chamado no banco

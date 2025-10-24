@@ -694,6 +694,39 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                                  ))}
                               </tr>
                            ))}
+                        {/* CÉLULAS VAZIAS PARA PREENCHER O ESPAÇO */}
+                        {!isLoading &&
+                           table.getRowModel().rows.length > 0 &&
+                           Array.from({
+                              length: Math.max(
+                                 0,
+                                 pageSize - table.getRowModel().rows.length
+                              ),
+                           }).map((_, index) => (
+                              <tr
+                                 key={`empty-${index}`}
+                                 className={`${
+                                    (table.getRowModel().rows.length + index) %
+                                       2 ===
+                                    0
+                                       ? 'bg-slate-800'
+                                       : 'bg-slate-700'
+                                 }`}
+                              >
+                                 {table.getAllColumns().map(column => (
+                                    <td
+                                       key={column.id}
+                                       className="border border-white/30 bg-black p-2"
+                                       style={{
+                                          width: getColumnWidth(column.id),
+                                          height: '54px', // Altura aproximada de uma linha
+                                       }}
+                                    >
+                                       &nbsp;
+                                    </td>
+                                 ))}
+                              </tr>
+                           ))}
                      </tbody>
                   </table>
                </div>

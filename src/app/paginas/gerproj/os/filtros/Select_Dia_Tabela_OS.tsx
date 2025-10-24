@@ -24,9 +24,9 @@ export function SelectDiaTabelaOS({
    value,
    onChange,
    diasDisponiveis,
-   disabled = false,
    mostrarTodos = true,
 }: SelectProps) {
+   const currentDay = new Date().getDate();
    const [isOpen, setIsOpen] = useState(false);
    const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -101,14 +101,16 @@ export function SelectDiaTabelaOS({
       setIsOpen(false);
    };
 
-   const handleClear = () => {
+   const handleClear = (e: React.MouseEvent) => {
+      e.stopPropagation(); // Impede a propagação do evento para o botão pai
       if (mostrarTodos) {
-         onChange('todos');
+         onChange(currentDay);
          setIsOpen(false);
       }
    };
 
-   const isDisabled = disabled || diasDisponiveis.length === 0;
+   // Mostrar X sempre que houver um valor selecionado
+   const showClearButton = value !== undefined && value !== null;
 
    // ================================================================================
    // RENDERIZAÇÃO
@@ -123,32 +125,22 @@ export function SelectDiaTabelaOS({
          <div ref={dropdownRef} className="relative w-full">
             {/* Input */}
             <button
-               onClick={() => !isDisabled && setIsOpen(!isOpen)}
-               disabled={isDisabled}
-               className={`active: flex w-full cursor-pointer items-center justify-between rounded-md px-4 py-3 font-bold tracking-widest italic shadow-lg shadow-black transition-all ${
-                  isDisabled
-                     ? 'cursor-not-allowed bg-slate-200 text-slate-500 opacity-60'
-                     : 'bg-white text-black focus:ring-2 focus:ring-pink-600 focus:outline-none'
-               }`}
+               onClick={() => setIsOpen(!isOpen)}
+               className="flex w-full cursor-pointer items-center justify-between rounded-md bg-white px-4 py-3 font-bold tracking-widest text-black italic shadow-lg shadow-black transition-all focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
             >
                <span className="text-black">{selectedOption?.name}</span>
                {/* ===== */}
                <div className="flex items-center gap-2">
-                  {valorAtual !== 'todos' && !isDisabled && mostrarTodos && (
+                  {showClearButton && (
                      <span
-                        onClick={e => {
-                           e.stopPropagation();
-                           handleClear();
-                        }}
+                        onClick={handleClear}
                         className="cursor-pointer text-black transition-transform hover:scale-150 hover:text-red-500 active:scale-95"
                      >
                         <IoClose size={24} />
                      </span>
                   )}
                   <span
-                     className={`transition-transform duration-200 ${
-                        isOpen ? 'rotate-180' : ''
-                     } ${isDisabled ? 'text-gray-500' : 'text-black'}`}
+                     className={`text-black transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                   >
                      <IoIosArrowDown size={24} />
                   </span>
@@ -157,8 +149,8 @@ export function SelectDiaTabelaOS({
             {/* ========== */}
 
             {/* Dropdown Panel */}
-            {isOpen && !isDisabled && (
-               <div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-96 overflow-y-auto rounded-md bg-white shadow-md shadow-black">
+            {isOpen && (
+               <div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-192 overflow-y-auto rounded-md bg-white shadow-md shadow-black">
                   {diasOptions.map(option => (
                      <button
                         key={option.code}

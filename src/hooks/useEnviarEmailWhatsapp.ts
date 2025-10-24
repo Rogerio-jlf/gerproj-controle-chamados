@@ -8,7 +8,7 @@ interface NotificacaoPayload {
    enviarEmailRecurso: boolean;
 }
 
-export function useEmailAtribuirChamados() {
+export function useEnviarEmailWhatsapp() {
    // Corrigido o nome
    const queryClient = useQueryClient();
 
@@ -20,17 +20,20 @@ export function useEmailAtribuirChamados() {
          enviarEmailCliente,
          enviarEmailRecurso,
       }: NotificacaoPayload) => {
-         const response = await fetch('/api/chamado/atribuir-chamado', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-               cod_chamado: codChamado,
-               cod_cliente: codCliente,
-               cod_recurso: codRecurso,
-               enviarEmailCliente,
-               enviarEmailRecurso,
-            }),
-         });
+         const response = await fetch(
+            '/api/chamado/atribuir-chamado/enviar-email-whatsapp',
+            {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({
+                  cod_chamado: codChamado,
+                  cod_cliente: codCliente,
+                  cod_recurso: codRecurso,
+                  enviarEmailCliente,
+                  enviarEmailRecurso,
+               }),
+            }
+         );
 
          if (!response.ok) {
             const error = await response.json();

@@ -24,7 +24,6 @@ export function SelectDiaTabelaChamado({
    value,
    onChange,
    diasDisponiveis,
-   disabled = false,
    mostrarTodos = true,
 }: SelectProps) {
    const currentDay = new Date().getDate();
@@ -109,8 +108,6 @@ export function SelectDiaTabelaChamado({
          setIsOpen(false);
       }
    };
-
-   const isDisabled = disabled || diasDisponiveis.length === 0;
 
    // Mostrar X sempre que houver um valor selecionado
    const showClearButton = value !== undefined && value !== null;

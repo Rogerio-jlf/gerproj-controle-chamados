@@ -13,7 +13,7 @@ import { LoadingButton } from '../../../../../components/Loading';
 import { ToastCustom } from '../../../../../components/Toast_Custom';
 
 // HOOKS
-import { useEmailAtribuirChamados } from '../../../../../hooks/useEmailAtribuirChamados';
+import { useEnviarEmailWhatsapp } from '../../../../../hooks/useEnviarEmailWhatsapp';
 
 // TYPES
 import { TabelaChamadoProps } from '../../../../../types/types';
@@ -29,12 +29,10 @@ import {
 
 // ICONS
 import { Loader2 } from 'lucide-react';
-import { ImUsers } from 'react-icons/im';
-import { TbListDetails } from 'react-icons/tb';
+import { IoClose } from 'react-icons/io5';
+import { MdAddCall } from 'react-icons/md';
 import { BsFillSendFill } from 'react-icons/bs';
-import { IoBarChart, IoClose } from 'react-icons/io5';
 import { IoIosSave, IoIosSearch } from 'react-icons/io';
-import { MdRecordVoiceOver, MdAddCall } from 'react-icons/md';
 import { FaExclamationTriangle, FaUser, FaUsers } from 'react-icons/fa';
 
 // ================================================================================
@@ -59,12 +57,6 @@ interface ModalAtribuirChamadoProps {
    chamado: TabelaChamadoProps | null;
 }
 // ==========
-
-interface OverlayContent {
-   title: string;
-   message: string;
-   type: 'info' | 'warning' | 'error' | 'success';
-}
 
 // ================================================================================
 // SCHEMAS ZOD
@@ -139,53 +131,6 @@ const getThemeClasses = () => ({
 });
 // ==========
 
-const LoadingSpinner = ({ text = 'Carregando...' }: { text?: string }) => {
-   const theme = getThemeClasses();
-
-   return (
-      <div className="flex flex-col items-center justify-center space-y-4 py-16">
-         <div className="relative">
-            <Loader2 className="animate-spin text-gray-600" size={48} />
-         </div>
-         <p
-            className={`text-center text-base font-semibold tracking-wider ${theme.secondaryText} select-none`}
-         >
-            {text}
-         </p>
-      </div>
-   );
-};
-// ==========
-
-const ErrorDisplay = ({
-   onRetry,
-   message = 'Não foi possível carregar as informações do recurso',
-}: {
-   onRetry: () => void;
-   message?: string;
-}) => (
-   <div className="flex flex-col items-center justify-center gap-8 rounded-md border border-red-500/50 bg-red-500/20 p-6">
-      <div className="rounded-md bg-red-600 p-4 shadow-sm shadow-white">
-         <FaExclamationTriangle className="text-white" size={28} />
-      </div>
-      <div className="flex flex-col items-center justify-center gap-4">
-         <p className="text-lg font-semibold tracking-wider text-white select-none">
-            Erro ao carregar detalhes
-         </p>
-         <p className="text-center text-sm font-semibold tracking-wider text-slate-300 select-none">
-            {message}
-         </p>
-      </div>
-      <button
-         onClick={onRetry}
-         className="rounded-xl bg-red-600 px-6 py-2 text-lg font-bold tracking-wider text-white transition-all select-none hover:scale-110 hover:bg-red-900 hover:shadow-md hover:shadow-black active:scale-95"
-      >
-         Tentar novamente
-      </button>
-   </div>
-);
-// ==========
-
 const getRecomendacaoColor = (recomendacao: string) => {
    const colors = {
       DISPONÍVEL: 'bg-green-500 text-black',
@@ -209,8 +154,6 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
    // ESTADOS - SELEÇÕES E MODAIS
    // ================================================================================
    const [selectedRecurso, setSelectedRecurso] = useState<number | null>(null);
-   const [showDetails, setShowDetails] = useState<number | null>(null);
-   const [showSugestao, setShowSugestao] = useState(false);
 
    // ================================================================================
    // ESTADOS - FORMULÁRIOS E VALIDAÇÕES
@@ -221,7 +164,6 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
       enviarEmailRecurso: false,
    });
    const [errors, setErrors] = useState<FormErrors>({});
-   const [success, setSuccess] = useState(false);
 
    // ================================================================================
    // ESTADOS - FILTROS E BUSCA
@@ -231,40 +173,11 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
       useState<string>('TODOS');
 
    // ================================================================================
-   // ESTADOS - OVERLAY E NOTIFICAÇÕES
-   // ================================================================================
-   const [showOverlay, setShowOverlay] = useState(false);
-   const [overlayContent, setOverlayContent] = useState<OverlayContent | null>(
-      null
-   );
-
-   // ================================================================================
-   // ESTADOS - SUGESTÃO DE RECURSO
-   // ================================================================================
-   const [novoChamado, setNovoChamado] = useState({
-      prioridade: 100,
-      codCliente: '',
-      assunto: '',
-   });
-
-   // ================================================================================
    // HOOKS E CONTEXTOS
    // ================================================================================
    const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-   const atribuirMutation = useEmailAtribuirChamados();
-
-   // ================================================================================
-   // FUNÇÕES DE OVERLAY E NOTIFICAÇÕES
-   // ================================================================================
-   const showOverlayMessage = (
-      title: string,
-      message: string,
-      type: 'info' | 'warning' | 'error' | 'success' = 'info'
-   ) => {
-      setOverlayContent({ title, message, type });
-      setShowOverlay(true);
-   };
+   const atribuirMutation = useEnviarEmailWhatsapp();
 
    // ================================================================================
    // QUERIES DE DADOS
@@ -287,11 +200,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
             if (!response.ok) throw new Error('Erro ao buscar recursos');
             return response.json();
          } catch (error) {
-            showOverlayMessage(
-               'Erro de Conexão',
-               'Não foi possível carregar os recursos. Verifique sua conexão e tente novamente.',
-               'error'
-            );
+            console.error('Erro ao buscar recursos:', error);
             throw error;
          }
       },
@@ -309,55 +218,6 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
          return response.json();
       },
       enabled: !!token && isOpen,
-   });
-
-   const { data: sugestaoData, isLoading: loadingSugestao } = useQuery({
-      queryKey: ['sugestao-recurso', novoChamado],
-      queryFn: async () => {
-         const response = await fetch(
-            '/api/chamado/atribuir-chamado/sugestao-recurso',
-            {
-               method: 'POST',
-               headers: {
-                  Authorization: `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-               },
-               body: JSON.stringify(novoChamado),
-            }
-         );
-         if (!response.ok) throw new Error('Erro ao buscar sugestão');
-         return response.json();
-      },
-      enabled: showSugestao && !!token && novoChamado.prioridade > 0,
-   });
-
-   const {
-      data: recursoDetalhado,
-      isLoading: loadingDetalhe,
-      error: errorDetalhe,
-   } = useQuery({
-      queryKey: ['dashboard-recurso', selectedRecurso],
-      queryFn: async () => {
-         try {
-            const response = await fetch(
-               `/api/chamado/atribuir-chamado/recurso/${selectedRecurso}`,
-               {
-                  headers: { Authorization: `Bearer ${token}` },
-               }
-            );
-            if (!response.ok)
-               throw new Error('Erro ao buscar detalhes do recurso');
-            return response.json();
-         } catch (error) {
-            showOverlayMessage(
-               'Erro ao Carregar',
-               'Não foi possível carregar os detalhes do recurso selecionado.',
-               'error'
-            );
-            throw error;
-         }
-      },
-      enabled: !!selectedRecurso && !!token,
    });
 
    // ================================================================================
@@ -383,14 +243,12 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
    useEffect(() => {
       if (isOpen) {
          setSelectedRecurso(null);
-         setShowDetails(null);
          setFormData({
             cliente: chamado?.COD_CLIENTE?.toString() || '',
             enviarEmailCliente: false,
             enviarEmailRecurso: false,
          });
          setErrors({});
-         setSuccess(false);
       }
    }, [isOpen, chamado]);
 
@@ -414,8 +272,6 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
       setSelectedRecurso(null);
       setSearchTerm(''); // Limpa o campo de busca
       setFiltroRecomendacao('TODOS'); // Reseta o filtro para "Todos"
-      setShowSugestao(false); // Fecha a sugestão se estiver aberta
-      setShowDetails(null); // Limpa os detalhes se estiverem abertos
    }, [chamado]);
 
    const handleLimparFiltros = () => {
@@ -546,7 +402,6 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
 
    const handleSelectRecurso = (recursoId: number) => {
       setSelectedRecurso(recursoId);
-      setShowSugestao(false);
    };
 
    const handleAtribuir = () => {
@@ -575,7 +430,9 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
       <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
          {/* ===== OVERLAY ===== */}
          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+         {/* ==================== */}
 
+         {/* ===== MODAL ===== */}
          <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-[70vw] overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-gradient-to-r from-teal-600 to-teal-700 p-6 shadow-sm shadow-black">
@@ -583,7 +440,6 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                   <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-xs shadow-black">
                      <MdAddCall className="text-black" size={28} />
                   </div>
-                  {/* ===== */}
                   <div className="flex flex-col">
                      <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
                         Atribuir Chamado
@@ -612,9 +468,9 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                {/* ===== COLUNA DA ESQUERDA ===== */}
                <section className="flex-[0_0_60%] overflow-hidden rounded-xl border-t border-black/10 bg-white p-6 shadow-xl shadow-black">
                   <div className="flex flex-col gap-10">
-                     {/* Header e Filtros */}
+                     {/* ===== HEADER E FILTROS ===== */}
                      <div className="flex flex-col gap-10">
-                        {/* Header */}
+                        {/* HEADER */}
                         <div className="flex items-center gap-4">
                            <div className="rounded-sm bg-blue-600 p-2 shadow-xs shadow-black">
                               <FaUsers className="text-white" size={24} />
@@ -625,9 +481,9 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                         </div>
                         {/* ===== */}
 
-                        {/* Filtros */}
+                        {/* FILTROS */}
                         <div className="flex items-center gap-6">
-                           {/* Input busca */}
+                           {/* INPUT BUSCA */}
                            <div className="group relative flex-1 transition-all hover:active:scale-95">
                               <IoIosSearch
                                  aria-hidden="true"
@@ -645,7 +501,8 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                           'Buscar Consultor...';
                                  }}
                                  placeholder="Buscar Consultor..."
-                                 className="input-busca-recurso w-full rounded-md border-t border-black/10 bg-white py-3 pr-12 pl-12 font-bold tracking-widest text-black shadow-md shadow-black transition-all placeholder:tracking-widest placeholder:text-slate-500 placeholder:italic hover:bg-slate-50 focus:ring-2 focus:ring-pink-600 focus:outline-none"
+                                 disabled={loadingRecursos}
+                                 className="input-busca-recurso w-full rounded-md border-t border-black/10 bg-white py-3 pr-12 pl-12 font-bold tracking-widest text-black shadow-md shadow-black transition-all placeholder:tracking-widest placeholder:text-slate-500 placeholder:italic hover:bg-slate-50 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                               />
                               {searchTerm && (
                                  <button
@@ -659,7 +516,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                            </div>
                            {/* ===== */}
 
-                           {/* Select filtro */}
+                           {/* SELECT FILTRO */}
                            <DropdownRecomendacao
                               value={filtroRecomendacao}
                               onChange={setFiltroRecomendacao}
@@ -667,46 +524,87 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                         </div>
                      </div>
                      {/* ========== */}
-                     {/* Lista de recursos */}
+
+                     {/* ===== LISTA DE RECURSOS ===== */}
                      <div className="flex h-[calc(100vh-548px)] flex-col gap-6 overflow-y-auto p-6">
-                        {recursosFiltrados.length === 0 ? (
-                           <div className="flex flex-col items-center justify-center">
-                              <div className="flex flex-col items-center gap-4">
-                                 <p className="mt-40 text-2xl font-extrabold tracking-widest text-black select-none">
-                                    Nenhum registro encontrado
+                        {loadingRecursos ? (
+                           // ESTADO LOADING
+                           <div className="flex h-full flex-col items-center justify-center gap-6">
+                              <div className="relative">
+                                 <Loader2
+                                    className="animate-spin text-blue-600"
+                                    size={56}
+                                 />
+                              </div>
+                              <div className="flex flex-col items-center gap-2">
+                                 <p className="text-2xl font-extrabold tracking-widest text-black select-none">
+                                    Buscando Consultores
                                  </p>
-                                 <p className="text-center text-base font-extrabold tracking-widest text-slate-500 italic select-none">
-                                    Não foi encontrado, nenhum Consultor{' '}
-                                    {filtroRecomendacao !== 'TODOS' && (
-                                       <>
-                                          em situação:{' '}
-                                          <span
-                                             className={`inline-flex items-center rounded-full ${getRecomendacaoColor(filtroRecomendacao)} px-6 py-1 text-base font-semibold tracking-widest italic shadow-xs shadow-black select-none`}
-                                          >
-                                             {filtroRecomendacao}
-                                          </span>
-                                       </>
-                                    )}
-                                    {searchTerm && (
-                                       <>
-                                          {filtroRecomendacao !== 'TODOS' &&
-                                             ' e '}
-                                          que corresponda à busca{' '}
-                                          <span className="text-2xl font-extrabold">
-                                             "{searchTerm}"
-                                          </span>
-                                       </>
-                                    )}
-                                 </p>
-                                 <button
-                                    onClick={handleLimparFiltros}
-                                    className="mt-10 cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-105 hover:bg-red-800 active:scale-95"
-                                 >
-                                    Limpar Filtros
-                                 </button>
+                                 <span className="text-base font-semibold tracking-widest text-slate-500 italic select-none">
+                                    Aguarde enquanto os dados estão sendo
+                                    carregados...
+                                 </span>
                               </div>
                            </div>
+                        ) : // ==========
+                        errorRecursos ? (
+                           // ESTADO DE ERRO
+                           <div className="flex h-full flex-col items-center justify-center gap-6">
+                              <div className="relative">
+                                 <FaExclamationTriangle
+                                    className="text-red-600"
+                                    size={28}
+                                 />
+                              </div>
+                              <div className="flex flex-col items-center gap-2">
+                                 <p className="text-2xl font-extrabold tracking-widest text-black select-none">
+                                    Erro ao tentar carregar os Consultores
+                                 </p>
+                                 <span className="text-base font-semibold tracking-widest text-slate-500 italic select-none">
+                                    Não foi possível carregar as informações dos
+                                    Consultores
+                                 </span>
+                              </div>
+                           </div>
+                        ) : // =========
+                        recursosFiltrados.length === 0 ? (
+                           // SEM RESULTADOS
+                           <div className="flex h-full flex-col items-center justify-center gap-6">
+                              <p className="text-2xl font-extrabold tracking-widest text-black select-none">
+                                 Nenhum registro encontrado
+                              </p>
+                              <p className="text-center text-base font-extrabold tracking-widest text-slate-500 italic select-none">
+                                 Não foi encontrado, nenhum Consultor{' '}
+                                 {filtroRecomendacao !== 'TODOS' && (
+                                    <>
+                                       em situação:{' '}
+                                       <span
+                                          className={`inline-flex items-center rounded-full ${getRecomendacaoColor(filtroRecomendacao)} px-6 py-1 text-base font-semibold tracking-widest italic shadow-xs shadow-black select-none`}
+                                       >
+                                          {filtroRecomendacao}
+                                       </span>
+                                    </>
+                                 )}
+                                 {searchTerm && (
+                                    <>
+                                       {filtroRecomendacao !== 'TODOS' && ' e '}
+                                       que corresponda à busca{' '}
+                                       <span className="text-2xl font-extrabold">
+                                          "{searchTerm}"
+                                       </span>
+                                    </>
+                                 )}
+                              </p>
+                              <button
+                                 onClick={handleLimparFiltros}
+                                 className="mt-10 cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-105 hover:bg-red-800 active:scale-95"
+                              >
+                                 Limpar Filtros
+                              </button>
+                           </div>
                         ) : (
+                           // =========
+                           // LISTA DE RECURSOS
                            recursosFiltrados.map((recurso: RecursoStats) => (
                               <div
                                  key={recurso.COD_RECURSO}
@@ -774,15 +672,14 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                               </div>
                            ))
                         )}
-                     </div>{' '}
+                     </div>
                   </div>
-               </section>
+               </section>{' '}
                {/* ==================== */}
-
                {/* ===== COLUNA DA DIREITA ===== */}
                <section className="flex-[0_0_38.5%] overflow-hidden rounded-xl border-t border-black/10 bg-white p-6 shadow-xl shadow-black">
                   <div className="flex flex-col gap-10">
-                     {/* Header do formulário */}
+                     {/* ===== HEADER ===== */}
                      <div className="flex items-center gap-4">
                         <div className="rounded-sm bg-blue-600 p-2 shadow-xs shadow-black">
                            <BsFillSendFill className="text-white" size={24} />
@@ -795,7 +692,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
 
                      {/* ===== FORMULÁRIO ===== */}
                      <div className="flex flex-col gap-10">
-                        {/* Recurso selecionado */}
+                        {/* RECURSO SELECIONADO */}
                         <div className="flex flex-col gap-1">
                            <label className="text-lg font-extrabold tracking-widest text-black select-none">
                               Consultor Selecionado
@@ -828,7 +725,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                         </div>
                         {/* ========== */}
 
-                        {/* Select cliente formulário */}
+                        {/* SELECIONAR CLIENTE */}
                         <div className="flex flex-col gap-1">
                            <label className="text-lg font-extrabold tracking-widest text-black select-none">
                               Cliente
@@ -847,14 +744,14 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                         </div>
                         {/* ========== */}
 
-                        {/* Notificações por email */}
+                        {/* NOTIFICAÇÕES POR EMAIL */}
                         <div className="flex flex-col gap-1">
                            <label className="text-lg font-extrabold tracking-widest text-black select-none">
                               Notificações por Email
                            </label>
                            <div className="flex flex-col gap-6 rounded-md border-t border-black/10 bg-white p-4 shadow-md shadow-black">
                               <div className="flex flex-col gap-4">
-                                 {/* Input enviar email cliente */}
+                                 {/* INPUT ENVIAR EMAIL CLIENTE */}
                                  <label className="flex items-start gap-4">
                                     <input
                                        type="checkbox"
@@ -879,7 +776,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                  </label>
                                  {/* ===== */}
 
-                                 {/* Input enviar email consultor */}
+                                 {/* INPUT ENVIAR EMAIL CONSULTOR */}
                                  <label className="flex items-start gap-4">
                                     <input
                                        type="checkbox"
@@ -909,7 +806,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
 
                         {/* ===== FOOTER ===== */}
                         <footer className="flex items-center justify-end gap-8 border-t-4 border-red-600 p-6">
-                           {/* Botão limpar formulário */}
+                           {/* BOTÃO LIMPAR */}
                            <button
                               onClick={handleLimparFormulario}
                               disabled={atribuirMutation.isPending}
@@ -919,7 +816,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                            </button>
                            {/* ===== */}
 
-                           {/* Botão submit */}
+                           {/* BOTÃO SUBMIT */}
                            <button
                               onClick={handleAtribuir}
                               disabled={
@@ -947,7 +844,6 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                               )}
                            </button>
                         </footer>
-                        {/* ===== */}
                      </div>
                   </div>
                </section>
