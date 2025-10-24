@@ -4,7 +4,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { useMemo, useRef, useState, useEffect } from 'react';
 import * as TooltipRadix from '@radix-ui/react-tooltip';
 
-// COMPONENTS UI
+// UI
 import {
    Tooltip,
    TooltipContent,
@@ -15,16 +15,17 @@ import {
 // TYPES
 import { TabelaChamadoProps } from '../../../../types/types';
 
+// HELPERS
+import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
+
 // FORMATTERS
 import {
    formatarCodNumber,
    formatarDataHoraParaBR,
    formatarDataParaBR,
+   formatarHora,
    getStylesStatus,
 } from '../../../../utils/formatters';
-
-// HELPERS
-import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 
 // ICONS
 import { FaEye } from 'react-icons/fa6';
@@ -69,7 +70,76 @@ interface DropdownTabelaChamadoProps {
 // ================================================================================
 
 /**
- * Componente genérico para células de texto
+ * Componente para célula numérica
+ */
+interface CellNumberProps {
+   value: number | null | undefined;
+}
+
+const CellNumber = ({ value }: CellNumberProps) => {
+   const formattedNumber = useMemo(() => {
+      if (!value && value !== 0) return null;
+      return formatarCodNumber(value);
+   }, [value]);
+
+   return (
+      <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
+         {formattedNumber || 'n/a'}
+      </div>
+   );
+};
+// ==========
+
+/**
+ * Componente para célula de data
+ */
+interface CellDateProps {
+   value: string | null | undefined;
+   includeTime?: boolean;
+}
+
+const CellDate = ({ value, includeTime = false }: CellDateProps) => {
+   const formattedDate = useMemo(() => {
+      if (!value) return null;
+      return includeTime
+         ? formatarDataHoraParaBR(value)
+         : formatarDataParaBR(value);
+   }, [value, includeTime]);
+
+   return (
+      <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
+         {formattedDate || 'n/a'}
+      </div>
+   );
+};
+// ==========
+
+/**
+ * Componente para célula de hora
+ */
+interface CellTimeProps {
+   value: string | null | undefined;
+}
+
+const CellTime = ({ value }: CellTimeProps) => {
+   const formattedTime = useMemo(() => {
+      if (!value) return null;
+      return formatarHora(value);
+   }, [value]);
+
+   const display =
+      formattedTime && formattedTime !== 'n/a' ? `${formattedTime}h` : 'n/a';
+
+   return (
+      <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
+         {display}
+      </div>
+   );
+};
+// ==========
+
+/**
+ * Componente para célula de texto com tooltip para overflow
  */
 interface CellTextProps {
    value: string | null | undefined;
@@ -136,7 +206,7 @@ const CellText = ({
          <div
             className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
          >
-            {EMPTY_VALUE}
+            'n/a'
          </div>
       );
    }
@@ -148,7 +218,7 @@ const CellText = ({
             className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
          >
             <span ref={textRef} className="block w-full truncate">
-               {corrigirTextoCorrompido(processedValue ?? '')}
+               {corrigirTextoCorrompido(processedValue ?? 'n/a')}
             </span>
          </div>
       );
@@ -166,7 +236,7 @@ const CellText = ({
                      ref={textRef}
                      className="block w-full cursor-help truncate"
                   >
-                     {corrigirTextoCorrompido(processedValue ?? '')}
+                     {corrigirTextoCorrompido(processedValue ?? 'n/a')}
                   </span>
                </TooltipRadix.Trigger>
                <TooltipRadix.Portal>
@@ -187,49 +257,7 @@ const CellText = ({
       </div>
    );
 };
-
-/**
- * Componente para célula de número formatado (Chamado)
- */
-interface CellNumberProps {
-   value: number | null | undefined;
-}
-
-const CellNumber = ({ value }: CellNumberProps) => {
-   const formattedNumber = useMemo(() => {
-      if (!value && value !== 0) return null;
-      return formatarCodNumber(value);
-   }, [value]);
-
-   return (
-      <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-         {formattedNumber || EMPTY_VALUE}
-      </div>
-   );
-};
-
-/**
- * Componente para célula de data formatada
- */
-interface CellDateProps {
-   value: string | null | undefined;
-   includeTime?: boolean;
-}
-
-const CellDate = ({ value, includeTime = false }: CellDateProps) => {
-   const formattedDate = useMemo(() => {
-      if (!value) return null;
-      return includeTime
-         ? formatarDataHoraParaBR(value)
-         : formatarDataParaBR(value);
-   }, [value, includeTime]);
-
-   return (
-      <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-         {formattedDate || EMPTY_VALUE}
-      </div>
-   );
-};
+// ==========
 
 /**
  * Componente para célula de Status
@@ -248,19 +276,20 @@ const CellStatus = ({ value }: CellStatusProps) => {
       <div
          className={`flex items-center justify-center rounded-md p-2 ${styles}`}
       >
-         {value || EMPTY_VALUE}
+         {value || 'n/a'}
       </div>
    );
 };
+// ==========
 
 /**
- * Componente para célula de Data Atribuição
+ * Componente para célula de Data/Time
  */
-interface CellDateAtribuicaoProps {
+interface CellDateTimeProps {
    value: string | null | undefined;
 }
 
-const CellDateAtribuicao = ({ value }: CellDateAtribuicaoProps) => {
+const CellDateTime = ({ value }: CellDateTimeProps) => {
    const formattedDate = useMemo(() => {
       if (!value) return null;
       return formatarDataParaBR(value);
@@ -281,12 +310,77 @@ const CellDateAtribuicao = ({ value }: CellDateAtribuicaoProps) => {
 
    return (
       <div
-         className={`flex items-center justify-center rounded-sm p-1 text-center uppercase italic ${NAO_ATRIBUIDO_CONFIG.bgColor} ${NAO_ATRIBUIDO_CONFIG.textColor}`}
+         className={`flex items-center justify-center rounded-sm p-2 text-center uppercase italic ${NAO_ATRIBUIDO_CONFIG.bgColor} ${NAO_ATRIBUIDO_CONFIG.textColor}`}
       >
          {NAO_ATRIBUIDO_CONFIG.label}
       </div>
    );
 };
+// ==========
+
+/**
+ * Componente para célula de Consultor
+ */
+interface CellConsultorProps {
+   value: string | null | undefined;
+   maxWords: number;
+}
+
+const CellConsultor = ({ value, maxWords }: CellConsultorProps) => {
+   const isEmpty = useMemo(() => {
+      return !value || value.trim() === '';
+   }, [value]);
+
+   if (isEmpty) {
+      return (
+         <div
+            className={`flex items-center justify-center rounded-sm p-2 text-center uppercase italic ${NAO_ATRIBUIDO_CONFIG.bgColor} ${NAO_ATRIBUIDO_CONFIG.textColor}`}
+         >
+            {NAO_ATRIBUIDO_CONFIG.label}
+         </div>
+      );
+   }
+
+   const display =
+      maxWords && maxWords > 0
+         ? (value ?? '').split(' ').slice(0, maxWords).join(' ')
+         : (value ?? '');
+
+   return <div className="pl-2 text-left text-white">{display}</div>;
+};
+// ==========
+
+/**
+ * Componente para célula de Cliente
+ */
+interface CellClienteProps {
+   value: string | null | undefined;
+   maxWords: number;
+}
+
+const CellCliente = ({ value, maxWords }: CellClienteProps) => {
+   const isEmpty = useMemo(() => {
+      return !value || value.trim() === '';
+   }, [value]);
+
+   if (isEmpty) {
+      return (
+         <div
+            className={`flex items-center justify-center rounded-sm p-2 text-center uppercase italic ${NAO_ATRIBUIDO_CONFIG.bgColor} ${NAO_ATRIBUIDO_CONFIG.textColor}`}
+         >
+            {NAO_ATRIBUIDO_CONFIG.label}
+         </div>
+      );
+   }
+
+   const display =
+      maxWords && maxWords > 0
+         ? (value ?? '').split(' ').slice(0, maxWords).join(' ')
+         : (value ?? '');
+
+   return <div className="pl-2 text-left text-white">{display}</div>;
+};
+// ==========
 
 /**
  * Componente para célula de Email (com link)
@@ -330,7 +424,7 @@ const CellEmail = ({ value }: CellEmailProps) => {
             onClick={isEmpty ? e => e.preventDefault() : undefined}
          >
             {isEmpty ? (
-               EMPTY_EMAIL_VALUE
+               'n/a'
             ) : (
                <span ref={textRef} className="block w-full truncate">
                   {value}
@@ -371,6 +465,7 @@ const CellEmail = ({ value }: CellEmailProps) => {
       </Link>
    );
 };
+// ==========
 
 /**
  * Componente para cabeçalho centralizado
@@ -378,6 +473,7 @@ const CellEmail = ({ value }: CellEmailProps) => {
 const HeaderCenter = ({ children }: { children: React.ReactNode }) => (
    <div className="text-center">{children}</div>
 );
+// ==========
 
 // ================================================================================
 // BOTÃO MENU CIRCULAR - HORIZONTAL À ESQUERDA
@@ -608,6 +704,7 @@ const BotaoMenuCircular = ({ chamado, acoes }: DropdownTabelaChamadoProps) => {
       </>
    );
 };
+// ==========
 
 // ================================================================================
 // DEFINIÇÃO DAS COLUNAS
@@ -630,6 +727,13 @@ export const colunasTabelaChamados = (
          cell: ({ getValue }) => <CellDate value={getValue() as string} />,
       },
 
+      // HORA_CHAMADO
+      {
+         accessorKey: 'HORA_CHAMADO',
+         header: () => <HeaderCenter>HORA</HeaderCenter>,
+         cell: ({ getValue }) => <CellTime value={getValue() as string} />,
+      },
+
       // ASSUNTO_CHAMADO
       {
          accessorKey: 'ASSUNTO_CHAMADO',
@@ -649,10 +753,8 @@ export const colunasTabelaChamados = (
       // DTENVIO_CHAMADO
       {
          accessorKey: 'DTENVIO_CHAMADO',
-         header: () => <HeaderCenter>DT. ATRIBUIÇÃO</HeaderCenter>,
-         cell: ({ getValue }) => (
-            <CellDateAtribuicao value={getValue() as string} />
-         ),
+         header: () => <HeaderCenter>DT./HR. ATRIBUIÇÃO</HeaderCenter>,
+         cell: ({ getValue }) => <CellDateTime value={getValue() as string} />,
       },
 
       // NOME_RECURSO
@@ -661,9 +763,9 @@ export const colunasTabelaChamados = (
          header: () => <HeaderCenter>CONSULTOR</HeaderCenter>,
          cell: ({ getValue }) => {
             const value = getValue() as string;
-            if (!value) return null;
+            // if (!value) return null;
 
-            return <CellText value={value} maxWords={2} applyCorrection />;
+            return <CellConsultor value={value} maxWords={2} />;
          },
       },
 
@@ -673,9 +775,8 @@ export const colunasTabelaChamados = (
          header: () => <HeaderCenter>CLIENTE</HeaderCenter>,
          cell: ({ getValue }) => {
             const value = getValue() as string;
-            if (!value) return null;
 
-            return <CellText value={value} maxWords={2} applyCorrection />;
+            return <CellCliente value={value} maxWords={2} />;
          },
       },
 

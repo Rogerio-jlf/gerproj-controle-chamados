@@ -1,38 +1,44 @@
+// IMPORTS
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
-import { ToastCustom } from '../../../../../components/Toast_Custom';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-// ================================================================================
-import { TabelaChamadoProps } from '../../../../../types/types';
-// ================================================================================
-import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
-import { useEmailAtribuirChamados } from '../../../../../hooks/useEmailAtribuirChamados';
+
+// COMPONENTS
 import {
    DropdownRecomendacao,
    DropdownCliente,
-} from '../Dropdowns_Atribuir_Chamado';
-// ================================================================================
-import { Loader2 } from 'lucide-react';
-import { IoIosSave } from 'react-icons/io';
-import { ImUsers, ImTarget } from 'react-icons/im';
-import { BsAwardFill, BsFillSendFill } from 'react-icons/bs';
-import { IoBarChart, IoClose } from 'react-icons/io5';
-import { FaExclamationTriangle, FaUser, FaUsers } from 'react-icons/fa';
+} from '../Dropdowns_Selects_Modal_Atribuir_Chamado';
+import { LoadingButton } from '../../../../../components/Loading';
+import { ToastCustom } from '../../../../../components/Toast_Custom';
+
+// HOOKS
+import { useEmailAtribuirChamados } from '../../../../../hooks/useEmailAtribuirChamados';
+
+// TYPES
+import { TabelaChamadoProps } from '../../../../../types/types';
+
+// HELPERS
+import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+
+// FORMATTERS
 import {
    formatarCodNumber,
    formatCodChamado,
 } from '../../../../../utils/formatters';
-import { RiDeleteBin5Fill } from 'react-icons/ri';
-import { FaEraser } from 'react-icons/fa';
-import { IoIosSearch } from 'react-icons/io';
-import { CiFilter } from 'react-icons/ci';
-import { MdRecordVoiceOver } from 'react-icons/md';
+
+// ICONS
+import { Loader2 } from 'lucide-react';
+import { ImUsers } from 'react-icons/im';
 import { TbListDetails } from 'react-icons/tb';
-import { LoadingButton } from '../../../../../components/Loading';
+import { BsFillSendFill } from 'react-icons/bs';
+import { IoBarChart, IoClose } from 'react-icons/io5';
+import { IoIosSave, IoIosSearch } from 'react-icons/io';
+import { MdRecordVoiceOver, MdAddCall } from 'react-icons/md';
+import { FaExclamationTriangle, FaUser, FaUsers } from 'react-icons/fa';
 
 // ================================================================================
-// INTERFACES E TIPOS
+// INTERFACES
 // ================================================================================
 interface RecursoStats {
    COD_RECURSO: number;
@@ -570,12 +576,12 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
          {/* ===== OVERLAY ===== */}
          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
 
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl border-0 bg-transparent transition-all duration-500 ease-out">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-gradient-to-r from-teal-600 to-teal-700 p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
-                  <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
-                     <RiDeleteBin5Fill className="text-black" size={28} />
+                  <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-xs shadow-black">
+                     <MdAddCall className="text-black" size={28} />
                   </div>
                   {/* ===== */}
                   <div className="flex flex-col">
@@ -603,9 +609,10 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
 
             {/* ===== COLUNAS ===== */}
             <div className="flex h-full gap-6 overflow-hidden p-6">
-               {/* ===== COLUNA RECURSOS ===== */}
-               <section className="flex-[0_0_40%] overflow-hidden rounded-xl bg-white p-6 shadow-lg shadow-black">
+               {/* ===== COLUNA DA ESQUERDA ===== */}
+               <section className="flex-[0_0_40%] overflow-hidden rounded-xl border-t border-black/10 bg-white p-6 shadow-xs shadow-black">
                   <div className="flex flex-col gap-10">
+                     {/* Header e Filtros */}
                      <div className="flex flex-col gap-10">
                         {/* Header */}
                         <div className="flex items-center gap-4">
@@ -620,7 +627,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
 
                         {/* Filtros */}
                         <div className="flex items-center gap-6">
-                           {/* Input de busca */}
+                           {/* Input busca */}
                            <div className="group relative flex-1 transition-all hover:scale-102">
                               <IoIosSearch
                                  aria-hidden="true"
@@ -643,401 +650,321 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                            </div>
                            {/* ===== */}
 
-                           {/* Select de filtro */}
+                           {/* Select filtro */}
                            <DropdownRecomendacao
                               value={filtroRecomendacao}
                               onChange={setFiltroRecomendacao}
                            />
                         </div>
-                        {/* ===== */}
                      </div>
-
+                     {/* ========== */}
                      {/* Lista de recursos */}
                      <div className="flex h-[calc(100vh-548px)] flex-col gap-6 overflow-y-auto p-6">
-                        {recursosFiltrados.map((recurso: RecursoStats) => (
-                           <div
-                              key={recurso.COD_RECURSO}
-                              className="flex cursor-pointer flex-col gap-4 rounded-lg border-t border-black/10 bg-white p-4 shadow-md shadow-black transition-all outline-none hover:scale-102 active:scale-95"
-                              onClick={() =>
-                                 handleSelectRecurso(recurso.COD_RECURSO)
-                              }
-                           >
-                              <div className="flex items-center gap-4">
-                                 <FaUser size={24} className="text-black" />
-                                 <div className="flex w-full items-center justify-between">
-                                    <h3 className="text-lg font-bold tracking-widest text-black italic select-none">
-                                       {corrigirTextoCorrompido(
-                                          recurso.NOME_RECURSO
-                                       )}
-                                    </h3>
-                                    <div
-                                       className={`inline-flex items-center rounded-full ${getRecomendacaoColor(recurso.RECOMENDACAO)} px-6 py-1 text-sm font-semibold tracking-widest italic shadow-xs shadow-black select-none`}
-                                    >
-                                       <span>{recurso.RECOMENDACAO}</span>
-                                    </div>
-                                 </div>
-                              </div>
-                              {/* ===== */}
-
-                              <div className="grid grid-cols-3 gap-4">
-                                 {[
-                                    {
-                                       label: 'Ativos',
-                                       value: recurso.TOTAL_CHAMADOS_ATIVOS,
-                                       bg: 'bg-blue-500/70',
-                                    },
-                                    {
-                                       label: 'Alta Prioridade',
-                                       value: recurso.CHAMADOS_ALTA_PRIORIDADE,
-                                       bg: 'bg-yellow-500/70',
-                                    },
-                                    {
-                                       label: 'Críticos',
-                                       value: recurso.CHAMADOS_CRITICOS,
-                                       bg: 'bg-red-500/70',
-                                    },
-                                 ].map((metric, idx) => (
-                                    <div
-                                       key={idx}
-                                       className={`rounded-md ${metric.bg} p-1.5 text-center shadow-xs shadow-black`}
-                                    >
-                                       <p
-                                          className={`text-sm font-bold tracking-widest text-black select-none`}
-                                       >
-                                          {metric.label}
-                                       </p>
-                                       <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
-                                          {metric.value}
-                                       </p>
-                                    </div>
-                                 ))}
+                        {recursosFiltrados.length === 0 ? (
+                           <div className="flex flex-col items-center justify-center">
+                              <div className="flex flex-col items-center gap-4">
+                                 <p className="mt-40 text-2xl font-extrabold tracking-widest text-black select-none">
+                                    Nenhum registro encontrado
+                                 </p>
+                                 <p className="text-center text-base font-extrabold tracking-widest text-slate-500 italic select-none">
+                                    Não foi encontrado, nenhum Consultor{' '}
+                                    {filtroRecomendacao !== 'TODOS' && (
+                                       <>
+                                          em situação:{' '}
+                                          <span
+                                             className={`inline-flex items-center rounded-full ${getRecomendacaoColor(filtroRecomendacao)} px-6 py-1 text-base font-semibold tracking-widest italic shadow-xs shadow-black select-none`}
+                                          >
+                                             {filtroRecomendacao}
+                                          </span>
+                                       </>
+                                    )}
+                                    {searchTerm && (
+                                       <>
+                                          {filtroRecomendacao !== 'TODOS' &&
+                                             ' e '}
+                                          que corresponda à busca{' '}
+                                          <span className="text-2xl font-extrabold">
+                                             "{searchTerm}"
+                                          </span>
+                                       </>
+                                    )}
+                                 </p>
+                                 <button
+                                    onClick={handleLimparFiltros}
+                                    className="mt-10 cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-105 hover:bg-red-800 active:scale-95"
+                                 >
+                                    Limpar Filtros
+                                 </button>
                               </div>
                            </div>
-                        ))}
-                     </div>
+                        ) : (
+                           recursosFiltrados.map((recurso: RecursoStats) => (
+                              <div
+                                 key={recurso.COD_RECURSO}
+                                 className="flex cursor-pointer flex-col gap-4 rounded-lg border-t border-black/10 bg-white p-4 shadow-md shadow-black transition-all outline-none hover:scale-102 active:scale-95"
+                                 onClick={() =>
+                                    handleSelectRecurso(recurso.COD_RECURSO)
+                                 }
+                              >
+                                 {/* Recurso e Situação */}
+                                 <div className="flex items-center gap-4">
+                                    <FaUser size={24} className="text-black" />
+                                    <div className="flex w-full items-center justify-between">
+                                       <h3 className="text-lg font-bold tracking-widest text-black italic select-none">
+                                          {corrigirTextoCorrompido(
+                                             recurso.NOME_RECURSO
+                                          )}
+                                       </h3>
+                                       <div
+                                          className={`inline-flex items-center rounded-full ${getRecomendacaoColor(recurso.RECOMENDACAO)} px-6 py-1 text-sm font-semibold tracking-widest italic shadow-xs shadow-black select-none`}
+                                       >
+                                          <span>{recurso.RECOMENDACAO}</span>
+                                       </div>
+                                    </div>
+                                 </div>
+                                 {/* ===== */}
+
+                                 {/* Métricas */}
+                                 <div className="grid grid-cols-3 gap-4">
+                                    {[
+                                       {
+                                          label: 'Ativos',
+                                          value: recurso.TOTAL_CHAMADOS_ATIVOS,
+                                          bg: 'bg-blue-500/70',
+                                       },
+                                       {
+                                          label: 'Alta Prioridade',
+                                          value: recurso.CHAMADOS_ALTA_PRIORIDADE,
+                                          bg: 'bg-yellow-500/70',
+                                       },
+                                       {
+                                          label: 'Críticos',
+                                          value: recurso.CHAMADOS_CRITICOS,
+                                          bg: 'bg-red-500/70',
+                                       },
+                                    ].map((metric, idx) => (
+                                       <div
+                                          key={idx}
+                                          className={`rounded-md ${metric.bg} p-1.5 text-center shadow-xs shadow-black`}
+                                       >
+                                          <p
+                                             className={`text-sm font-bold tracking-widest text-black select-none`}
+                                          >
+                                             {metric.label}
+                                          </p>
+                                          <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
+                                             {metric.value}
+                                          </p>
+                                       </div>
+                                    ))}
+                                 </div>
+                              </div>
+                           ))
+                        )}
+                     </div>{' '}
                   </div>
                </section>
                {/* ==================== */}
 
-               {/* ===== COLUNA DETALHES/SUGESTÃO ===== */}
-               <section className="flex-[0_0_25%] overflow-hidden rounded-xl bg-white p-6 shadow-lg shadow-black">
-                  <div className="flex flex-col gap-10">
-                     {/* Botão sugestão consultor */}
-                     <div className="flex items-center gap-4">
-                        <button
-                           onClick={() => setShowSugestao(!showSugestao)}
-                           className="group cursor-pointer rounded-sm bg-blue-600 p-2 shadow-md shadow-black transition-all hover:scale-105 hover:bg-blue-800 active:scale-95"
-                        >
-                           <ImTarget
-                              size={24}
-                              className="text-white group-hover:scale-110"
-                           />
-                        </button>
-                        {showSugestao && (
-                           <h3 className="text-2xl font-extrabold tracking-widest text-black uppercase select-none">
-                              Sugestão
-                           </h3>
-                        )}
-                     </div>
-                     {/* ===== */}
+               {/* ===== COLUNA DO MEIO ===== */}
+               <section className="flex-[0_0_25%] overflow-hidden rounded-xl border-t border-black/10 bg-white p-6 shadow-xs shadow-black">
+                  {selectedRecurso ? (
+                     <div>
+                        {loadingDetalhe ? (
+                           <LoadingSpinner text="Carregando detalhes do Consultor..." />
+                        ) : errorDetalhe ? (
+                           <ErrorDisplay onRetry={() => refetchRecursos()} />
+                        ) : recursoDetalhado ? (
+                           // Detalhes do recurso
+                           <div className="flex flex-col gap-10">
+                              {/* Header */}
+                              <div className="flex items-center gap-4">
+                                 <div className="rounded-sm bg-blue-600 p-2 shadow-xs shadow-black">
+                                    <TbListDetails
+                                       className="text-white"
+                                       size={24}
+                                    />
+                                 </div>
+                                 <h3 className="text-2xl font-extrabold tracking-widest text-black select-none">
+                                    DETALHES DO CONSULTOR
+                                 </h3>
+                              </div>
+                              {/* ========== */}
 
-                     {/* ===== SUGESTÕES DE RECURSO ===== */}
-                     {showSugestao ? (
-                        <div className="flex flex-col gap-10">
-                           {/* Seleção de cliente para sugestão */}
-                           <div className="flex flex-col gap-1">
-                              <label className="text-lg font-extrabold tracking-widest text-black italic select-none">
-                                 Cliente
-                              </label>
-                              <DropdownCliente
-                                 value={novoChamado.codCliente}
-                                 onChange={value =>
-                                    setNovoChamado(prev => ({
-                                       ...prev,
-                                       codCliente: value,
-                                    }))
-                                 }
-                                 clientes={clientes}
-                                 placeholder="Selecione um cliente"
-                                 corrigirTextoCorrompido={
-                                    corrigirTextoCorrompido
-                                 }
-                              />
-                           </div>
-                           {/* ===== */}
-
-                           {/* Loading sugestão */}
-                           {loadingSugestao && (
-                              <LoadingSpinner text="Buscando melhor recurso..." />
-                           )}
-                           {/* ===== */}
-
-                           {/* Resultado da sugestão */}
-                           {sugestaoData?.sugestao?.recursoRecomendado && (
-                              <div className="flex flex-col gap-10 rounded-xl bg-green-600/70 p-6 text-black shadow-xs shadow-black">
+                              {/* Nome e email do recurso */}
+                              <div className="rounded-lg border-t border-black/10 bg-black/10 p-4 shadow-md shadow-black">
                                  <div className="flex items-center gap-4">
-                                    <div className="rounded-sm bg-green-600 p-2 shadow-xs shadow-black">
-                                       <BsAwardFill
+                                    <div className="rounded-sm bg-black/10 p-2 shadow-xs shadow-black">
+                                       <FaUser
                                           className="text-black"
                                           size={24}
                                        />
                                     </div>
-                                    <h4 className="text-xl font-extrabold tracking-widest text-black select-none">
-                                       Melhor Opção
-                                    </h4>
-                                 </div>
-                                 {/* ===== */}
-
-                                 <div className="flex flex-col gap-14">
-                                    <div className="flex flex-col gap-2">
-                                       <p className="text-center text-lg font-extrabold tracking-widest text-black italic select-none">
+                                    <div className="flex flex-col">
+                                       <h5 className="text-xl font-extrabold tracking-widest text-black select-none">
+                                          {corrigirTextoCorrompido(
+                                             recursoDetalhado.recurso
+                                                .NOME_RECURSO
+                                          )}
+                                       </h5>
+                                       <p className="text-sm font-semibold tracking-widest italic select-none">
                                           {
-                                             sugestaoData.sugestao
-                                                .recursoRecomendado.NOME_RECURSO
+                                             recursoDetalhado.recurso
+                                                .EMAIL_RECURSO
                                           }
                                        </p>
-
-                                       <div className="rounded-sm bg-green-600 p-2 shadow-xs shadow-black">
-                                          <p className="text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
-                                             {
-                                                sugestaoData.sugestao
-                                                   .recursoRecomendado
-                                                   .RECOMENDACAO
-                                             }
-                                          </p>
-                                       </div>
                                     </div>
-                                    {/* ===== */}
-
-                                    {sugestaoData.sugestao.recursoRecomendado
-                                       .VANTAGENS?.length > 0 && (
-                                       <div className="flex flex-col gap-1">
-                                          <p className="text-xl font-extrabold tracking-widest text-black select-none">
-                                             Vantagens:
-                                          </p>
-                                          <div className="flex flex-col gap-1">
-                                             {sugestaoData.sugestao.recursoRecomendado.VANTAGENS.map(
-                                                (
-                                                   vantagem: string,
-                                                   index: number
-                                                ) => (
-                                                   <div
-                                                      key={index}
-                                                      className="flex items-center gap-3"
-                                                   >
-                                                      <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-black"></div>
-                                                      <p className="text-sm font-bold tracking-widest text-black italic select-none">
-                                                         {vantagem}.
-                                                      </p>
-                                                   </div>
-                                                )
-                                             )}
-                                          </div>
-                                       </div>
-                                    )}
                                  </div>
                               </div>
-                           )}
-                        </div>
-                     ) : // ===== DETALHES DO RECURSO =====
-                     selectedRecurso ? (
-                        <div className="flex flex-col gap-6">
-                           {/* Header */}
-                           <h3 className="text-2xl font-extrabold tracking-widest text-black uppercase select-none">
-                              Detalhes do Recurso
-                           </h3>
+                              {/* ========== */}
 
-                           {/* Conteúdo */}
-                           {loadingDetalhe ? (
-                              <LoadingSpinner text="Carregando detalhes..." />
-                           ) : errorDetalhe ? (
-                              <ErrorDisplay onRetry={() => refetchRecursos()} />
-                           ) : recursoDetalhado ? (
-                              <div className="flex flex-col gap-6">
-                                 {/* Nome e email do recurso */}
-                                 <div className="rounded-lg bg-black/10 p-4 shadow-xs shadow-black">
-                                    <div className="flex items-center gap-4">
-                                       <div className="rounded-sm bg-black/10 p-2 shadow-xs shadow-black">
-                                          <FaUser
-                                             className="text-black"
-                                             size={24}
-                                          />
-                                       </div>
-                                       <div className="flex flex-col">
-                                          <h5 className="text-xl font-extrabold tracking-widest text-black select-none">
-                                             {corrigirTextoCorrompido(
-                                                recursoDetalhado.recurso
-                                                   .NOME_RECURSO
-                                             )}
-                                          </h5>
-                                          <p className="text-sm font-semibold tracking-widest italic select-none">
-                                             {
-                                                recursoDetalhado.recurso
-                                                   .EMAIL_RECURSO
-                                             }
+                              {/* Resumo da carga */}
+                              <div className="flex flex-col gap-6 rounded-lg border-t border-black/10 bg-teal-600/70 p-4 shadow-md shadow-black">
+                                 <div className="flex items-center gap-4">
+                                    <div className="rounded-sm bg-black/10 p-2 shadow-xs shadow-black">
+                                       <IoBarChart
+                                          className="text-black"
+                                          size={24}
+                                       />
+                                    </div>
+                                    <h5 className="text-xl font-extrabold tracking-widest text-black select-none">
+                                       Resumo da Carga
+                                    </h5>
+                                 </div>
+                                 {/* ===== */}
+
+                                 <div className="grid grid-cols-2 gap-4">
+                                    {[
+                                       {
+                                          label: 'Chamados Ativos',
+                                          value: recursoDetalhado.resumo
+                                             .totalChamadosAtivos,
+                                          color: 'text-cyan-500',
+                                       },
+                                       {
+                                          label: 'Críticos',
+                                          value: recursoDetalhado.resumo
+                                             .chamadosCriticos,
+                                          color: 'text-red-500',
+                                       },
+                                       {
+                                          label: 'Atrasados',
+                                          value: recursoDetalhado.resumo
+                                             .chamadosAtrasados,
+                                          color: 'text-yellow-500',
+                                       },
+                                       {
+                                          label: 'Status',
+                                          value: recursoDetalhado.resumo
+                                             .statusCarga,
+                                          color:
+                                             recursoDetalhado.resumo
+                                                .statusCarga === 'LEVE'
+                                                ? 'text-green-500'
+                                                : recursoDetalhado.resumo
+                                                       .statusCarga ===
+                                                    'MODERADA'
+                                                  ? 'text-yellow-500'
+                                                  : recursoDetalhado.resumo
+                                                         .statusCarga ===
+                                                      'PESADA'
+                                                    ? 'text-orange-500'
+                                                    : 'text-red-500',
+                                       },
+                                    ].map((metric, idx) => (
+                                       <div
+                                          key={idx}
+                                          className="rounded-md bg-black/10 p-2 text-center shadow-xs shadow-black"
+                                       >
+                                          <p className="text-sm font-bold tracking-widest text-black select-none">
+                                             {metric.label}
+                                          </p>
+                                          <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
+                                             {metric.value}
                                           </p>
                                        </div>
-                                    </div>
+                                    ))}
                                  </div>
-                                 {/* ===== */}
+                              </div>
+                              {/* ========== */}
 
-                                 {/* Resumo da carga */}
-                                 <div className="flex flex-col gap-6 rounded-lg bg-teal-600/70 p-4 shadow-xs shadow-black">
+                              {/* Recomendação */}
+                              <div className="flex flex-col gap-6 rounded-lg border-t border-black/10 bg-blue-600/70 p-4 shadow-md shadow-black">
+                                 <div className="flex items-center gap-4">
+                                    <div className="rounded-sm bg-black/10 p-2 shadow-xs shadow-black">
+                                       <MdRecordVoiceOver
+                                          className="text-black"
+                                          size={24}
+                                       />
+                                    </div>
+                                    <h5 className="text-xl font-extrabold tracking-widest text-black select-none">
+                                       Recomendação
+                                    </h5>
+                                 </div>
+
+                                 <div className="flex items-center gap-3 pl-5">
+                                    <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-black"></div>
+                                    <p className="text-sm font-bold tracking-widest text-black italic select-none">
+                                       {recursoDetalhado.resumo.recomendacao}.
+                                    </p>
+                                 </div>
+                              </div>
+                              {/* ===== */}
+
+                              {/* Alertas */}
+                              {recursoDetalhado.alertas?.length > 0 && (
+                                 <div className="flex flex-col gap-6 rounded-lg border-t border-black/10 bg-red-600/70 p-4 shadow-md shadow-black">
                                     <div className="flex items-center gap-4">
                                        <div className="rounded-sm bg-black/10 p-2 shadow-xs shadow-black">
-                                          <IoBarChart
-                                             className="text-black"
-                                             size={24}
-                                          />
-                                       </div>
-                                       <h5 className="text-xl font-extrabold tracking-widest text-black select-none">
-                                          Resumo da Carga
-                                       </h5>
-                                    </div>
-                                    {/* ===== */}
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                       {[
-                                          {
-                                             label: 'Chamados Ativos',
-                                             value: recursoDetalhado.resumo
-                                                .totalChamadosAtivos,
-                                             color: 'text-cyan-500',
-                                          },
-                                          {
-                                             label: 'Críticos',
-                                             value: recursoDetalhado.resumo
-                                                .chamadosCriticos,
-                                             color: 'text-red-500',
-                                          },
-                                          {
-                                             label: 'Atrasados',
-                                             value: recursoDetalhado.resumo
-                                                .chamadosAtrasados,
-                                             color: 'text-yellow-500',
-                                          },
-                                          {
-                                             label: 'Status',
-                                             value: recursoDetalhado.resumo
-                                                .statusCarga,
-                                             color:
-                                                recursoDetalhado.resumo
-                                                   .statusCarga === 'LEVE'
-                                                   ? 'text-green-500'
-                                                   : recursoDetalhado.resumo
-                                                          .statusCarga ===
-                                                       'MODERADA'
-                                                     ? 'text-yellow-500'
-                                                     : recursoDetalhado.resumo
-                                                            .statusCarga ===
-                                                         'PESADA'
-                                                       ? 'text-orange-500'
-                                                       : 'text-red-500',
-                                          },
-                                       ].map((metric, idx) => (
-                                          <div
-                                             key={idx}
-                                             className="rounded-md bg-black/10 p-2 text-center shadow-xs shadow-black"
-                                          >
-                                             <p className="text-sm font-bold tracking-widest text-black select-none">
-                                                {metric.label}
-                                             </p>
-                                             <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
-                                                {metric.value}
-                                             </p>
-                                          </div>
-                                       ))}
-                                    </div>
-                                 </div>
-                                 {/* ===== */}
-
-                                 {/* Recomendação */}
-                                 <div className="flex flex-col gap-6 rounded-lg bg-blue-600/70 p-4 shadow-xs shadow-black">
-                                    <div className="flex items-center gap-4">
-                                       <div className="rounded-sm bg-black/10 p-2 shadow-xs shadow-black">
-                                          <MdRecordVoiceOver
+                                          <FaExclamationTriangle
                                              className="text-black"
                                              size={24}
                                           />
                                        </div>
                                        <h5 className="text-xl font-extrabold tracking-widest text-black select-none">
-                                          Recomendação
+                                          Alertas
                                        </h5>
                                     </div>
 
-                                    <div className="flex items-center gap-3 pl-5">
-                                       <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-black"></div>
-                                       <p className="text-sm font-bold tracking-widest text-black italic select-none">
-                                          {recursoDetalhado.resumo.recomendacao}
-                                          .
-                                       </p>
+                                    <div className="flex flex-col gap-1">
+                                       {recursoDetalhado.alertas.map(
+                                          (alerta: string, index: number) => (
+                                             <div
+                                                key={index}
+                                                className="flex items-center gap-3 pl-5"
+                                             >
+                                                <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-black"></div>
+                                                <p className="text-sm font-bold tracking-widest text-black italic select-none">
+                                                   {alerta}.
+                                                </p>
+                                             </div>
+                                          )
+                                       )}
                                     </div>
                                  </div>
-                                 {/* ===== */}
-
-                                 {/* Alertas */}
-                                 {recursoDetalhado.alertas?.length > 0 && (
-                                    <div className="flex flex-col gap-6 rounded-lg bg-red-600/70 p-4 shadow-xs shadow-black">
-                                       <div className="flex items-center gap-4">
-                                          <div className="rounded-sm bg-black/10 p-2 shadow-xs shadow-black">
-                                             <FaExclamationTriangle
-                                                className="text-black"
-                                                size={24}
-                                             />
-                                          </div>
-                                          <h5 className="text-xl font-extrabold tracking-widest text-black select-none">
-                                             Alertas
-                                          </h5>
-                                       </div>
-
-                                       <div className="flex flex-col gap-1">
-                                          {recursoDetalhado.alertas.map(
-                                             (
-                                                alerta: string,
-                                                index: number
-                                             ) => (
-                                                <div
-                                                   key={index}
-                                                   className="flex items-center gap-3 pl-5"
-                                                >
-                                                   <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-black"></div>
-                                                   <p className="text-sm font-bold tracking-widest text-black italic select-none">
-                                                      {alerta}.
-                                                   </p>
-                                                </div>
-                                             )
-                                          )}
-                                       </div>
-                                    </div>
-                                 )}
-                              </div>
-                           ) : null}
-                        </div>
-                     ) : (
-                        // ===== MENSAGEM PADRÃO =====
-                        <div className="p-6">
-                           <div className="flex flex-col items-center justify-center gap-10">
-                              <ImUsers
-                                 size={100}
-                                 className={theme.primaryText}
-                              />
-                              <div className="flex flex-col items-center gap-4">
-                                 <p className="text-2xl font-extrabold tracking-widest text-black select-none">
-                                    Selecione um Consultor
-                                 </p>
-                                 <p className="text-sm font-extrabold tracking-widest text-slate-500 italic select-none">
-                                    Clique em um Consultor para ver os detalhes.
-                                 </p>
-                              </div>
+                              )}
                            </div>
+                        ) : null}
+                     </div>
+                  ) : (
+                     // ===== MENSAGEM PADRÃO =====
+                     <div className="mt-70 flex flex-col items-center justify-center gap-10">
+                        <ImUsers size={100} className={theme.primaryText} />
+                        <div className="flex flex-col items-center gap-4">
+                           <p className="text-2xl font-extrabold tracking-widest text-black select-none">
+                              Selecione um Consultor
+                           </p>
+                           <p className="text-base font-extrabold tracking-widest text-slate-500 italic select-none">
+                              Clique em um Consultor para ver os detalhes
+                           </p>
                         </div>
-                     )}
-                  </div>
+                     </div>
+                  )}
                </section>
                {/* ==================== */}
 
-               {/* ===== COLUNA FORMULÁRIO ===== */}
-               <section className="flex-[0_0_33%] overflow-hidden rounded-xl bg-white p-6 shadow-lg shadow-black">
+               {/* ===== COLUNA DA DIREITA ===== */}
+               <section className="flex-[0_0_33%] overflow-hidden rounded-xl border-t border-black/10 bg-white p-6 shadow-xs shadow-black">
                   <div className="flex flex-col gap-10">
                      {/* Header do formulário */}
                      <div className="flex items-center gap-4">
@@ -1057,7 +984,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                            <label className="text-lg font-extrabold tracking-widest text-black select-none">
                               Consultor Selecionado
                            </label>
-                           <div className="flex flex-col rounded-md border border-slate-300 bg-white p-4">
+                           <div className="flex flex-col rounded-lg border-t border-black/10 bg-white p-4 shadow-md shadow-black">
                               {selectedRecurso ? (
                                  <div className="flex items-center gap-3">
                                     <FaUser size={24} className="text-black" />

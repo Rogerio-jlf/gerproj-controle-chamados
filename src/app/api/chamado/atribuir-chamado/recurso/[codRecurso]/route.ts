@@ -259,10 +259,18 @@ export async function GET(
          topClientes,
          alertas: [
             ...(chamadosCriticos.length > 0
-               ? [`${chamadosCriticos.length} chamados em situação crítica`]
+               ? [
+                    chamadosCriticos.length === 1
+                       ? '1 chamado em situação crítica'
+                       : `${chamadosCriticos.length} chamados em situação crítica`,
+                 ]
                : []),
             ...(chamadosAtrasados.length > 0
-               ? [`${chamadosAtrasados.length} chamados atrasados`]
+               ? [
+                    chamadosAtrasados.length === 1
+                       ? '1 chamado atrasado'
+                       : `${chamadosAtrasados.length} chamados atrasados`,
+                 ]
                : []),
             ...(recurso.ATIVO_RECURSO !== 1 ? ['Recurso está inativo'] : []),
             ...(taxaConclusao < 70 && stats.TOTAL_CHAMADOS > 5

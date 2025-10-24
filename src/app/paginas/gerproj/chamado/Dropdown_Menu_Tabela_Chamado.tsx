@@ -1,15 +1,18 @@
+// IMPORTS
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GrServices } from 'react-icons/gr';
-import { FaTasks, FaChartBar } from 'react-icons/fa';
-import { MdArrowDropDown } from 'react-icons/md';
-import { BiSolidReport } from 'react-icons/bi';
-import { FaDiagramProject } from 'react-icons/fa6';
+
+// ICONS
 import {
    AiOutlineBarChart,
    AiOutlinePieChart,
    AiOutlineTable,
 } from 'react-icons/ai';
+import { GrServices } from 'react-icons/gr';
+import { FaTasks, FaChartBar } from 'react-icons/fa';
+import { MdArrowDropDown } from 'react-icons/md';
+import { BiSolidReport } from 'react-icons/bi';
+import { FaDiagramProject } from 'react-icons/fa6';
 
 // ================================================================================
 // INTERFACES
@@ -42,7 +45,7 @@ interface DropdownHeaderProps {
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export function DropdownTabelaChamado({
+export function DropdownMenuTabelaChamado({
    onOpenTabelaOS,
    onOpenRelatorioOS,
    onOpenTabelaTarefa,

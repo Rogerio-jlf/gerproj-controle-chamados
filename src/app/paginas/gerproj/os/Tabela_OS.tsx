@@ -547,10 +547,6 @@ export function TabelaOS({ isOpen, onClose }: Props) {
       return <IsError error={error as Error} />;
    }
 
-   if (isLoading) {
-      return <IsLoading isLoading={true} title="Aguarde, carregando OS's..." />;
-   }
-
    // ================================================================================
    // RENDERIZAÇÃO
    // ================================================================================
@@ -864,7 +860,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
          {/* LOADING */}
          <IsLoading
             isLoading={isLoading}
-            title={`Buscando OS's para o período: ${[
+            title={`Aguarde... Buscando OS's para o período: ${[
                dia === 'todos' ? '' : String(dia).padStart(2, '0'),
                mes === 'todos' ? '' : String(mes).padStart(2, '0'),
                ano === 'todos' ? '' : String(ano),

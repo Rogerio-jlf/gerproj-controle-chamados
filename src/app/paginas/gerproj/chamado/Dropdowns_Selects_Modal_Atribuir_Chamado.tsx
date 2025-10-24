@@ -1,11 +1,14 @@
-// ================================================================================
-// DROPDOWN CUSTOMIZADO PARA FILTRO DE RECOMENDAÇÃO
-// ================================================================================
+// IMPORTS
 import { useState, useRef, useEffect } from 'react';
-import { IoClose, IoArrowDown } from 'react-icons/io5';
+
+// ICONS
+import { IoClose } from 'react-icons/io5';
 import { FaFilter } from 'react-icons/fa';
 import { IoIosArrowDown } from 'react-icons/io';
 
+// ================================================================================
+// DROPDOWN CUSTOMIZADO PARA FILTRO TODOS
+// ================================================================================
 interface DropdownRecomendacaoProps {
    value: string;
    onChange: (value: string) => void;

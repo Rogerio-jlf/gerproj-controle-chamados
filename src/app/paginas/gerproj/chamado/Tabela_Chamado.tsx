@@ -22,7 +22,7 @@ import { IsLoading } from '../../../../components/IsLoading';
 import { SessionExpired } from '../../../../components/IsExpired';
 import { RelatorioOS } from '../os/Relatorio_OS';
 import { colunasTabelaChamados } from './Colunas_Tabela_Chamado';
-import { DropdownTabelaChamado } from './Dropdown_Tabela_Chamado';
+import { DropdownMenuTabelaChamado } from './Dropdown_Menu_Tabela_Chamado';
 import { FiltrosTabelaChamado } from './filtros/Filtros_Tabela_Chamado';
 import { TabelaOS } from '../os/Tabela_OS';
 import { TabelaTarefas } from '../tarefas/Tabela_Tarefa';
@@ -32,17 +32,17 @@ import { ModalAtribuirChamado } from './modais/Modal_Atribuir_Chamado';
 import { ModalVisualizarChamado } from './modais/Modal_Visualizar_Chamado';
 import { ModalPermitirRetroativoOsChamado } from './modais/Modal_Permitir_OS_Retroativa_Chamado';
 
-// FORMATTERS
-import { formatarCodNumber } from '../../../../utils/formatters';
-
 // HOOKS
 import { useAuth } from '../../../../hooks/useAuth';
+
+// CONTEXTS
+import { useFiltersTabelaChamado } from '../../../../contexts/Filters_Context_Tabela_Chamado';
 
 // TYPES
 import { TabelaChamadoProps } from '../../../../types/types';
 
-// CONTEXTS
-import { useFiltersTabelaChamado } from '../../../../contexts/Filters_Context_Tabela_Chamado';
+// FORMATTERS
+import { formatarCodNumber } from '../../../../utils/formatters';
 
 // ICONS
 import { IoCall } from 'react-icons/io5';
@@ -60,14 +60,15 @@ const CACHE_TIME = 1000 * 60 * 5;
 const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 const COLUMN_WIDTHS: Record<string, string> = {
-   COD_CHAMADO: '7%',
-   DATA_CHAMADO: '7%',
-   ASSUNTO_CHAMADO: '23%',
-   STATUS_CHAMADO: '14%',
+   COD_CHAMADO: '6%',
+   DATA_CHAMADO: '10%',
+   HORA_CHAMADO: '6%',
+   ASSUNTO_CHAMADO: '20%',
+   STATUS_CHAMADO: '12%',
    DTENVIO_CHAMADO: '10%',
-   NOME_RECURSO: '12%',
-   NOME_CLIENTE: '12%',
-   EMAIL_CHAMADO: '10%',
+   NOME_RECURSO: '10%',
+   NOME_CLIENTE: '10%',
+   EMAIL_CHAMADO: '11%',
    actions: '5%',
 };
 
@@ -644,7 +645,7 @@ function TabelaChamadoContent() {
 
                      {user && user.tipo === 'ADM' && (
                         <div className="flex items-center gap-4">
-                           <DropdownTabelaChamado
+                           <DropdownMenuTabelaChamado
                               onOpenTabelaOS={() => handleOpenView('os')}
                               onOpenTabelaTarefa={() =>
                                  handleOpenView('tarefas')
@@ -1036,7 +1037,7 @@ function TabelaChamadoContent() {
          {/* LOADING */}
          <IsLoading
             isLoading={isLoading}
-            title={`Buscando chamados para o período: ${[
+            title={`Aguarde... Buscando chamados para o período: ${[
                dia === 'todos' ? '' : String(dia).padStart(2, '0'),
                mes === 'todos' ? '' : String(mes).padStart(2, '0'),
                ano === 'todos' ? '' : String(ano),

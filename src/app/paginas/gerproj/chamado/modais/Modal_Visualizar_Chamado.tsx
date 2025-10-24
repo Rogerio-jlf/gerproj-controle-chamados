@@ -6,19 +6,18 @@ import { TooltipCondicionalTabelaChamado } from '../Tooltip_Condicional._Tabela_
 // TYPES
 import { TabelaChamadoProps } from '../../../../../types/types';
 
+// HELPERS
+import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+
 // FORMATTERS
 import {
    formatCodChamado,
    getStylesStatus,
 } from '../../../../../utils/formatters';
 
-// HELPERS
-import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
-
 // ICONS
-import { IoClose } from 'react-icons/io5';
-import { HiTicket } from 'react-icons/hi2';
 import { MdDescription } from 'react-icons/md';
+import { IoClose, IoCall } from 'react-icons/io5';
 import { FaUser, FaClock, FaTasks, FaInfo } from 'react-icons/fa';
 
 // ================================================================================
@@ -58,8 +57,8 @@ export function ModalVisualizarChamado({
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-gradient-to-r from-teal-600 to-teal-700 p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
-                  <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
-                     <HiTicket className="text-black" size={28} />
+                  <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-xs shadow-black">
+                     <IoCall className="text-black" size={28} />
                   </div>
                   <div className="flex flex-col">
                      <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
@@ -189,7 +188,7 @@ export function ModalVisualizarChamado({
                   <div className="space-y-6">
                      {/* ===== CARD: PESSOAS ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 shadow-sm shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-sm shadow-black">
                            <FaUser className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
                               Consultor e Cliente
@@ -238,7 +237,7 @@ export function ModalVisualizarChamado({
 
                      {/* ===== CARD: RELACIONAMENTOS ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-3 shadow-sm shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-sm shadow-black">
                            <FaTasks className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
                               Tarefa e Projeto
@@ -280,7 +279,7 @@ export function ModalVisualizarChamado({
                   <div className="space-y-6">
                      {/* ===== CARD: DETALHES DO CHAMADO ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-sm shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 shadow-sm shadow-black">
                            <MdDescription className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
                               Observações e Detalhes
