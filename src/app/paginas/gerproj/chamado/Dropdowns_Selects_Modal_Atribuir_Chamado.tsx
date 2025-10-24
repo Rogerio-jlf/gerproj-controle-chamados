@@ -64,7 +64,7 @@ export function DropdownRecomendacao({
       <div ref={dropdownRef} className="relative w-[300px]">
          <button
             onClick={() => setIsOpen(!isOpen)}
-            className="group relative flex w-full cursor-pointer items-center justify-between rounded-md border-t border-black/10 bg-white py-3 pr-4 pl-10 font-bold tracking-widest text-black italic shadow-md shadow-black transition-all hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+            className="group relative flex w-full cursor-pointer items-center justify-between rounded-md border-t border-black/10 bg-white py-3 pr-4 pl-10 font-bold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-slate-50 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
          >
             <FaFilter
                className="absolute top-1/2 left-4 -translate-y-1/2 text-black"
@@ -180,7 +180,7 @@ export function DropdownCliente({
       <div ref={dropdownRef} className="relative w-full">
          <button
             onClick={() => setIsOpen(!isOpen)}
-            className="relative flex w-full cursor-pointer items-center justify-between rounded-md border-t border-black/10 bg-white py-3 pr-4 pl-10 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:scale-102 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+            className="relative flex w-full cursor-pointer items-center justify-between rounded-md border-t border-black/10 bg-white py-3 pr-4 pl-10 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-slate-50 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
          >
             <FaFilter
                className="absolute top-1/2 left-4 -translate-y-1/2 text-black"

@@ -594,7 +594,7 @@ const BotaoMenuCircular = ({ chamado, acoes }: DropdownTabelaChamadoProps) => {
                      side="right"
                      align="start"
                      sideOffset={8}
-                     className="border-t-8 border-cyan-500 bg-white text-sm font-extrabold tracking-widest text-black italic shadow-sm shadow-black select-none"
+                     className="border-t-8 border-blue-600 bg-white text-sm font-extrabold tracking-widest text-black italic shadow-sm shadow-black select-none"
                   >
                      Ações
                   </TooltipContent>
@@ -624,7 +624,7 @@ const BotaoMenuCircular = ({ chamado, acoes }: DropdownTabelaChamadoProps) => {
                      return (
                         <div key={index} className="absolute">
                            <div
-                              className={`pointer-events-none absolute left-1/2 z-60 -translate-x-1/2 transform rounded-md border-t-4 border-cyan-500 bg-black px-6 py-2 text-sm font-semibold tracking-wider whitespace-nowrap text-white shadow-sm shadow-white transition-all duration-200 ${
+                              className={`pointer-events-none absolute left-1/2 z-60 -translate-x-1/2 transform rounded-md border-t-8 border-blue-600 bg-white px-6 py-2 text-sm font-semibold tracking-widest whitespace-nowrap text-black shadow-sm shadow-white transition-all duration-200 ${
                                  isHovered
                                     ? 'scale-100 opacity-100'
                                     : 'scale-80 opacity-0'

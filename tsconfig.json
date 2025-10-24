@@ -23,6 +23,11 @@
       "moduleResolution": "node",
       "noEmit": true
    },
-   "include": ["next-env.d.ts", "src/**/*", ".next/types/**/*.ts"],
+   "include": [
+      "next-env.d.ts",
+      "src/**/*",
+      ".next/types/**/*.ts",
+      "test-email-locaweb.ts"
+   ],
    "exclude": ["node_modules"]
 }

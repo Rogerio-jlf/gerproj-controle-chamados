@@ -35,7 +35,7 @@ export function IsLoading({
 
                <div className="flex items-center justify-center gap-1">
                   <span className="text-lg font-semibold tracking-wider text-white italic select-none">
-                     Aguarde
+                     Carregando
                   </span>
 
                   <div className="flex gap-1">

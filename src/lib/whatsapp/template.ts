@@ -1,33 +1,65 @@
-interface DadosWhatsApp {
+// ============================================================
+// TEMPLATES PARA ATRIBUIÇÃO DE CHAMADO
+// ============================================================
+
+interface DadosWhatsAppCliente {
    codChamado: number;
-   dataChamado: string;
-   horaChamado: string;
+   dtEnvioChamado: string;
    nomeRecurso: string;
    assuntoChamado: string;
 }
 
-export function gerarMensagemWhatsApp({
+export function gerarMensagemWhatsAppCliente({
    codChamado,
-   dataChamado,
-   horaChamado,
+   dtEnvioChamado,
    nomeRecurso,
    assuntoChamado,
-}: DadosWhatsApp): string {
+}: DadosWhatsAppCliente): string {
    return `🔔 *CHAMADO TÉCNICO ATRIBUÍDO*
 
 ✅ Seu Chamado foi Atribuído com Sucesso e já está sendo analisado.
 
-📋 *Chamado nº: ${codChamado}
-📅 *Data do Chamado: ${dataChamado}
-🕒 *Hora do Chamado: ${horaChamado}
-🛠️ *Consultor: ${nomeRecurso}
-📝 *Assunto: 
+📋 *Chamado nº:* ${codChamado}
+📅 *Data/Hora:* ${dtEnvioChamado}
+🛠️ *Consultor:* ${nomeRecurso}
+📝 *Assunto:*
 ${assuntoChamado}
 
 _Mensagem automática do sistema_`;
 }
 
-// Templates adicionais para outros cenários (opcional)
+interface DadosWhatsAppRecurso {
+   codChamado: number;
+   dataChamado: string;
+   horaChamado: string;
+   nomeCliente: string;
+   assuntoChamado: string;
+}
+
+export function gerarMensagemWhatsAppRecurso({
+   codChamado,
+   dataChamado,
+   horaChamado,
+   nomeCliente,
+   assuntoChamado,
+}: DadosWhatsAppRecurso): string {
+   return `🎫 *NOVO CHAMADO ATRIBUÍDO*
+
+📋 *Chamado nº:* ${codChamado}
+📅 *Data:* ${dataChamado}
+🕒 *Hora:* ${horaChamado}
+👤 *Cliente:* ${nomeCliente}
+📝 *Assunto:*
+${assuntoChamado}
+
+⚡ Acesse o sistema para visualizar os detalhes completos.
+
+_Mensagem automática do sistema_`;
+}
+
+// ============================================================
+// TEMPLATES ADICIONAIS PARA OUTROS CENÁRIOS
+// ============================================================
 
 export function gerarMensagemChamadoConcluido(dados: {
    codChamado: number;

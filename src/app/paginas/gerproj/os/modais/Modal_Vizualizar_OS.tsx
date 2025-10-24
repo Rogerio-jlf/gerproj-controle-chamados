@@ -421,10 +421,10 @@ export function ModalVisualizarOS({
                                  Nome Cliente
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {os.NOME_CLIENTE.trim()
+                                 {os.NOME_CLIENTE?.trim()
                                     .split(/\s+/)
                                     .slice(0, 2)
-                                    .join(' ')}
+                                    .join(' ') || 'n/a'}
                               </span>
                            </div>
                            {/* ===== */}
