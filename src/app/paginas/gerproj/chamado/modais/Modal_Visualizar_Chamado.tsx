@@ -57,12 +57,12 @@ export function ModalVisualizarChamado({
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-gradient-to-r from-teal-600 to-teal-700 p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
-                  <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-xs shadow-black">
+                  <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
                      <IoCall className="text-black" size={28} />
                   </div>
                   <div className="flex flex-col">
                      <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
-                        Chamado
+                        Informações do Chamado
                      </h1>
                      <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
                         Código #{formatCodChamado(chamado.COD_CHAMADO)}

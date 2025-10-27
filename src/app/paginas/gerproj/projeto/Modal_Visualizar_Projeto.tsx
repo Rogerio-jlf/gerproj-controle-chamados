@@ -86,7 +86,7 @@ export function ModalVisualizarProjeto({
                   {/* ===== */}
                   <div className="flex flex-col">
                      <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
-                        Projeto
+                        Informações do Projeto
                      </h1>
                      <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
                         Código #{formatarCodNumber(projeto.COD_PROJETO)}

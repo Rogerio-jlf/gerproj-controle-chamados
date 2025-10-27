@@ -91,14 +91,28 @@ interface Props {
 // ================================================================================
 // COMPONENTES AUXILIARES
 // ================================================================================
-const EmptyState = () => (
+const EmptyState = ({
+   ano,
+   mes,
+   dia,
+}: {
+   ano: number | 'todos';
+   mes: number | 'todos';
+   dia: number | 'todos';
+}) => (
    <section className="bg-black py-72 text-center">
       <FaExclamationTriangle
          className="mx-auto mb-6 text-yellow-500"
          size={80}
       />
       <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
-         Nenhuma Tarefa foi encontrada no momento.
+         {`Nenhuma OS foi encontrada para o período: ${[
+            dia === 'todos' ? '' : String(dia).padStart(2, '0'),
+            mes === 'todos' ? '' : String(mes).padStart(2, '0'),
+            ano === 'todos' ? '' : String(ano),
+         ]
+            .filter(part => part !== '')
+            .join('/')}`}
       </h3>
    </section>
 );
@@ -113,15 +127,15 @@ const NoResultsState = ({
    <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-72 text-center">
       <FaFilterCircleXmark className="mx-auto text-red-600" size={100} />
       <h3 className="text-3xl font-extrabold tracking-wider text-white italic select-none">
-         Nenhum registro encontrado para os filtros aplicados.
+         Nenhum registro encontrado para os filtros aplicados
       </h3>
       <p className="text-base font-semibold tracking-wider text-white italic select-none">
-         Tente ajustar os filtros ou limpe-os para visualizar registros.
+         Tente ajustar os filtros ou limpe-os para visualizar registros
       </p>
       {totalActiveFilters > 0 && (
          <button
             onClick={clearFilters}
-            className="cursor-pointer rounded-md border-none bg-red-600 px-6 py-2 text-base font-extrabold tracking-widest text-white italic shadow-md shadow-black transition-all hover:scale-105 hover:bg-red-700 active:scale-95"
+            className="w-[200px] cursor-pointer rounded-md border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:bg-red-800 active:scale-95"
          >
             Limpar Filtros
          </button>
@@ -747,8 +761,8 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                         </span>
                         <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
                            {paginationInfo.totalRecords > 1
-                              ? `de ${formatarCodNumber(paginationInfo.totalRecords)} encontrados no total.`
-                              : `de 1 encontrado no total.`}
+                              ? `de ${formatarCodNumber(paginationInfo.totalRecords)} encontrados no total`
+                              : `de 1 encontrado no total`}
                         </span>
                      </section>
 
@@ -764,7 +778,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                               onChange={e =>
                                  handlePageSizeChange(Number(e.target.value))
                               }
-                              className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+                              className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
                            >
                               {PAGE_SIZE_OPTIONS.map(size => (
                                  <option
@@ -784,7 +798,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                               onClick={() => handlePageChange(1)}
                               disabled={!paginationInfo.hasPrevPage}
                               aria-label="Ir para primeira página"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsLeft
                                  className="text-black group-disabled:text-red-500"
@@ -796,7 +810,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                               onClick={() => handlePageChange(currentPage - 1)}
                               disabled={!paginationInfo.hasPrevPage}
                               aria-label="Página anterior"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronLeft
                                  className="text-black group-disabled:text-red-500"
@@ -813,7 +827,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                                        handlePageChange(Number(e.target.value))
                                     }
                                     aria-label="Selecionar página"
-                                    className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+                                    className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
                                  >
                                     {Array.from(
                                        { length: paginationInfo.totalPages },
@@ -840,7 +854,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                               onClick={() => handlePageChange(currentPage + 1)}
                               disabled={!paginationInfo.hasNextPage}
                               aria-label="Próxima página"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <MdChevronRight
                                  className="text-black group-disabled:text-red-500"
@@ -854,7 +868,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                               }
                               disabled={!paginationInfo.hasNextPage}
                               aria-label="Ir para última página"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/40 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                            >
                               <FiChevronsRight
                                  className="text-black group-disabled:text-red-500"
@@ -868,7 +882,9 @@ export function TabelaOS({ isOpen, onClose }: Props) {
             )}
 
             {/* ===== MENSAGEM QUANDO NÃO HÁ OS ===== */}
-            {data && data.length === 0 && !isLoading && <EmptyState />}
+            {data && data.length === 0 && !isLoading && (
+               <EmptyState ano={ano} mes={mes} dia={dia} />
+            )}
 
             {/* MENSAGEM QUANDO OS FILTROS NÃO RETORNAM RESULTADOS */}
             {paginationInfo &&
@@ -899,7 +915,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                ano === 'todos' ? '' : String(ano),
             ]
                .filter(part => part !== '')
-               .join('/')}.`}
+               .join('/')}`}
          />
       </div>
    );

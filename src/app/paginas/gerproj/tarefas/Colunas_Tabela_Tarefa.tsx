@@ -262,7 +262,7 @@ const CellAcoes = ({ codTarefa, onVisualizarTarefa }: CellAcoesProps) => {
                      side="right"
                      align="start"
                      sideOffset={8}
-                     className="border-t-8 border-cyan-500 bg-white text-sm font-extrabold tracking-widest text-black italic shadow-sm shadow-black select-none"
+                     className="border-t-8 border-blue-600 bg-white text-sm font-extrabold tracking-widest text-black italic shadow-sm shadow-black select-none"
                   >
                      Visualizar Tarefa
                   </TooltipContent>

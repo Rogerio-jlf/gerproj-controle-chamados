@@ -346,7 +346,11 @@ const CellConsultor = ({ value, maxWords }: CellConsultorProps) => {
          ? (value ?? '').split(' ').slice(0, maxWords).join(' ')
          : (value ?? '');
 
-   return <div className="pl-2 text-left text-white">{display}</div>;
+   return (
+      <div className="flex items-center justify-start rounded-md bg-black p-2 text-white">
+         {display}
+      </div>
+   );
 };
 // ==========
 
@@ -378,7 +382,11 @@ const CellCliente = ({ value, maxWords }: CellClienteProps) => {
          ? (value ?? '').split(' ').slice(0, maxWords).join(' ')
          : (value ?? '');
 
-   return <div className="pl-2 text-left text-white">{display}</div>;
+   return (
+      <div className="flex items-center justify-start rounded-md bg-black p-2 text-white">
+         {display}
+      </div>
+   );
 };
 // ==========
 
@@ -596,7 +604,7 @@ const BotaoMenuCircular = ({ chamado, acoes }: DropdownTabelaChamadoProps) => {
                      sideOffset={8}
                      className="border-t-8 border-blue-600 bg-white text-sm font-extrabold tracking-widest text-black italic shadow-sm shadow-black select-none"
                   >
-                     Ações
+                     {isOpen ? 'Fechar' : 'Ações'}
                   </TooltipContent>
                </Tooltip>
             </TooltipProvider>

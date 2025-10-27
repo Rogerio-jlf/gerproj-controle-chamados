@@ -88,7 +88,7 @@ export function ModalVisualizarTarefa({
                   {/* ===== */}
                   <div className="flex flex-col">
                      <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
-                        Tarefa
+                        Informações da Tarefa
                      </h1>
                      <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
                         Código #{formatarCodNumber(tarefa.COD_TAREFA)}
@@ -126,7 +126,9 @@ export function ModalVisualizarTarefa({
                                  Tarefa
                               </span>
                               <TooltipCondicionalTabelaTarefa
-                                 content={tarefa.TAREFA_COMPLETA || ''}
+                                 content={corrigirTextoCorrompido(
+                                    tarefa.TAREFA_COMPLETA || ''
+                                 )}
                               >
                                  <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
                                     {tarefa.TAREFA_COMPLETA}

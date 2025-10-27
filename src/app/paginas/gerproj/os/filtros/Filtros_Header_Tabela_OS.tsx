@@ -19,7 +19,7 @@ import { IoClose } from 'react-icons/io5';
 // ================================================================================
 // CONSTANTES
 // ================================================================================
-const DEBOUNCE_DELAY = 200;
+const DEBOUNCE_DELAY = 400;
 
 const SEARCHABLE_COLUMNS = [
    'COD_OS',
@@ -201,13 +201,6 @@ const InputFilterWithDebounce = ({
                <IoClose size={20} />
             </button>
          )}
-
-         {/* Contador de caracteres quando próximo ao limite */}
-         {maxLength && localValue && isNearLimit && (
-            <div className="absolute right-0 -bottom-5 text-xs font-semibold tracking-widest text-yellow-400 italic">
-               {localValue.length}/{maxLength}
-            </div>
-         )}
       </div>
    );
 };
@@ -271,16 +264,14 @@ export const FilterControls = ({
             <button
                onClick={handleToggleFilters}
                disabled={isDisabled}
-               aria-label={showFilters ? 'Ocultar filtros' : 'Mostrar filtros'}
-               aria-expanded={showFilters}
-               className={`w-[300px] cursor-pointer rounded-md px-6 py-2.5 text-lg tracking-widest transition-all ${
+               className={`w-[300px] cursor-pointer rounded-md border-none px-6 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all focus:ring-2 focus:ring-pink-600 focus:outline-none ${
                   showFilters
-                     ? 'border-none bg-blue-600 font-extrabold text-white italic shadow-md shadow-black hover:bg-blue-700'
-                     : 'border-none bg-white font-bold text-black italic shadow-md shadow-black hover:bg-white/70'
+                     ? 'border-none bg-blue-600 text-white hover:bg-blue-800'
+                     : 'border-none bg-white text-black hover:bg-white/50'
                } ${
                   isDisabled
-                     ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-gray-500'
-                     : 'hover:scale-105 active:scale-95'
+                     ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-slate-500'
+                     : 'active:scale-95'
                }`}
             >
                {showFilters ? 'Ocultar Filtros' : 'Mostrar + Filtros'}
@@ -290,11 +281,9 @@ export const FilterControls = ({
             {totalActiveFilters > 0 && (
                <button
                   onClick={clearFilters}
-                  aria-label={`Limpar ${totalActiveFilters} filtro${totalActiveFilters > 1 ? 's' : ''}`}
-                  className="cursor-pointer rounded-sm border-none bg-red-600 px-6 py-2.5 text-base font-extrabold tracking-widest text-white italic shadow-md shadow-black transition-all select-none hover:scale-105 hover:bg-red-700 active:scale-95"
+                  className="w-[300px] cursor-pointer rounded-md border-none bg-red-600 px-6 py-2.5 text-base font-extrabold tracking-widest text-white italic shadow-md shadow-black transition-all select-none hover:bg-red-800 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
                >
-                  Limpar Filtros{' '}
-                  {totalActiveFilters > 1 && `(${totalActiveFilters})`}
+                  {totalActiveFilters > 1 ? `Limpar Filtros` : 'Limpar Filtro'}
                </button>
             )}
          </div>

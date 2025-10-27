@@ -111,7 +111,7 @@ export function ModalVisualizarOS({
                   {/* ===== */}
                   <div className="flex flex-col">
                      <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
-                        Ordem de Serviço
+                        Informações da OS
                      </h1>
                      <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
                         Código #{formatarCodNumber(os.COD_OS)}

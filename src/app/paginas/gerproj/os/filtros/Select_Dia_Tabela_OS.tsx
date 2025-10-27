@@ -126,7 +126,7 @@ export function SelectDiaTabelaOS({
             {/* Input */}
             <button
                onClick={() => setIsOpen(!isOpen)}
-               className="flex w-full cursor-pointer items-center justify-between rounded-md bg-white px-4 py-3 font-bold tracking-widest text-black italic shadow-lg shadow-black transition-all focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+               className="flex w-full cursor-pointer items-center justify-between rounded-md bg-white px-4 py-3 font-bold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
             >
                <span className="text-black">{selectedOption?.name}</span>
                {/* ===== */}
@@ -155,7 +155,7 @@ export function SelectDiaTabelaOS({
                      <button
                         key={option.code}
                         onClick={() => handleSelect(option.code)}
-                        className={`w-full px-4 py-3 text-left font-bold tracking-widest italic transition-all duration-200 ${
+                        className={`w-full px-4 py-3 text-left font-bold tracking-widest italic transition-all ${
                            valorAtual === option.code
                               ? 'bg-blue-500 text-white'
                               : 'text-black hover:bg-black hover:text-white'

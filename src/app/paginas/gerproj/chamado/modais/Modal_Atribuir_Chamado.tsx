@@ -437,7 +437,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-gradient-to-r from-teal-600 to-teal-700 p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
-                  <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-xs shadow-black">
+                  <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
                      <MdAddCall className="text-black" size={28} />
                   </div>
                   <div className="flex flex-col">
@@ -502,7 +502,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                  }}
                                  placeholder="Buscar Consultor..."
                                  disabled={loadingRecursos}
-                                 className="input-busca-recurso w-full rounded-md border-t border-black/10 bg-white py-3 pr-12 pl-12 font-bold tracking-widest text-black shadow-md shadow-black transition-all placeholder:tracking-widest placeholder:text-slate-500 placeholder:italic hover:bg-slate-50 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                 className="input-busca-recurso w-full rounded-md border-t border-black/10 bg-white py-3 pr-12 pl-12 font-bold tracking-widest text-black shadow-md shadow-black transition-all placeholder:tracking-widest placeholder:text-slate-500 placeholder:italic hover:bg-slate-200 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                               />
                               {searchTerm && (
                                  <button
@@ -810,7 +810,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                            <button
                               onClick={handleLimparFormulario}
                               disabled={atribuirMutation.isPending}
-                              className="cursor-pointer rounded-sm border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:bg-red-800 active:scale-95"
+                              className="w-[200px] cursor-pointer rounded-md border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:bg-red-800 active:scale-95"
                            >
                               Limpar
                            </button>
@@ -822,7 +822,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                               disabled={
                                  !isFormValid() || atribuirMutation.isPending
                               }
-                              className={`cursor-pointer rounded-sm border-none bg-blue-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all ${
+                              className={`w-[200px] cursor-pointer rounded-md border-none bg-blue-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all ${
                                  atribuirMutation.isPending || !isFormValid()
                                     ? 'disabled:cursor-not-allowed disabled:opacity-50'
                                     : 'hover:bg-blue-800 active:scale-95'
@@ -834,7 +834,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
                                     Salvando...
                                  </span>
                               ) : (
-                                 <div className="flex items-center gap-3">
+                                 <div className="flex items-center justify-center gap-3">
                                     <IoIosSave
                                        className="mr-2 inline-block"
                                        size={20}
