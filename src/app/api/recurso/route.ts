@@ -19,27 +19,73 @@ function converterHoraParaHHmm(hora: string): string {
 
 export async function GET(request: Request) {
    try {
-      // Pega parâmetros da query
       const { searchParams } = new URL(request.url);
       const codRecurso = searchParams.get('codRecurso');
+      const codCliente = searchParams.get('codCliente');
+      const ano = searchParams.get('ano');
+      const mes = searchParams.get('mes');
+      const dataInicio = searchParams.get('dataInicio');
+      const dataFim = searchParams.get('dataFim');
 
       let sql = `
-      SELECT DISTINCT
-        Recurso.COD_RECURSO,
-        Recurso.NOME_RECURSO,
-        Recurso.HRDIA_RECURSO,
-        Recurso.CUSTO_RECURSO,
-        Recurso.RECEITA_RECURSO,
-        Recurso.TPCUSTO_RECURSO,
-        tarefa.CODREC_TAREFA
-      FROM RECURSO Recurso
-      LEFT JOIN TAREFA tarefa ON Recurso.COD_RECURSO = tarefa.CODREC_TAREFA
-      WHERE Recurso.ATIVO_RECURSO = 1
-    `;
+         SELECT DISTINCT
+            Recurso.COD_RECURSO,
+            Recurso.NOME_RECURSO,
+            Recurso.HRDIA_RECURSO,
+            Recurso.CUSTO_RECURSO,
+            Recurso.RECEITA_RECURSO,
+            Recurso.TPCUSTO_RECURSO
+         FROM RECURSO Recurso
+      `;
 
       const params: any[] = [];
+      const conditions: string[] = ['Recurso.ATIVO_RECURSO = 1'];
 
-      // Se codRecurso foi fornecido, filtrar por ele
+      // Se codCliente foi fornecido, buscar recursos que têm OS para esse cliente
+      if (codCliente) {
+         const codClienteNumber = Number(codCliente);
+         if (isNaN(codClienteNumber)) {
+            return NextResponse.json(
+               { error: 'Código do cliente inválido' },
+               { status: 400 }
+            );
+         }
+
+         sql += `
+            INNER JOIN OS ON Recurso.COD_RECURSO = OS.CODREC_OS
+            INNER JOIN CHAMADO ON OS.CHAMADO_OS = CHAMADO.COD_CHAMADO
+         `;
+
+         conditions.push('CHAMADO.COD_CLIENTE = ?');
+         params.push(codClienteNumber);
+
+         // Filtros de data (apenas quando há cliente selecionado e valores válidos)
+         const hasDataInicio = dataInicio && dataInicio.trim() !== '';
+         const hasDataFim = dataFim && dataFim.trim() !== '';
+         const hasAno = ano && ano.trim() !== '';
+         const hasMes = mes && mes.trim() !== '';
+
+         if (hasDataInicio && hasDataFim) {
+            conditions.push('OS.DTINI_OS BETWEEN ? AND ?');
+            params.push(dataInicio, dataFim);
+         } else if (hasAno && hasMes) {
+            const anoNum = Number(ano);
+            const mesNum = Number(mes);
+            if (!isNaN(anoNum) && !isNaN(mesNum)) {
+               conditions.push('EXTRACT(YEAR FROM OS.DTINI_OS) = ?');
+               conditions.push('EXTRACT(MONTH FROM OS.DTINI_OS) = ?');
+               params.push(anoNum, mesNum);
+            }
+         } else if (hasDataInicio) {
+            conditions.push('OS.DTINI_OS >= ?');
+            params.push(dataInicio);
+         } else if (hasDataFim) {
+            conditions.push('OS.DTINI_OS <= ?');
+            params.push(dataFim);
+         }
+      }
+
+      // Se codRecurso foi fornecido, adicionar ao filtro
       if (codRecurso) {
          const codRecursoNumber = Number(codRecurso);
          if (isNaN(codRecursoNumber)) {
@@ -48,10 +94,11 @@ export async function GET(request: Request) {
                { status: 400 }
             );
          }
-         sql += ' AND Recurso.COD_RECURSO = ?';
+         conditions.push('Recurso.COD_RECURSO = ?');
          params.push(codRecursoNumber);
       }
 
+      sql += ' WHERE ' + conditions.join(' AND ');
       sql += ' ORDER BY Recurso.NOME_RECURSO ASC';
 
       const responseRecursos = await firebirdQuery<{

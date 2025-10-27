@@ -6,9 +6,11 @@ import { useMemo, useState, useCallback, useEffect } from 'react';
 // COMPONENTS
 import { IsError } from '../../../../../components/IsError';
 import { IsLoading } from '../../../../../components/IsLoading';
-import ExcelButtonRelatorioOS from '../../../../../components/Button_Excel';
-import PDFButtonRelatorioOS from '../../../../../components/Button_PDF';
-import { SelectDataInicio, SelectDataFim } from './SelectData';
+import { SelectSimNaoTabelaOS } from '../filtros/Select_Sim_Nao_Tabela_OS';
+import { FiltrosTabelaOSPeriodo } from './Filtros_Tabela_Chamado'; // NOVO IMPORT
+import { DropdownCliente } from './Select_Clientes';
+import { SelectRecursoTabelaOS } from './Select_Recursos';
+import { ModalDetalhesOS } from './Modal_Detalhes_Relatorio_OS';
 
 // HOOKS
 import { useAuth } from '../../../../../hooks/useAuth';
@@ -16,39 +18,24 @@ import { useAuth } from '../../../../../hooks/useAuth';
 // ICONS
 import { HiDocumentReport } from 'react-icons/hi';
 import { IoClose } from 'react-icons/io5';
-import {
-   FaClock,
-   FaExclamationTriangle,
-   FaEye,
-   FaSearch,
-} from 'react-icons/fa';
+import { FaExclamationTriangle, FaEye } from 'react-icons/fa';
 import { MdFilterList } from 'react-icons/md';
-import { FiRefreshCcw } from 'react-icons/fi';
 import { BsEraserFill } from 'react-icons/bs';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
 
 // FORMATTERS
 import {
-   formatarHora,
    formatarCodNumber,
    formatarHorasTotaisHorasDecimais,
-   formatarCodString,
-   formatarDataParaBR,
-   normalizeDate,
 } from '../../../../../utils/formatters';
 
 // PRIMEREACT
-import { Calendar } from 'primereact/calendar';
-import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import 'primereact/resources/themes/lara-light-indigo/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 
 // UTILS
-import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
-
-import { SelectSimNaoTabelaOS } from '../filtros/Select_Sim_Nao_Tabela_OS';
 import { InputFilterTableHeaderProps } from '../../../../../types/types';
 import { debounce } from 'lodash';
 
@@ -58,27 +45,9 @@ import { debounce } from 'lodash';
 const MODAL_MAX_HEIGHT = 'calc(100vh - 600px)';
 const ANIMATION_DURATION = 100;
 const CACHE_TIME = 1000 * 60 * 5;
+const DEBOUNCE_DELAY = 400;
 
-const AGRUPAR_OPTIONS = [
-   { name: 'Cliente', code: 'cliente' },
-   { name: 'Recurso', code: 'recurso' },
-   { name: 'Projeto', code: 'projeto' },
-   { name: 'Tarefa', code: 'tarefa' },
-   { name: 'Cliente + Recurso', code: 'cliente-recurso' },
-];
-
-const OPTIONS_SIM_NAO = [
-   { name: 'Todos', code: 'todos' },
-   { name: 'Sim', code: 'sim' },
-   { name: 'Nao', code: 'nao' },
-];
-
-/*
- * Colunas e limites utilizados pelo InputFilterWithDebounce.
- * Ajuste as chaves e valores conforme as colunas reais do seu sistema.
- */
 const COLUMN_MAX_LENGTH: Record<string, number> = {
-   // Exemplo de limites por coluna — adicione/remova conforme necessário
    OS: 10,
    codOs: 10,
    DATA: 10,
@@ -90,21 +59,9 @@ const COLUMN_MAX_LENGTH: Record<string, number> = {
    VALID_OS: 5,
 };
 
-const NUMERIC_ONLY_COLUMNS: string[] = [
-   // Colunas que aceitam apenas dígitos
-   'OS',
-   'codOs',
-   'COD_OS',
-   'CODIGO',
-];
-
-const DATE_COLUMNS: string[] = [
-   // Colunas que representam datas (para validação de entrada)
-   'DATA',
-   'data',
-   'DATA_INICIO',
-   'DATA_FIM',
-];
+const NUMERIC_ONLY_COLUMNS: string[] = ['OS', 'codOs', 'COD_OS', 'CODIGO'];
+const DATE_COLUMNS: string[] = ['DATA', 'data', 'DATA_INICIO', 'DATA_FIM'];
+const DROPDOWN_SIM_NAO_COLUMNS = ['FATURADO_OS', 'VALID_OS'] as const;
 
 // ================================================================================
 // INTERFACES
@@ -177,10 +134,13 @@ interface Props {
    onClose: () => void;
 }
 
-// ================================================================================
-// COMPONENTE FILTRO MODAL
-// ================================================================================
+interface ExtendedInputFilterProps extends InputFilterTableHeaderProps {
+   columnId?: string;
+}
 
+// ================================================================================
+// COMPONENTE FILTRO COM DEBOUNCE
+// ================================================================================
 const InputFilterWithDebounce = ({
    value,
    onChange,
@@ -189,20 +149,15 @@ const InputFilterWithDebounce = ({
 }: ExtendedInputFilterProps) => {
    const [localValue, setLocalValue] = useState(value);
 
-   // Obter o limite máximo para a coluna específica
    const maxLength = columnId ? COLUMN_MAX_LENGTH[columnId] : undefined;
-
-   // Verificar se a coluna aceita apenas números
    const isNumericOnly = columnId
       ? NUMERIC_ONLY_COLUMNS.includes(columnId as any)
       : false;
 
-   // Sincroniza valor local com prop externa
    useEffect(() => {
       setLocalValue(value);
    }, [value]);
 
-   // Debounce otimizado com cleanup
    const debouncedOnChange = useMemo(
       () =>
          debounce((newValue: string) => {
@@ -211,32 +166,26 @@ const InputFilterWithDebounce = ({
       [onChange]
    );
 
-   // Cleanup do debounce
    useEffect(() => {
       return () => {
          debouncedOnChange.cancel();
       };
    }, [debouncedOnChange]);
 
-   // Handlers
    const handleChange = useCallback(
       (e: React.ChangeEvent<HTMLInputElement>) => {
          let inputValue = e.target.value;
 
-         // Validar apenas números se for coluna numérica
          if (isNumericOnly && inputValue && !/^\d*$/.test(inputValue)) {
-            return; // Não permite caracteres não numéricos
+            return;
          }
 
-         // Validação especial para campos de data - apenas números e /
          if (columnId && DATE_COLUMNS.includes(columnId as any)) {
-            // Remove qualquer caractere que não seja número ou /
             inputValue = inputValue.replace(/[^\d/]/g, '');
          }
 
-         // Validar o limite de caracteres se definido
          if (maxLength && inputValue.length > maxLength) {
-            return; // Não permite digitar além do limite
+            return;
          }
 
          setLocalValue(inputValue);
@@ -251,7 +200,6 @@ const InputFilterWithDebounce = ({
       debouncedOnChange.cancel();
    }, [onChange, debouncedOnChange]);
 
-   // Atalho de teclado para limpar (Escape)
    const handleKeyDown = useCallback(
       (e: React.KeyboardEvent<HTMLInputElement>) => {
          if (e.key === 'Escape' && localValue) {
@@ -262,7 +210,6 @@ const InputFilterWithDebounce = ({
       [localValue, handleClear]
    );
 
-   // Calcular se está próximo do limite (>80%)
    const isNearLimit =
       maxLength && localValue ? localValue.length / maxLength > 0.8 : false;
 
@@ -298,62 +245,23 @@ const InputFilterWithDebounce = ({
    );
 };
 
-const FiltroModalDetalhes = ({
-   value,
-   onChange,
-   placeholder,
-}: {
-   value: string;
-   onChange: (value: string) => void;
-   placeholder: string;
-}) => {
-   return (
-      <div className="relative w-full">
-         <input
-            type="text"
-            value={value}
-            onChange={e => onChange(e.target.value)}
-            placeholder={placeholder}
-            className="w-full rounded-md border border-teal-950 bg-teal-900 px-4 py-2 pr-10 text-base text-white transition-all select-none hover:bg-teal-950 focus:ring-2 focus:ring-pink-500 focus:outline-none"
-         />
-         {value && (
-            <button
-               onClick={() => onChange('')}
-               className="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer text-white transition-all hover:scale-150 hover:text-red-500 active:scale-95"
-               type="button"
-            >
-               <IoClose size={20} />
-            </button>
-         )}
-      </div>
-   );
-};
-
-const DEBOUNCE_DELAY = 400;
-
-const DROPDOWN_SIM_NAO_COLUMNS = ['FATURADO_OS', 'VALID_OS'] as const;
-
-interface ExtendedInputFilterProps extends InputFilterTableHeaderProps {
-   columnId?: string;
-}
-
+// ================================================================================
+// COMPONENTE FILTROS HEADER TABELA
+// ================================================================================
 export const FiltrosHeaderTabelaOs = ({
    value,
    onChange,
    type = 'text',
    columnId,
 }: ExtendedInputFilterProps) => {
-   // Verificar se a coluna usa dropdown SIM/NÃO
    const isDropdownSimNao = columnId
       ? DROPDOWN_SIM_NAO_COLUMNS.includes(columnId as any)
       : false;
 
-   // Se for dropdown SIM/NÃO, renderizar o componente específico
    if (isDropdownSimNao) {
       return <SelectSimNaoTabelaOS value={value} onChange={onChange} />;
    }
 
-   // Caso contrário, renderizar o input normal
    return (
       <InputFilterWithDebounce
          value={value}
@@ -361,460 +269,6 @@ export const FiltrosHeaderTabelaOs = ({
          type={type}
          columnId={columnId}
       />
-   );
-};
-
-// ================================================================================
-// COMPONENTE MODAL DE DETALHES
-// ================================================================================
-const ModalDetalhes = ({
-   grupo,
-   agruparPor,
-   filtrosAplicados,
-   onClose,
-}: {
-   grupo: GrupoRelatorio;
-   agruparPor: string;
-   filtrosAplicados: any;
-   onClose: () => void;
-}) => {
-   const [isClosing, setIsClosing] = useState(false);
-
-   // Estados dos filtros do modal
-   const [filtroOS, setFiltroOS] = useState('');
-   const [filtroData, setFiltroData] = useState('');
-   const [filtroChamado, setFiltroChamado] = useState('');
-   const [filtroCliente, setFiltroCliente] = useState('');
-   const [filtroRecurso, setFiltroRecurso] = useState('');
-   const [filtroFaturado, setFiltroFaturado] = useState('');
-   const [filtroValidado, setFiltroValidado] = useState('');
-
-   const handleClose = useCallback(() => {
-      setIsClosing(true);
-      setTimeout(() => {
-         onClose();
-      }, ANIMATION_DURATION);
-   }, [onClose]);
-
-   // Função para limpar todos os filtros
-   const limparFiltros = useCallback(() => {
-      setFiltroOS('');
-      setFiltroData('');
-      setFiltroChamado('');
-      setFiltroCliente('');
-      setFiltroRecurso('');
-      setFiltroFaturado('');
-      setFiltroValidado('');
-   }, []);
-
-   // Contar filtros ativos
-   const filtrosAtivos = useMemo(() => {
-      return [
-         filtroOS,
-         filtroData,
-         filtroChamado,
-         filtroCliente,
-         filtroRecurso,
-         filtroFaturado,
-         filtroValidado,
-      ].filter(f => f.trim()).length;
-   }, [
-      filtroOS,
-      filtroData,
-      filtroChamado,
-      filtroCliente,
-      filtroRecurso,
-      filtroFaturado,
-      filtroValidado,
-   ]);
-
-   // Filtrar detalhes baseado nos filtros
-   const detalhesFiltrados = useMemo(() => {
-      return grupo.detalhes.filter(detalhe => {
-         // Filtro OS
-         if (filtroOS && !String(detalhe.codOs).includes(filtroOS)) {
-            return false;
-         }
-
-         // Filtro Data
-         if (filtroData) {
-            const dateFormats = normalizeDate(detalhe.data);
-            const match = dateFormats.some(dateFormat =>
-               dateFormat.toLowerCase().includes(filtroData.toLowerCase())
-            );
-            if (!match) return false;
-         }
-
-         // Filtro Chamado
-         if (
-            filtroChamado &&
-            !String(detalhe.chamado).includes(filtroChamado)
-         ) {
-            return false;
-         }
-
-         // Filtro Cliente
-         if (
-            filtroCliente &&
-            !detalhe.cliente
-               ?.toLowerCase()
-               .includes(filtroCliente.toLowerCase())
-         ) {
-            return false;
-         }
-
-         // Filtro Recurso
-         if (filtroRecurso) {
-            const recursoNormalizado = corrigirTextoCorrompido(
-               detalhe.recurso ?? ''
-            );
-            if (
-               !recursoNormalizado
-                  .toLowerCase()
-                  .includes(filtroRecurso.toLowerCase())
-            ) {
-               return false;
-            }
-         }
-
-         // Filtro Faturado
-         if (filtroFaturado && filtroFaturado !== 'todos') {
-            if (filtroFaturado === 'sim' && detalhe.faturado !== 'SIM')
-               return false;
-            if (filtroFaturado === 'nao' && detalhe.faturado !== 'NAO')
-               return false;
-         }
-
-         // Filtro Validado
-         if (filtroValidado && filtroValidado !== 'todos') {
-            if (filtroValidado === 'sim' && detalhe.validado !== 'SIM')
-               return false;
-            if (filtroValidado === 'nao' && detalhe.validado !== 'NAO')
-               return false;
-         }
-
-         return true;
-      });
-   }, [
-      grupo.detalhes,
-      filtroOS,
-      filtroData,
-      filtroChamado,
-      filtroCliente,
-      filtroRecurso,
-      filtroFaturado,
-      filtroValidado,
-   ]);
-
-   return (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center">
-         {/* OVERLAY */}
-         <div
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-            onClick={handleClose}
-         />
-
-         {/* MODAL CONTAINER */}
-         <div
-            className={`animate-in slide-in-from-bottom-4 z-10 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl shadow-xl shadow-black transition-all duration-500 ease-out ${
-               isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
-            }`}
-         >
-            {/* HEADER DO MODAL */}
-            <header className="flex flex-col gap-6 bg-white/50 p-6">
-               <div className="flex items-center justify-between gap-8">
-                  <div className="flex items-center justify-center gap-6">
-                     <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
-                        <HiDocumentReport className="text-black" size={28} />
-                     </div>
-                     <h2 className="text-2xl font-extrabold tracking-widest text-black uppercase select-none">
-                        {grupo.nome}
-                     </h2>
-                  </div>
-
-                  {/* Informações do grupo */}
-                  <div className="flex h-full items-center justify-center gap-6">
-                     <div className="flex w-[300px] flex-col gap-1 rounded-tl-4xl rounded-br-4xl border border-teal-600 bg-gradient-to-br from-teal-500 to-teal-600 px-6 py-2 shadow-md shadow-black">
-                        <div className="text-sm font-extrabold tracking-widest text-white uppercase italic select-none">
-                           Total de Horas
-                        </div>
-                        <div className="pl-4 text-3xl font-extrabold tracking-widest text-white italic select-none">
-                           {formatarHorasTotaisHorasDecimais(grupo.totalHoras)}h
-                        </div>
-                     </div>
-
-                     <div className="flex w-[300px] flex-col gap-1 rounded-tl-4xl rounded-br-4xl border border-purple-600 bg-gradient-to-br from-purple-500 to-purple-600 px-6 py-2 shadow-md shadow-black">
-                        <div className="text-sm font-extrabold tracking-widest text-white italic select-none">
-                           TOTAL DE OS's
-                        </div>
-                        <div className="pl-4 text-3xl font-extrabold tracking-widest text-white italic select-none">
-                           {formatarCodNumber(grupo.quantidadeOS)}
-                        </div>
-                     </div>
-
-                     <div className="flex w-[300px] flex-col gap-1 rounded-tl-4xl rounded-br-4xl border border-blue-600 bg-gradient-to-br from-blue-500 to-blue-600 px-6 py-2 shadow-md shadow-black">
-                        <div className="text-sm font-extrabold tracking-widest text-white italic select-none">
-                           TOTAL DE OS's FATURADAS
-                        </div>
-                        <div className="pl-4 text-3xl font-extrabold tracking-widest text-white italic select-none">
-                           {formatarCodNumber(grupo.osFaturadas)}
-                        </div>
-                     </div>
-
-                     <div className="flex w-[300px] flex-col gap-1 rounded-tl-4xl rounded-br-4xl border border-green-600 bg-gradient-to-br from-green-500 to-green-600 px-6 py-2 shadow-md shadow-black">
-                        <div className="text-sm font-extrabold tracking-widest text-white italic select-none">
-                           TOTAL DE OS's VALIDADAS
-                        </div>
-                        <div className="pl-4 text-3xl font-extrabold tracking-widest text-white italic select-none">
-                           {formatarCodNumber(grupo.osValidadas)}
-                        </div>
-                     </div>
-
-                     {/* Botões de Exportação */}
-                     <div className="flex items-center gap-4">
-                        <ExcelButtonRelatorioOS
-                           grupo={grupo}
-                           tipoAgrupamento={agruparPor}
-                           filtros={filtrosAplicados}
-                        />
-                        <PDFButtonRelatorioOS
-                           grupo={grupo}
-                           tipoAgrupamento={agruparPor}
-                           filtros={filtrosAplicados}
-                        />
-                     </div>
-
-                     <button
-                        onClick={handleClose}
-                        aria-label="Fechar relatório de OS"
-                        className={`group cursor-pointer rounded-full bg-red-500/50 p-3 text-white transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 ${
-                           isClosing ? 'animate-spin' : ''
-                        }`}
-                     >
-                        <IoClose size={24} />
-                     </button>
-                  </div>
-               </div>
-            </header>
-
-            {/* SEÇÃO DE FILTROS DO MODAL */}
-            <div className="flex flex-col gap-4 bg-white/50 p-4">
-               <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                     {filtrosAtivos > 0 && (
-                        <span className="rounded-full bg-pink-600 px-3 py-1 text-sm font-bold text-white">
-                           {filtrosAtivos}
-                        </span>
-                     )}
-                  </div>
-                  {filtrosAtivos > 0 && (
-                     <button
-                        onClick={limparFiltros}
-                        className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-sm font-extrabold tracking-widest text-white transition-all hover:bg-red-800 active:scale-95"
-                     >
-                        Limpar Filtros
-                     </button>
-                  )}
-               </div>
-
-               <div className="grid grid-cols-7 gap-4">
-                  <div className="flex flex-col gap-1">
-                     <label className="text-sm font-semibold tracking-widest text-black select-none">
-                        OS:
-                     </label>
-                     <FiltroModalDetalhes
-                        value={filtroOS}
-                        onChange={setFiltroOS}
-                        placeholder="Filtrar por OS"
-                     />
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                     <label className="text-sm font-semibold tracking-widest text-black select-none">
-                        Data:
-                     </label>
-                     <FiltroModalDetalhes
-                        value={filtroData}
-                        onChange={setFiltroData}
-                        placeholder="Filtrar por Data"
-                     />
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                     <label className="text-sm font-semibold tracking-widest text-black select-none">
-                        Chamado:
-                     </label>
-                     <FiltroModalDetalhes
-                        value={filtroChamado}
-                        onChange={setFiltroChamado}
-                        placeholder="Filtrar por Chamado"
-                     />
-                  </div>
-
-                  {agruparPor !== 'cliente' && (
-                     <div className="flex flex-col gap-1">
-                        <label className="text-sm font-semibold tracking-widest text-black select-none">
-                           Cliente:
-                        </label>
-                        <FiltroModalDetalhes
-                           value={filtroCliente}
-                           onChange={setFiltroCliente}
-                           placeholder="Filtrar por Cliente"
-                        />
-                     </div>
-                  )}
-
-                  {agruparPor !== 'recurso' && (
-                     <div className="flex flex-col gap-1">
-                        <label className="text-sm font-semibold tracking-widest text-black select-none">
-                           Recurso:
-                        </label>
-                        <FiltroModalDetalhes
-                           value={filtroRecurso}
-                           onChange={setFiltroRecurso}
-                           placeholder="Filtrar por Recurso"
-                        />
-                     </div>
-                  )}
-
-                  <div className="flex flex-col gap-1">
-                     <label className="text-sm font-semibold tracking-widest text-black select-none">
-                        Faturado:
-                     </label>
-                     <SelectSimNaoTabelaOS
-                        value={filtroFaturado}
-                        onChange={setFiltroFaturado}
-                     />
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                     <label className="text-sm font-semibold tracking-widest text-black select-none">
-                        Validado:
-                     </label>
-                     <SelectSimNaoTabelaOS
-                        value={filtroValidado}
-                        onChange={setFiltroValidado}
-                     />
-                  </div>
-               </div>
-            </div>
-
-            <div className="max-h-[calc(90vh-120px)] overflow-y-auto">
-               {detalhesFiltrados.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center gap-4 bg-slate-900 py-32 text-center">
-                     <FaFilterCircleXmark className="text-red-600" size={80} />
-                     <h3 className="text-2xl font-extrabold tracking-wider text-white italic select-none">
-                        Nenhum registro encontrado para os filtros aplicados
-                     </h3>
-                  </div>
-               ) : (
-                  <table className="w-full">
-                     <thead className="sticky top-0 z-10 bg-teal-800">
-                        <tr className="bg-teal-800 py-6 font-extrabold tracking-wider text-white select-none">
-                           <th className="p-3 text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
-                              OS
-                           </th>
-                           <th className="p-3 text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
-                              Data
-                           </th>
-                           <th className="p-3 text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
-                              Chamado
-                           </th>
-                           <th className="p-3 text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
-                              Hora Início
-                           </th>
-                           <th className="p-3 text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
-                              Hora Fim
-                           </th>
-                           <th className="p-3 text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
-                              Horas
-                           </th>
-                           {agruparPor !== 'cliente' && (
-                              <th className="p-3 text-left text-base font-bold tracking-widest text-white uppercase italic select-none">
-                                 Cliente
-                              </th>
-                           )}
-                           {agruparPor !== 'recurso' && (
-                              <th className="p-3 text-left text-base font-bold tracking-widest text-white uppercase italic select-none">
-                                 Recurso
-                              </th>
-                           )}
-                           <th className="p-3 text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
-                              Faturado
-                           </th>
-                           <th className="p-3 text-center text-base font-bold tracking-widest text-white uppercase italic select-none">
-                              Validado
-                           </th>
-                        </tr>
-                     </thead>
-                     <tbody>
-                        {detalhesFiltrados.map((detalhe, idx) => (
-                           <tr
-                              key={idx}
-                              className="border-b border-white/10 transition-all hover:bg-white/10"
-                           >
-                              <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none">
-                                 {formatarCodNumber(detalhe.codOs)}
-                              </td>
-                              <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none">
-                                 {formatarDataParaBR(detalhe.data)}
-                              </td>
-                              <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none">
-                                 {formatarCodString(detalhe.chamado)}
-                              </td>
-                              <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none">
-                                 {formatarHora(detalhe.horaInicio)}
-                              </td>
-                              <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none">
-                                 {formatarHora(detalhe.horaFim)}
-                              </td>
-                              <td className="p-3 text-center text-sm font-extrabold tracking-widest text-amber-500 select-none">
-                                 {formatarHorasTotaisHorasDecimais(
-                                    detalhe.horas
-                                 )}
-                              </td>
-                              {agruparPor !== 'cliente' && (
-                                 <td className="p-3 text-sm font-semibold tracking-widest text-white select-none">
-                                    {detalhe.cliente || '----------'}
-                                 </td>
-                              )}
-                              {agruparPor !== 'recurso' && (
-                                 <td className="p-3 text-sm font-semibold tracking-widest text-white select-none">
-                                    {corrigirTextoCorrompido(
-                                       detalhe.recurso ?? ''
-                                    ) || '----------'}
-                                 </td>
-                              )}
-                              <td className="p-3 text-center">
-                                 <span
-                                    className={`inline-block rounded px-3 py-1.5 text-sm font-extrabold tracking-widest select-none ${
-                                       detalhe.faturado === 'SIM'
-                                          ? 'bg-blue-600 text-white'
-                                          : 'bg-red-600 text-white'
-                                    }`}
-                                 >
-                                    {detalhe.faturado}
-                                 </span>
-                              </td>
-                              <td className="p-3 text-center">
-                                 <span
-                                    className={`inline-block rounded px-3 py-1.5 text-sm font-extrabold tracking-widest select-none ${
-                                       detalhe.validado === 'SIM'
-                                          ? 'bg-blue-600 text-white'
-                                          : 'bg-red-600 text-white'
-                                    }`}
-                                 >
-                                    {detalhe.validado}
-                                 </span>
-                              </td>
-                           </tr>
-                        ))}
-                     </tbody>
-                  </table>
-               )}
-            </div>
-         </div>
-      </div>
    );
 };
 
@@ -860,21 +314,6 @@ const NoResultsState = ({
 );
 
 // ================================================================================
-// FUNÇÕES UTILITÁRIAS
-// ================================================================================
-function parseDate(dateStr: string): Date {
-   const [year, month, day] = dateStr.split('-').map(Number);
-   return new Date(year, month - 1, day);
-}
-
-function formatDate(date: Date): string {
-   const y = date.getFullYear();
-   const m = String(date.getMonth() + 1).padStart(2, '0');
-   const d = String(date.getDate()).padStart(2, '0');
-   return `${y}-${m}-${d}`;
-}
-
-// ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
 export function RelatorioOS({ isOpen = true, onClose }: Props) {
@@ -882,13 +321,21 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
    const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-   // Estados - Filtros
-   const [agruparPor, setAgruparPor] = useState<string>('cliente');
-   const [mesAno, setMesAno] = useState<string>('');
-   const [dataInicio, setDataInicio] = useState<string>('');
-   const [dataFim, setDataFim] = useState<string>('');
-   const [faturadoOS, setFaturadoOS] = useState<string>('');
-   const [validOS, setValidOS] = useState<string>('');
+   // Estados - Filtros de Data (agora controlados pelo componente de filtros)
+   const [filtrosData, setFiltrosData] = useState({
+      ano: new Date().getFullYear() as number | 'todos',
+      mes: (new Date().getMonth() + 1) as number | 'todos',
+      diaInicio: 'todos' as number | 'todos',
+      diaFim: 'todos' as number | 'todos',
+   });
+
+   // Estados - Outros Filtros
+   const [clienteSelecionado, setClienteSelecionado] = useState<
+      number | 'todos'
+   >('todos');
+   const [recursoSelecionado, setRecursoSelecionado] = useState<
+      number | 'todos'
+   >('todos');
 
    // Estados - UI
    const [selectedGrupo, setSelectedGrupo] = useState<GrupoRelatorio | null>(
@@ -896,35 +343,101 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
    );
    const [isClosing, setIsClosing] = useState(false);
 
+   // Callback para receber os filtros do componente filho
+   const handleFiltersChange = useCallback(
+      (filters: {
+         ano: number | 'todos';
+         mes: number | 'todos';
+         diaInicio: number | 'todos';
+         diaFim: number | 'todos';
+         cliente: string;
+         recurso: string;
+         status: string;
+      }) => {
+         setFiltrosData({
+            ano: filters.ano,
+            mes: filters.mes,
+            diaInicio: filters.diaInicio,
+            diaFim: filters.diaFim,
+         });
+      },
+      []
+   );
+
+   // Computed Values - Construir datas completas
+   const dataInicioCompleta = useMemo(() => {
+      if (
+         filtrosData.ano === 'todos' ||
+         filtrosData.mes === 'todos' ||
+         filtrosData.diaInicio === 'todos'
+      ) {
+         return '';
+      }
+      const ano = filtrosData.ano;
+      const mes = String(filtrosData.mes).padStart(2, '0');
+      const dia = String(filtrosData.diaInicio).padStart(2, '0');
+      return `${ano}-${mes}-${dia}`;
+   }, [filtrosData.ano, filtrosData.mes, filtrosData.diaInicio]);
+
+   const dataFimCompleta = useMemo(() => {
+      if (
+         filtrosData.ano === 'todos' ||
+         filtrosData.mes === 'todos' ||
+         filtrosData.diaFim === 'todos'
+      ) {
+         return '';
+      }
+      const ano = filtrosData.ano;
+      const mes = String(filtrosData.mes).padStart(2, '0');
+      const dia = String(filtrosData.diaFim).padStart(2, '0');
+      return `${ano}-${mes}-${dia}`;
+   }, [filtrosData.ano, filtrosData.mes, filtrosData.diaFim]);
+
    // Computed Values - Filtros
    const totalActiveFilters = useMemo(() => {
       const filters = [
-         mesAno,
-         dataInicio,
-         dataFim,
-         faturadoOS && faturadoOS !== 'todos' ? faturadoOS : '',
-         validOS && validOS !== 'todos' ? validOS : '',
+         filtrosData.ano !== 'todos' ? 'ano' : '',
+         filtrosData.mes !== 'todos' ? 'mes' : '',
+         filtrosData.diaInicio !== 'todos' ? 'diaInicio' : '',
+         filtrosData.diaFim !== 'todos' ? 'diaFim' : '',
+         clienteSelecionado !== 'todos' ? 'cliente' : '',
+         recursoSelecionado !== 'todos' ? 'recurso' : '',
       ];
       return filters.filter(f => f?.trim()).length;
-   }, [mesAno, dataInicio, dataFim, faturadoOS, validOS]);
+   }, [
+      filtrosData.ano,
+      filtrosData.mes,
+      filtrosData.diaInicio,
+      filtrosData.diaFim,
+      clienteSelecionado,
+      recursoSelecionado,
+   ]);
 
    const filtrosAplicados = useMemo(() => {
       const filtros: any = {};
 
-      if (dataInicio) filtros.dataInicio = dataInicio;
-      if (dataFim) filtros.dataFim = dataFim;
+      if (dataInicioCompleta) filtros.dataInicio = dataInicioCompleta;
+      if (dataFimCompleta) filtros.dataFim = dataFimCompleta;
 
-      if (mesAno) {
-         const [ano, mes] = mesAno.split('-');
-         filtros.ano = ano;
-         filtros.mes = mes;
+      if (filtrosData.ano !== 'todos' && filtrosData.mes !== 'todos') {
+         filtros.ano = String(filtrosData.ano);
+         filtros.mes = String(filtrosData.mes).padStart(2, '0');
       }
 
-      if (faturadoOS && faturadoOS !== 'todos') filtros.faturado = faturadoOS;
-      if (validOS && validOS !== 'todos') filtros.validado = validOS;
+      if (clienteSelecionado !== 'todos')
+         filtros.codCliente = String(clienteSelecionado);
+      if (recursoSelecionado !== 'todos')
+         filtros.codRecurso = String(recursoSelecionado);
 
       return filtros;
-   }, [dataInicio, dataFim, mesAno, faturadoOS, validOS]);
+   }, [
+      dataInicioCompleta,
+      dataFimCompleta,
+      filtrosData.ano,
+      filtrosData.mes,
+      clienteSelecionado,
+      recursoSelecionado,
+   ]);
 
    // Query Params e API
    const enabled = useMemo(() => {
@@ -935,23 +448,32 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
       if (!user) return new URLSearchParams();
 
       const params = new URLSearchParams({
-         agruparPor: agruparPor,
+         agruparPor: 'cliente',
       });
 
-      if (mesAno) {
-         const [ano, mes] = mesAno.split('-');
-         params.append('ano', ano);
-         params.append('mes', mes);
+      if (filtrosData.ano !== 'todos' && filtrosData.mes !== 'todos') {
+         params.append('ano', String(filtrosData.ano));
+         params.append('mes', String(filtrosData.mes).padStart(2, '0'));
       }
 
-      if (dataInicio) params.append('dataInicio', dataInicio);
-      if (dataFim) params.append('dataFim', dataFim);
+      if (dataInicioCompleta) params.append('dataInicio', dataInicioCompleta);
+      if (dataFimCompleta) params.append('dataFim', dataFimCompleta);
 
-      if (faturadoOS) params.append('faturado', faturadoOS);
-      if (validOS) params.append('validado', validOS);
+      if (clienteSelecionado !== 'todos')
+         params.append('codCliente', String(clienteSelecionado));
+      if (recursoSelecionado !== 'todos')
+         params.append('codRecurso', String(recursoSelecionado));
 
       return params;
-   }, [user, agruparPor, mesAno, dataInicio, dataFim, faturadoOS, validOS]);
+   }, [
+      user,
+      filtrosData.ano,
+      filtrosData.mes,
+      dataInicioCompleta,
+      dataFimCompleta,
+      clienteSelecionado,
+      recursoSelecionado,
+   ]);
 
    async function fetchRelatorio(
       params: URLSearchParams,
@@ -994,11 +516,15 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
 
    // Handlers - Filtros
    const clearFilters = useCallback(() => {
-      setMesAno('');
-      setDataInicio('');
-      setDataFim('');
-      setFaturadoOS('');
-      setValidOS('');
+      const hoje = new Date();
+      setFiltrosData({
+         ano: hoje.getFullYear(),
+         mes: hoje.getMonth() + 1,
+         diaInicio: 'todos',
+         diaFim: 'todos',
+      });
+      setClienteSelecionado('todos');
+      setRecursoSelecionado('todos');
    }, []);
 
    // Handlers - UI
@@ -1010,11 +536,103 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
       }, ANIMATION_DURATION);
    }, [onClose]);
 
-   // Exemplo de datas disponíveis (próximos 30 dias)
-   const datasDisponiveis = Array.from({ length: 30 }, (_, i) => {
-      const data = new Date();
-      data.setDate(data.getDate() + i);
-      return data;
+   const { data: clientes = [], isLoading: loadingClientes } = useQuery({
+      queryKey: [
+         'clientes',
+         filtrosData.ano,
+         filtrosData.mes,
+         dataInicioCompleta,
+         dataFimCompleta,
+      ],
+      queryFn: async () => {
+         const url = new URL('/api/cliente', window.location.origin);
+
+         // Adicionar filtros de data (apenas se tiverem valores válidos)
+         if (filtrosData.ano !== 'todos' && filtrosData.mes !== 'todos') {
+            url.searchParams.append('ano', String(filtrosData.ano));
+            url.searchParams.append(
+               'mes',
+               String(filtrosData.mes).padStart(2, '0')
+            );
+         }
+
+         // Só adiciona se não for string vazia
+         if (dataInicioCompleta && dataInicioCompleta.trim()) {
+            url.searchParams.append('dataInicio', dataInicioCompleta);
+         }
+
+         if (dataFimCompleta && dataFimCompleta.trim()) {
+            url.searchParams.append('dataFim', dataFimCompleta);
+         }
+
+         const response = await fetch(url.toString(), {
+            headers: { Authorization: `Bearer ${token}` },
+         });
+
+         if (!response.ok) throw new Error('Erro ao buscar clientes');
+         return response.json();
+      },
+      enabled: !!token && isOpen,
+   });
+
+   // 2. ADICIONE este useEffect ANTES do useEffect que reseta recursos
+   // (procure por onde tem: setRecursoSelecionado('todos'))
+   useEffect(() => {
+      // Quando os filtros de data mudam, reseta o cliente selecionado
+      setClienteSelecionado('todos');
+   }, [filtrosData.ano, filtrosData.mes, dataInicioCompleta, dataFimCompleta]);
+
+   // 3. MANTENHA o useEffect existente que reseta recursos quando cliente muda
+   useEffect(() => {
+      // Quando o cliente muda, reseta o recurso selecionado
+      setRecursoSelecionado('todos');
+   }, [clienteSelecionado]);
+
+   // 2. SUBSTITUA a query de recursos existente por esta versão atualizada:
+   const { data: recursos = [], isLoading: loadingRecursos } = useQuery({
+      queryKey: [
+         'recursos',
+         clienteSelecionado,
+         filtrosData.ano,
+         filtrosData.mes,
+         dataInicioCompleta,
+         dataFimCompleta,
+      ], // Adiciona os filtros de data
+      queryFn: async () => {
+         const url = new URL('/api/recurso', window.location.origin);
+
+         // Se houver cliente selecionado, adiciona ao filtro
+         if (clienteSelecionado !== 'todos') {
+            url.searchParams.append('codCliente', String(clienteSelecionado));
+         }
+
+         // Adicionar filtros de data (apenas se tiverem valores válidos)
+         if (filtrosData.ano !== 'todos' && filtrosData.mes !== 'todos') {
+            url.searchParams.append('ano', String(filtrosData.ano));
+            url.searchParams.append(
+               'mes',
+               String(filtrosData.mes).padStart(2, '0')
+            );
+         }
+
+         // Só adiciona se não for string vazia
+         if (dataInicioCompleta && dataInicioCompleta.trim()) {
+            url.searchParams.append('dataInicio', dataInicioCompleta);
+         }
+
+         if (dataFimCompleta && dataFimCompleta.trim()) {
+            url.searchParams.append('dataFim', dataFimCompleta);
+         }
+
+         const response = await fetch(url.toString(), {
+            headers: { Authorization: `Bearer ${token}` },
+         });
+
+         if (!response.ok) throw new Error('Erro ao buscar recursos');
+         return response.json();
+      },
+      enabled: !!token && isOpen,
+      staleTime: CACHE_TIME,
    });
 
    // Validações e Estados de Carregamento
@@ -1046,7 +664,7 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
 
             {/* CONTAINER */}
             <div
-               className={`animate-in slide-in-from-bottom-4 z-10 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl shadow-xl shadow-black transition-all duration-500 ease-out ${
+               className={`animate-in slide-in-from-bottom-4 z-10 h-[90vh] w-[95vw] overflow-hidden rounded-2xl shadow-xl shadow-black transition-all duration-500 ease-out ${
                   isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
                }`}
             >
@@ -1085,141 +703,40 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                            </h2>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-4">
-                           <div className="flex flex-col gap-1">
-                              <label className="text-base font-semibold tracking-widest text-black italic select-none">
-                                 Agrupar por:
-                              </label>
-                              <Dropdown
-                                 value={agruparPor}
-                                 options={AGRUPAR_OPTIONS}
-                                 optionLabel="name"
-                                 optionValue="code"
-                                 onChange={e => setAgruparPor(e.value)}
-                                 className="shadow-md shadow-black"
-                                 appendTo="self"
+                        <div className="flex flex-col gap-4">
+                           {/* COMPONENTE DE FILTROS DE PERÍODO */}
+                           <FiltrosTabelaOSPeriodo
+                              onFiltersChange={handleFiltersChange}
+                           />
+
+                           {/* LINHA 2: CLIENTE E RECURSO */}
+                           <div className="grid grid-cols-2 gap-4">
+                              <DropdownCliente
+                                 value={clienteSelecionado}
+                                 onChange={setClienteSelecionado}
+                                 placeholder="Selecione o Cliente"
+                                 clientes={clientes}
+                                 isLoading={loadingClientes}
+                              />
+
+                              <SelectRecursoTabelaOS
+                                 value={recursoSelecionado}
+                                 onChange={setRecursoSelecionado}
+                                 placeholder="Selecione o Recurso"
+                                 recursos={recursos}
+                                 isLoading={loadingRecursos}
                               />
                            </div>
 
-                           <div className="flex flex-col gap-1">
-                              <label className="text-base font-semibold tracking-widest text-black italic select-none">
-                                 Mês/Ano:
-                              </label>
-                              <Calendar
-                                 view="month"
-                                 dateFormat="mm/yy"
-                                 value={
-                                    mesAno ? new Date(mesAno + '-01') : null
-                                 }
-                                 onChange={e => {
-                                    if (e.value) {
-                                       const ano = e.value.getFullYear();
-                                       const mes = (e.value.getMonth() + 1)
-                                          .toString()
-                                          .padStart(2, '0');
-                                       setMesAno(`${ano}-${mes}`);
-                                    } else {
-                                       setMesAno('');
-                                    }
-                                 }}
-                                 showIcon
-                                 placeholder="Mês/Ano"
-                                 className="w-full shadow-md shadow-black"
-                                 appendTo="self"
-                              />
-                           </div>
-
-                           <div className="flex flex-col gap-1">
-                              <label className="text-base font-semibold tracking-widest text-black italic select-none">
-                                 Data Início:
-                              </label>
-                              <Calendar
-                                 value={
-                                    dataInicio ? parseDate(dataInicio) : null
-                                 }
-                                 onChange={e =>
-                                    setDataInicio(
-                                       e.value ? formatDate(e.value) : ''
-                                    )
-                                 }
-                                 showIcon
-                                 dateFormat="dd/mm/yy"
-                                 placeholder="Data inicial"
-                                 className="w-full rounded-md shadow-md shadow-black"
-                                 appendTo="self"
-                              />
-                           </div>
-
-                           <div className="flex flex-col gap-1">
-                              <label className="text-base font-semibold tracking-widest text-black italic select-none">
-                                 Data Fim:
-                              </label>
-                              <Calendar
-                                 value={dataFim ? parseDate(dataFim) : null}
-                                 onChange={e =>
-                                    setDataFim(
-                                       e.value ? formatDate(e.value) : ''
-                                    )
-                                 }
-                                 showIcon
-                                 dateFormat="dd/mm/yy"
-                                 placeholder="Data final"
-                                 className="w-full rounded-md shadow-md shadow-black"
-                                 appendTo="self"
-                              />
-                           </div>
-
-                           <div className="flex flex-col gap-1">
-                              <label className="text-base font-semibold tracking-widest text-black italic select-none">
-                                 Faturado:
-                              </label>
-                              <Dropdown
-                                 value={faturadoOS}
-                                 options={OPTIONS_SIM_NAO}
-                                 optionLabel="name"
-                                 optionValue="code"
-                                 onChange={e => setFaturadoOS(e.value)}
-                                 placeholder="Selecione uma opção"
-                                 className="w-full shadow-md shadow-black"
-                                 appendTo="self"
-                              />
-                           </div>
-
-                           <div className="flex flex-col gap-1">
-                              <label className="text-base font-semibold tracking-widest text-black italic select-none">
-                                 Validado:
-                              </label>
-                              <Dropdown
-                                 value={validOS}
-                                 options={OPTIONS_SIM_NAO}
-                                 optionLabel="name"
-                                 optionValue="code"
-                                 onChange={e => setValidOS(e.value)}
-                                 placeholder="Selecione uma opção"
-                                 className="w-full shadow-md shadow-black"
-                                 appendTo="self"
-                              />
-                           </div>
-
-                           <div className="col-span-2 flex items-end gap-4">
-                              <Button
-                                 onClick={() => refetch()}
-                                 className="!flex !flex-1 !items-center !justify-center !gap-4 !text-base !font-extrabold !tracking-widest !text-black !italic shadow-md shadow-black transition-all active:scale-95"
-                                 severity="success"
-                              >
-                                 <FiRefreshCcw size={24} />
-                                 ATUALIZAR
-                              </Button>
-
-                              <Button
-                                 onClick={clearFilters}
-                                 className="!flex !flex-1 !items-center !justify-center !gap-4 !text-base !font-extrabold !tracking-widest !text-black !italic shadow-md shadow-black transition-all active:scale-95"
-                                 severity="info"
-                              >
-                                 <BsEraserFill size={24} />
-                                 LIMPAR FILTROS
-                              </Button>
-                           </div>
+                           {/* BOTÃO LIMPAR FILTROS */}
+                           <Button
+                              onClick={clearFilters}
+                              className="!flex !items-center !justify-center !gap-4 !text-base !font-extrabold !tracking-widest !text-black !italic shadow-md shadow-black transition-all active:scale-95"
+                              severity="info"
+                           >
+                              <BsEraserFill size={24} />
+                              LIMPAR FILTROS
+                           </Button>
                         </div>
                      </div>
 
@@ -1333,9 +850,9 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
 
          {/* MODAL DE DETALHES */}
          {selectedGrupo && (
-            <ModalDetalhes
+            <ModalDetalhesOS
                grupo={selectedGrupo}
-               agruparPor={agruparPor}
+               agruparPor="cliente"
                filtrosAplicados={filtrosAplicados}
                onClose={() => setSelectedGrupo(null)}
             />
