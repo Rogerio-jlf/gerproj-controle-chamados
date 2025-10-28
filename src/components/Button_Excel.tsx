@@ -6,6 +6,7 @@ import { saveAs } from 'file-saver';
 import {
    Tooltip,
    TooltipContent,
+   TooltipProvider,
    TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { RiFileExcel2Fill } from 'react-icons/ri';
@@ -107,7 +108,7 @@ function getTipoAgrupamentoLabel(tipo: string): string {
 // ================================================================================
 // COMPONENTE
 // ================================================================================
-export default function ExcelButtonRelatorioOS({
+export function ExcelRelatorioOS({
    grupo,
    tipoAgrupamento,
    filtros,
@@ -717,25 +718,17 @@ export default function ExcelButtonRelatorioOS({
 
    return (
       <>
-         <Tooltip>
-            <TooltipTrigger asChild>
-               <button
-                  onClick={handleOpenModal}
-                  className="group cursor-pointer rounded-md border-[1px] border-green-800 bg-green-700 p-2 shadow-md shadow-black transition-all hover:scale-125 active:scale-95"
-               >
-                  <RiFileExcel2Fill className="text-white" size={20} />
-                  {buttonText}
-               </button>
-            </TooltipTrigger>
-            <TooltipContent
-               side="left"
-               align="start"
-               sideOffset={8}
-               className="border-t-8 border-green-600 bg-white text-sm font-bold tracking-widest text-black italic shadow-lg shadow-black select-none"
-            >
-               Exportar Excel
-            </TooltipContent>
-         </Tooltip>
+         <button
+            onClick={handleOpenModal}
+            title="Exportar para Excel"
+            className="group cursor-pointer rounded-md bg-gradient-to-br from-green-600 to-green-700 p-3 shadow-md shadow-black transition-all hover:scale-110 active:scale-95"
+         >
+            <RiFileExcel2Fill
+               className="text-white group-hover:scale-110"
+               size={24}
+            />
+            {buttonText}
+         </button>
 
          {/* MODAL */}
          {showModal && (

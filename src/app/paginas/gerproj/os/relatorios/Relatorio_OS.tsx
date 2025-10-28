@@ -18,9 +18,7 @@ import { useAuth } from '../../../../../hooks/useAuth';
 // ICONS
 import { HiDocumentReport } from 'react-icons/hi';
 import { IoClose } from 'react-icons/io5';
-import { FaExclamationTriangle, FaEye } from 'react-icons/fa';
-import { MdFilterList } from 'react-icons/md';
-import { BsEraserFill } from 'react-icons/bs';
+import { FaEraser, FaExclamationTriangle, FaEye } from 'react-icons/fa';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
 
 // FORMATTERS
@@ -29,12 +27,6 @@ import {
    formatarHorasTotaisHorasDecimais,
 } from '../../../../../utils/formatters';
 
-// PRIMEREACT
-import { Button } from 'primereact/button';
-import 'primereact/resources/themes/lara-light-indigo/theme.css';
-import 'primereact/resources/primereact.min.css';
-import 'primeicons/primeicons.css';
-
 // UTILS
 import { InputFilterTableHeaderProps } from '../../../../../types/types';
 import { debounce } from 'lodash';
@@ -42,7 +34,7 @@ import { debounce } from 'lodash';
 // ================================================================================
 // CONSTANTES
 // ================================================================================
-const MODAL_MAX_HEIGHT = 'calc(100vh - 600px)';
+const MODAL_MAX_HEIGHT = 'calc(100vh - 520px)';
 const ANIMATION_DURATION = 100;
 const CACHE_TIME = 1000 * 60 * 5;
 const DEBOUNCE_DELAY = 400;
@@ -660,16 +652,16 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
       <>
          <div className="fixed inset-0 z-50 flex items-center justify-center">
             {/* OVERLAY */}
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-teal-900" />
 
             {/* CONTAINER */}
             <div
-               className={`animate-in slide-in-from-bottom-4 z-10 h-[90vh] w-[95vw] overflow-hidden rounded-2xl shadow-xl shadow-black transition-all duration-500 ease-out ${
+               className={`animate-in slide-in-from-bottom-4 z-10 h-[90vh] w-[95vw] overflow-hidden rounded-2xl transition-all duration-500 ease-out ${
                   isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
                }`}
             >
                {/* HEADER */}
-               <header className="flex flex-col gap-6 bg-white/50 p-6">
+               <header className="flex flex-col gap-4 bg-white/50 p-6">
                   {/* TÍTULO E BOTÃO FECHAR */}
                   <div className="flex items-center justify-between gap-8">
                      <div className="flex items-center justify-center gap-6">
@@ -696,53 +688,56 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                   <div className="flex items-center justify-between gap-6">
                      {/* SEÇÃO DE FILTROS */}
                      <div className="flex w-[1600px] flex-col gap-4 p-6">
-                        <div className="flex items-center gap-4">
-                           <MdFilterList className="text-black" size={28} />
-                           <h2 className="text-xl font-bold tracking-widest text-black uppercase select-none">
-                              Filtros
-                           </h2>
-                        </div>
-
-                        <div className="flex flex-col gap-4">
-                           {/* COMPONENTE DE FILTROS DE PERÍODO */}
+                        <div className="flex items-center justify-center">
                            <FiltrosRelatorioOS
                               onFiltersChange={handleFiltersChange}
+                              initialAno={filtrosData.ano}
+                              initialMes={filtrosData.mes}
+                              initialDiaInicio={filtrosData.diaInicio}
+                              initialDiaFim={filtrosData.diaFim}
                            />
 
-                           {/* LINHA 2: CLIENTE E RECURSO */}
-                           <div className="grid grid-cols-2 gap-4">
-                              <DropdownClientes
-                                 value={clienteSelecionado}
-                                 onChange={setClienteSelecionado}
-                                 placeholder="Selecione o Cliente"
-                                 clientes={clientes}
-                                 isLoading={loadingClientes}
-                              />
-
-                              <DropdownRecursos
-                                 value={recursoSelecionado}
-                                 onChange={setRecursoSelecionado}
-                                 placeholder="Selecione o Recurso"
-                                 recursos={recursos}
-                                 isLoading={loadingRecursos}
-                              />
-                           </div>
-
-                           {/* BOTÃO LIMPAR FILTROS */}
-                           <Button
+                           <button
                               onClick={clearFilters}
-                              className="!flex !items-center !justify-center !gap-4 !text-base !font-extrabold !tracking-widest !text-black !italic shadow-md shadow-black transition-all active:scale-95"
-                              severity="info"
+                              title="Limpar Filtros"
+                              className="mt-5 cursor-pointer rounded-full border-none bg-red-500 px-6 py-3 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:bg-red-700 active:scale-95"
                            >
-                              <BsEraserFill size={24} />
-                              LIMPAR FILTROS
-                           </Button>
+                              <FaEraser size={20} className="text-white" />
+                           </button>
+                        </div>
+
+                        {/* LINHA 2: CLIENTE E RECURSO */}
+                        <div className="grid grid-cols-2 gap-6">
+                           <DropdownClientes
+                              value={clienteSelecionado}
+                              onChange={setClienteSelecionado}
+                              placeholder="Selecione o Cliente"
+                              clientes={clientes}
+                              isLoading={loadingClientes}
+                           />
+
+                           <DropdownRecursos
+                              value={recursoSelecionado}
+                              onChange={setRecursoSelecionado}
+                              placeholder="Selecione o Recurso"
+                              recursos={recursos}
+                              isLoading={loadingRecursos}
+                           />
                         </div>
                      </div>
 
                      {/* CARDS DE TOTALIZADORES */}
                      {totalizadores && (
                         <div className="grid flex-1 grid-cols-2 gap-4">
+                           <div className="flex flex-col gap-1 rounded-tl-4xl rounded-br-4xl border-[1px] border-purple-600 bg-gradient-to-br from-purple-500 to-purple-600 p-6 shadow-md shadow-black">
+                              <div className="text-sm font-extrabold tracking-widest text-white italic select-none">
+                                 TOTAL DE OS's
+                              </div>
+                              <div className="pl-4 text-3xl font-extrabold tracking-widest text-white italic select-none">
+                                 {formatarCodNumber(totalizadores.totalGeralOS)}
+                              </div>
+                           </div>
+
                            <div className="flex flex-col gap-1 rounded-tr-4xl rounded-bl-4xl border-[1px] border-teal-600 bg-gradient-to-br from-teal-500 to-teal-600 p-6 shadow-md shadow-black">
                               <div className="text-sm font-extrabold tracking-widest text-white uppercase italic select-none">
                                  Total de Horas
@@ -752,15 +747,6 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                                     totalizadores.totalGeralHoras
                                  )}
                                  h
-                              </div>
-                           </div>
-
-                           <div className="flex flex-col gap-1 rounded-tl-4xl rounded-br-4xl border-[1px] border-purple-600 bg-gradient-to-br from-purple-500 to-purple-600 p-6 shadow-md shadow-black">
-                              <div className="text-sm font-extrabold tracking-widest text-white italic select-none">
-                                 TOTAL DE OS's
-                              </div>
-                              <div className="pl-4 text-3xl font-extrabold tracking-widest text-white italic select-none">
-                                 {formatarCodNumber(totalizadores.totalGeralOS)}
                               </div>
                            </div>
 
@@ -806,24 +792,24 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                            <EmptyState />
                         )
                      ) : (
-                        <div className="flex flex-col gap-4 p-6">
+                        <div className="flex flex-col gap-5 p-6">
                            {grupos.map(grupo => (
                               <div
                                  key={grupo.chave}
                                  className="overflow-hidden rounded-lg bg-white/10 shadow-md shadow-black"
                               >
                                  {/* CABEÇALHO DO GRUPO */}
-                                 <div className="group flex cursor-pointer items-center justify-between bg-teal-700 px-6 py-1.5 transition-all hover:bg-teal-500">
+                                 <div className="group flex items-center justify-between bg-teal-800 px-6 py-1.5 transition-all hover:bg-teal-500">
                                     <div className="flex flex-1 items-center gap-4">
                                        <div className="flex flex-col gap-1">
                                           <h3 className="text-xl font-extrabold tracking-widest text-white uppercase select-none group-hover:text-black">
                                              {grupo.nome}
                                           </h3>
-                                          <p className="pl-4 text-base font-semibold tracking-widest text-white italic select-none group-hover:text-black">
+                                          <p className="pl-4 text-sm font-semibold tracking-widest text-white italic select-none group-hover:text-black">
+                                             QTD. OS's ={' '}
                                              {formatarCodNumber(
                                                 grupo.quantidadeOS
-                                             )}{' '}
-                                             - OS's
+                                             )}
                                           </p>
                                        </div>
                                     </div>
@@ -831,11 +817,15 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                                     {/* BOTÃO VER DETALHES */}
                                     <button
                                        onClick={() => setSelectedGrupo(grupo)}
-                                       className="flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 text-white transition-all hover:scale-105 hover:bg-white/30 active:scale-95"
+                                       title="Visualizar Detalhes"
+                                       className="flex cursor-pointer items-center gap-3 rounded-md bg-blue-600 px-6 py-2 shadow-md shadow-black transition-all hover:bg-blue-700 active:scale-95"
                                     >
-                                       <FaEye size={20} />
-                                       <span className="text-sm font-bold tracking-widest uppercase">
-                                          Ver Detalhes
+                                       <FaEye
+                                          className="text-white"
+                                          size={20}
+                                       />
+                                       <span className="text-sm font-bold tracking-widest text-white uppercase select-none">
+                                          Detalhes
                                        </span>
                                     </button>
                                  </div>

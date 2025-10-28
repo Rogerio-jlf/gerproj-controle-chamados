@@ -39,7 +39,7 @@ import { FaExclamationTriangle, FaProjectDiagram } from 'react-icons/fa';
 // ================================================================================
 // CONSTANTES
 // ================================================================================
-const MODAL_MAX_HEIGHT = 'calc(100vh - 500px)';
+const MODAL_MAX_HEIGHT = 'calc(100vh - 470px)';
 const DEBOUNCE_DELAY = 800;
 const ANIMATION_DURATION = 100;
 const CACHE_TIME = 1000 * 60 * 5;
@@ -456,7 +456,7 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
    return (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
          {/* OVERLAY */}
-         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+         <div className="absolute inset-0 bg-teal-900" />
 
          {/* CONTAINER */}
          <div

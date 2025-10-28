@@ -370,7 +370,7 @@ export function DropdownDiaInicio({
 
             {/* Dropdown Panel */}
             {isOpen && podeSelecionar && (
-               <div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-60 overflow-y-auto rounded-md bg-white shadow-md shadow-black">
+               <div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-192 overflow-y-auto rounded-md bg-white shadow-md shadow-black">
                   {diasOptions.map(option => (
                      <button
                         key={option.code}
@@ -512,7 +512,7 @@ export function DropdownDiaFim({
 
             {/* Dropdown Panel */}
             {isOpen && podeSelecionar && (
-               <div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-60 overflow-y-auto rounded-md bg-white shadow-md shadow-black">
+               <div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-192 overflow-y-auto rounded-md bg-white shadow-md shadow-black">
                   {diasOptions.map(option => (
                      <button
                         key={option.code}

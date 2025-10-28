@@ -1,3 +1,5 @@
+// ============= ARQUIVO: FiltrosRelatorioOS =============
+
 'use client';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
@@ -17,25 +19,46 @@ interface FiltrosProps {
       recurso: string;
       status: string;
    }) => void;
+   // ADICIONE ESTAS PROPS:
+   initialAno?: number | 'todos';
+   initialMes?: number | 'todos';
+   initialDiaInicio?: number | 'todos';
+   initialDiaFim?: number | 'todos';
 }
 
-export function FiltrosRelatorioOS({ onFiltersChange }: FiltrosProps) {
+export function FiltrosRelatorioOS({
+   onFiltersChange,
+   initialAno,
+   initialMes,
+   initialDiaInicio,
+   initialDiaFim,
+}: FiltrosProps) {
    const hoje = useMemo(() => new Date(), []);
    const { filters, setFilters, getDiasDoMes } = useFiltersPeriodo();
 
-   // Estados locais
+   // Estados locais com valores iniciais das props
    const [ano, setAno] = useState<number | 'todos'>(
-      filters.ano || hoje.getFullYear()
+      initialAno ?? filters.ano ?? hoje.getFullYear()
    );
    const [mes, setMes] = useState<number | 'todos'>(
-      filters.mes || hoje.getMonth() + 1
+      initialMes ?? filters.mes ?? hoje.getMonth() + 1
    );
    const [diaInicio, setDiaInicio] = useState<number | 'todos'>(
-      filters.diaInicio || 1
+      initialDiaInicio ?? filters.diaInicio ?? 1
    );
    const [diaFim, setDiaFim] = useState<number | 'todos'>(
-      filters.diaFim || hoje.getDate()
+      initialDiaFim ?? filters.diaFim ?? hoje.getDate()
    );
+
+   // ADICIONE ESTE useEffect para sincronizar com as props:
+   useEffect(() => {
+      if (initialAno !== undefined) setAno(initialAno);
+      if (initialMes !== undefined) setMes(initialMes);
+      if (initialDiaInicio !== undefined) setDiaInicio(initialDiaInicio);
+      if (initialDiaFim !== undefined) setDiaFim(initialDiaFim);
+   }, [initialAno, initialMes, initialDiaInicio, initialDiaFim]);
+
+   // ... resto do código permanece igual
 
    // Debounces
    const [debouncedAno] = useDebounce(ano, 300);
@@ -45,15 +68,12 @@ export function FiltrosRelatorioOS({ onFiltersChange }: FiltrosProps) {
 
    // Obter dias disponíveis do mês/ano selecionado
    const getDiasDisponiveis = useCallback(() => {
-      // Se ano é 'todos' e mes é específico, usa o ano atual para calcular os dias do mês
       if (ano === 'todos' && mes !== 'todos') {
          return getDiasDoMes(hoje.getFullYear(), mes);
       }
-      // Se ambos são números válidos, retorna os dias do mês/ano
       if (ano !== 'todos' && mes !== 'todos') {
          return getDiasDoMes(ano, mes);
       }
-      // Caso contrário, retorna array vazio
       return [];
    }, [ano, mes, getDiasDoMes, hoje]);
 
@@ -61,7 +81,6 @@ export function FiltrosRelatorioOS({ onFiltersChange }: FiltrosProps) {
 
    // VALIDAÇÃO: Garantir que diaFim seja sempre >= diaInicio
    useEffect(() => {
-      // Se ambos são números e diaFim < diaInicio, ajusta diaFim
       if (diaInicio !== 'todos' && diaFim !== 'todos' && diaFim < diaInicio) {
          setDiaFim(diaInicio);
       }
@@ -71,12 +90,10 @@ export function FiltrosRelatorioOS({ onFiltersChange }: FiltrosProps) {
    useEffect(() => {
       if (diasDisponiveis.length === 0) return;
 
-      // Se diaInicio não está disponível, ajusta para o primeiro dia disponível
       if (diaInicio !== 'todos' && !diasDisponiveis.includes(diaInicio)) {
          setDiaInicio(diasDisponiveis[0]);
       }
 
-      // Se diaFim não está disponível, ajusta para o último dia disponível
       if (diaFim !== 'todos' && !diasDisponiveis.includes(diaFim)) {
          setDiaFim(diasDisponiveis[diasDisponiveis.length - 1]);
       }
@@ -90,12 +107,10 @@ export function FiltrosRelatorioOS({ onFiltersChange }: FiltrosProps) {
       }
    }, [ano, mes, diaInicio, diaFim]);
 
-   // Handler para diaInicio que garante que diaFim seja sempre >= diaInicio
    const handleDiaInicioChange = useCallback(
       (novoDiaInicio: number | 'todos') => {
          setDiaInicio(novoDiaInicio);
 
-         // Se mudou para um número e diaFim é menor, ajusta diaFim
          if (
             novoDiaInicio !== 'todos' &&
             diaFim !== 'todos' &&
@@ -107,23 +122,20 @@ export function FiltrosRelatorioOS({ onFiltersChange }: FiltrosProps) {
       [diaFim]
    );
 
-   // Handler para diaFim que garante que seja sempre >= diaInicio
    const handleDiaFimChange = useCallback(
       (novoDiaFim: number | 'todos') => {
-         // Se diaInicio é número e novo diaFim é menor, não permite
          if (
             diaInicio !== 'todos' &&
             novoDiaFim !== 'todos' &&
             novoDiaFim < diaInicio
          ) {
-            return; // Não permite selecionar dia fim menor que dia início
+            return;
          }
          setDiaFim(novoDiaFim);
       },
       [diaInicio]
    );
 
-   // Atualiza contexto quando os valores com debounce mudarem
    useEffect(() => {
       const newFilters = {
          ano: debouncedAno,
@@ -153,7 +165,7 @@ export function FiltrosRelatorioOS({ onFiltersChange }: FiltrosProps) {
    ]);
 
    return (
-      <div className="flex w-full gap-6">
+      <div className="flex w-full items-center justify-center gap-6">
          <div className="w-[300px]">
             <DropdownAno value={ano} onChange={setAno} />
          </div>

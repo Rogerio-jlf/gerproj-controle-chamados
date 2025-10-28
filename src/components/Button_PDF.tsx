@@ -131,7 +131,7 @@ function getNomeMes(mes: string): string {
 // ================================================================================
 // COMPONENTE
 // ================================================================================
-export default function PDFButtonRelatorioOS({
+export function PDFRelatorioOS({
    grupo,
    tipoAgrupamento,
    filtros,
@@ -524,25 +524,14 @@ export default function PDFButtonRelatorioOS({
 
    return (
       <>
-         <Tooltip>
-            <TooltipTrigger asChild>
-               <button
-                  onClick={handleOpenModal}
-                  className="group cursor-pointer rounded-md border-[1px] border-red-800 bg-red-700 p-2 shadow-md shadow-black transition-all hover:scale-125 active:scale-95"
-               >
-                  <FaFilePdf className="text-white" size={20} />
-                  {buttonText}
-               </button>
-            </TooltipTrigger>
-            <TooltipContent
-               side="left"
-               align="start"
-               sideOffset={8}
-               className="border-t-8 border-red-600 bg-white text-sm font-bold tracking-widest text-black italic shadow-lg shadow-black select-none"
-            >
-               Exportar PDF
-            </TooltipContent>
-         </Tooltip>
+         <button
+            onClick={handleOpenModal}
+            title="Exportar para PDF"
+            className="group cursor-pointer rounded-md bg-gradient-to-br from-red-600 to-red-700 p-3 shadow-md shadow-black transition-all hover:scale-110 active:scale-95"
+         >
+            <FaFilePdf className="text-white group-hover:scale-110" size={24} />
+            {buttonText}
+         </button>
 
          {/* MODAL */}
          {showModal && (

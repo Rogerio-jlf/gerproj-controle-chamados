@@ -630,7 +630,7 @@ function TabelaChamadoContent() {
       <div className="flex items-center justify-center">
          {/* VIEW DE CHAMADOS */}
          {(!activeView || activeView === 'chamados') && (
-            <div className="animate-in slide-in-from-bottom-4 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl shadow-xl shadow-black transition-all duration-500 ease-out">
+            <div className="animate-in slide-in-from-bottom-4 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl transition-all duration-500 ease-out">
                {/* HEADER */}
                <header className="flex flex-col gap-6 bg-white/50 p-6">
                   <div className="flex items-center justify-between gap-8">

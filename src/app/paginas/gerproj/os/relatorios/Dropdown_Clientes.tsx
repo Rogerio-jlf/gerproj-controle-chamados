@@ -81,7 +81,7 @@ export function DropdownClientes({
             <button
                onClick={() => !isLoading && setIsOpen(!isOpen)}
                disabled={isLoading}
-               className="relative flex w-full cursor-pointer items-center justify-between rounded-md border-t border-black/10 bg-white py-3 pr-4 pl-10 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-slate-200 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+               className="relative flex w-full cursor-pointer items-center justify-between rounded-md border-t border-black/10 bg-white p-3 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             >
                <span
                   className={`tracking-widest ${!selectedCliente || value === 'todos' ? 'text-slate-500' : 'text-black'}`}
@@ -110,19 +110,7 @@ export function DropdownClientes({
             </button>
 
             {isOpen && !isLoading && (
-               <div className="absolute top-full right-0 left-0 z-50 mt-3 max-h-[330px] overflow-hidden rounded-md bg-white shadow-sm shadow-black">
-                  {/* Campo de busca */}
-                  <div className="sticky top-0 bg-teal-900 p-4 shadow-sm shadow-black">
-                     <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        placeholder="Buscar cliente..."
-                        className="w-full rounded-md bg-white p-4 text-sm font-semibold tracking-widest text-black italic select-none placeholder:tracking-widest placeholder:text-slate-500 placeholder:italic focus:ring-2 focus:ring-pink-600 focus:outline-none"
-                        onClick={e => e.stopPropagation()}
-                     />
-                  </div>
-
+               <div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-192 overflow-y-auto rounded-md bg-white shadow-md shadow-black">
                   {/* Lista de clientes */}
                   <div className="max-h-[250px] overflow-y-auto">
                      {/* Opção "Todos" */}
@@ -137,25 +125,19 @@ export function DropdownClientes({
                         Todos os Clientes
                      </button>
 
-                     {clientesFiltrados.length > 0 ? (
-                        clientesFiltrados.map(cliente => (
-                           <button
-                              key={cliente.cod_cliente}
-                              onClick={() => handleSelect(cliente.cod_cliente)}
-                              className={`w-full p-4 text-left font-semibold tracking-widest italic transition-all select-none ${
-                                 value === cliente.cod_cliente
-                                    ? 'bg-blue-500 text-white'
-                                    : 'text-black hover:bg-black hover:text-white'
-                              }`}
-                           >
-                              {cliente.nome_cliente}
-                           </button>
-                        ))
-                     ) : (
-                        <div className="p-4 text-center text-sm font-semibold tracking-widest text-slate-500 italic select-none">
-                           Nenhum cliente encontrado
-                        </div>
-                     )}
+                     {clientesFiltrados.map(cliente => (
+                        <button
+                           key={cliente.cod_cliente}
+                           onClick={() => handleSelect(cliente.cod_cliente)}
+                           className={`w-full p-4 text-left font-semibold tracking-widest italic transition-all select-none ${
+                              value === cliente.cod_cliente
+                                 ? 'bg-blue-500 text-white'
+                                 : 'text-black hover:bg-black hover:text-white'
+                           }`}
+                        >
+                           {cliente.nome_cliente}
+                        </button>
+                     ))}
                   </div>
                </div>
             )}
