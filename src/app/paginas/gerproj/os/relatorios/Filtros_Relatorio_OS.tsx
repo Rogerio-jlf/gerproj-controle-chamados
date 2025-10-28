@@ -2,10 +2,10 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useFiltersPeriodo } from '../../../../../contexts/Filters_Context_Ano_Mes_Dia_Inicio_Dia_Fim.';
-import { SelectAnoTabelaOS } from './Select_Ano_Tabela_OS';
-import { SelectMesTabelaOS } from './Select_Mes_Tabela_OS';
-import { SelectDataInicioTabelaOS } from './Select_Data_Inicio';
-import { SelectDataFimTabelaOS } from './Select_Data_Fim';
+import { DropdownAno } from './Dropdown_Filtros_Datas';
+import { DropdownMes } from './Dropdown_Filtros_Datas';
+import { DropdownDiaInicio } from './Dropdown_Filtros_Datas';
+import { DropdownDiaFim } from './Dropdown_Filtros_Datas';
 
 interface FiltrosProps {
    onFiltersChange: (filters: {
@@ -19,7 +19,7 @@ interface FiltrosProps {
    }) => void;
 }
 
-export function FiltrosTabelaOSPeriodo({ onFiltersChange }: FiltrosProps) {
+export function FiltrosRelatorioOS({ onFiltersChange }: FiltrosProps) {
    const hoje = useMemo(() => new Date(), []);
    const { filters, setFilters, getDiasDoMes } = useFiltersPeriodo();
 
@@ -155,15 +155,15 @@ export function FiltrosTabelaOSPeriodo({ onFiltersChange }: FiltrosProps) {
    return (
       <div className="flex w-full gap-6">
          <div className="w-[300px]">
-            <SelectAnoTabelaOS value={ano} onChange={setAno} />
+            <DropdownAno value={ano} onChange={setAno} />
          </div>
 
          <div className="w-[300px]">
-            <SelectMesTabelaOS value={mes} onChange={setMes} />
+            <DropdownMes value={mes} onChange={setMes} />
          </div>
 
          <div className="w-[300px]">
-            <SelectDataInicioTabelaOS
+            <DropdownDiaInicio
                value={diaInicio}
                onChange={handleDiaInicioChange}
                ano={ano}
@@ -173,12 +173,12 @@ export function FiltrosTabelaOSPeriodo({ onFiltersChange }: FiltrosProps) {
          </div>
 
          <div className="w-[300px]">
-            <SelectDataFimTabelaOS
+            <DropdownDiaFim
                value={diaFim}
                onChange={handleDiaFimChange}
                ano={ano}
                mes={mes}
-               dataFim={diaInicio} // Passa diaInicio para filtrar dias >= diaInicio
+               dataFim={diaFim}
             />
          </div>
       </div>

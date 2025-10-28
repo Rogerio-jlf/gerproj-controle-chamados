@@ -7,9 +7,9 @@ import { useMemo, useState, useCallback, useEffect } from 'react';
 import { IsError } from '../../../../../components/IsError';
 import { IsLoading } from '../../../../../components/IsLoading';
 import { SelectSimNaoTabelaOS } from '../filtros/Select_Sim_Nao_Tabela_OS';
-import { FiltrosTabelaOSPeriodo } from './Filtros_Tabela_Chamado'; // NOVO IMPORT
-import { DropdownCliente } from './Select_Clientes';
-import { SelectRecursoTabelaOS } from './Select_Recursos';
+import { FiltrosRelatorioOS } from './Filtros_Relatorio_OS';
+import { DropdownClientes } from './Dropdown_Clientes';
+import { DropdownRecursos } from './Dropdown_Recursos';
 import { ModalDetalhesOS } from './Modal_Detalhes_Relatorio_OS';
 
 // HOOKS
@@ -705,13 +705,13 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
 
                         <div className="flex flex-col gap-4">
                            {/* COMPONENTE DE FILTROS DE PERÍODO */}
-                           <FiltrosTabelaOSPeriodo
+                           <FiltrosRelatorioOS
                               onFiltersChange={handleFiltersChange}
                            />
 
                            {/* LINHA 2: CLIENTE E RECURSO */}
                            <div className="grid grid-cols-2 gap-4">
-                              <DropdownCliente
+                              <DropdownClientes
                                  value={clienteSelecionado}
                                  onChange={setClienteSelecionado}
                                  placeholder="Selecione o Cliente"
@@ -719,7 +719,7 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                                  isLoading={loadingClientes}
                               />
 
-                              <SelectRecursoTabelaOS
+                              <DropdownRecursos
                                  value={recursoSelecionado}
                                  onChange={setRecursoSelecionado}
                                  placeholder="Selecione o Recurso"
