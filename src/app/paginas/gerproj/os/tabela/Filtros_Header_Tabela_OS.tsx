@@ -10,7 +10,7 @@ import { InputFilterTableHeaderProps } from '../../../../../types/types';
 import { normalizeDate } from '../../../../../utils/formatters';
 
 // COMPONENTS
-import { SelectSimNaoTabelaOS } from './Select_Sim_Nao_Tabela_OS';
+import { DropdownSimNaoTabelaOS } from './Dropdown_Sim_Nao_Tabela_OS';
 
 // ICONS
 import { FaPlus } from 'react-icons/fa';
@@ -221,7 +221,7 @@ export const FiltrosHeaderTabelaOs = ({
 
    // Se for dropdown SIM/NÃO, renderizar o componente específico
    if (isDropdownSimNao) {
-      return <SelectSimNaoTabelaOS value={value} onChange={onChange} />;
+      return <DropdownSimNaoTabelaOS value={value} onChange={onChange} />;
    }
 
    // Caso contrário, renderizar o input normal

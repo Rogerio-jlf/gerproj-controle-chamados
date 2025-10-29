@@ -6,7 +6,6 @@ import { useMemo, useState, useCallback, useEffect } from 'react';
 // COMPONENTS
 import { IsError } from '../../../../../components/IsError';
 import { IsLoading } from '../../../../../components/IsLoading';
-import { SelectSimNaoTabelaOS } from '../filtros/Select_Sim_Nao_Tabela_OS';
 import { FiltrosRelatorioOS } from './Filtros_Relatorio_OS';
 import { DropdownClientes } from './Dropdown_Clientes';
 import { DropdownRecursos } from './Dropdown_Recursos';
@@ -240,29 +239,6 @@ const InputFilterWithDebounce = ({
 // ================================================================================
 // COMPONENTE FILTROS HEADER TABELA
 // ================================================================================
-export const FiltrosHeaderTabelaOs = ({
-   value,
-   onChange,
-   type = 'text',
-   columnId,
-}: ExtendedInputFilterProps) => {
-   const isDropdownSimNao = columnId
-      ? DROPDOWN_SIM_NAO_COLUMNS.includes(columnId as any)
-      : false;
-
-   if (isDropdownSimNao) {
-      return <SelectSimNaoTabelaOS value={value} onChange={onChange} />;
-   }
-
-   return (
-      <InputFilterWithDebounce
-         value={value}
-         onChange={onChange}
-         type={type}
-         columnId={columnId}
-      />
-   );
-};
 
 // ================================================================================
 // COMPONENTES AUXILIARES
@@ -656,9 +632,10 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
 
             {/* CONTAINER */}
             <div
-               className={`animate-in slide-in-from-bottom-4 z-10 h-[90vh] w-[95vw] overflow-hidden rounded-t-2xl transition-all duration-500 ease-out ${
-                  isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
-               }`}
+               className="animate-in slide-in-from-bottom-4 z-10 h-[90vh] w-[95vw] overflow-hidden rounded-t-2xl transition-all duration-500 ease-out"
+               style={{
+                  animationDuration: `${ANIMATION_DURATION}ms`,
+               }}
             >
                {/* HEADER */}
                <header className="flex flex-col gap-4 bg-white/50 p-6">

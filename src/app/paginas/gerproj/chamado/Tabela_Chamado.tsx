@@ -24,7 +24,7 @@ import { RelatorioOS } from '../os/relatorios/Relatorio_OS';
 import { colunasTabelaChamados } from './Colunas_Tabela_Chamado';
 import { DropdownMenuTabelaChamado } from './Dropdown_Menu_Tabela_Chamado';
 import { FiltrosTabelaChamado } from './filtros/Filtros_Tabela_Chamado';
-import { TabelaOS } from '../os/Tabela_OS';
+import { TabelaOS } from '../os/tabela/Tabela_OS';
 import { TabelaTarefas } from '../tarefas/Tabela_Tarefa';
 import { TabelaProjeto } from '../projeto/Tabela_Projeto';
 import { ModalExcluirChamado } from './modais/Modal_Deletar_Chamado';

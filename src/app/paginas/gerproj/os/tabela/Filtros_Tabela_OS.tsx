@@ -2,9 +2,9 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useFiltersTabelaOs } from '../../../../../contexts/Filters_Context_Tabela_OS';
-import { SelectAnoTabelaOS } from './Select_Ano_Tabela_OS';
-import { SelectMesTabelaOS } from './Select_Mes_Tabela_OS';
-import { SelectDiaTabelaOS } from './Select_Dia_Tabela_OS';
+import { DropdownAnoTabelaOS } from './Dropdown_Filtros_Datas_Tabela_OS';
+import { DropdownMesTabelaOS } from './Dropdown_Filtros_Datas_Tabela_OS';
+import { DropdownDiaTabelaOS } from './Dropdown_Filtros_Datas_Tabela_OS';
 
 interface FiltrosProps {
    onFiltersChange: (filters: {
@@ -205,15 +205,23 @@ export function FiltrosTabelaOS({ onFiltersChange }: FiltrosProps) {
    return (
       <div className="flex w-full gap-6">
          <div className="w-[300px]">
-            <SelectAnoTabelaOS value={ano} onChange={handleAnoChange} />
+            <DropdownAnoTabelaOS
+               value={ano}
+               onChange={handleAnoChange}
+               diasDisponiveis={[]}
+            />
          </div>
 
          <div className="w-[300px]">
-            <SelectMesTabelaOS value={mes} onChange={handleMesChange} />
+            <DropdownMesTabelaOS
+               value={mes}
+               onChange={handleMesChange}
+               diasDisponiveis={[]}
+            />
          </div>
 
          <div className="w-[300px]">
-            <SelectDiaTabelaOS
+            <DropdownDiaTabelaOS
                value={dia}
                onChange={handleDiaChange}
                diasDisponiveis={getDiasParaSelect()}

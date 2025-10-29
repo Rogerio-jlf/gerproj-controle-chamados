@@ -316,9 +316,10 @@ export const ModalDetalhesOS = ({
 
          {/* MODAL CONTAINER */}
          <div
-            className={`animate-in slide-in-from-bottom-4 z-10 h-[90vh] w-[95vw] overflow-hidden rounded-2xl transition-all duration-500 ease-out ${
-               isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
-            }`}
+            className="animate-in slide-in-from-bottom-4 z-10 h-[90vh] w-[95vw] overflow-hidden rounded-2xl transition-all duration-500 ease-out"
+            style={{
+               animationDuration: `${ANIMATION_DURATION}ms`,
+            }}
          >
             {/* HEADER DO MODAL */}
             <header className="flex flex-col gap-20 bg-white/50 p-6">
