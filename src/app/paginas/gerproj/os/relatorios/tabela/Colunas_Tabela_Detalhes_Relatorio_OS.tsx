@@ -99,7 +99,7 @@ const CellChamado = ({ value }: { value: string }) => {
 
    return (
       <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-         {formatted}
+         {formatted || 'n/a'}
       </td>
    );
 };
@@ -171,7 +171,23 @@ const CellRecurso = ({ value }: { value?: string }) => {
    );
 
    return (
-      <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
+      <td className="p-3 text-left text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
+         {formatted}
+      </td>
+   );
+};
+
+/**
+ * Célula de texto formatada (para projeto e tarefa)
+ */
+const CellText = ({ value }: { value?: string }) => {
+   const formatted = useMemo(
+      () => (value ? corrigirTextoCorrompido(value) : EMPTY_VALUE),
+      [value]
+   );
+
+   return (
+      <td className="p-3 text-left text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
          {formatted}
       </td>
    );
@@ -239,19 +255,53 @@ export const colunasTabelaDetalhesRelatorioOS: ColunaDefinition[] = [
       align: 'center',
       render: (value: string) => <CellChamado value={value} />,
    },
+   // {
+   //    id: 'cliente',
+   //    header: 'Cliente',
+   //    accessor: 'cliente',
+   //    align: 'left',
+   //    showWhen: (agruparPor: string) => agruparPor !== 'cliente',
+   //    render: (value: string) => <CellCliente value={value} />,
+   // },
    {
-      id: 'horaInicio',
-      header: 'Hora Início',
-      accessor: 'horaInicio',
-      align: 'center',
-      render: (value: string) => <CellHora value={value} />,
+      id: 'recurso',
+      header: 'Recurso',
+      accessor: 'recurso',
+      align: 'left',
+      showWhen: (agruparPor: string) => agruparPor !== 'recurso',
+      render: (value: string) => <CellRecurso value={value} />,
    },
+   // {
+   //    id: 'codProjeto',
+   //    header: 'Cód. Projeto',
+   //    accessor: 'codProjeto',
+   //    align: 'center',
+   //    showWhen: (agruparPor: string) => agruparPor !== 'projeto',
+   //    render: (value?: number) => <CellNumber value={value || 0} />,
+   // },
    {
-      id: 'horaFim',
-      header: 'Hora Fim',
-      accessor: 'horaFim',
-      align: 'center',
-      render: (value: string) => <CellHora value={value} />,
+      id: 'projeto',
+      header: 'Projeto',
+      accessor: 'projeto',
+      align: 'left',
+      showWhen: (agruparPor: string) => agruparPor !== 'projeto',
+      render: (value: string) => <CellText value={value} />,
+   },
+   // {
+   //    id: 'codTarefa',
+   //    header: 'Cód. Tarefa',
+   //    accessor: 'codTarefa',
+   //    align: 'center',
+   //    showWhen: (agruparPor: string) => agruparPor !== 'tarefa',
+   //    render: (value?: number) => <CellNumber value={value || 0} />,
+   // },
+   {
+      id: 'tarefa',
+      header: 'Tarefa',
+      accessor: 'tarefa',
+      align: 'left',
+      showWhen: (agruparPor: string) => agruparPor !== 'tarefa',
+      render: (value: string) => <CellText value={value} />,
    },
    {
       id: 'horas',
@@ -259,22 +309,6 @@ export const colunasTabelaDetalhesRelatorioOS: ColunaDefinition[] = [
       accessor: 'horas',
       align: 'center',
       render: (value: number) => <CellTotalHoras value={value} />,
-   },
-   {
-      id: 'cliente',
-      header: 'Cliente',
-      accessor: 'cliente',
-      align: 'left',
-      showWhen: (agruparPor: string) => agruparPor !== 'cliente',
-      render: (value: string) => <CellCliente value={value} />,
-   },
-   {
-      id: 'recurso',
-      header: 'Recurso',
-      accessor: 'recurso',
-      align: 'center',
-      showWhen: (agruparPor: string) => agruparPor !== 'recurso',
-      render: (value: string) => <CellRecurso value={value} />,
    },
    {
       id: 'faturado',

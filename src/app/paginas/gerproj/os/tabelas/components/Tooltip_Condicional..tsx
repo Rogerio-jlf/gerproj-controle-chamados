@@ -15,7 +15,7 @@ interface ConditionalTooltipProps {
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export function TooltipCondicionalTabelaOS({
+export function TooltipCondicional({
    content,
    children,
 }: ConditionalTooltipProps) {

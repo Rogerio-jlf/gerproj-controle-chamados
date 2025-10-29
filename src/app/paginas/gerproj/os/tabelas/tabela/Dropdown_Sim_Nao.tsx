@@ -16,7 +16,7 @@ interface SelectSimNaoProps {
 // ================================================================================
 // COMPONENTE
 // ================================================================================
-export function DropdownSimNaoTabelaOS({ value, onChange }: SelectSimNaoProps) {
+export function DropdownSimNao({ value, onChange }: SelectSimNaoProps) {
    const [isOpen, setIsOpen] = useState(false);
    const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -62,7 +62,7 @@ export function DropdownSimNaoTabelaOS({ value, onChange }: SelectSimNaoProps) {
          {/* Button */}
          <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex w-full cursor-pointer items-center justify-between rounded-md border border-teal-950 bg-teal-900 px-4 py-2.5 text-base text-white transition-all hover:bg-teal-950 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+            className="flex w-full cursor-pointer items-center justify-between rounded-md bg-gradient-to-br from-teal-600 to-teal-700 px-4 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all hover:scale-108 focus:ring-2 focus:ring-pink-500 focus:outline-none"
          >
             <span className={value ? 'text-white' : 'text-slate-400'}>
                {selectedOption?.name}
@@ -75,13 +75,13 @@ export function DropdownSimNaoTabelaOS({ value, onChange }: SelectSimNaoProps) {
                      className="cursor-pointer text-white transition-all hover:scale-150 hover:text-red-500 active:scale-95"
                      title="Limpar"
                   >
-                     <IoClose size={20} />
+                     <IoClose size={24} />
                   </span>
                )}
                <span
                   className={`text-white transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                >
-                  <IoIosArrowDown size={20} />
+                  <IoIosArrowDown size={24} />
                </span>
             </div>
          </button>
@@ -95,7 +95,7 @@ export function DropdownSimNaoTabelaOS({ value, onChange }: SelectSimNaoProps) {
                      onClick={() => handleSelect(option.code)}
                      className={`w-full px-4 py-2.5 text-left text-base font-semibold tracking-widest italic transition-all ${
                         value === option.code
-                           ? 'bg-blue-500 text-white'
+                           ? 'bg-blue-600 text-white'
                            : 'text-black hover:bg-black hover:text-white'
                      }`}
                   >

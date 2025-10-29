@@ -218,6 +218,28 @@ function normalizeYesNoValue(value: string): string {
    return normalized;
 }
 
+// Função para converter strings vazias em null
+function sanitizeEmptyStrings(value: any): any {
+   if (typeof value === 'string' && value.trim() === '') {
+      return null;
+   }
+   return value;
+}
+
+// Função para processar todo o registro
+function processRecord(record: any): TabelaOSProps {
+   const sanitized: any = {};
+
+   for (const key in record) {
+      sanitized[key] = sanitizeEmptyStrings(record[key]);
+   }
+
+   return {
+      ...sanitized,
+      QTD_HR_OS: calculateHours(sanitized.HRINI_OS, sanitized.HRFIM_OS),
+   };
+}
+
 // ==================== QUERY BUILDING ====================
 function buildMainDateFilters(
    ano: number | null,
@@ -466,7 +488,7 @@ function buildQuery(
          END AS PROJETO_COMPLETO
       FROM OS os
       LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = os.CODREC_OS
-      LEFT JOIN CHAMADO Chamado ON Chamado.COD_CHAMADO = os.CHAMADO_OS
+      LEFT JOIN CHAMADO Chamado ON Chamado.COD_CHAMADO = CAST(NULLIF(TRIM(os.CHAMADO_OS), '') AS INTEGER)
       LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
       LEFT JOIN TAREFA Tarefa ON Tarefa.COD_TAREFA = os.CODTRF_OS
       LEFT JOIN PROJETO Projeto ON Projeto.COD_PROJETO = Tarefa.CODPRO_TAREFA
@@ -481,7 +503,7 @@ function buildCountQuery(whereConditions: string[]): string {
       SELECT COUNT(*) as TOTAL
       FROM OS os
       LEFT JOIN RECURSO Recurso ON Recurso.COD_RECURSO = os.CODREC_OS
-      LEFT JOIN CHAMADO Chamado ON Chamado.COD_CHAMADO = os.CHAMADO_OS
+      LEFT JOIN CHAMADO Chamado ON Chamado.COD_CHAMADO = CAST(NULLIF(TRIM(os.CHAMADO_OS), '') AS INTEGER)
       LEFT JOIN CLIENTE Cliente ON Cliente.COD_CLIENTE = Chamado.COD_CLIENTE
       LEFT JOIN TAREFA Tarefa ON Tarefa.COD_TAREFA = os.CODTRF_OS
       LEFT JOIN PROJETO Projeto ON Projeto.COD_PROJETO = Tarefa.CODPRO_TAREFA
@@ -571,13 +593,8 @@ export async function GET(request: Request) {
          firebirdQuery(countSql, params),
       ]);
 
-      // Processamento de dados
-      const osData: TabelaOSProps[] = (rawOsData || []).map(
-         (record: TabelaOSProps) => ({
-            ...record,
-            QTD_HR_OS: calculateHours(record.HRINI_OS, record.HRFIM_OS),
-         })
-      );
+      // Processamento de dados - converte strings vazias em null
+      const osData: TabelaOSProps[] = (rawOsData || []).map(processRecord);
 
       // Cálculo de paginação
       const total = countResult[0].TOTAL;

@@ -1,9 +1,10 @@
 'use client';
+
+// COMPONENTS
+import { TooltipCondicional } from '../components/Tooltip_Condicional.';
+
 // TYPES
 import { TabelaOSProps } from '../../../../../../types/types';
-
-// HELPERS
-import { corrigirTextoCorrompido } from '../../../../../../lib/corrigirTextoCorrompido';
 
 // FORMATTERS
 import {
@@ -15,8 +16,8 @@ import {
    formatarMoeda,
 } from '../../../../../../utils/formatters';
 
-// COMPONENTS
-import { TooltipCondicionalTabelaOS } from '../../Tooltip_Condicional._Tabela_OS';
+// HELPERS
+import { corrigirTextoCorrompido } from '../../../../../../lib/corrigirTextoCorrompido';
 
 // ICONS
 import { IoClose } from 'react-icons/io5';
@@ -65,33 +66,6 @@ export function ModalVisualizarOS({
       );
    };
 
-   // Função para obter estilo do status
-   const getStatusStyle = (status: number) => {
-      switch (status) {
-         case 0:
-            return 'bg-yellow-600 text-white';
-         case 1:
-            return 'bg-green-600 text-black';
-         case 2:
-            return 'bg-blue-600 text-white';
-         default:
-            return 'bg-gray-600 text-white';
-      }
-   };
-
-   const getStatusText = (status: number) => {
-      switch (status) {
-         case 0:
-            return 'Pendente';
-         case 1:
-            return 'Concluída';
-         case 2:
-            return 'Em Andamento';
-         default:
-            return 'Desconhecido';
-      }
-   };
-
    // ================================================================================
    // RENDERIZAÇÃO
    // ================================================================================
@@ -101,13 +75,11 @@ export function ModalVisualizarOS({
          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
          {/* ========== */}
 
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-[80vw] overflow-hidden rounded-2xl border-0 bg-white/70 shadow-lg shadow-black transition-all duration-500 ease-out">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-[80vw] overflow-hidden rounded-2xl border-0 bg-white/70 transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-gradient-to-r from-teal-600 to-teal-700 p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
-                  <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
-                     <GrServices className="text-black" size={28} />
-                  </div>
+                  <GrServices className="text-black" size={72} />
                   {/* ===== */}
                   <div className="flex flex-col">
                      <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
@@ -122,9 +94,13 @@ export function ModalVisualizarOS({
 
                <button
                   onClick={handleCloseModalVisualizarOS}
-                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="Fechar relatório de OS"
+                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
                >
-                  <IoClose size={24} />
+                  <IoClose
+                     className="text-white group-hover:scale-125"
+                     size={24}
+                  />
                </button>
             </header>
             {/* ==================== */}
@@ -136,7 +112,7 @@ export function ModalVisualizarOS({
                   <div className="space-y-6">
                      {/* ===== CARD: INFORMAÇÕES GERAIS ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 shadow-sm shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 shadow-sm shadow-black">
                            <FaInfo className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
                               Informações Gerais
@@ -159,13 +135,13 @@ export function ModalVisualizarOS({
                               <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
                                  Tarefa
                               </span>
-                              <TooltipCondicionalTabelaOS
+                              <TooltipCondicional
                                  content={os.TAREFA_COMPLETA || ''}
                               >
                                  <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
                                     {os.TAREFA_COMPLETA}
                                  </span>
-                              </TooltipCondicionalTabelaOS>
+                              </TooltipCondicional>
                            </div>
                            {/* ===== */}
 
@@ -174,13 +150,13 @@ export function ModalVisualizarOS({
                               <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
                                  Projeto
                               </span>
-                              <TooltipCondicionalTabelaOS
+                              <TooltipCondicional
                                  content={os.PROJETO_COMPLETO || ''}
                               >
                                  <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
                                     {os.PROJETO_COMPLETO}
                                  </span>
-                              </TooltipCondicionalTabelaOS>
+                              </TooltipCondicional>
                            </div>
                            {/* ===== */}
 
@@ -210,7 +186,7 @@ export function ModalVisualizarOS({
 
                      {/* ===== CARD: DADOS TEMPORAIS ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 shadow-sm shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 shadow-sm shadow-black">
                            <FaClock className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
                               Dados Temporais
@@ -234,7 +210,13 @@ export function ModalVisualizarOS({
                                  Hora Início
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {formatarHora(os.HRINI_OS)}h
+                                 {formatarHora(os.HRINI_OS)}
+                                 {(() => {
+                                    const n = parseFloat(
+                                       String(os.HRINI_OS).replace(',', '.')
+                                    );
+                                    return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
+                                 })()}
                               </span>
                            </div>
                            {/* ===== */}
@@ -245,7 +227,13 @@ export function ModalVisualizarOS({
                                  Hora Fim
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {formatarHora(os.HRFIM_OS)}h
+                                 {formatarHora(os.HRFIM_OS)}
+                                 {(() => {
+                                    const n = parseFloat(
+                                       String(os.HRFIM_OS).replace(',', '.')
+                                    );
+                                    return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
+                                 })()}
                               </span>
                            </div>
                            {/* ===== */}
@@ -259,7 +247,12 @@ export function ModalVisualizarOS({
                                  {formatarHorasTotaisHorasDecimais(
                                     os.QTD_HR_OS?.toString()
                                  )}
-                                 h
+                                 {(() => {
+                                    const n = parseFloat(
+                                       String(os.QTD_HR_OS).replace(',', '.')
+                                    );
+                                    return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
+                                 })()}
                               </span>
                            </div>
                            {/* ===== */}
@@ -282,7 +275,7 @@ export function ModalVisualizarOS({
                   <div className="space-y-6">
                      {/* ===== CARD: INDICADORES ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-sm shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-600 to-green-700 px-4 py-3 shadow-sm shadow-black">
                            <FaCheck className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
                               Indicadores
@@ -347,7 +340,7 @@ export function ModalVisualizarOS({
 
                      {/* ===== CARD: FINANCEIRO ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-sm shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-600 to-green-700 px-4 py-3 shadow-sm shadow-black">
                            <FaDollarSign className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
                               Informações Financeiras
@@ -394,7 +387,7 @@ export function ModalVisualizarOS({
                   <div className="space-y-6">
                      {/* ===== CARD: RECURSOS E RESPONSÁVEIS ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 shadow-sm shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-amber-600 to-amber-700 px-4 py-3 shadow-sm shadow-black">
                            <FaUser className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
                               Consultor, Cliente e Responsável
@@ -444,7 +437,7 @@ export function ModalVisualizarOS({
 
                      {/* ===== CARD: OBSERVAÇÕES E OUTROS ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 shadow-sm shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-amber-600 to-amber-700 px-4 py-3 shadow-sm shadow-black">
                            <MdDescription className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
                               Observações e Outros
@@ -456,7 +449,7 @@ export function ModalVisualizarOS({
                               <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
                                  Observações
                               </span>
-                              <TooltipCondicionalTabelaOS
+                              <TooltipCondicional
                                  content={corrigirTextoCorrompido(
                                     os.OBS_OS || 'n/a'
                                  )}
@@ -466,7 +459,7 @@ export function ModalVisualizarOS({
                                        os.OBS_OS || 'n/a'
                                     )}
                                  </span>
-                              </TooltipCondicionalTabelaOS>
+                              </TooltipCondicional>
                            </div>
                            {/* ===== */}
 
@@ -488,7 +481,7 @@ export function ModalVisualizarOS({
                               <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
                                  Outras Observações
                               </span>
-                              <TooltipCondicionalTabelaOS
+                              <TooltipCondicional
                                  content={corrigirTextoCorrompido(
                                     os.OBS || 'n/a'
                                  )}
@@ -496,7 +489,7 @@ export function ModalVisualizarOS({
                                  <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
                                     {corrigirTextoCorrompido(os.OBS || 'n/a')}
                                  </span>
-                              </TooltipCondicionalTabelaOS>
+                              </TooltipCondicional>
                            </div>
                            {/* ===== */}
 

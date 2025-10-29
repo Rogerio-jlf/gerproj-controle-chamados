@@ -1,11 +1,20 @@
 'use client';
-import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useDebounce } from 'use-debounce';
-import { useFiltersTabelaOs } from '../../../../../../contexts/Filters_Context_Tabela_OS';
-import { DropdownAnoTabelaOS } from './Dropdown_Filtros_Datas_Tabela_OS';
-import { DropdownMesTabelaOS } from './Dropdown_Filtros_Datas_Tabela_OS';
-import { DropdownDiaTabelaOS } from './Dropdown_Filtros_Datas_Tabela_OS';
 
+// IMPORTS
+import { useDebounce } from 'use-debounce';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+
+// CONTEXTS
+import { useFiltersTabelaOs } from '../../../../../../contexts/Filters_Context_Tabela_OS';
+
+// COMPONENTS
+import { DropdownAno } from './Dropdown_Ano_Mes_Dia';
+import { DropdownMes } from './Dropdown_Ano_Mes_Dia';
+import { DropdownDia } from './Dropdown_Ano_Mes_Dia';
+
+// ================================================================================
+// INTERFACES
+// ================================================================================
 interface FiltrosProps {
    onFiltersChange: (filters: {
       ano: number | 'todos';
@@ -17,6 +26,9 @@ interface FiltrosProps {
    }) => void;
 }
 
+// ================================================================================
+// COMPONENTE
+// ================================================================================
 export function FiltrosTabelaOS({ onFiltersChange }: FiltrosProps) {
    const hoje = useMemo(() => new Date(), []);
    const { filters, setFilters, getDiasDoMes } = useFiltersTabelaOs();
@@ -204,24 +216,24 @@ export function FiltrosTabelaOS({ onFiltersChange }: FiltrosProps) {
 
    return (
       <div className="flex w-full gap-6">
-         <div className="w-[300px]">
-            <DropdownAnoTabelaOS
+         <div className="w-[350px]">
+            <DropdownAno
                value={ano}
                onChange={handleAnoChange}
                diasDisponiveis={[]}
             />
          </div>
 
-         <div className="w-[300px]">
-            <DropdownMesTabelaOS
+         <div className="w-[350px]">
+            <DropdownMes
                value={mes}
                onChange={handleMesChange}
                diasDisponiveis={[]}
             />
          </div>
 
-         <div className="w-[300px]">
-            <DropdownDiaTabelaOS
+         <div className="w-[350px]">
+            <DropdownDia
                value={dia}
                onChange={handleDiaChange}
                diasDisponiveis={getDiasParaSelect()}

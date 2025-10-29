@@ -17,7 +17,7 @@ import { useAuth } from '../../../../../../hooks/useAuth';
 // ICONS
 import { HiDocumentReport } from 'react-icons/hi';
 import { IoClose } from 'react-icons/io5';
-import { FaEraser, FaExclamationTriangle, FaEye } from 'react-icons/fa';
+import { FaEraser, FaExclamationTriangle } from 'react-icons/fa';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
 
 // FORMATTERS
@@ -26,33 +26,12 @@ import {
    formatarHorasTotaisHorasDecimais,
 } from '../../../../../../utils/formatters';
 
-// UTILS
-import { InputFilterTableHeaderProps } from '../../../../../../types/types';
-import { debounce } from 'lodash';
-
 // ================================================================================
 // CONSTANTES
 // ================================================================================
 const MODAL_MAX_HEIGHT = 'calc(100vh - 500px)';
 const ANIMATION_DURATION = 100;
 const CACHE_TIME = 1000 * 60 * 5;
-const DEBOUNCE_DELAY = 400;
-
-const COLUMN_MAX_LENGTH: Record<string, number> = {
-   OS: 10,
-   codOs: 10,
-   DATA: 10,
-   data: 10,
-   CHAMADO: 50,
-   cliente: 100,
-   recurso: 100,
-   FATURADO_OS: 5,
-   VALID_OS: 5,
-};
-
-const NUMERIC_ONLY_COLUMNS: string[] = ['OS', 'codOs', 'COD_OS', 'CODIGO'];
-const DATE_COLUMNS: string[] = ['DATA', 'data', 'DATA_INICIO', 'DATA_FIM'];
-const DROPDOWN_SIM_NAO_COLUMNS = ['FATURADO_OS', 'VALID_OS'] as const;
 
 // ================================================================================
 // INTERFACES
@@ -124,121 +103,6 @@ interface Props {
    isOpen?: boolean;
    onClose: () => void;
 }
-
-interface ExtendedInputFilterProps extends InputFilterTableHeaderProps {
-   columnId?: string;
-}
-
-// ================================================================================
-// COMPONENTE FILTRO COM DEBOUNCE
-// ================================================================================
-const InputFilterWithDebounce = ({
-   value,
-   onChange,
-   type = 'text',
-   columnId,
-}: ExtendedInputFilterProps) => {
-   const [localValue, setLocalValue] = useState(value);
-
-   const maxLength = columnId ? COLUMN_MAX_LENGTH[columnId] : undefined;
-   const isNumericOnly = columnId
-      ? NUMERIC_ONLY_COLUMNS.includes(columnId as any)
-      : false;
-
-   useEffect(() => {
-      setLocalValue(value);
-   }, [value]);
-
-   const debouncedOnChange = useMemo(
-      () =>
-         debounce((newValue: string) => {
-            onChange(newValue.trim());
-         }, DEBOUNCE_DELAY),
-      [onChange]
-   );
-
-   useEffect(() => {
-      return () => {
-         debouncedOnChange.cancel();
-      };
-   }, [debouncedOnChange]);
-
-   const handleChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-         let inputValue = e.target.value;
-
-         if (isNumericOnly && inputValue && !/^\d*$/.test(inputValue)) {
-            return;
-         }
-
-         if (columnId && DATE_COLUMNS.includes(columnId as any)) {
-            inputValue = inputValue.replace(/[^\d/]/g, '');
-         }
-
-         if (maxLength && inputValue.length > maxLength) {
-            return;
-         }
-
-         setLocalValue(inputValue);
-         debouncedOnChange(inputValue);
-      },
-      [debouncedOnChange, maxLength, isNumericOnly, columnId]
-   );
-
-   const handleClear = useCallback(() => {
-      setLocalValue('');
-      onChange('');
-      debouncedOnChange.cancel();
-   }, [onChange, debouncedOnChange]);
-
-   const handleKeyDown = useCallback(
-      (e: React.KeyboardEvent<HTMLInputElement>) => {
-         if (e.key === 'Escape' && localValue) {
-            e.preventDefault();
-            handleClear();
-         }
-      },
-      [localValue, handleClear]
-   );
-
-   const isNearLimit =
-      maxLength && localValue ? localValue.length / maxLength > 0.8 : false;
-
-   return (
-      <div className="group relative w-full">
-         <input
-            type={type}
-            value={localValue}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            maxLength={maxLength}
-            inputMode={isNumericOnly ? 'numeric' : 'text'}
-            pattern={isNumericOnly ? '[0-9]*' : undefined}
-            className={`w-full rounded-md border border-teal-950 bg-teal-900 px-4 py-2 pr-10 text-base text-white transition-all select-none hover:bg-teal-950 focus:ring-2 focus:outline-none ${
-               isNearLimit
-                  ? 'ring-2 ring-yellow-500/50 focus:ring-yellow-500'
-                  : 'focus:ring-pink-500'
-            }`}
-         />
-
-         {localValue && (
-            <button
-               onClick={handleClear}
-               aria-label="Limpar filtro"
-               title="Limpar (Esc)"
-               className="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer text-white transition-all hover:scale-150 hover:text-red-500 active:scale-95"
-               type="button"
-            >
-               <IoClose size={20} />
-            </button>
-         )}
-      </div>
-   );
-};
-
-// ================================================================================
-// COMPONENTE FILTROS HEADER TABELA
-// ================================================================================
 
 // ================================================================================
 // COMPONENTES AUXILIARES
@@ -639,7 +503,6 @@ export function ModalRelatorioOS({ isOpen = true, onClose }: Props) {
             >
                {/* HEADER */}
                <header className="flex flex-col gap-4 bg-white/50 p-6">
-                  {/* TÍTULO E BOTÃO FECHAR */}
                   <div className="flex items-center justify-between gap-8">
                      <div className="flex items-center justify-center gap-6">
                         <HiDocumentReport className="text-black" size={72} />

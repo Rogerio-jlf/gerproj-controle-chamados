@@ -20,7 +20,7 @@ interface SelectProps {
 // ================================================================================
 // DROPDONW ANO
 // ================================================================================
-export function DropdownAnoTabelaOS({ value, onChange }: SelectProps) {
+export function DropdownAno({ value, onChange }: SelectProps) {
    const currentYear = new Date().getFullYear();
    const [isOpen, setIsOpen] = useState(false);
    const dropdownRef = useRef<HTMLDivElement>(null);
@@ -80,7 +80,7 @@ export function DropdownAnoTabelaOS({ value, onChange }: SelectProps) {
             {/* Input */}
             <button
                onClick={() => setIsOpen(!isOpen)}
-               className="flex w-full cursor-pointer items-center justify-between rounded-md bg-white px-4 py-3 font-bold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+               className="flex w-full cursor-pointer items-center justify-between rounded-md bg-white px-4 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
             >
                <span className="text-black">{selectedOption?.name}</span>
                {/* ===== */}
@@ -88,7 +88,8 @@ export function DropdownAnoTabelaOS({ value, onChange }: SelectProps) {
                   {showClearButton && (
                      <span
                         onClick={handleClear}
-                        className="cursor-pointer text-black transition-transform hover:scale-150 hover:text-red-500 active:scale-95"
+                        className="cursor-pointer text-black transition-all hover:scale-150 hover:text-red-500 active:scale-95"
+                        title="Limpar Filtro"
                      >
                         <IoClose size={24} />
                      </span>
@@ -129,7 +130,7 @@ export function DropdownAnoTabelaOS({ value, onChange }: SelectProps) {
 // ================================================================================
 // DROPDONW MES
 // ================================================================================
-export function DropdownMesTabelaOS({ value, onChange }: SelectProps) {
+export function DropdownMes({ value, onChange }: SelectProps) {
    const currentMonth = new Date().getMonth() + 1;
    const [isOpen, setIsOpen] = useState(false);
    const dropdownRef = useRef<HTMLDivElement>(null);
@@ -196,7 +197,7 @@ export function DropdownMesTabelaOS({ value, onChange }: SelectProps) {
             {/* Input */}
             <button
                onClick={() => setIsOpen(!isOpen)}
-               className="flex w-full cursor-pointer items-center justify-between rounded-md bg-white px-4 py-3 font-bold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+               className="flex w-full cursor-pointer items-center justify-between rounded-md bg-white px-4 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
             >
                <span className="text-black">{selectedOption?.name}</span>
                {/* ===== */}
@@ -204,7 +205,8 @@ export function DropdownMesTabelaOS({ value, onChange }: SelectProps) {
                   {showClearButton && (
                      <span
                         onClick={handleClear}
-                        className="cursor-pointer text-black transition-transform hover:scale-150 hover:text-red-500 active:scale-95"
+                        className="cursor-pointer text-black transition-all hover:scale-150 hover:text-red-500 active:scale-95"
+                        title="Limpar Filtro"
                      >
                         <IoClose size={24} />
                      </span>
@@ -245,7 +247,7 @@ export function DropdownMesTabelaOS({ value, onChange }: SelectProps) {
 // ================================================================================
 // DROPDONW DIA
 // ================================================================================
-export function DropdownDiaTabelaOS({
+export function DropdownDia({
    value,
    onChange,
    diasDisponiveis,
@@ -351,7 +353,7 @@ export function DropdownDiaTabelaOS({
             {/* Input */}
             <button
                onClick={() => setIsOpen(!isOpen)}
-               className="flex w-full cursor-pointer items-center justify-between rounded-md bg-white px-4 py-3 font-bold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+               className="flex w-full cursor-pointer items-center justify-between rounded-md bg-white px-4 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
             >
                <span className="text-black">{selectedOption?.name}</span>
                {/* ===== */}
@@ -359,7 +361,8 @@ export function DropdownDiaTabelaOS({
                   {showClearButton && (
                      <span
                         onClick={handleClear}
-                        className="cursor-pointer text-black transition-transform hover:scale-150 hover:text-red-500 active:scale-95"
+                        className="cursor-pointer text-black transition-all hover:scale-150 hover:text-red-500 active:scale-95"
+                        title="Limpar Filtro"
                      >
                         <IoClose size={24} />
                      </span>

@@ -62,9 +62,9 @@ export function DropdownSimNao({ value, onChange }: SelectSimNaoProps) {
          {/* Button */}
          <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex w-full cursor-pointer items-center justify-between rounded-md bg-white px-4 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+            className="flex w-full cursor-pointer items-center justify-between rounded-md bg-gradient-to-br from-teal-600 to-teal-700 px-4 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all hover:scale-108 focus:ring-2 focus:ring-pink-500 focus:outline-none"
          >
-            <span className={value ? 'text-black' : 'text-slate-400'}>
+            <span className={value ? 'text-white' : 'text-slate-400'}>
                {selectedOption?.name}
             </span>
 
@@ -72,14 +72,14 @@ export function DropdownSimNao({ value, onChange }: SelectSimNaoProps) {
                {value && (
                   <span
                      onClick={handleClear}
-                     className="cursor-pointer text-black transition-all hover:scale-150 hover:text-red-500 active:scale-95"
+                     className="cursor-pointer text-white transition-all hover:scale-150 hover:text-red-500 active:scale-95"
                      title="Limpar"
                   >
                      <IoClose size={24} />
                   </span>
                )}
                <span
-                  className={`text-black transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                  className={`text-white transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                >
                   <IoIosArrowDown size={24} />
                </span>

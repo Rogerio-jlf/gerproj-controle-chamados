@@ -10,11 +10,26 @@ import { InputFilterTableHeaderProps } from '../../../../../../types/types';
 import { normalizeDate } from '../../../../../../utils/formatters';
 
 // COMPONENTS
-import { DropdownSimNaoTabelaOS } from './Dropdown_Sim_Nao_Tabela_OS';
+import { DropdownSimNao } from './Dropdown_Sim_Nao';
 
 // ICONS
 import { FaPlus } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
+
+// ================================================================================
+// INTERFACES
+// ================================================================================
+interface FilterControlsProps {
+   showFilters: boolean;
+   setShowFilters: (show: boolean) => void;
+   totalActiveFilters: number;
+   clearFilters: () => void;
+   dataLength: number;
+}
+
+interface ExtendedInputFilterProps extends InputFilterTableHeaderProps {
+   columnId?: string;
+}
 
 // ================================================================================
 // CONSTANTES
@@ -54,21 +69,6 @@ export const COLUMN_MAX_LENGTH: Record<string, number> = {
    FATURADO_OS: 3, // CHAR(3) - similar ao FATURA_TAREFA
    VALID_OS: 3, // CHAR(3) - assumindo SIM/NÃO
 };
-
-// ================================================================================
-// INTERFACES
-// ================================================================================
-interface FilterControlsProps {
-   showFilters: boolean;
-   setShowFilters: (show: boolean) => void;
-   totalActiveFilters: number;
-   clearFilters: () => void;
-   dataLength: number;
-}
-
-interface ExtendedInputFilterProps extends InputFilterTableHeaderProps {
-   columnId?: string;
-}
 
 // ================================================================================
 // FUNÇÕES UTILITÁRIAS
@@ -169,10 +169,6 @@ const InputFilterWithDebounce = ({
       [localValue, handleClear]
    );
 
-   // Calcular se está próximo do limite (>80%)
-   const isNearLimit =
-      maxLength && localValue ? localValue.length / maxLength > 0.8 : false;
-
    return (
       <div className="group relative w-full">
          <input
@@ -183,22 +179,16 @@ const InputFilterWithDebounce = ({
             maxLength={maxLength}
             inputMode={isNumericOnly ? 'numeric' : 'text'}
             pattern={isNumericOnly ? '[0-9]*' : undefined}
-            className={`w-full rounded-md border border-teal-950 bg-teal-900 px-4 py-2 pr-10 text-base text-white transition-all select-none hover:bg-teal-950 focus:ring-2 focus:outline-none ${
-               isNearLimit
-                  ? 'ring-2 ring-yellow-500/50 focus:ring-yellow-500'
-                  : 'focus:ring-pink-500'
-            }`}
+            className="w-full rounded-md bg-gradient-to-br from-teal-600 to-teal-700 px-4 py-2.5 text-base font-extrabold tracking-widest text-white italic shadow-md shadow-black transition-all select-none hover:scale-105 focus:ring-2 focus:ring-pink-500 focus:outline-none"
          />
 
          {localValue && (
             <button
                onClick={handleClear}
-               aria-label="Limpar filtro"
-               title="Limpar (Esc)"
-               className="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer text-white transition-all hover:scale-150 hover:text-red-500 active:scale-95"
+               className="absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer text-white transition-all hover:scale-150 hover:text-red-500 active:scale-95"
                type="button"
             >
-               <IoClose size={20} />
+               <IoClose size={24} />
             </button>
          )}
       </div>
@@ -221,7 +211,7 @@ export const FiltrosHeaderTabelaOs = ({
 
    // Se for dropdown SIM/NÃO, renderizar o componente específico
    if (isDropdownSimNao) {
-      return <DropdownSimNaoTabelaOS value={value} onChange={onChange} />;
+      return <DropdownSimNao value={value} onChange={onChange} />;
    }
 
    // Caso contrário, renderizar o input normal

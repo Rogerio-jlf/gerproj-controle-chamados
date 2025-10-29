@@ -12,10 +12,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 
 // COMPONENTS
-import {
-   FilterControls,
-   FiltrosHeaderTabelaOs,
-} from './Filtros_Header_Tabela_OS';
+import { FiltrosHeaderTabelaOs } from './Filtros_Header_Tabela_OS';
 import { IsError } from '../../../../../../components/IsError';
 import { IsLoading } from '../../../../../../components/IsLoading';
 import { colunasTabelaOS } from './Colunas_Tabela_OS';
@@ -38,7 +35,7 @@ import { useFiltersTabelaOs } from '../../../../../../contexts/Filters_Context_T
 import { IoClose } from 'react-icons/io5';
 import { GrServices } from 'react-icons/gr';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
-import { FaExclamationTriangle } from 'react-icons/fa';
+import { FaEraser, FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 
@@ -266,7 +263,6 @@ export function TabelaOS({ isOpen, onClose }: Props) {
    const [sorting, setSorting] = useState<SortingState>([
       { id: 'COD_OS', desc: true },
    ]);
-   const [showFilters, setShowFilters] = useState(false);
    const [isClosing, setIsClosing] = useState(false);
 
    // ================================================================================
@@ -574,14 +570,15 @@ export function TabelaOS({ isOpen, onClose }: Props) {
             className={`animate-in slide-in-from-bottom-4 z-10 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl transition-all duration-500 ease-out ${
                isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
             }`}
+            style={{
+               animationDuration: `${ANIMATION_DURATION}ms`,
+            }}
          >
             {/* HEADER */}
-            <header className="flex flex-col gap-6 bg-white/50 p-6">
+            <header className="flex flex-col gap-14 bg-white/50 p-6">
                <div className="flex items-center justify-between gap-8">
                   <div className="flex items-center justify-center gap-6">
-                     <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
-                        <GrServices className="text-black" size={28} />
-                     </div>
+                     <GrServices className="text-black" size={72} />
                      <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
                         Ordens de Serviço
                      </h1>
@@ -589,12 +586,15 @@ export function TabelaOS({ isOpen, onClose }: Props) {
 
                   <button
                      onClick={handleCloseTabelaOS}
-                     aria-label="Fechar modal de ordens de serviço"
-                     className={`group cursor-pointer rounded-full bg-red-500/50 p-3 text-white transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 ${
+                     aria-label="Fechar relatório de OS"
+                     className={`group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 ${
                         isClosing ? 'animate-spin' : ''
                      }`}
                   >
-                     <IoClose size={24} />
+                     <IoClose
+                        className="text-white group-hover:scale-125"
+                        size={24}
+                     />
                   </button>
                </div>
 
@@ -604,13 +604,18 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                      <FiltrosTabelaOS onFiltersChange={handleFiltersChange} />
                   </div>
                   <div className="flex items-center">
-                     <FilterControls
-                        showFilters={showFilters}
-                        setShowFilters={setShowFilters}
-                        totalActiveFilters={totalActiveFilters}
-                        clearFilters={clearFilters}
-                        dataLength={paginationInfo?.totalRecords || 0}
-                     />
+                     {totalActiveFilters > 0 && (
+                        <button
+                           onClick={clearFilters}
+                           title="Limpar Filtros"
+                           className="mt-7 cursor-pointer rounded-full border-none bg-gradient-to-br from-red-600 to-red-700 px-6 py-2.5 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-110 active:scale-95"
+                        >
+                           <FaEraser
+                              size={20}
+                              className="text-white group-hover:scale-110"
+                           />
+                        </button>
+                     )}
                   </div>
                </div>
             </header>
@@ -646,35 +651,33 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                         ))}
 
                         {/* ===== FILTROS DA TABELA ===== */}
-                        {showFilters && (
-                           <tr>
-                              {table.getAllColumns().map(column => (
-                                 <th
-                                    key={column.id}
-                                    className="bg-teal-800 px-3 pb-6"
-                                    style={{
-                                       width: getColumnWidth(column.id),
-                                    }}
-                                 >
-                                    {column.id in FILTER_MAP && (
-                                       <FiltrosHeaderTabelaOs
-                                          value={
-                                             FILTER_MAP[
-                                                column.id as keyof typeof FILTER_MAP
-                                             ].state
-                                          }
-                                          onChange={value =>
-                                             FILTER_MAP[
-                                                column.id as keyof typeof FILTER_MAP
-                                             ].setter(String(value))
-                                          }
-                                          columnId={column.id}
-                                       />
-                                    )}
-                                 </th>
-                              ))}
-                           </tr>
-                        )}
+                        <tr>
+                           {table.getAllColumns().map(column => (
+                              <th
+                                 key={column.id}
+                                 className="bg-teal-800 px-3 pb-6"
+                                 style={{
+                                    width: getColumnWidth(column.id),
+                                 }}
+                              >
+                                 {column.id in FILTER_MAP && (
+                                    <FiltrosHeaderTabelaOs
+                                       value={
+                                          FILTER_MAP[
+                                             column.id as keyof typeof FILTER_MAP
+                                          ].state
+                                       }
+                                       onChange={value =>
+                                          FILTER_MAP[
+                                             column.id as keyof typeof FILTER_MAP
+                                          ].setter(String(value))
+                                       }
+                                       columnId={column.id}
+                                    />
+                                 )}
+                              </th>
+                           ))}
+                        </tr>
                      </thead>
 
                      {/* CORPO DA TABELA */}
@@ -746,6 +749,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                </div>
             </main>
 
+            {/* PAGINAÇÃO */}
             {/* PAGINAÇÃO */}
             {paginationInfo && paginationInfo.totalRecords > 0 && (
                <div className="bg-white/70 px-12 py-4">

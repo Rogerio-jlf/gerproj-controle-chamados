@@ -1,19 +1,17 @@
 'use client';
 // IMPORTS
-import { debounce } from 'lodash';
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 // COMPONENTS
 import { PDFRelatorioOS } from '../../../../../../components/Button_PDF';
 import { ExcelRelatorioOS } from '../../../../../../components/Button_Excel';
-import { DropdownSimNao } from './Dropdown_Sim_Nao';
+import { FiltrosHeaderTabelaRelatorioOS } from './Filtros_Header_Tabela_Relatorio_OS';
 import {
-   TableHeader,
    TableRow,
    EmptyRow,
    useVisibleColumns,
    type DetalheOS,
-} from './Colunas_Modal_Detalhes_Relatorio_OS';
+} from './Colunas_Tabela_Detalhes_Relatorio_OS';
 
 // FORMATTERS
 import {
@@ -28,13 +26,52 @@ import { corrigirTextoCorrompido } from '../../../../../../lib/corrigirTextoCorr
 // ICONS
 import { IoClose } from 'react-icons/io5';
 import { HiDocumentReport } from 'react-icons/hi';
-import { FaFilter, FaEraser, FaExclamationTriangle } from 'react-icons/fa';
+import { FaEraser, FaExclamationTriangle } from 'react-icons/fa';
 
 // ================================================================================
 // CONSTANTES
 // ================================================================================
 const ANIMATION_DURATION = 100;
-const MODAL_MAX_HEIGHT = 'calc(100vh - 452px)';
+
+// Mapeamento de larguras das colunas
+const COLUMN_WIDTHS: Record<string, string> = {
+   codOs: '6%',
+   data: '8%',
+   chamado: '6%',
+   cliente: '15%',
+   recurso: '15%',
+   codProjeto: '6%',
+   projeto: '12%',
+   codTarefa: '6%',
+   tarefa: '12%',
+   horas: '8%',
+   faturado: '8%',
+   validado: '8%',
+};
+
+// Títulos das colunas
+const COLUMN_TITLES: Record<string, string> = {
+   codOs: 'OS',
+   data: 'DATA',
+   chamado: 'CHAMADO',
+   cliente: 'CLIENTE',
+   recurso: 'CONSULTOR',
+   codProjeto: 'CÓD. PROJETO',
+   projeto: 'PROJETO',
+   codTarefa: 'CÓD. TAREFA',
+   tarefa: 'TAREFA',
+   horas: 'HORAS',
+   faturado: 'CLIENTE PAGA',
+   validado: 'CONSULTOR RECEBE',
+};
+
+function getColumnWidth(columnId: string): string {
+   return COLUMN_WIDTHS[columnId] || 'auto';
+}
+
+function getColumnTitle(columnId: string): string {
+   return COLUMN_TITLES[columnId] || columnId.toUpperCase();
+}
 
 // ================================================================================
 // INTERFACES
@@ -61,82 +98,6 @@ interface ModalDetalhesProps {
 }
 
 // ================================================================================
-// COMPONENTE FILTRO MODAL
-// ================================================================================
-const FiltroModalDetalhes = ({
-   value,
-   onChange,
-   maxLength,
-   allowedChars,
-}: {
-   value: string;
-   onChange: (value: string) => void;
-   placeholder: string;
-   maxLength?: number;
-   allowedChars?: 'numbers' | 'date' | 'all';
-}) => {
-   const [localValue, setLocalValue] = useState(value);
-
-   useEffect(() => {
-      setLocalValue(value);
-   }, [value]);
-
-   const debouncedOnChange = useMemo(
-      () => debounce((val: string) => onChange(val), 500),
-      [onChange]
-   );
-
-   useEffect(() => {
-      return () => {
-         debouncedOnChange.cancel();
-      };
-   }, [debouncedOnChange]);
-
-   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      let newValue = e.target.value;
-
-      if (allowedChars === 'numbers') {
-         newValue = newValue.replace(/[^0-9]/g, '');
-      } else if (allowedChars === 'date') {
-         newValue = newValue.replace(/[^0-9/]/g, '');
-      }
-
-      if (maxLength && newValue.length > maxLength) {
-         newValue = newValue.slice(0, maxLength);
-      }
-
-      setLocalValue(newValue);
-      debouncedOnChange(newValue);
-   };
-
-   const handleClear = () => {
-      setLocalValue('');
-      debouncedOnChange.cancel();
-      onChange('');
-   };
-
-   return (
-      <div className="relative w-full">
-         <input
-            type="text"
-            value={localValue}
-            onChange={handleChange}
-            className="w-[300px] rounded-md bg-white px-4 py-2.5 text-base font-extrabold tracking-widest text-black italic shadow-md shadow-black transition-all select-none hover:scale-105 focus:ring-2 focus:ring-pink-500 focus:outline-none"
-         />
-         {localValue && (
-            <button
-               onClick={handleClear}
-               className="absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer text-black transition-all hover:scale-150 hover:text-red-500 active:scale-95"
-               type="button"
-            >
-               <IoClose size={24} />
-            </button>
-         )}
-      </div>
-   );
-};
-
-// ================================================================================
 // COMPONENTE MODAL DE DETALHES
 // ================================================================================
 export const TabelalDetalhesRelatorioOS = ({
@@ -147,18 +108,23 @@ export const TabelalDetalhesRelatorioOS = ({
 }: ModalDetalhesProps) => {
    const [isClosing, setIsClosing] = useState(false);
 
-   // Estados dos filtros do modal
+   // Estados dos filtros do modal (header da tabela)
    const [filtroOS, setFiltroOS] = useState('');
    const [filtroData, setFiltroData] = useState('');
    const [filtroChamado, setFiltroChamado] = useState('');
    const [filtroCliente, setFiltroCliente] = useState('');
    const [filtroRecurso, setFiltroRecurso] = useState('');
+   const [filtroCodProjeto, setFiltroCodProjeto] = useState('');
+   const [filtroProjeto, setFiltroProjeto] = useState('');
+   const [filtroCodTarefa, setFiltroCodTarefa] = useState('');
+   const [filtroTarefa, setFiltroTarefa] = useState('');
    const [filtroFaturado, setFiltroFaturado] = useState('');
    const [filtroValidado, setFiltroValidado] = useState('');
 
    const handleClose = useCallback(() => {
       setIsClosing(true);
       setTimeout(() => {
+         setIsClosing(false);
          onClose();
       }, ANIMATION_DURATION);
    }, [onClose]);
@@ -169,6 +135,10 @@ export const TabelalDetalhesRelatorioOS = ({
       setFiltroChamado('');
       setFiltroCliente('');
       setFiltroRecurso('');
+      setFiltroCodProjeto('');
+      setFiltroProjeto('');
+      setFiltroCodTarefa('');
+      setFiltroTarefa('');
       setFiltroFaturado('');
       setFiltroValidado('');
    }, []);
@@ -180,6 +150,10 @@ export const TabelalDetalhesRelatorioOS = ({
          filtroChamado,
          filtroCliente,
          filtroRecurso,
+         filtroCodProjeto,
+         filtroProjeto,
+         filtroCodTarefa,
+         filtroTarefa,
          filtroFaturado,
          filtroValidado,
       ].filter(f => f.trim()).length;
@@ -189,6 +163,10 @@ export const TabelalDetalhesRelatorioOS = ({
       filtroChamado,
       filtroCliente,
       filtroRecurso,
+      filtroCodProjeto,
+      filtroProjeto,
+      filtroCodTarefa,
+      filtroTarefa,
       filtroFaturado,
       filtroValidado,
    ]);
@@ -236,6 +214,36 @@ export const TabelalDetalhesRelatorioOS = ({
             }
          }
 
+         if (
+            filtroCodProjeto &&
+            !String(detalhe.codProjeto || '').includes(filtroCodProjeto)
+         ) {
+            return false;
+         }
+
+         if (
+            filtroProjeto &&
+            !detalhe.projeto
+               ?.toLowerCase()
+               .includes(filtroProjeto.toLowerCase())
+         ) {
+            return false;
+         }
+
+         if (
+            filtroCodTarefa &&
+            !String(detalhe.codTarefa || '').includes(filtroCodTarefa)
+         ) {
+            return false;
+         }
+
+         if (
+            filtroTarefa &&
+            !detalhe.tarefa?.toLowerCase().includes(filtroTarefa.toLowerCase())
+         ) {
+            return false;
+         }
+
          if (filtroFaturado && filtroFaturado !== 'todos') {
             if (filtroFaturado === 'SIM' && detalhe.faturado !== 'SIM')
                return false;
@@ -259,6 +267,10 @@ export const TabelalDetalhesRelatorioOS = ({
       filtroChamado,
       filtroCliente,
       filtroRecurso,
+      filtroCodProjeto,
+      filtroProjeto,
+      filtroCodTarefa,
+      filtroTarefa,
       filtroFaturado,
       filtroValidado,
    ]);
@@ -272,6 +284,24 @@ export const TabelalDetalhesRelatorioOS = ({
    const visibleColumns = useVisibleColumns(agruparPor);
    const numeroColunas = visibleColumns.length;
 
+   // Mapeamento de filtros por coluna
+   const FILTER_MAP: Record<
+      string,
+      { state: string; setter: (value: string) => void }
+   > = {
+      codOs: { state: filtroOS, setter: setFiltroOS },
+      data: { state: filtroData, setter: setFiltroData },
+      chamado: { state: filtroChamado, setter: setFiltroChamado },
+      cliente: { state: filtroCliente, setter: setFiltroCliente },
+      recurso: { state: filtroRecurso, setter: setFiltroRecurso },
+      codProjeto: { state: filtroCodProjeto, setter: setFiltroCodProjeto },
+      projeto: { state: filtroProjeto, setter: setFiltroProjeto },
+      codTarefa: { state: filtroCodTarefa, setter: setFiltroCodTarefa },
+      tarefa: { state: filtroTarefa, setter: setFiltroTarefa },
+      faturado: { state: filtroFaturado, setter: setFiltroFaturado },
+      validado: { state: filtroValidado, setter: setFiltroValidado },
+   };
+
    return (
       <div className="fixed inset-0 z-[60] flex items-center justify-center">
          {/* OVERLAY */}
@@ -279,21 +309,23 @@ export const TabelalDetalhesRelatorioOS = ({
 
          {/* MODAL CONTAINER */}
          <div
-            className="animate-in slide-in-from-bottom-4 z-10 h-[90vh] w-[95vw] overflow-hidden rounded-2xl transition-all duration-500 ease-out"
+            className={`animate-in slide-in-from-bottom-4 z-10 flex max-h-[90vh] w-full max-w-[95vw] flex-col overflow-hidden rounded-2xl transition-all duration-500 ease-out ${
+               isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
+            }`}
             style={{
                animationDuration: `${ANIMATION_DURATION}ms`,
             }}
          >
             {/* HEADER DO MODAL */}
-            <header className="flex flex-col gap-20 bg-white/50 p-6">
+            <header className="flex flex-shrink-0 flex-col gap-20 bg-white/50 p-6 pb-24">
                <div className="flex items-center justify-between gap-8">
                   <div className="flex items-center justify-center gap-6">
                      <HiDocumentReport className="text-black" size={72} />
                      <div className="flex flex-col">
-                        <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
+                        <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
                            {grupo.nome}
                         </h1>
-                        <p className="text-lg font-extrabold tracking-widest text-black italic select-none">
+                        <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
                            Relatório de OS's
                         </p>
                      </div>
@@ -378,144 +410,126 @@ export const TabelalDetalhesRelatorioOS = ({
                   </div>
                </div>
 
-               {/* SEÇÃO DE FILTROS DO MODAL */}
-               <div className="flex w-full items-center justify-center">
-                  <div className="flex items-center justify-center gap-8">
-                     <div className="grid grid-cols-6 items-center justify-center gap-8">
-                        <div className="flex flex-col gap-1">
-                           <label className="flex items-center gap-2 text-base font-extrabold tracking-widest text-black uppercase select-none">
-                              <FaFilter className="text-black" size={14} />
-                              OS
-                           </label>
-                           <FiltroModalDetalhes
-                              value={filtroOS}
-                              onChange={setFiltroOS}
-                              placeholder="Filtrar por OS"
-                              maxLength={5}
-                              allowedChars="numbers"
-                           />
+               {/* BOTÃO LIMPAR FILTROS */}
+               {filtrosAtivos > 0 && (
+                  <div className="flex items-center justify-center">
+                     <button
+                        onClick={limparFiltros}
+                        title="Limpar Filtros"
+                        className="cursor-pointer rounded-md border-none bg-gradient-to-br from-red-600 to-red-700 px-6 py-2.5 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-110 active:scale-95"
+                     >
+                        <div className="flex items-center gap-2">
+                           <FaEraser size={20} className="text-white" />
+                           <span>Limpar Filtros ({filtrosAtivos})</span>
                         </div>
-
-                        <div className="flex flex-col gap-1">
-                           <label className="flex items-center gap-2 text-base font-extrabold tracking-widest text-black uppercase select-none">
-                              <FaFilter className="text-black" size={14} />
-                              Data
-                           </label>
-                           <FiltroModalDetalhes
-                              value={filtroData}
-                              onChange={setFiltroData}
-                              placeholder="Filtrar por Data"
-                              maxLength={10}
-                              allowedChars="date"
-                           />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                           <label className="flex items-center gap-2 text-base font-extrabold tracking-widest text-black uppercase select-none">
-                              <FaFilter className="text-black" size={14} />
-                              Chamado
-                           </label>
-                           <FiltroModalDetalhes
-                              value={filtroChamado}
-                              onChange={setFiltroChamado}
-                              placeholder="Filtrar por Chamado"
-                              maxLength={5}
-                              allowedChars="numbers"
-                           />
-                        </div>
-
-                        {agruparPor !== 'recurso' && (
-                           <div className="flex flex-col gap-1">
-                              <label className="flex items-center gap-2 text-base font-extrabold tracking-widest text-black uppercase select-none">
-                                 <FaFilter className="text-black" size={14} />
-                                 Consultor
-                              </label>
-                              <FiltroModalDetalhes
-                                 value={filtroRecurso}
-                                 onChange={setFiltroRecurso}
-                                 placeholder="Filtrar por Recurso"
-                              />
-                           </div>
-                        )}
-
-                        <div className="flex flex-col gap-1">
-                           <label className="flex items-center gap-2 text-base font-extrabold tracking-widest text-black uppercase select-none">
-                              <FaFilter className="text-black" size={14} />
-                              Cliente Paga
-                           </label>
-                           <DropdownSimNao
-                              value={filtroFaturado}
-                              onChange={setFiltroFaturado}
-                           />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                           <label className="flex items-center gap-2 text-base font-extrabold tracking-widest text-black uppercase select-none">
-                              <FaFilter className="text-black" size={14} />
-                              Consultor Recebe
-                           </label>
-                           <DropdownSimNao
-                              value={filtroValidado}
-                              onChange={setFiltroValidado}
-                           />
-                        </div>
-                     </div>
-
-                     {/* BOTÃO LIMPAR FILTROS */}
-                     <div className="group flex items-center justify-center">
-                        <button
-                           onClick={limparFiltros}
-                           title="Limpar Filtros"
-                           className="mt-7 cursor-pointer rounded-full border-none bg-gradient-to-br from-red-600 to-red-700 px-6 py-2.5 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-110 active:scale-95"
-                        >
-                           <FaEraser
-                              size={20}
-                              className="text-white group-hover:scale-110"
-                           />
-                        </button>
-                     </div>
+                     </button>
                   </div>
-               </div>
+               )}
             </header>
 
-            <div
-               className="h-full overflow-y-auto"
-               style={{ maxHeight: MODAL_MAX_HEIGHT }}
-            >
-               {detalhesFiltrados.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center bg-black py-72 text-center">
-                     <FaExclamationTriangle
-                        className="mx-auto mb-6 text-yellow-500"
-                        size={80}
-                     />
-                     <h3 className="text-2xl font-extrabold tracking-widest text-white italic select-none">
-                        Nenhum registro encontrado para os filtros aplicados
-                     </h3>
-                  </div>
-               ) : (
-                  <table className="w-full">
-                     <TableHeader agruparPor={agruparPor} />
-                     <tbody>
-                        {detalhesFiltrados.map((detalhe, idx) => (
-                           <TableRow
-                              key={`data-${idx}`}
-                              detalhe={detalhe}
-                              agruparPor={agruparPor}
-                              index={idx}
-                           />
-                        ))}
+            {/* TABELA */}
+            <main className="flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-black">
+               <div className="h-full overflow-x-hidden overflow-y-auto">
+                  {detalhesFiltrados.length === 0 ? (
+                     <div className="flex flex-col items-center justify-center bg-black py-72 text-center">
+                        <FaExclamationTriangle
+                           className="mx-auto mb-6 text-yellow-500"
+                           size={80}
+                        />
+                        <h3 className="text-2xl font-extrabold tracking-widest text-white italic select-none">
+                           Nenhum registro encontrado para os filtros aplicados
+                        </h3>
+                     </div>
+                  ) : (
+                     <table className="w-full table-fixed border-collapse">
+                        {/* CABEÇALHO DA TABELA */}
+                        <thead
+                           style={{
+                              position: 'sticky',
+                              top: 0,
+                              zIndex: 30,
+                              backgroundColor: '#0f766e',
+                           }}
+                        >
+                           {/* LINHA DE TÍTULOS */}
+                           <tr className="bg-teal-800">
+                              {visibleColumns.map((column, idx) => {
+                                 const columnId =
+                                    typeof column === 'string'
+                                       ? column
+                                       : String(column?.id || column);
+                                 return (
+                                    <th
+                                       key={`header-${idx}-${columnId}`}
+                                       className="bg-teal-800 py-6 text-base font-extrabold tracking-wider text-white uppercase select-none"
+                                       style={{
+                                          width: getColumnWidth(columnId),
+                                       }}
+                                    >
+                                       {getColumnTitle(columnId)}
+                                    </th>
+                                 );
+                              })}
+                           </tr>
 
-                        {Array.from({ length: linhasVazias }).map((_, idx) => (
-                           <EmptyRow
-                              key={`empty-${idx}`}
-                              index={idx}
-                              columnCount={numeroColunas}
-                           />
-                        ))}
-                     </tbody>
-                  </table>
-               )}
-            </div>
+                           {/* LINHA DE FILTROS */}
+                           <tr className="bg-teal-800">
+                              {visibleColumns.map((column, idx) => {
+                                 const columnId =
+                                    typeof column === 'string'
+                                       ? column
+                                       : String(column?.id || column);
+                                 return (
+                                    <th
+                                       key={`filter-${idx}-${columnId}`}
+                                       className="bg-teal-800 px-3 pb-6"
+                                       style={{
+                                          width: getColumnWidth(columnId),
+                                       }}
+                                    >
+                                       {columnId !== 'horas' &&
+                                          FILTER_MAP[columnId] && (
+                                             <FiltrosHeaderTabelaRelatorioOS
+                                                value={
+                                                   FILTER_MAP[columnId].state
+                                                }
+                                                onChange={
+                                                   FILTER_MAP[columnId].setter
+                                                }
+                                                columnId={columnId}
+                                             />
+                                          )}
+                                    </th>
+                                 );
+                              })}
+                           </tr>
+                        </thead>
+
+                        {/* CORPO DA TABELA */}
+                        <tbody>
+                           {detalhesFiltrados.map((detalhe, idx) => (
+                              <TableRow
+                                 key={`data-${idx}`}
+                                 detalhe={detalhe}
+                                 agruparPor={agruparPor}
+                                 index={idx}
+                              />
+                           ))}
+
+                           {Array.from({ length: linhasVazias }).map(
+                              (_, idx) => (
+                                 <EmptyRow
+                                    key={`empty-${idx}`}
+                                    index={idx + detalhesFiltrados.length}
+                                    columnCount={numeroColunas}
+                                 />
+                              )
+                           )}
+                        </tbody>
+                     </table>
+                  )}
+               </div>
+            </main>
          </div>
       </div>
    );
