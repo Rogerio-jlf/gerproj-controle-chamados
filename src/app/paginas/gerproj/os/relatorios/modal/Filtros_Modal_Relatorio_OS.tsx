@@ -3,11 +3,11 @@
 'use client';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
-import { useFiltersPeriodo } from '../../../../../contexts/Filters_Context_Ano_Mes_Dia_Inicio_Dia_Fim.';
-import { DropdownAno } from './Dropdown_Filtros_Datas_Relatorio_OS';
-import { DropdownMes } from './Dropdown_Filtros_Datas_Relatorio_OS';
-import { DropdownDiaInicio } from './Dropdown_Filtros_Datas_Relatorio_OS';
-import { DropdownDiaFim } from './Dropdown_Filtros_Datas_Relatorio_OS';
+import { useFiltersPeriodo } from '../../../../../../contexts/Filters_Context_Ano_Mes_Dia_Inicio_Dia_Fim.';
+import { DropdownAno } from './Dropdown_Ana_Mes_Dia_Inicio_Dia_Fim';
+import { DropdownMes } from './Dropdown_Ana_Mes_Dia_Inicio_Dia_Fim';
+import { DropdownDiaInicio } from './Dropdown_Ana_Mes_Dia_Inicio_Dia_Fim';
+import { DropdownDiaFim } from './Dropdown_Ana_Mes_Dia_Inicio_Dia_Fim';
 
 interface FiltrosProps {
    onFiltersChange: (filters: {
@@ -26,7 +26,7 @@ interface FiltrosProps {
    initialDiaFim?: number | 'todos';
 }
 
-export function FiltrosRelatorioOS({
+export function FiltrosModalRelatorioOS({
    onFiltersChange,
    initialAno,
    initialMes,

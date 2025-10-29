@@ -16,23 +16,23 @@ import {
    FilterControls,
    FiltrosHeaderTabelaOs,
 } from './Filtros_Header_Tabela_OS';
-import { IsError } from '../../../../../components/IsError';
-import { IsLoading } from '../../../../../components/IsLoading';
+import { IsError } from '../../../../../../components/IsError';
+import { IsLoading } from '../../../../../../components/IsLoading';
 import { colunasTabelaOS } from './Colunas_Tabela_OS';
 import { FiltrosTabelaOS } from './Filtros_Tabela_OS';
-import { ModalVisualizarOS } from './Modal_Vizualizar_OS';
+import { ModalVisualizarOS } from '../modais/Modal_Vizualizar_OS';
 
 // FORMATERS
-import { formatarCodNumber } from '../../../../../utils/formatters';
+import { formatarCodNumber } from '../../../../../../utils/formatters';
 
 // HOOKS
-import { useAuth } from '../../../../../hooks/useAuth';
+import { useAuth } from '../../../../../../hooks/useAuth';
 
 // TYPES
-import { TabelaOSProps } from '../../../../../types/types';
+import { TabelaOSProps } from '../../../../../../types/types';
 
 // CONTEXTS
-import { useFiltersTabelaOs } from '../../../../../contexts/Filters_Context_Tabela_OS';
+import { useFiltersTabelaOs } from '../../../../../../contexts/Filters_Context_Tabela_OS';
 
 // ICONS
 import { IoClose } from 'react-icons/io5';

@@ -20,11 +20,11 @@ import {
 import { IsError } from '../../../../components/IsError';
 import { IsLoading } from '../../../../components/IsLoading';
 import { SessionExpired } from '../../../../components/IsExpired';
-import { RelatorioOS } from '../os/relatorios/Relatorio_OS';
+import { ModalRelatorioOS } from '../os/relatorios/modal/Modal_Relatorio_OS';
 import { colunasTabelaChamados } from './Colunas_Tabela_Chamado';
 import { DropdownMenuTabelaChamado } from './Dropdown_Menu_Tabela_Chamado';
 import { FiltrosTabelaChamado } from './filtros/Filtros_Tabela_Chamado';
-import { TabelaOS } from '../os/tabela/Tabela_OS';
+import { TabelaOS } from '../os/tabelas/tabela/Tabela_OS';
 import { TabelaTarefas } from '../tarefas/Tabela_Tarefa';
 import { TabelaProjeto } from '../projeto/Tabela_Projeto';
 import { ModalExcluirChamado } from './modais/Modal_Deletar_Chamado';
@@ -988,7 +988,7 @@ function TabelaChamadoContent() {
 
          {/* VIEW DROPDOWN DO RELATÓRIO DE OS'S */}
          {activeView === 'relatorio' && (
-            <RelatorioOS isOpen={true} onClose={handleCloseView} />
+            <ModalRelatorioOS isOpen={true} onClose={handleCloseView} />
          )}
 
          {/* VIEW DROPDOWN DA TABELA DE PROJETOS */}

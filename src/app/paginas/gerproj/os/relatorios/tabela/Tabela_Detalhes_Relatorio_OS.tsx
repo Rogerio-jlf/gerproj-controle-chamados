@@ -4,22 +4,26 @@ import { debounce } from 'lodash';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 
 // COMPONENTS
-import { PDFRelatorioOS } from '../../../../../components/Button_PDF';
-import { ExcelRelatorioOS } from '../../../../../components/Button_Excel';
-import { DropdownSimNaoRelatorioOS } from './Dropdown_Sim_Nao_Relatorio_OS';
+import { PDFRelatorioOS } from '../../../../../../components/Button_PDF';
+import { ExcelRelatorioOS } from '../../../../../../components/Button_Excel';
+import { DropdownSimNao } from './Dropdown_Sim_Nao';
+import {
+   TableHeader,
+   TableRow,
+   EmptyRow,
+   useVisibleColumns,
+   type DetalheOS,
+} from './Colunas_Modal_Detalhes_Relatorio_OS';
 
 // FORMATTERS
 import {
-   formatarHora,
    formatarCodNumber,
    formatarHorasTotaisHorasDecimais,
-   formatarCodString,
-   formatarDataParaBR,
    normalizeDate,
-} from '../../../../../utils/formatters';
+} from '../../../../../../utils/formatters';
 
 // HELPERS
-import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+import { corrigirTextoCorrompido } from '../../../../../../lib/corrigirTextoCorrompido';
 
 // ICONS
 import { IoClose } from 'react-icons/io5';
@@ -35,26 +39,6 @@ const MODAL_MAX_HEIGHT = 'calc(100vh - 452px)';
 // ================================================================================
 // INTERFACES
 // ================================================================================
-interface DetalheOS {
-   codOs: number;
-   data: string;
-   chamado: string;
-   horaInicio: string;
-   horaFim: string;
-   horas: number;
-   faturado: string;
-   validado: string;
-   competencia: string;
-   cliente?: string;
-   codCliente?: number;
-   recurso?: string;
-   codRecurso?: number;
-   projeto?: string;
-   codProjeto?: number;
-   tarefa?: string;
-   codTarefa?: number;
-}
-
 interface GrupoRelatorio {
    chave: string;
    nome: string;
@@ -93,18 +77,15 @@ const FiltroModalDetalhes = ({
 }) => {
    const [localValue, setLocalValue] = useState(value);
 
-   // Sincronizar com o valor externo quando ele mudar
    useEffect(() => {
       setLocalValue(value);
    }, [value]);
 
-   // Criar função debounced usando lodash
    const debouncedOnChange = useMemo(
       () => debounce((val: string) => onChange(val), 500),
       [onChange]
    );
 
-   // Cleanup do debounce quando o componente desmontar
    useEffect(() => {
       return () => {
          debouncedOnChange.cancel();
@@ -114,14 +95,12 @@ const FiltroModalDetalhes = ({
    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       let newValue = e.target.value;
 
-      // Aplicar validação de caracteres permitidos
       if (allowedChars === 'numbers') {
          newValue = newValue.replace(/[^0-9]/g, '');
       } else if (allowedChars === 'date') {
          newValue = newValue.replace(/[^0-9/]/g, '');
       }
 
-      // Aplicar limite de caracteres
       if (maxLength && newValue.length > maxLength) {
          newValue = newValue.slice(0, maxLength);
       }
@@ -160,7 +139,7 @@ const FiltroModalDetalhes = ({
 // ================================================================================
 // COMPONENTE MODAL DE DETALHES
 // ================================================================================
-export const ModalDetalhesOS = ({
+export const TabelalDetalhesRelatorioOS = ({
    grupo,
    agruparPor,
    filtrosAplicados,
@@ -184,7 +163,6 @@ export const ModalDetalhesOS = ({
       }, ANIMATION_DURATION);
    }, [onClose]);
 
-   // Função para limpar todos os filtros
    const limparFiltros = useCallback(() => {
       setFiltroOS('');
       setFiltroData('');
@@ -195,7 +173,6 @@ export const ModalDetalhesOS = ({
       setFiltroValidado('');
    }, []);
 
-   // Contar filtros ativos
    const filtrosAtivos = useMemo(() => {
       return [
          filtroOS,
@@ -216,15 +193,12 @@ export const ModalDetalhesOS = ({
       filtroValidado,
    ]);
 
-   // Filtrar detalhes baseado nos filtros
    const detalhesFiltrados = useMemo(() => {
       return grupo.detalhes.filter(detalhe => {
-         // Filtro OS
          if (filtroOS && !String(detalhe.codOs).includes(filtroOS)) {
             return false;
          }
 
-         // Filtro Data
          if (filtroData) {
             const dateFormats = normalizeDate(detalhe.data);
             const match = dateFormats.some(dateFormat =>
@@ -233,7 +207,6 @@ export const ModalDetalhesOS = ({
             if (!match) return false;
          }
 
-         // Filtro Chamado
          if (
             filtroChamado &&
             !String(detalhe.chamado).includes(filtroChamado)
@@ -241,7 +214,6 @@ export const ModalDetalhesOS = ({
             return false;
          }
 
-         // Filtro Cliente
          if (
             filtroCliente &&
             !detalhe.cliente
@@ -251,7 +223,6 @@ export const ModalDetalhesOS = ({
             return false;
          }
 
-         // Filtro Recurso
          if (filtroRecurso) {
             const recursoNormalizado = corrigirTextoCorrompido(
                detalhe.recurso ?? ''
@@ -265,7 +236,6 @@ export const ModalDetalhesOS = ({
             }
          }
 
-         // Filtro Faturado
          if (filtroFaturado && filtroFaturado !== 'todos') {
             if (filtroFaturado === 'SIM' && detalhe.faturado !== 'SIM')
                return false;
@@ -273,7 +243,6 @@ export const ModalDetalhesOS = ({
                return false;
          }
 
-         // Filtro Validado
          if (filtroValidado && filtroValidado !== 'todos') {
             if (filtroValidado === 'SIM' && detalhe.validado !== 'SIM')
                return false;
@@ -294,20 +263,14 @@ export const ModalDetalhesOS = ({
       filtroValidado,
    ]);
 
-   // Calcular número de linhas vazias necessárias para manter o tamanho da tabela
    const totalLinhasOriginais = grupo.detalhes.length;
    const linhasVazias = Math.max(
       0,
       totalLinhasOriginais - detalhesFiltrados.length
    );
 
-   // Calcular número de colunas baseado no agrupamento
-   const numeroColunas = useMemo(() => {
-      let cols = 8; // colunas base: OS, Data, Chamado, Hora Início, Hora Fim, Horas, Faturado, Validado
-      if (agruparPor !== 'cliente') cols++; // adiciona coluna Cliente
-      if (agruparPor !== 'recurso') cols++; // adiciona coluna Recurso
-      return cols;
-   }, [agruparPor]);
+   const visibleColumns = useVisibleColumns(agruparPor);
+   const numeroColunas = visibleColumns.length;
 
    return (
       <div className="fixed inset-0 z-[60] flex items-center justify-center">
@@ -480,7 +443,7 @@ export const ModalDetalhesOS = ({
                               <FaFilter className="text-black" size={14} />
                               Cliente Paga
                            </label>
-                           <DropdownSimNaoRelatorioOS
+                           <DropdownSimNao
                               value={filtroFaturado}
                               onChange={setFiltroFaturado}
                            />
@@ -491,12 +454,13 @@ export const ModalDetalhesOS = ({
                               <FaFilter className="text-black" size={14} />
                               Consultor Recebe
                            </label>
-                           <DropdownSimNaoRelatorioOS
+                           <DropdownSimNao
                               value={filtroValidado}
                               onChange={setFiltroValidado}
                            />
                         </div>
                      </div>
+
                      {/* BOTÃO LIMPAR FILTROS */}
                      <div className="group flex items-center justify-center">
                         <button
@@ -530,143 +494,23 @@ export const ModalDetalhesOS = ({
                   </div>
                ) : (
                   <table className="w-full">
-                     <thead className="sticky top-0 z-10">
-                        <tr className="bg-gradient-to-br from-teal-800 to-teal-900 py-20 font-extrabold tracking-wider text-white shadow-sm shadow-white select-none">
-                           <th className="p-6 text-center text-base font-bold tracking-widest text-white uppercase select-none">
-                              OS
-                           </th>
-                           <th className="p-6 text-center text-base font-bold tracking-widest text-white uppercase select-none">
-                              Data
-                           </th>
-                           <th className="p-6 text-center text-base font-bold tracking-widest text-white uppercase select-none">
-                              Chamado
-                           </th>
-                           <th className="p-6 text-center text-base font-bold tracking-widest text-white uppercase select-none">
-                              Hora Início
-                           </th>
-                           <th className="p-6 text-center text-base font-bold tracking-widest text-white uppercase select-none">
-                              Hora Fim
-                           </th>
-                           <th className="p-6 text-center text-base font-bold tracking-widest text-white uppercase select-none">
-                              Total Horas
-                           </th>
-                           {agruparPor !== 'cliente' && (
-                              <th className="p-6 text-left text-base font-bold tracking-widest text-white uppercase select-none">
-                                 Cliente
-                              </th>
-                           )}
-                           {agruparPor !== 'recurso' && (
-                              <th className="p-6 text-center text-base font-bold tracking-widest text-white uppercase select-none">
-                                 Recurso
-                              </th>
-                           )}
-                           <th className="p-6 text-center text-base font-bold tracking-widest text-white uppercase select-none">
-                              Cliente Paga
-                           </th>
-                           <th className="p-6 text-center text-base font-bold tracking-widest text-white uppercase select-none">
-                              Consultor Recebe
-                           </th>
-                        </tr>
-                     </thead>
+                     <TableHeader agruparPor={agruparPor} />
                      <tbody>
-                        {/* Renderizar linhas com dados filtrados */}
                         {detalhesFiltrados.map((detalhe, idx) => (
-                           <tr
+                           <TableRow
                               key={`data-${idx}`}
-                              className="group border-b border-slate-600 bg-black transition-all hover:bg-teal-500"
-                           >
-                              <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-                                 {formatarCodNumber(detalhe.codOs)}
-                              </td>
-                              <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-                                 {formatarDataParaBR(detalhe.data)}
-                              </td>
-                              <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-                                 {formatarCodString(detalhe.chamado)}
-                              </td>
-                              <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-                                 {formatarHora(detalhe.horaInicio)}
-                                 {(() => {
-                                    const n = parseFloat(
-                                       String(detalhe.horaInicio).replace(
-                                          ',',
-                                          '.'
-                                       )
-                                    );
-                                    return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
-                                 })()}
-                              </td>
-                              <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-                                 {formatarHora(detalhe.horaFim)}
-                                 {(() => {
-                                    const n = parseFloat(
-                                       String(detalhe.horaFim).replace(',', '.')
-                                    );
-                                    return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
-                                 })()}
-                              </td>
-                              <td className="p-3 text-center text-sm font-extrabold tracking-widest text-amber-500 select-none group-hover:font-extrabold group-hover:text-black">
-                                 {formatarHorasTotaisHorasDecimais(
-                                    detalhe.horas
-                                 )}
-                                 {(() => {
-                                    const n = parseFloat(
-                                       String(detalhe.horas).replace(',', '.')
-                                    );
-                                    return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
-                                 })()}
-                              </td>
-                              {agruparPor !== 'recurso' && (
-                                 <td className="p-3 text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-                                    {corrigirTextoCorrompido(
-                                       detalhe.recurso ?? ''
-                                    ) || '----------'}
-                                 </td>
-                              )}
-                              <td className="p-3 text-center">
-                                 <span
-                                    className={`inline-block rounded px-6 py-1.5 text-sm font-extrabold tracking-widest select-none group-hover:font-extrabold ${
-                                       detalhe.faturado === 'SIM'
-                                          ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white'
-                                          : 'bg-gradient-to-br from-red-600 to-red-700 text-white'
-                                    }`}
-                                 >
-                                    {detalhe.faturado}
-                                 </span>
-                              </td>
-                              <td className="p-3 text-center">
-                                 <span
-                                    className={`inline-block rounded px-6 py-1.5 text-sm font-extrabold tracking-widest select-none group-hover:font-extrabold ${
-                                       detalhe.validado === 'SIM'
-                                          ? 'bg-blue-600 text-white'
-                                          : 'bg-red-600 text-white'
-                                    }`}
-                                 >
-                                    {detalhe.validado}
-                                 </span>
-                              </td>
-                           </tr>
+                              detalhe={detalhe}
+                              agruparPor={agruparPor}
+                              index={idx}
+                           />
                         ))}
 
-                        {/* Renderizar linhas vazias para manter o tamanho da tabela */}
                         {Array.from({ length: linhasVazias }).map((_, idx) => (
-                           <tr
+                           <EmptyRow
                               key={`empty-${idx}`}
-                              className="border-b border-slate-600 bg-black/50"
-                           >
-                              {Array.from({ length: numeroColunas }).map(
-                                 (_, colIdx) => (
-                                    <td
-                                       key={colIdx}
-                                       className="p-3 text-center"
-                                    >
-                                       <span className="text-transparent select-none">
-                                          -
-                                       </span>
-                                    </td>
-                                 )
-                              )}
-                           </tr>
+                              index={idx}
+                              columnCount={numeroColunas}
+                           />
                         ))}
                      </tbody>
                   </table>

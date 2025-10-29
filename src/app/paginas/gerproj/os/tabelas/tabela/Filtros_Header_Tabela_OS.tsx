@@ -4,10 +4,10 @@ import { debounce } from 'lodash';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 
 // TYPES
-import { InputFilterTableHeaderProps } from '../../../../../types/types';
+import { InputFilterTableHeaderProps } from '../../../../../../types/types';
 
 // FORMATERS
-import { normalizeDate } from '../../../../../utils/formatters';
+import { normalizeDate } from '../../../../../../utils/formatters';
 
 // COMPONENTS
 import { DropdownSimNaoTabelaOS } from './Dropdown_Sim_Nao_Tabela_OS';

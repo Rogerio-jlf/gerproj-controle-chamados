@@ -9,13 +9,13 @@ import {
    TooltipContent,
    TooltipProvider,
    TooltipTrigger,
-} from '../../../../../components/ui/tooltip';
+} from '../../../../../../components/ui/tooltip';
 
 // COMPONENTS
-import { ModalEditarCellFaturadoOSValidOS } from './Modal_Editar_Cell_FaturadoOS_ValidOS';
+import { ModalEditarCellFaturadoOSValidOS } from '../modais/Modal_Editar_Cell_FaturadoOS_ValidOS';
 
 // TYPES
-import { TabelaOSProps } from '../../../../../types/types';
+import { TabelaOSProps } from '../../../../../../types/types';
 
 // FORMATTERS
 import {
@@ -24,10 +24,10 @@ import {
    formatarHora,
    formatarCodNumber,
    formatarHorasTotaisHorasDecimais,
-} from '../../../../../utils/formatters';
+} from '../../../../../../utils/formatters';
 
 // HELPERS
-import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+import { corrigirTextoCorrompido } from '../../../../../../lib/corrigirTextoCorrompido';
 
 // ICONS
 import { FaEye } from 'react-icons/fa';

@@ -16,10 +16,7 @@ interface SelectSimNaoProps {
 // ================================================================================
 // COMPONENTE
 // ================================================================================
-export function DropdownSimNaoRelatorioOS({
-   value,
-   onChange,
-}: SelectSimNaoProps) {
+export function DropdownSimNao({ value, onChange }: SelectSimNaoProps) {
    const [isOpen, setIsOpen] = useState(false);
    const dropdownRef = useRef<HTMLDivElement>(null);
 

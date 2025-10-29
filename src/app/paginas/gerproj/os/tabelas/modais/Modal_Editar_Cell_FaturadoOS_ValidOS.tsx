@@ -4,11 +4,11 @@ import {
    TooltipContent,
    TooltipProvider,
    TooltipTrigger,
-} from '../../../../../components/ui/tooltip';
+} from '../../../../../../components/ui/tooltip';
 import { IoClose } from 'react-icons/io5';
-import { LoadingButton } from '../../../../../components/Loading';
+import { LoadingButton } from '../../../../../../components/Loading';
 import { MdEditSquare } from 'react-icons/md';
-import { formatarCodNumber } from '../../../../../utils/formatters';
+import { formatarCodNumber } from '../../../../../../utils/formatters';
 import { FaArrowsAltH } from 'react-icons/fa';
 import { IoIosSave } from 'react-icons/io';
 

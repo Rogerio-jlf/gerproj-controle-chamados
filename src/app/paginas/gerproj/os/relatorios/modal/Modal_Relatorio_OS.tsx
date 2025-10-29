@@ -4,15 +4,15 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 
 // COMPONENTS
-import { IsError } from '../../../../../components/IsError';
-import { IsLoading } from '../../../../../components/IsLoading';
-import { FiltrosRelatorioOS } from './Filtros_Relatorio_OS';
+import { IsError } from '../../../../../../components/IsError';
+import { IsLoading } from '../../../../../../components/IsLoading';
+import { FiltrosModalRelatorioOS } from './Filtros_Modal_Relatorio_OS';
 import { DropdownClientes } from './Dropdown_Clientes';
 import { DropdownRecursos } from './Dropdown_Recursos';
-import { ModalDetalhesOS } from './Modal_Detalhes_Relatorio_OS';
+import { TabelalDetalhesRelatorioOS } from '../tabela/Tabela_Detalhes_Relatorio_OS';
 
 // HOOKS
-import { useAuth } from '../../../../../hooks/useAuth';
+import { useAuth } from '../../../../../../hooks/useAuth';
 
 // ICONS
 import { HiDocumentReport } from 'react-icons/hi';
@@ -24,10 +24,10 @@ import { FaFilterCircleXmark } from 'react-icons/fa6';
 import {
    formatarCodNumber,
    formatarHorasTotaisHorasDecimais,
-} from '../../../../../utils/formatters';
+} from '../../../../../../utils/formatters';
 
 // UTILS
-import { InputFilterTableHeaderProps } from '../../../../../types/types';
+import { InputFilterTableHeaderProps } from '../../../../../../types/types';
 import { debounce } from 'lodash';
 
 // ================================================================================
@@ -284,7 +284,7 @@ const NoResultsState = ({
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export function RelatorioOS({ isOpen = true, onClose }: Props) {
+export function ModalRelatorioOS({ isOpen = true, onClose }: Props) {
    const { user } = useAuth();
    const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -667,7 +667,7 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                      {/* SEÇÃO DE FILTROS */}
                      <div className="flex w-[1600px] flex-col gap-4">
                         <div className="flex items-center justify-between">
-                           <FiltrosRelatorioOS
+                           <FiltrosModalRelatorioOS
                               onFiltersChange={handleFiltersChange}
                               initialAno={filtrosData.ano}
                               initialMes={filtrosData.mes}
@@ -819,7 +819,7 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
 
          {/* MODAL DE DETALHES */}
          {selectedGrupo && (
-            <ModalDetalhesOS
+            <TabelalDetalhesRelatorioOS
                grupo={selectedGrupo}
                agruparPor="cliente"
                filtrosAplicados={filtrosAplicados}

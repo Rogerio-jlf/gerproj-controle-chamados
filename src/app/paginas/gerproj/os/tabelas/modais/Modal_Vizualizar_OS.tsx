@@ -1,9 +1,9 @@
 'use client';
 // TYPES
-import { TabelaOSProps } from '../../../../../types/types';
+import { TabelaOSProps } from '../../../../../../types/types';
 
 // HELPERS
-import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
+import { corrigirTextoCorrompido } from '../../../../../../lib/corrigirTextoCorrompido';
 
 // FORMATTERS
 import {
@@ -13,10 +13,10 @@ import {
    formatarHora,
    formatarHorasTotaisHorasDecimais,
    formatarMoeda,
-} from '../../../../../utils/formatters';
+} from '../../../../../../utils/formatters';
 
 // COMPONENTS
-import { TooltipCondicionalTabelaOS } from '../Tooltip_Condicional._Tabela_OS';
+import { TooltipCondicionalTabelaOS } from '../../Tooltip_Condicional._Tabela_OS';
 
 // ICONS
 import { IoClose } from 'react-icons/io5';
