@@ -34,7 +34,7 @@ import { debounce } from 'lodash';
 // ================================================================================
 // CONSTANTES
 // ================================================================================
-const MODAL_MAX_HEIGHT = 'calc(100vh - 520px)';
+const MODAL_MAX_HEIGHT = 'calc(100vh - 500px)';
 const ANIMATION_DURATION = 100;
 const CACHE_TIME = 1000 * 60 * 5;
 const DEBOUNCE_DELAY = 400;
@@ -656,7 +656,7 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
 
             {/* CONTAINER */}
             <div
-               className={`animate-in slide-in-from-bottom-4 z-10 h-[90vh] w-[95vw] overflow-hidden rounded-2xl transition-all duration-500 ease-out ${
+               className={`animate-in slide-in-from-bottom-4 z-10 h-[90vh] w-[95vw] overflow-hidden rounded-t-2xl transition-all duration-500 ease-out ${
                   isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
                }`}
             >
@@ -665,30 +665,31 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                   {/* TÍTULO E BOTÃO FECHAR */}
                   <div className="flex items-center justify-between gap-8">
                      <div className="flex items-center justify-center gap-6">
-                        <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
-                           <HiDocumentReport className="text-black" size={28} />
-                        </div>
+                        <HiDocumentReport className="text-black" size={72} />
                         <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
-                           Relatório de OS
+                           Relatório / OS
                         </h1>
                      </div>
 
                      <button
                         onClick={handleCloseRelatorio}
                         aria-label="Fechar relatório de OS"
-                        className={`group cursor-pointer rounded-full bg-red-500/50 p-3 text-white transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 ${
+                        className={`group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 ${
                            isClosing ? 'animate-spin' : ''
                         }`}
                      >
-                        <IoClose size={24} />
+                        <IoClose
+                           className="text-white group-hover:scale-125"
+                           size={24}
+                        />
                      </button>
                   </div>
 
                   {/* FILTROS & CARDS */}
                   <div className="flex items-center justify-between gap-6">
                      {/* SEÇÃO DE FILTROS */}
-                     <div className="flex w-[1600px] flex-col gap-4 p-6">
-                        <div className="flex items-center justify-center">
+                     <div className="flex w-[1600px] flex-col gap-4">
+                        <div className="flex items-center justify-between">
                            <FiltrosRelatorioOS
                               onFiltersChange={handleFiltersChange}
                               initialAno={filtrosData.ano}
@@ -700,9 +701,12 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                            <button
                               onClick={clearFilters}
                               title="Limpar Filtros"
-                              className="mt-5 cursor-pointer rounded-full border-none bg-red-500 px-6 py-3 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:bg-red-700 active:scale-95"
+                              className="mt-7 cursor-pointer rounded-full border-none bg-gradient-to-br from-red-600 to-red-700 px-6 py-2.5 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-110 active:scale-95"
                            >
-                              <FaEraser size={20} className="text-white" />
+                              <FaEraser
+                                 size={20}
+                                 className="text-white group-hover:scale-110"
+                              />
                            </button>
                         </div>
 
@@ -729,7 +733,7 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                      {/* CARDS DE TOTALIZADORES */}
                      {totalizadores && (
                         <div className="grid flex-1 grid-cols-2 gap-4">
-                           <div className="flex flex-col gap-1 rounded-tl-4xl rounded-br-4xl border-[1px] border-purple-600 bg-gradient-to-br from-purple-500 to-purple-600 p-6 shadow-md shadow-black">
+                           <div className="flex flex-col gap-1 rounded-tl-4xl rounded-br-4xl border border-purple-600 bg-gradient-to-br from-purple-600 to-purple-700 p-6 shadow-md shadow-black">
                               <div className="text-sm font-extrabold tracking-widest text-white italic select-none">
                                  TOTAL DE OS's
                               </div>
@@ -738,19 +742,7 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                               </div>
                            </div>
 
-                           <div className="flex flex-col gap-1 rounded-tr-4xl rounded-bl-4xl border-[1px] border-teal-600 bg-gradient-to-br from-teal-500 to-teal-600 p-6 shadow-md shadow-black">
-                              <div className="text-sm font-extrabold tracking-widest text-white uppercase italic select-none">
-                                 Total de Horas
-                              </div>
-                              <div className="pl-4 text-3xl font-extrabold tracking-widest text-white italic select-none">
-                                 {formatarHorasTotaisHorasDecimais(
-                                    totalizadores.totalGeralHoras
-                                 )}
-                                 h
-                              </div>
-                           </div>
-
-                           <div className="flex flex-col gap-1 rounded-tl-4xl rounded-br-4xl border-[1px] border-blue-600 bg-gradient-to-br from-blue-500 to-blue-600 p-6 shadow-md shadow-black">
+                           <div className="flex flex-col gap-1 rounded-tl-4xl rounded-br-4xl border border-blue-600 bg-gradient-to-br from-blue-600 to-blue-700 p-6 shadow-md shadow-black">
                               <div className="text-sm font-extrabold tracking-widest text-white italic select-none">
                                  TOTAL DE OS's FATURADAS
                               </div>
@@ -761,7 +753,26 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                               </div>
                            </div>
 
-                           <div className="flex flex-col gap-1 rounded-tr-4xl rounded-bl-4xl border-[1px] border-green-600 bg-gradient-to-br from-green-500 to-green-600 p-6 shadow-md shadow-black">
+                           <div className="flex flex-col gap-1 rounded-tl-4xl rounded-br-4xl border border-teal-600 bg-gradient-to-br from-teal-600 to-teal-700 p-6 shadow-md shadow-black">
+                              <div className="text-sm font-extrabold tracking-widest text-white uppercase italic select-none">
+                                 Total de Horas
+                              </div>
+                              <div className="pl-4 text-3xl font-extrabold tracking-widest text-white italic select-none">
+                                 {formatarHorasTotaisHorasDecimais(
+                                    totalizadores.totalGeralHoras
+                                 )}
+                                 {(() => {
+                                    const n = parseFloat(
+                                       String(
+                                          totalizadores.totalGeralHoras
+                                       ).replace(',', '.')
+                                    );
+                                    return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
+                                 })()}
+                              </div>
+                           </div>
+
+                           <div className="flex flex-col gap-1 rounded-tl-4xl rounded-br-4xl border border-green-600 bg-gradient-to-br from-green-600 to-green-700 p-6 shadow-md shadow-black">
                               <div className="text-sm font-extrabold tracking-widest text-white italic select-none">
                                  TOTAL DE OS's VALIDADAS
                               </div>
@@ -796,38 +807,29 @@ export function RelatorioOS({ isOpen = true, onClose }: Props) {
                            {grupos.map(grupo => (
                               <div
                                  key={grupo.chave}
-                                 className="overflow-hidden rounded-lg bg-white/10 shadow-md shadow-black"
+                                 onClick={() => setSelectedGrupo(grupo)}
+                                 title="Clique para visualizar os detalhes"
+                                 className="cursor-pointer overflow-hidden rounded-lg bg-amber-500 shadow-md shadow-black transition-all hover:shadow-lg hover:shadow-black"
                               >
                                  {/* CABEÇALHO DO GRUPO */}
-                                 <div className="group flex items-center justify-between bg-teal-800 px-6 py-1.5 transition-all hover:bg-teal-500">
+                                 <div className="group flex items-center justify-between bg-gradient-to-br from-teal-600 to-teal-700 px-6 py-1 transition-all hover:scale-[0.97] hover:from-teal-800 hover:to-teal-900">
                                     <div className="flex flex-1 items-center gap-4">
                                        <div className="flex flex-col gap-1">
-                                          <h3 className="text-xl font-extrabold tracking-widest text-white uppercase select-none group-hover:text-black">
+                                          <h3 className="text-xl font-extrabold tracking-widest text-white uppercase transition-colors select-none">
                                              {grupo.nome}
                                           </h3>
-                                          <p className="pl-4 text-sm font-semibold tracking-widest text-white italic select-none group-hover:text-black">
-                                             QTD. OS's ={' '}
+                                          <p className="pl-4 text-sm font-semibold tracking-widest text-white italic transition-colors select-none">
                                              {formatarCodNumber(
                                                 grupo.quantidadeOS
                                              )}
+                                             {' OS(s) / '}
+                                             {formatarHorasTotaisHorasDecimais(
+                                                grupo.totalHoras
+                                             )}
+                                             hs
                                           </p>
                                        </div>
                                     </div>
-
-                                    {/* BOTÃO VER DETALHES */}
-                                    <button
-                                       onClick={() => setSelectedGrupo(grupo)}
-                                       title="Visualizar Detalhes"
-                                       className="flex cursor-pointer items-center gap-3 rounded-md bg-blue-600 px-6 py-2 shadow-md shadow-black transition-all hover:bg-blue-700 active:scale-95"
-                                    >
-                                       <FaEye
-                                          className="text-white"
-                                          size={20}
-                                       />
-                                       <span className="text-sm font-bold tracking-widest text-white uppercase select-none">
-                                          Detalhes
-                                       </span>
-                                    </button>
                                  </div>
                               </div>
                            ))}

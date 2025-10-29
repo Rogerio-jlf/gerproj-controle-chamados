@@ -81,7 +81,7 @@ export function DropdownClientes({
             <button
                onClick={() => !isLoading && setIsOpen(!isOpen)}
                disabled={isLoading}
-               className="relative flex w-full cursor-pointer items-center justify-between rounded-md border-t border-black/10 bg-white p-3 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+               className="flex w-full cursor-pointer items-center justify-between rounded-md bg-white px-4 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
             >
                <span
                   className={`tracking-widest ${!selectedCliente || value === 'todos' ? 'text-slate-500' : 'text-black'}`}
@@ -96,15 +96,16 @@ export function DropdownClientes({
                   {showClearButton && !isLoading && (
                      <span
                         onClick={handleClear}
-                        className="cursor-pointer text-black transition-all hover:scale-150 hover:text-red-500"
+                        className="cursor-pointer text-black transition-all hover:scale-150 hover:text-red-500 active:scale-95"
+                        title="Limpar Filtro"
                      >
-                        <IoClose size={20} />
+                        <IoClose size={24} />
                      </span>
                   )}
                   <span
                      className={`text-black transition-all ${isOpen ? 'rotate-180' : ''}`}
                   >
-                     <IoIosArrowDown size={20} />
+                     <IoIosArrowDown size={24} />
                   </span>
                </div>
             </button>

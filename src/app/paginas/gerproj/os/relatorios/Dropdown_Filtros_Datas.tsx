@@ -89,7 +89,7 @@ export function DropdownAno({ value, onChange }: SelectProps) {
             {/* Input */}
             <button
                onClick={() => setIsOpen(!isOpen)}
-               className="flex w-full cursor-pointer items-center justify-between rounded-md bg-white px-4 py-3 font-bold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+               className="flex w-full cursor-pointer items-center justify-between rounded-md bg-white px-4 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
             >
                <span className="text-black">{selectedOption?.name}</span>
                {/* ===== */}
@@ -97,7 +97,8 @@ export function DropdownAno({ value, onChange }: SelectProps) {
                   {showClearButton && (
                      <span
                         onClick={handleClear}
-                        className="cursor-pointer text-black transition-transform hover:scale-150 hover:text-red-500 active:scale-95"
+                        className="cursor-pointer text-black transition-all hover:scale-150 hover:text-red-500 active:scale-95"
+                        title="Limpar Filtro"
                      >
                         <IoClose size={24} />
                      </span>
@@ -204,7 +205,7 @@ export function DropdownMes({ value, onChange }: SelectProps) {
             {/* Input */}
             <button
                onClick={() => setIsOpen(!isOpen)}
-               className="flex w-full cursor-pointer items-center justify-between rounded-md bg-white px-4 py-3 font-bold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+               className="flex w-full cursor-pointer items-center justify-between rounded-md bg-white px-4 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none"
             >
                <span className="text-black">{selectedOption?.name}</span>
                {/* ===== */}
@@ -212,7 +213,8 @@ export function DropdownMes({ value, onChange }: SelectProps) {
                   {showClearButton && (
                      <span
                         onClick={handleClear}
-                        className="cursor-pointer text-black transition-transform hover:scale-150 hover:text-red-500 active:scale-95"
+                        className="cursor-pointer text-black transition-all hover:scale-150 hover:text-red-500 active:scale-95"
+                        title="Limpar Filtro"
                      >
                         <IoClose size={24} />
                      </span>
@@ -340,10 +342,10 @@ export function DropdownDiaInicio({
             <button
                onClick={() => podeSelecionar && setIsOpen(!isOpen)}
                disabled={!podeSelecionar}
-               className={`flex w-full items-center justify-between rounded-md px-4 py-3 font-bold tracking-widest italic shadow-md shadow-black transition-all focus:ring-2 focus:ring-pink-600 focus:outline-none ${
+               className={`flex w-full items-center justify-between rounded-md bg-white px-4 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none ${
                   podeSelecionar
-                     ? 'cursor-pointer bg-white text-black hover:bg-white/50 active:scale-95'
-                     : 'cursor-not-allowed bg-gray-300 text-gray-500'
+                     ? 'cursor-pointer text-black'
+                     : 'cursor-not-allowed bg-slate-300 text-slate-500'
                }`}
             >
                <span>{getPlaceholderText()}</span>
@@ -352,7 +354,8 @@ export function DropdownDiaInicio({
                   {showClearButton && podeSelecionar && (
                      <span
                         onClick={handleClear}
-                        className="cursor-pointer text-black transition-transform hover:scale-150 hover:text-red-500 active:scale-95"
+                        className="cursor-pointer text-black transition-all hover:scale-150 hover:text-red-500 active:scale-95"
+                        title="Limpar Filtro"
                      >
                         <IoClose size={24} />
                      </span>
@@ -482,10 +485,10 @@ export function DropdownDiaFim({
             <button
                onClick={() => podeSelecionar && setIsOpen(!isOpen)}
                disabled={!podeSelecionar}
-               className={`flex w-full items-center justify-between rounded-md px-4 py-3 font-bold tracking-widest italic shadow-md shadow-black transition-all focus:ring-2 focus:ring-pink-600 focus:outline-none ${
+               className={`flex w-full items-center justify-between rounded-md bg-white px-4 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all hover:scale-102 focus:ring-2 focus:ring-pink-500 focus:outline-none ${
                   podeSelecionar
-                     ? 'cursor-pointer bg-white text-black hover:bg-white/50 active:scale-95'
-                     : 'cursor-not-allowed bg-gray-300 text-gray-500'
+                     ? 'cursor-pointer text-black'
+                     : 'cursor-not-allowed bg-slate-300 text-slate-500'
                }`}
             >
                <span>{getPlaceholderText()}</span>
@@ -494,7 +497,8 @@ export function DropdownDiaFim({
                   {showClearButton && podeSelecionar && (
                      <span
                         onClick={handleClear}
-                        className="cursor-pointer text-black transition-transform hover:scale-150 hover:text-red-500 active:scale-95"
+                        className="cursor-pointer text-black transition-all hover:scale-150 hover:text-red-500 active:scale-95"
+                        title="Limpar Filtro"
                      >
                         <IoClose size={24} />
                      </span>

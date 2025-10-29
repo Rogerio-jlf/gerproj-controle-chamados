@@ -166,15 +166,15 @@ export function FiltrosRelatorioOS({
 
    return (
       <div className="flex w-full items-center justify-center gap-6">
-         <div className="w-[300px]">
+         <div className="w-[350px]">
             <DropdownAno value={ano} onChange={setAno} />
          </div>
 
-         <div className="w-[300px]">
+         <div className="w-[350px]">
             <DropdownMes value={mes} onChange={setMes} />
          </div>
 
-         <div className="w-[300px]">
+         <div className="w-[350px]">
             <DropdownDiaInicio
                value={diaInicio}
                onChange={handleDiaInicioChange}
@@ -184,7 +184,7 @@ export function FiltrosRelatorioOS({
             />
          </div>
 
-         <div className="w-[300px]">
+         <div className="w-[350px]">
             <DropdownDiaFim
                value={diaFim}
                onChange={handleDiaFimChange}

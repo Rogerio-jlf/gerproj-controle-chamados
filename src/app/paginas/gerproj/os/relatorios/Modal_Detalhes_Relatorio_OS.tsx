@@ -142,12 +142,12 @@ const FiltroModalDetalhes = ({
             type="text"
             value={localValue}
             onChange={handleChange}
-            className="w-[300px] rounded-md border border-teal-950 bg-gradient-to-br from-teal-700 to-teal-800 px-4 py-2.5 text-base font-extrabold tracking-widest text-white italic transition-all select-none hover:scale-105 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+            className="w-[300px] rounded-md bg-white px-4 py-2.5 text-base font-extrabold tracking-widest text-black italic shadow-md shadow-black transition-all select-none hover:scale-105 focus:ring-2 focus:ring-pink-500 focus:outline-none"
          />
          {localValue && (
             <button
                onClick={handleClear}
-               className="absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer text-white transition-all hover:scale-150 hover:text-red-500 active:scale-95"
+               className="absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer text-black transition-all hover:scale-150 hover:text-red-500 active:scale-95"
                type="button"
             >
                <IoClose size={24} />
@@ -312,7 +312,7 @@ export const ModalDetalhesOS = ({
    return (
       <div className="fixed inset-0 z-[60] flex items-center justify-center">
          {/* OVERLAY */}
-         <div className="absolute inset-0 bg-teal-900" onClick={handleClose} />
+         <div className="absolute inset-0 bg-teal-900" />
 
          {/* MODAL CONTAINER */}
          <div
@@ -326,9 +326,9 @@ export const ModalDetalhesOS = ({
                   <div className="flex items-center justify-center gap-6">
                      <HiDocumentReport className="text-black" size={72} />
                      <div className="flex flex-col">
-                        <h2 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
+                        <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
                            {grupo.nome}
-                        </h2>
+                        </h1>
                         <p className="text-lg font-extrabold tracking-widest text-black italic select-none">
                            Relatório de OS's
                         </p>
@@ -355,7 +355,12 @@ export const ModalDetalhesOS = ({
                               {formatarHorasTotaisHorasDecimais(
                                  grupo.totalHoras
                               )}
-                              h
+                              {(() => {
+                                 const n = parseFloat(
+                                    String(grupo.totalHoras).replace(',', '.')
+                                 );
+                                 return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
+                              })()}
                            </div>
                         </div>
 
@@ -491,12 +496,12 @@ export const ModalDetalhesOS = ({
                            />
                         </div>
                      </div>
-                     {/* Botão de Limpar Filtros */}
+                     {/* BOTÃO LIMPAR FILTROS */}
                      <div className="group flex items-center justify-center">
                         <button
                            onClick={limparFiltros}
                            title="Limpar Filtros"
-                           className="cursor-pointer rounded-full border-none bg-gradient-to-br from-red-600 to-red-700 px-6 py-2.5 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-110 active:scale-95"
+                           className="mt-7 cursor-pointer rounded-full border-none bg-gradient-to-br from-red-600 to-red-700 px-6 py-2.5 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-110 active:scale-95"
                         >
                            <FaEraser
                               size={20}
@@ -525,7 +530,7 @@ export const ModalDetalhesOS = ({
                ) : (
                   <table className="w-full">
                      <thead className="sticky top-0 z-10">
-                        <tr className="bg-gradient-to-br from-teal-800 to-teal-900 py-20 font-extrabold tracking-wider text-white select-none">
+                        <tr className="bg-gradient-to-br from-teal-800 to-teal-900 py-20 font-extrabold tracking-wider text-white shadow-sm shadow-white select-none">
                            <th className="p-6 text-center text-base font-bold tracking-widest text-white uppercase select-none">
                               OS
                            </th>
@@ -550,7 +555,7 @@ export const ModalDetalhesOS = ({
                               </th>
                            )}
                            {agruparPor !== 'recurso' && (
-                              <th className="p-6 text-left text-base font-bold tracking-widest text-white uppercase select-none">
+                              <th className="p-6 text-center text-base font-bold tracking-widest text-white uppercase select-none">
                                  Recurso
                               </th>
                            )}
@@ -580,14 +585,35 @@ export const ModalDetalhesOS = ({
                               </td>
                               <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
                                  {formatarHora(detalhe.horaInicio)}
+                                 {(() => {
+                                    const n = parseFloat(
+                                       String(detalhe.horaInicio).replace(
+                                          ',',
+                                          '.'
+                                       )
+                                    );
+                                    return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
+                                 })()}
                               </td>
                               <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
                                  {formatarHora(detalhe.horaFim)}
+                                 {(() => {
+                                    const n = parseFloat(
+                                       String(detalhe.horaFim).replace(',', '.')
+                                    );
+                                    return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
+                                 })()}
                               </td>
                               <td className="p-3 text-center text-sm font-extrabold tracking-widest text-amber-500 select-none group-hover:font-extrabold group-hover:text-black">
                                  {formatarHorasTotaisHorasDecimais(
                                     detalhe.horas
                                  )}
+                                 {(() => {
+                                    const n = parseFloat(
+                                       String(detalhe.horas).replace(',', '.')
+                                    );
+                                    return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
+                                 })()}
                               </td>
                               {agruparPor !== 'recurso' && (
                                  <td className="p-3 text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
