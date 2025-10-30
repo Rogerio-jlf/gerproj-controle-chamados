@@ -1,5 +1,5 @@
 // IMPORTS
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 // FORMATTERS
 import {
@@ -8,6 +8,7 @@ import {
    formatarHorasTotaisHorasDecimais,
    formatarCodString,
    formatarDataParaBR,
+   formatarDataHoraParaBR,
 } from '../../../../../../utils/formatters';
 
 // HELPERS
@@ -16,7 +17,7 @@ import { corrigirTextoCorrompido } from '../../../../../../lib/corrigirTextoCorr
 // ================================================================================
 // CONSTANTES
 // ================================================================================
-const EMPTY_VALUE = '----------';
+const EMPTY_VALUE = 'n/a';
 
 const STATUS_CONFIG = {
    SIM: {
@@ -34,11 +35,16 @@ const STATUS_CONFIG = {
 // ================================================================================
 interface DetalheOS {
    codOs: number;
-   data: string;
-   chamado: string;
+   codTarefa?: number;
+   tarefa?: string;
+   codProjeto?: number;
+   projeto?: string;
    horaInicio: string;
    horaFim: string;
    horas: number;
+   data: string;
+   dataInclusao: string;
+   chamado: string;
    faturado: string;
    validado: string;
    competencia: string;
@@ -46,10 +52,6 @@ interface DetalheOS {
    codCliente?: number;
    recurso?: string;
    codRecurso?: number;
-   projeto?: string;
-   codProjeto?: number;
-   tarefa?: string;
-   codTarefa?: number;
 }
 
 interface ColunaDefinition {
@@ -69,11 +71,11 @@ interface ColunaDefinition {
  * Célula de número formatado
  */
 const CellNumber = ({ value }: { value: number }) => {
-   const formatted = useMemo(() => formatarCodNumber(value), [value]);
+   const ValueFormatted = useMemo(() => formatarCodNumber(value), [value]);
 
    return (
       <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-         {formatted}
+         {ValueFormatted}
       </td>
    );
 };
@@ -92,14 +94,38 @@ const CellDate = ({ value }: { value: string }) => {
 };
 
 /**
- * Célula de chamado formatado
+ * Célula de data formatada
  */
-const CellChamado = ({ value }: { value: string }) => {
-   const formatted = useMemo(() => formatarCodString(value), [value]);
+const CellDateTime = ({
+   value,
+   includeTime = true,
+}: {
+   value: string;
+   includeTime?: boolean;
+}) => {
+   const ValueFormatted = useMemo(() => {
+      if (!value) return null;
+      return includeTime
+         ? formatarDataHoraParaBR(value)
+         : formatarDataParaBR(value);
+   }, [value, includeTime]);
 
    return (
       <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-         {formatted || 'n/a'}
+         {ValueFormatted}
+      </td>
+   );
+};
+
+/**
+ * Célula de chamado formatado
+ */
+const CellChamado = ({ value }: { value: string }) => {
+   const ValueFormatted = useMemo(() => formatarCodString(value), [value]);
+
+   return (
+      <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
+         {ValueFormatted || 'n/a'}
       </td>
    );
 };
@@ -108,7 +134,7 @@ const CellChamado = ({ value }: { value: string }) => {
  * Célula de hora formatada
  */
 const CellHora = ({ value }: { value: string }) => {
-   const formatted = useMemo(() => formatarHora(value), [value]);
+   const ValueFormatted = useMemo(() => formatarHora(value), [value]);
 
    const suffix = useMemo(() => {
       const n = parseFloat(String(value).replace(',', '.'));
@@ -117,7 +143,7 @@ const CellHora = ({ value }: { value: string }) => {
 
    return (
       <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-         {formatted}
+         {ValueFormatted}
          {suffix}
       </td>
    );
@@ -127,7 +153,7 @@ const CellHora = ({ value }: { value: string }) => {
  * Célula de total de horas formatada
  */
 const CellTotalHoras = ({ value }: { value: number }) => {
-   const formatted = useMemo(
+   const ValueFormatted = useMemo(
       () => formatarHorasTotaisHorasDecimais(value),
       [value]
    );
@@ -139,7 +165,7 @@ const CellTotalHoras = ({ value }: { value: number }) => {
 
    return (
       <td className="p-3 text-center text-sm font-extrabold tracking-widest text-amber-500 select-none group-hover:font-extrabold group-hover:text-black">
-         {formatted}
+         {ValueFormatted}
          {suffix}
       </td>
    );
@@ -149,14 +175,14 @@ const CellTotalHoras = ({ value }: { value: number }) => {
  * Célula de cliente formatada
  */
 const CellCliente = ({ value }: { value?: string }) => {
-   const formatted = useMemo(
+   const ValueFormatted = useMemo(
       () => (value ? corrigirTextoCorrompido(value) : EMPTY_VALUE),
       [value]
    );
 
    return (
       <td className="p-3 text-left text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-         {formatted}
+         {ValueFormatted}
       </td>
    );
 };
@@ -165,14 +191,16 @@ const CellCliente = ({ value }: { value?: string }) => {
  * Célula de recurso formatada
  */
 const CellRecurso = ({ value }: { value?: string }) => {
-   const formatted = useMemo(
+   const ValueFormatted = useMemo(
       () => (value ? corrigirTextoCorrompido(value) : EMPTY_VALUE),
       [value]
    );
 
    return (
       <td className="p-3 text-left text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-         {formatted}
+         {corrigirTextoCorrompido(
+            ValueFormatted.split(' ').slice(0, 2).join(' ')
+         )}
       </td>
    );
 };
@@ -181,14 +209,42 @@ const CellRecurso = ({ value }: { value?: string }) => {
  * Célula de texto formatada (para projeto e tarefa)
  */
 const CellText = ({ value }: { value?: string }) => {
-   const formatted = useMemo(
+   const textRef = useRef<HTMLSpanElement>(null);
+   const [showTooltip, setShowTooltip] = useState(false);
+
+   const ValueFormatted = useMemo(
       () => (value ? corrigirTextoCorrompido(value) : EMPTY_VALUE),
       [value]
    );
 
+   useEffect(() => {
+      const checkOverflow = () => {
+         if (textRef.current && value) {
+            const isOverflowing =
+               textRef.current.scrollWidth > textRef.current.clientWidth ||
+               textRef.current.scrollHeight > textRef.current.clientHeight;
+            setShowTooltip(isOverflowing);
+         }
+      };
+
+      const timeoutId = setTimeout(checkOverflow, 100);
+      window.addEventListener('resize', checkOverflow);
+
+      return () => {
+         clearTimeout(timeoutId);
+         window.removeEventListener('resize', checkOverflow);
+      };
+   }, [value, ValueFormatted]);
+
    return (
       <td className="p-3 text-left text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-         {formatted}
+         <span
+            ref={textRef}
+            className="block truncate"
+            title={showTooltip ? ValueFormatted : undefined}
+         >
+            {ValueFormatted}
+         </span>
       </td>
    );
 };
@@ -241,52 +297,7 @@ export const colunasTabelaDetalhesRelatorioOS: ColunaDefinition[] = [
       align: 'center',
       render: (value: number) => <CellNumber value={value} />,
    },
-   {
-      id: 'data',
-      header: 'Data',
-      accessor: 'data',
-      align: 'center',
-      render: (value: string) => <CellDate value={value} />,
-   },
-   {
-      id: 'chamado',
-      header: 'Chamado',
-      accessor: 'chamado',
-      align: 'center',
-      render: (value: string) => <CellChamado value={value} />,
-   },
-   // {
-   //    id: 'cliente',
-   //    header: 'Cliente',
-   //    accessor: 'cliente',
-   //    align: 'left',
-   //    showWhen: (agruparPor: string) => agruparPor !== 'cliente',
-   //    render: (value: string) => <CellCliente value={value} />,
-   // },
-   {
-      id: 'recurso',
-      header: 'Recurso',
-      accessor: 'recurso',
-      align: 'left',
-      showWhen: (agruparPor: string) => agruparPor !== 'recurso',
-      render: (value: string) => <CellRecurso value={value} />,
-   },
-   // {
-   //    id: 'codProjeto',
-   //    header: 'Cód. Projeto',
-   //    accessor: 'codProjeto',
-   //    align: 'center',
-   //    showWhen: (agruparPor: string) => agruparPor !== 'projeto',
-   //    render: (value?: number) => <CellNumber value={value || 0} />,
-   // },
-   {
-      id: 'projeto',
-      header: 'Projeto',
-      accessor: 'projeto',
-      align: 'left',
-      showWhen: (agruparPor: string) => agruparPor !== 'projeto',
-      render: (value: string) => <CellText value={value} />,
-   },
+
    // {
    //    id: 'codTarefa',
    //    header: 'Cód. Tarefa',
@@ -295,6 +306,7 @@ export const colunasTabelaDetalhesRelatorioOS: ColunaDefinition[] = [
    //    showWhen: (agruparPor: string) => agruparPor !== 'tarefa',
    //    render: (value?: number) => <CellNumber value={value || 0} />,
    // },
+
    {
       id: 'tarefa',
       header: 'Tarefa',
@@ -303,6 +315,51 @@ export const colunasTabelaDetalhesRelatorioOS: ColunaDefinition[] = [
       showWhen: (agruparPor: string) => agruparPor !== 'tarefa',
       render: (value: string) => <CellText value={value} />,
    },
+
+   // {
+   //    id: 'codProjeto',
+   //    header: 'Cód. Projeto',
+   //    accessor: 'codProjeto',
+   //    align: 'center',
+   //    showWhen: (agruparPor: string) => agruparPor !== 'projeto',
+   //    render: (value?: number) => <CellNumber value={value || 0} />,
+   // },
+
+   // {
+   //    id: 'projeto',
+   //    header: 'Projeto',
+   //    accessor: 'projeto',
+   //    align: 'left',
+   //    showWhen: (agruparPor: string) => agruparPor !== 'projeto',
+   //    render: (value: string) => <CellText value={value} />,
+   // },
+
+   {
+      id: 'data',
+      header: 'Data',
+      accessor: 'data',
+      align: 'center',
+      render: (value: string) => <CellDate value={value} />,
+   },
+
+   {
+      id: 'horaInicio',
+      header: 'Hora Início',
+      accessor: 'horaInicio',
+      align: 'left',
+      showWhen: (agruparPor: string) => agruparPor !== 'horaInicio',
+      render: (value: string) => <CellHora value={value} />,
+   },
+
+   {
+      id: 'horaFim',
+      header: 'Hora Fim',
+      accessor: 'horaFim',
+      align: 'left',
+      showWhen: (agruparPor: string) => agruparPor !== 'horaFim',
+      render: (value: string) => <CellHora value={value} />,
+   },
+
    {
       id: 'horas',
       header: 'Total Horas',
@@ -310,6 +367,24 @@ export const colunasTabelaDetalhesRelatorioOS: ColunaDefinition[] = [
       align: 'center',
       render: (value: number) => <CellTotalHoras value={value} />,
    },
+
+   {
+      id: 'dataInclusao',
+      header: 'Data de Inclusão',
+      accessor: 'dataInclusao',
+      align: 'center',
+      render: (value: string) => <CellDateTime value={value} />,
+   },
+
+   {
+      id: 'recurso',
+      header: 'Recurso',
+      accessor: 'recurso',
+      align: 'left',
+      showWhen: (agruparPor: string) => agruparPor !== 'recurso',
+      render: (value: string) => <CellRecurso value={value} />,
+   },
+
    {
       id: 'faturado',
       header: 'Cliente Paga',
@@ -317,12 +392,21 @@ export const colunasTabelaDetalhesRelatorioOS: ColunaDefinition[] = [
       align: 'center',
       render: (value: string) => <CellStatus value={value} />,
    },
+
    {
       id: 'validado',
       header: 'Consultor Recebe',
       accessor: 'validado',
       align: 'center',
       render: (value: string) => <CellStatus value={value} />,
+   },
+
+   {
+      id: 'chamado',
+      header: 'Chamado',
+      accessor: 'chamado',
+      align: 'center',
+      render: (value: string) => <CellChamado value={value} />,
    },
 ];
 

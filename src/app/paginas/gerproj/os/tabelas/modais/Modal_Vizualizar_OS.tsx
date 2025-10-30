@@ -1,7 +1,7 @@
 'use client';
 
 // COMPONENTS
-import { TooltipCondicional } from '../components/Tooltip_Condicional.';
+import { TooltipCondicional } from '../../components/Tooltip_Condicional';
 
 // TYPES
 import { TabelaOSProps } from '../../../../../../types/types';

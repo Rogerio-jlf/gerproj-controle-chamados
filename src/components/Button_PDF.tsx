@@ -1,21 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+// IMPORTS
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { FaFilePdf, FaCheckCircle } from 'react-icons/fa';
-import { IoClose } from 'react-icons/io5';
+import { useState } from 'react';
+
+// FORMATTERS
 import {
    formatarCodNumber,
+   formatarDataParaBR,
    formatarHora,
    formatarHorasTotaisHorasDecimais,
 } from '../utils/formatters';
 import { corrigirTextoCorrompido } from '../lib/corrigirTextoCorrompido';
+
+// ICONS
+import { IoClose } from 'react-icons/io5';
+import { FaFilePdf, FaCheckCircle } from 'react-icons/fa';
 
 // ================================================================================
 // TIPOS E INTERFACES
@@ -38,6 +39,7 @@ interface DetalheOS {
    codProjeto?: number;
    tarefa?: string;
    codTarefa?: number;
+   dataInclusao?: string;
 }
 
 interface GrupoRelatorio {
@@ -77,25 +79,6 @@ interface PDFButtonRelatorioOSProps {
 // ================================================================================
 // FUNÇÕES AUXILIARES
 // ================================================================================
-function formatarDecimalParaTempo(decimal: number | null): string {
-   if (decimal === null || isNaN(decimal)) return '--:--';
-   const horas = Math.floor(decimal);
-   const minutos = Math.round((decimal - horas) * 60);
-   return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
-}
-
-function formatarDataParaBR(data: string | null): string {
-   if (!data) return '----------';
-   try {
-      const date = new Date(data);
-      const dia = date.getDate().toString().padStart(2, '0');
-      const mes = (date.getMonth() + 1).toString().padStart(2, '0');
-      const ano = date.getFullYear();
-      return `${dia}/${mes}/${ano}`;
-   } catch {
-      return '----------';
-   }
-}
 
 function getTipoAgrupamentoLabel(tipo: string): string {
    const labels: { [key: string]: string } = {
@@ -342,10 +325,15 @@ export function PDFRelatorioOS({
 
          yPosition += 6;
 
+         const horasSufixo = (() => {
+            const n = parseFloat(String(grupo.totalHoras).replace(',', '.'));
+            return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
+         })();
+
          const totalizadores = [
             {
                label: 'Total de Horas',
-               value: `${formatarHorasTotaisHorasDecimais(grupo.totalHoras)}h`,
+               value: `${formatarHorasTotaisHorasDecimais(grupo.totalHoras)} ${horasSufixo}`,
                color: [0, 128, 128],
             },
             {
@@ -396,34 +384,37 @@ export function PDFRelatorioOS({
          // ================================================================================
          const tableHeaders = [
             'OS',
-            'Data',
-            'Chamado',
-            'Hora Início',
-            'Hora Fim',
-            'Horas',
-            'Cliente',
-            'Recurso',
+            'TAREFA',
+            'CHAMADO',
+            'DATA',
+            'HORA INÍCIO',
+            'HORA FIM',
+            'TOTAL HORAS',
+            'DATA INCLUSÃO',
+            'RECURSO',
          ];
 
-         if (incluirFaturado) tableHeaders.push('Faturado');
-         if (incluirValidado) tableHeaders.push('Validado');
+         if (incluirValidado) tableHeaders.push('VALIDADO');
+         if (incluirFaturado) tableHeaders.push('FATURADO');
 
          const tableData = grupo.detalhes.map(detalhe => {
             const row = [
                detalhe.codOs || null,
-               formatarDataParaBR(detalhe.data) || '--------',
+               detalhe.tarefa || 'n/a',
                detalhe.chamado
                   ? Number(detalhe.chamado) || detalhe.chamado
-                  : '-----',
-               formatarHora(detalhe.horaInicio) || '----',
-               formatarHora(detalhe.horaFim) || '----',
-               formatarHorasTotaisHorasDecimais(detalhe.horas) || '----',
-               detalhe.cliente || '----------',
-               corrigirTextoCorrompido(detalhe.recurso ?? '') || '----------',
+                  : 'n/a',
+               formatarDataParaBR(detalhe.data) || 'n/a',
+               formatarHora(detalhe.horaInicio) + horasSufixo || 'n/a',
+               formatarHora(detalhe.horaFim) + horasSufixo || 'n/a',
+               formatarHorasTotaisHorasDecimais(detalhe.horas) + horasSufixo ||
+                  'n/a',
+               formatarDataParaBR(detalhe.dataInclusao || '') || 'n/a',
+               corrigirTextoCorrompido(detalhe.recurso ?? '') || 'n/a',
             ];
 
-            if (incluirFaturado) row.push(detalhe.faturado);
             if (incluirValidado) row.push(detalhe.validado);
+            if (incluirFaturado) row.push(detalhe.faturado);
 
             // Adaptação: Formatar valores numéricos para OS e Chamado
             if (typeof row[0] === 'number') {
@@ -438,17 +429,26 @@ export function PDFRelatorioOS({
 
          // Configurar estilos de colunas dinamicamente
          const columnStyles: any = {
-            0: { cellWidth: 15, halign: 'center' },
-            1: { cellWidth: 20, halign: 'center' },
-            2: { cellWidth: 20, halign: 'center' },
-            3: { cellWidth: 20, halign: 'center' },
-            4: { cellWidth: 20, halign: 'center' },
-            5: { cellWidth: 20, halign: 'center', fontStyle: 'bold' },
-            6: { cellWidth: 60, halign: 'left' },
-            7: { cellWidth: 60, halign: 'left' },
+            0: { cellWidth: 15, halign: 'center' }, // OS
+            1: { cellWidth: 50, halign: 'left' }, // Tarefa
+            2: { cellWidth: 20, halign: 'center' }, // Chamado
+            3: { cellWidth: 20, halign: 'center' }, // Data
+            4: { cellWidth: 20, halign: 'center' }, // Hora Início
+            5: { cellWidth: 20, halign: 'center' }, // Hora Fim
+            6: { cellWidth: 20, halign: 'center' }, // total Horas
+            7: { cellWidth: 20, halign: 'center' }, // Data Inclusão
+            8: { cellWidth: 50, halign: 'left' }, // Recurso
          };
 
-         let currentColIndex = 8;
+         let currentColIndex = 9;
+         if (incluirValidado) {
+            columnStyles[currentColIndex] = {
+               cellWidth: 20,
+               halign: 'center',
+               fontStyle: 'bold',
+            };
+         }
+
          if (incluirFaturado) {
             columnStyles[currentColIndex] = {
                cellWidth: 20,
@@ -456,13 +456,6 @@ export function PDFRelatorioOS({
                fontStyle: 'bold',
             };
             currentColIndex++;
-         }
-         if (incluirValidado) {
-            columnStyles[currentColIndex] = {
-               cellWidth: 20,
-               halign: 'center',
-               fontStyle: 'bold',
-            };
          }
 
          autoTable(doc, {
@@ -486,10 +479,10 @@ export function PDFRelatorioOS({
             columnStyles: columnStyles,
             didParseCell: data => {
                // Colorir células de Faturado e Validado
-               const isFaturadoCol = incluirFaturado && data.column.index === 8;
+               const isFaturadoCol = incluirFaturado && data.column.index === 9;
                const isValidadoCol =
                   incluirValidado &&
-                  data.column.index === (incluirFaturado ? 9 : 8);
+                  data.column.index === (incluirFaturado ? 10 : 9);
 
                if (isFaturadoCol || isValidadoCol) {
                   if (data.cell.text[0] === 'SIM') {
@@ -634,10 +627,10 @@ export function PDFRelatorioOS({
                            className="flex-1 cursor-pointer rounded-md bg-green-600 px-6 py-2 text-lg font-extrabold text-white shadow-md shadow-black transition-all hover:scale-105 hover:bg-green-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                            {isExporting ? (
-                              <>
+                              <div className="flex items-center justify-center gap-2">
                                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                 Exportando...
-                              </>
+                                 <span>Exportando...</span>
+                              </div>
                            ) : (
                               <>Exportar</>
                            )}

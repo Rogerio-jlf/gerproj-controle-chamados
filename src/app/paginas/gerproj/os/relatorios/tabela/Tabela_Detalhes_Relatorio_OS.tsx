@@ -5,7 +5,10 @@ import { useState, useCallback, useMemo } from 'react';
 // COMPONENTS
 import { PDFRelatorioOS } from '../../../../../../components/Button_PDF';
 import { ExcelRelatorioOS } from '../../../../../../components/Button_Excel';
-import { FiltrosHeaderTabelaRelatorioOS } from './Filtros_Header_Tabela_Relatorio_OS';
+import {
+   normalizeDateForComparison,
+   FiltrosHeaderTabelaRelatorioOS,
+} from './Filtros_Header_Tabela_Relatorio_OS';
 import {
    TableRow,
    EmptyRow,
@@ -16,6 +19,7 @@ import {
 // FORMATTERS
 import {
    formatarCodNumber,
+   formatarDataParaBR,
    formatarHorasTotaisHorasDecimais,
    normalizeDate,
 } from '../../../../../../utils/formatters';
@@ -26,7 +30,7 @@ import { corrigirTextoCorrompido } from '../../../../../../lib/corrigirTextoCorr
 // ICONS
 import { IoClose } from 'react-icons/io5';
 import { HiDocumentReport } from 'react-icons/hi';
-import { FaEraser, FaExclamationTriangle } from 'react-icons/fa';
+import { FaEraser, FaExclamationTriangle, FaUserTie } from 'react-icons/fa';
 
 // ================================================================================
 // CONSTANTES
@@ -36,33 +40,37 @@ const ANIMATION_DURATION = 100;
 // Mapeamento de larguras das colunas
 const COLUMN_WIDTHS: Record<string, string> = {
    codOs: '6%',
-   data: '8%',
-   chamado: '6%',
-   cliente: '15%',
-   recurso: '15%',
-   codProjeto: '6%',
-   projeto: '12%',
    codTarefa: '6%',
    tarefa: '12%',
+   codProjeto: '6%',
+   projeto: '12%',
+   data: '8%',
+   horaInicio: '6%',
+   horaFim: '6%',
    horas: '8%',
+   dataInclusao: '8%',
+   recurso: '15%',
    faturado: '8%',
    validado: '8%',
+   chamado: '6%',
 };
 
 // Títulos das colunas
 const COLUMN_TITLES: Record<string, string> = {
    codOs: 'OS',
-   data: 'DATA',
-   chamado: 'CHAMADO',
-   cliente: 'CLIENTE',
-   recurso: 'CONSULTOR',
-   codProjeto: 'CÓD. PROJETO',
-   projeto: 'PROJETO',
    codTarefa: 'CÓD. TAREFA',
    tarefa: 'TAREFA',
-   horas: 'HORAS',
+   codProjeto: 'CÓD. PROJETO',
+   projeto: 'PROJETO',
+   data: 'DT. INÍCIO',
+   horaInicio: 'HR. INÍCIO',
+   horaFim: 'HR. FIM',
+   horas: "TOTAL HR's",
+   dataInclusao: 'DT. INCLUSÃO',
+   recurso: 'CONSULTOR',
    faturado: 'CLIENTE PAGA',
    validado: 'CONSULTOR RECEBE',
+   chamado: 'CHAMADO',
 };
 
 function getColumnWidth(columnId: string): string {
@@ -110,17 +118,18 @@ export const TabelalDetalhesRelatorioOS = ({
 
    // Estados dos filtros do modal (header da tabela)
    const [filtroOS, setFiltroOS] = useState('');
-   const [filtroData, setFiltroData] = useState('');
-   const [filtroChamado, setFiltroChamado] = useState('');
-   const [filtroCliente, setFiltroCliente] = useState('');
-   const [filtroRecurso, setFiltroRecurso] = useState('');
-   const [filtroCodProjeto, setFiltroCodProjeto] = useState('');
-   const [filtroProjeto, setFiltroProjeto] = useState('');
-   const [filtroCodTarefa, setFiltroCodTarefa] = useState('');
    const [filtroTarefa, setFiltroTarefa] = useState('');
+   const [filtroCodTarefa, setFiltroCodTarefa] = useState('');
+   const [filtroProjeto, setFiltroProjeto] = useState('');
+   const [filtroCodProjeto, setFiltroCodProjeto] = useState('');
+   const [filtroData, setFiltroData] = useState('');
+   const [filtroDataInclusao, setFiltroDataInclusao] = useState('');
+   const [filtroRecurso, setFiltroRecurso] = useState('');
    const [filtroFaturado, setFiltroFaturado] = useState('');
    const [filtroValidado, setFiltroValidado] = useState('');
+   const [filtroChamado, setFiltroChamado] = useState('');
 
+   // Função para fechar o modal com animação
    const handleClose = useCallback(() => {
       setIsClosing(true);
       setTimeout(() => {
@@ -131,76 +140,114 @@ export const TabelalDetalhesRelatorioOS = ({
 
    const limparFiltros = useCallback(() => {
       setFiltroOS('');
-      setFiltroData('');
-      setFiltroChamado('');
-      setFiltroCliente('');
-      setFiltroRecurso('');
-      setFiltroCodProjeto('');
-      setFiltroProjeto('');
       setFiltroCodTarefa('');
       setFiltroTarefa('');
+      setFiltroCodProjeto('');
+      setFiltroProjeto('');
+      setFiltroData('');
+      setFiltroDataInclusao('');
+      setFiltroRecurso('');
       setFiltroFaturado('');
       setFiltroValidado('');
+      setFiltroChamado('');
    }, []);
 
    const filtrosAtivos = useMemo(() => {
       return [
          filtroOS,
-         filtroData,
-         filtroChamado,
-         filtroCliente,
-         filtroRecurso,
-         filtroCodProjeto,
-         filtroProjeto,
          filtroCodTarefa,
          filtroTarefa,
+         filtroCodProjeto,
+         filtroProjeto,
+         filtroData,
+         filtroDataInclusao,
+         filtroRecurso,
          filtroFaturado,
          filtroValidado,
+         filtroChamado,
       ].filter(f => f.trim()).length;
    }, [
       filtroOS,
-      filtroData,
-      filtroChamado,
-      filtroCliente,
-      filtroRecurso,
-      filtroCodProjeto,
-      filtroProjeto,
       filtroCodTarefa,
       filtroTarefa,
+      filtroCodProjeto,
+      filtroProjeto,
+      filtroData,
+      filtroDataInclusao,
+      filtroRecurso,
       filtroFaturado,
       filtroValidado,
+      filtroChamado,
    ]);
 
    const detalhesFiltrados = useMemo(() => {
       return grupo.detalhes.filter(detalhe => {
+         // Filtro de OS
          if (filtroOS && !String(detalhe.codOs).includes(filtroOS)) {
             return false;
          }
 
-         if (filtroData) {
-            const dateFormats = normalizeDate(detalhe.data);
-            const match = dateFormats.some(dateFormat =>
-               dateFormat.toLowerCase().includes(filtroData.toLowerCase())
-            );
-            if (!match) return false;
-         }
-
+         // Filtro de Código da Tarefa
          if (
-            filtroChamado &&
-            !String(detalhe.chamado).includes(filtroChamado)
+            filtroCodTarefa &&
+            !String(detalhe.codTarefa || '').includes(filtroCodTarefa)
          ) {
             return false;
          }
 
+         // Filtro de Tarefa
          if (
-            filtroCliente &&
-            !detalhe.cliente
+            filtroTarefa &&
+            !detalhe.tarefa?.toLowerCase().includes(filtroTarefa.toLowerCase())
+         ) {
+            return false;
+         }
+
+         // Filtro de Código do Projeto
+         if (
+            filtroCodProjeto &&
+            !String(detalhe.codProjeto || '').includes(filtroCodProjeto)
+         ) {
+            return false;
+         }
+
+         // Filtro de Projeto
+         if (
+            filtroProjeto &&
+            !detalhe.projeto
                ?.toLowerCase()
-               .includes(filtroCliente.toLowerCase())
+               .includes(filtroProjeto.toLowerCase())
          ) {
             return false;
          }
 
+         // ============ FILTRO DE DATA (corrigido) ============
+         if (filtroData) {
+            const dataFiltroNormalizada =
+               normalizeDateForComparison(filtroData);
+            const dataDetalheNormalizada = normalizeDateForComparison(
+               detalhe.data
+            );
+
+            if (!dataDetalheNormalizada.includes(dataFiltroNormalizada)) {
+               return false;
+            }
+         }
+
+         // ============ FILTRO DE DATA INCLUSÃO (corrigido - ignora horas) ============
+         if (filtroDataInclusao) {
+            const dataFiltroNormalizada =
+               normalizeDateForComparison(filtroDataInclusao);
+            const dataDetalheNormalizada = normalizeDateForComparison(
+               detalhe.dataInclusao
+            );
+
+            if (!dataDetalheNormalizada.includes(dataFiltroNormalizada)) {
+               return false;
+            }
+         }
+
+         // Filtro de Recurso
          if (filtroRecurso) {
             const recursoNormalizado = corrigirTextoCorrompido(
                detalhe.recurso ?? ''
@@ -214,36 +261,7 @@ export const TabelalDetalhesRelatorioOS = ({
             }
          }
 
-         if (
-            filtroCodProjeto &&
-            !String(detalhe.codProjeto || '').includes(filtroCodProjeto)
-         ) {
-            return false;
-         }
-
-         if (
-            filtroProjeto &&
-            !detalhe.projeto
-               ?.toLowerCase()
-               .includes(filtroProjeto.toLowerCase())
-         ) {
-            return false;
-         }
-
-         if (
-            filtroCodTarefa &&
-            !String(detalhe.codTarefa || '').includes(filtroCodTarefa)
-         ) {
-            return false;
-         }
-
-         if (
-            filtroTarefa &&
-            !detalhe.tarefa?.toLowerCase().includes(filtroTarefa.toLowerCase())
-         ) {
-            return false;
-         }
-
+         // Filtro de Faturado
          if (filtroFaturado && filtroFaturado !== 'todos') {
             if (filtroFaturado === 'SIM' && detalhe.faturado !== 'SIM')
                return false;
@@ -251,6 +269,7 @@ export const TabelalDetalhesRelatorioOS = ({
                return false;
          }
 
+         // Filtro de Validado
          if (filtroValidado && filtroValidado !== 'todos') {
             if (filtroValidado === 'SIM' && detalhe.validado !== 'SIM')
                return false;
@@ -258,21 +277,29 @@ export const TabelalDetalhesRelatorioOS = ({
                return false;
          }
 
+         // Filtro de Chamado
+         if (
+            filtroChamado &&
+            !String(detalhe.chamado).includes(filtroChamado)
+         ) {
+            return false;
+         }
+
          return true;
       });
    }, [
       grupo.detalhes,
       filtroOS,
-      filtroData,
-      filtroChamado,
-      filtroCliente,
-      filtroRecurso,
-      filtroCodProjeto,
-      filtroProjeto,
       filtroCodTarefa,
       filtroTarefa,
+      filtroCodProjeto,
+      filtroProjeto,
+      filtroData,
+      filtroDataInclusao,
+      filtroRecurso,
       filtroFaturado,
       filtroValidado,
+      filtroChamado,
    ]);
 
    const totalLinhasOriginais = grupo.detalhes.length;
@@ -290,16 +317,19 @@ export const TabelalDetalhesRelatorioOS = ({
       { state: string; setter: (value: string) => void }
    > = {
       codOs: { state: filtroOS, setter: setFiltroOS },
-      data: { state: filtroData, setter: setFiltroData },
-      chamado: { state: filtroChamado, setter: setFiltroChamado },
-      cliente: { state: filtroCliente, setter: setFiltroCliente },
-      recurso: { state: filtroRecurso, setter: setFiltroRecurso },
-      codProjeto: { state: filtroCodProjeto, setter: setFiltroCodProjeto },
-      projeto: { state: filtroProjeto, setter: setFiltroProjeto },
       codTarefa: { state: filtroCodTarefa, setter: setFiltroCodTarefa },
       tarefa: { state: filtroTarefa, setter: setFiltroTarefa },
+      codProjeto: { state: filtroCodProjeto, setter: setFiltroCodProjeto },
+      projeto: { state: filtroProjeto, setter: setFiltroProjeto },
+      data: { state: filtroData, setter: setFiltroData },
+      dataInclusao: {
+         state: filtroDataInclusao,
+         setter: setFiltroDataInclusao,
+      },
+      recurso: { state: filtroRecurso, setter: setFiltroRecurso },
       faturado: { state: filtroFaturado, setter: setFiltroFaturado },
       validado: { state: filtroValidado, setter: setFiltroValidado },
+      chamado: { state: filtroChamado, setter: setFiltroChamado },
    };
 
    return (
@@ -320,13 +350,79 @@ export const TabelalDetalhesRelatorioOS = ({
             <header className="flex flex-shrink-0 flex-col gap-20 bg-white/50 p-6 pb-24">
                <div className="flex items-center justify-between gap-8">
                   <div className="flex items-center justify-center gap-6">
-                     <HiDocumentReport className="text-black" size={72} />
+                     <HiDocumentReport className="text-black" size={100} />
                      <div className="flex flex-col">
-                        <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
+                        <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
                            {grupo.nome}
                         </h1>
                         <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
                            Relatório de OS's
+                        </p>
+                        <p className="text-lg font-extrabold tracking-widest text-black italic select-none">
+                           {(() => {
+                              // Extrai as propriedades que podem existir
+                              const { dataInicio, dataFim, ano, mes } =
+                                 filtrosAplicados || {};
+
+                              const now = new Date();
+                              const mesAtual = String(
+                                 now.getMonth() + 1
+                              ).padStart(2, '0');
+                              const anoAtual = now.getFullYear();
+
+                              // Se tem dataInicio e dataFim (formato YYYY-MM-DD)
+                              if (dataInicio && dataFim) {
+                                 // Converte de YYYY-MM-DD para DD/MM/YYYY
+                                 const [anoInicio, mesInicio, diaInicio] =
+                                    dataInicio.split('-');
+                                 const [anoFim, mesFim, diaFim] =
+                                    dataFim.split('-');
+
+                                 const dataInicioFormatada = `${diaInicio}/${mesInicio}/${anoInicio}`;
+                                 const dataFimFormatada = `${diaFim}/${mesFim}/${anoFim}`;
+
+                                 return (
+                                    <>
+                                       Período de {dataInicioFormatada} até{' '}
+                                       {dataFimFormatada}
+                                    </>
+                                 );
+                              }
+
+                              // Se tem ano e mês (mas não tem datas completas)
+                              if (ano && mes) {
+                                 return (
+                                    <>
+                                       {mes}/{ano}
+                                    </>
+                                 );
+                              }
+
+                              // Se só tem mês
+                              if (mes && !ano) {
+                                 return (
+                                    <>
+                                       {mes}/{anoAtual}
+                                    </>
+                                 );
+                              }
+
+                              // Se só tem ano
+                              if (ano && !mes) {
+                                 return (
+                                    <>
+                                       {mesAtual}/{ano}
+                                    </>
+                                 );
+                              }
+
+                              // Se não tem nenhum filtro de data
+                              return (
+                                 <>
+                                    {mesAtual}/{anoAtual}
+                                 </>
+                              );
+                           })()}
                         </p>
                      </div>
                   </div>
@@ -409,22 +505,6 @@ export const TabelalDetalhesRelatorioOS = ({
                      </div>
                   </div>
                </div>
-
-               {/* BOTÃO LIMPAR FILTROS */}
-               {filtrosAtivos > 0 && (
-                  <div className="flex items-center justify-center">
-                     <button
-                        onClick={limparFiltros}
-                        title="Limpar Filtros"
-                        className="cursor-pointer rounded-md border-none bg-gradient-to-br from-red-600 to-red-700 px-6 py-2.5 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-110 active:scale-95"
-                     >
-                        <div className="flex items-center gap-2">
-                           <FaEraser size={20} className="text-white" />
-                           <span>Limpar Filtros ({filtrosAtivos})</span>
-                        </div>
-                     </button>
-                  </div>
-               )}
             </header>
 
             {/* TABELA */}
@@ -487,18 +567,29 @@ export const TabelalDetalhesRelatorioOS = ({
                                           width: getColumnWidth(columnId),
                                        }}
                                     >
-                                       {columnId !== 'horas' &&
-                                          FILTER_MAP[columnId] && (
-                                             <FiltrosHeaderTabelaRelatorioOS
-                                                value={
-                                                   FILTER_MAP[columnId].state
-                                                }
-                                                onChange={
-                                                   FILTER_MAP[columnId].setter
-                                                }
-                                                columnId={columnId}
+                                       {/* BOTÃO LIMPAR FILTROS na coluna horaFim */}
+                                       {columnId === 'horaFim' &&
+                                       filtrosAtivos > 0 ? (
+                                          <button
+                                             onClick={limparFiltros}
+                                             title="Limpar Filtros"
+                                             className="group cursor-pointer rounded-full border-none bg-gradient-to-br from-red-600 to-red-700 px-6 py-2.5 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-110 active:scale-95"
+                                          >
+                                             <FaEraser
+                                                size={20}
+                                                className="text-white group-hover:scale-110"
                                              />
-                                          )}
+                                          </button>
+                                       ) : columnId !== 'horas' &&
+                                         FILTER_MAP[columnId] ? (
+                                          <FiltrosHeaderTabelaRelatorioOS
+                                             value={FILTER_MAP[columnId].state}
+                                             onChange={
+                                                FILTER_MAP[columnId].setter
+                                             }
+                                             columnId={columnId}
+                                          />
+                                       ) : null}
                                     </th>
                                  );
                               })}

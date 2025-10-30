@@ -3,19 +3,15 @@
 import { useState } from 'react';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipProvider,
-   TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { RiFileExcel2Fill } from 'react-icons/ri';
 import { IoClose } from 'react-icons/io5';
-import { FaFileExcel, FaCheckCircle } from 'react-icons/fa';
+import { FaCheckCircle } from 'react-icons/fa';
 
 import {
+   formatarDataParaBR,
    formatarHora,
    formatarHorasTotaisHorasDecimais,
+   obterSufixoHoras,
 } from '../utils/formatters';
 import { corrigirTextoCorrompido } from '../lib/corrigirTextoCorrompido';
 
@@ -40,6 +36,7 @@ interface DetalheOS {
    codProjeto?: number;
    tarefa?: string;
    codTarefa?: number;
+   dataInclusao?: string;
 }
 
 interface GrupoRelatorio {
@@ -80,19 +77,6 @@ interface ExcelButtonRelatorioOSProps {
 // FUNÇÕES AUXILIARES
 // ================================================================================
 
-function formatarDataParaBR(data: string | null): string {
-   if (!data) return '----------';
-   try {
-      const date = new Date(data);
-      const dia = date.getDate().toString().padStart(2, '0');
-      const mes = (date.getMonth() + 1).toString().padStart(2, '0');
-      const ano = date.getFullYear();
-      return `${dia}/${mes}/${ano}`;
-   } catch {
-      return '----------';
-   }
-}
-
 function getTipoAgrupamentoLabel(tipo: string): string {
    const labels: { [key: string]: string } = {
       cliente: 'Cliente',
@@ -125,8 +109,8 @@ export function ExcelRelatorioOS({
 
    const handleCloseModal = () => {
       setShowModal(false);
-      setIncluirFaturado(true);
-      setIncluirValidado(true);
+      setIncluirFaturado(false);
+      setIncluirValidado(false);
    };
 
    const exportToExcel = async () => {
@@ -143,7 +127,7 @@ export function ExcelRelatorioOS({
          // CABEÇALHO DO RELATÓRIO
          // ================================================================================
          const numColunas =
-            8 + (incluirFaturado ? 1 : 0) + (incluirValidado ? 1 : 0);
+            10 + (incluirFaturado ? 1 : 0) + (incluirValidado ? 1 : 0);
          const ultimaColuna = String.fromCharCode(64 + numColunas);
 
          worksheet.mergeCells(`A${currentRow}:${ultimaColuna}${currentRow}`);
@@ -185,6 +169,18 @@ export function ExcelRelatorioOS({
          // FILTROS APLICADOS
          // ================================================================================
          if (filtros && Object.keys(filtros).length > 0) {
+            console.log('🔍 DEBUG - Filtros recebidos:', filtros);
+            console.log('📅 dataInicio:', filtros.dataInicio);
+            console.log('📅 dataFim:', filtros.dataFim);
+            console.log(
+               '📅 dataInicio formatada:',
+               formatarDataParaBR(filtros.dataInicio)
+            );
+            console.log(
+               '📅 dataFim formatada:',
+               formatarDataParaBR(filtros.dataFim)
+            );
+
             worksheet.mergeCells(`A${currentRow}:F${currentRow}`);
             const filtrosTitleCell = worksheet.getCell(`A${currentRow}`);
             filtrosTitleCell.value = 'FILTROS APLICADOS';
@@ -515,7 +511,7 @@ export function ExcelRelatorioOS({
             "Total de OS's Validadas",
          ];
          const totValues = [
-            `${formatarHorasTotaisHorasDecimais(grupo.totalHoras)}h`,
+            `${formatarHorasTotaisHorasDecimais(grupo.totalHoras)} ${obterSufixoHoras(grupo.totalHoras)}`,
             grupo.quantidadeOS,
             grupo.osFaturadas,
             grupo.osValidadas,
@@ -578,17 +574,18 @@ export function ExcelRelatorioOS({
          // ================================================================================
          const headers = [
             'OS',
-            'Data',
-            'Chamado',
-            'Hora Início',
-            'Hora Fim',
-            'Horas',
-            'Cliente',
-            'Recurso',
+            'TAREFA',
+            'CHAMADO',
+            'DATA',
+            'HORA INÍCIO',
+            'HORA FIM',
+            'HORAS',
+            'DATA INCLUSÃO',
+            'RECURSO',
          ];
 
-         if (incluirFaturado) headers.push('Faturado');
-         if (incluirValidado) headers.push('Validado');
+         if (incluirValidado) headers.push('CONSULTOR RECEBE');
+         if (incluirFaturado) headers.push('CLIENTE PAGA');
 
          headers.forEach((header, index) => {
             const cell = worksheet.getCell(currentRow, index + 1);
@@ -617,28 +614,36 @@ export function ExcelRelatorioOS({
          grupo.detalhes.forEach(detalhe => {
             const rowData = [
                detalhe.codOs || null,
-               formatarDataParaBR(detalhe.data) || '--------',
+               detalhe.tarefa || 'n/a',
                detalhe.chamado
                   ? Number(detalhe.chamado) || detalhe.chamado
-                  : '-----',
-               formatarHora(detalhe.horaInicio) || '----',
-               formatarHora(detalhe.horaFim) || '----',
-               formatarHorasTotaisHorasDecimais(detalhe.horas) || '----',
-               detalhe.cliente || '----------',
-               corrigirTextoCorrompido(detalhe.recurso ?? '') || '----------',
+                  : 'n/a',
+               formatarDataParaBR(detalhe.data) || 'n/a',
+               formatarHora(detalhe.horaInicio) +
+                  ' ' +
+                  obterSufixoHoras(detalhe.horaInicio) || 'n/a',
+               formatarHora(detalhe.horaFim) +
+                  ' ' +
+                  obterSufixoHoras(detalhe.horaFim) || 'n/a',
+               formatarHorasTotaisHorasDecimais(detalhe.horas) +
+                  ' ' +
+                  obterSufixoHoras(detalhe.horas) || 'n/a',
+               formatarDataParaBR(detalhe.dataInclusao || '') || 'n/a',
+               corrigirTextoCorrompido(detalhe.recurso ?? '') || 'n/a',
             ];
 
-            if (incluirFaturado) rowData.push(detalhe.faturado || '---');
-            if (incluirValidado) rowData.push(detalhe.validado || '---');
+            if (incluirValidado) rowData.push(detalhe.validado || 'n/a');
+            if (incluirFaturado) rowData.push(detalhe.faturado || 'n/a');
 
             rowData.forEach((value, colIndex) => {
                const cell = worksheet.getCell(currentRow, colIndex + 1);
                cell.value = value;
-               // Centralizar horizontalmente colunas de índice 0 a 5
+               // Centralizar horizontalmente colunas de índice 0 a 5 e 7
                cell.alignment = {
-                  horizontal: colIndex <= 5 ? 'center' : 'left',
+                  horizontal:
+                     colIndex <= 5 || colIndex === 7 ? 'center' : 'left',
                   vertical: 'middle',
-                  indent: colIndex === 6 || colIndex === 7 ? 2 : 0,
+                  indent: colIndex === 6 || colIndex === 8 ? 2 : 0,
                };
                cell.border = {
                   top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
@@ -647,7 +652,7 @@ export function ExcelRelatorioOS({
                   right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
                };
 
-               // Aplicar formato de número para coluna OS (índice 0)
+               // Aplicar formato de número para coluna OS (índice 0) e Chamado (índice 2)
                if (
                   (colIndex === 0 || colIndex === 2) &&
                   typeof value === 'number'
@@ -656,9 +661,9 @@ export function ExcelRelatorioOS({
                }
 
                // Colorir colunas Faturado e Validado
-               const isFaturadoCol = incluirFaturado && colIndex === 8;
+               const isFaturadoCol = incluirFaturado && colIndex === 9;
                const isValidadoCol =
-                  incluirValidado && colIndex === (incluirFaturado ? 9 : 8);
+                  incluirValidado && colIndex === (incluirFaturado ? 10 : 9);
 
                if (isFaturadoCol || isValidadoCol) {
                   cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -682,17 +687,18 @@ export function ExcelRelatorioOS({
          // ================================================================================
          const columnWidths = [
             { width: 12 }, // OS
-            { width: 20 }, // Data
+            { width: 60 }, // Tarefa
             { width: 12 }, // Chamado
-            { width: 12 }, // Hora Início
-            { width: 12 }, // Hora Fim
-            { width: 12 }, // Horas
-            { width: 50 }, // Cliente
-            { width: 50 }, // Recurso
+            { width: 20 }, // Data
+            { width: 15 }, // Hora Início
+            { width: 15 }, // Hora Fim
+            { width: 15 }, // Horas
+            { width: 20 }, // Data Inclusão
+            { width: 40 }, // Recurso
          ];
 
-         if (incluirFaturado) columnWidths.push({ width: 12 }); // Faturado
-         if (incluirValidado) columnWidths.push({ width: 12 }); // Validado
+         if (incluirValidado) columnWidths.push({ width: 20 }); // Validado
+         if (incluirFaturado) columnWidths.push({ width: 20 }); // Faturado
 
          worksheet.columns = columnWidths;
 
@@ -832,10 +838,10 @@ export function ExcelRelatorioOS({
                            className="flex-1 cursor-pointer rounded-md bg-green-600 px-6 py-2 text-lg font-extrabold text-white shadow-md shadow-black transition-all hover:scale-105 hover:bg-green-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                            {isExporting ? (
-                              <>
+                              <div className="flex items-center justify-center gap-2">
                                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                 Exportando...
-                              </>
+                                 <span>Exportando...</span>
+                              </div>
                            ) : (
                               <>Exportar</>
                            )}

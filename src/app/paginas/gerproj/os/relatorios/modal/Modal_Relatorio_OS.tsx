@@ -4,11 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 
 // COMPONENTS
+import { DropdownClientes } from './Dropdown_Clientes';
+import { DropdownRecursos } from './Dropdown_Recursos';
 import { IsError } from '../../../../../../components/IsError';
 import { IsLoading } from '../../../../../../components/IsLoading';
 import { FiltrosModalRelatorioOS } from './Filtros_Modal_Relatorio_OS';
-import { DropdownClientes } from './Dropdown_Clientes';
-import { DropdownRecursos } from './Dropdown_Recursos';
 import { TabelalDetalhesRelatorioOS } from '../tabela/Tabela_Detalhes_Relatorio_OS';
 
 // HOOKS
@@ -38,22 +38,23 @@ const CACHE_TIME = 1000 * 60 * 5;
 // ================================================================================
 interface DetalheOS {
    codOs: number;
+   codTarefa?: number;
+   tarefa?: string;
+   codProjeto?: number;
+   projeto?: string;
    data: string;
-   chamado: string;
    horaInicio: string;
    horaFim: string;
    horas: number;
+   dataInclusao: string;
    faturado: string;
    validado: string;
+   chamado: string;
    competencia: string;
    cliente?: string;
    codCliente?: number;
    recurso?: string;
    codRecurso?: number;
-   projeto?: string;
-   codProjeto?: number;
-   tarefa?: string;
-   codTarefa?: number;
 }
 
 interface GrupoRelatorio {
@@ -307,6 +308,7 @@ export function ModalRelatorioOS({ isOpen = true, onClose }: Props) {
       recursoSelecionado,
    ]);
 
+   // Função para buscar o relatório
    async function fetchRelatorio(
       params: URLSearchParams,
       token: string
@@ -326,20 +328,22 @@ export function ModalRelatorioOS({ isOpen = true, onClose }: Props) {
       return await res.json();
    }
 
+   // React Query - Buscar Relatório
    const {
-      data: relatorioData,
-      isLoading,
-      isError,
-      error,
-      refetch,
+      data: relatorioData, // retorno da api
+      isLoading, // estado de carregamento
+      isError, // estado de erro
+      error, // objeto de erro
+      refetch, // função para refazer a requisição
    } = useQuery({
       queryKey: ['relatorioOS', queryParams.toString(), token],
       queryFn: () => fetchRelatorio(queryParams, token!),
-      enabled,
-      staleTime: CACHE_TIME,
-      retry: 2,
+      enabled, // só executa se estiver autenticado
+      staleTime: CACHE_TIME, // 5 minutos
+      retry: 2, // tenta 2 vezes em caso de falha
    });
 
+   // Computed Values - Totalizadores e Grupos
    const totalizadores = relatorioData?.relatorio.totalizadores;
    const grupos = useMemo(
       () => relatorioData?.relatorio.grupos || [],
@@ -482,7 +486,7 @@ export function ModalRelatorioOS({ isOpen = true, onClose }: Props) {
       return (
          <IsLoading
             isLoading={true}
-            title="Aguarde... Buscando OS's no sistema"
+            title="Aguarde... Buscando OS's no sistema, para gerar o relatório"
          />
       );
    }
