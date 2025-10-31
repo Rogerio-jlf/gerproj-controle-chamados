@@ -80,7 +80,6 @@ export function ModalVisualizarOS({
             <header className="relative flex items-center justify-between bg-gradient-to-r from-teal-600 to-teal-700 p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
                   <GrServices className="text-black" size={72} />
-                  {/* ===== */}
                   <div className="flex flex-col">
                      <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
                         Informações da OS

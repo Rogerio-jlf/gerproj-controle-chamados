@@ -1,6 +1,6 @@
 // IMPORTS
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-
+import * as TooltipRadix from '@radix-ui/react-tooltip';
 // FORMATTERS
 import {
    formatarHora,
@@ -172,22 +172,6 @@ const CellTotalHoras = ({ value }: { value: number }) => {
 };
 
 /**
- * Célula de cliente formatada
- */
-const CellCliente = ({ value }: { value?: string }) => {
-   const ValueFormatted = useMemo(
-      () => (value ? corrigirTextoCorrompido(value) : EMPTY_VALUE),
-      [value]
-   );
-
-   return (
-      <td className="p-3 text-left text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-         {ValueFormatted}
-      </td>
-   );
-};
-
-/**
  * Célula de recurso formatada
  */
 const CellRecurso = ({ value }: { value?: string }) => {
@@ -238,13 +222,31 @@ const CellText = ({ value }: { value?: string }) => {
 
    return (
       <td className="p-3 text-left text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-         <span
-            ref={textRef}
-            className="block truncate"
-            title={showTooltip ? ValueFormatted : undefined}
-         >
-            {ValueFormatted}
-         </span>
+         <TooltipRadix.Provider delayDuration={200}>
+            <TooltipRadix.Root>
+               <TooltipRadix.Trigger asChild>
+                  <span
+                     ref={textRef}
+                     className="block w-full cursor-help truncate"
+                  >
+                     {ValueFormatted}
+                  </span>
+               </TooltipRadix.Trigger>
+               <TooltipRadix.Portal>
+                  <TooltipRadix.Content
+                     side="top"
+                     align="start"
+                     className="animate-in fade-in-0 zoom-in-95 z-[70] max-w-[800px] rounded-lg border border-pink-500 bg-white px-6 py-2 text-sm font-semibold tracking-widest text-black italic shadow-sm shadow-black select-none"
+                     sideOffset={10}
+                  >
+                     <div className="break-words">
+                        {corrigirTextoCorrompido(ValueFormatted)}
+                     </div>
+                     <TooltipRadix.Arrow className="fill-black" />
+                  </TooltipRadix.Content>
+               </TooltipRadix.Portal>
+            </TooltipRadix.Root>
+         </TooltipRadix.Provider>
       </td>
    );
 };

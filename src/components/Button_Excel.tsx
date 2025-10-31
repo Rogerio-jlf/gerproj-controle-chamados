@@ -1,22 +1,32 @@
 'use client';
 
-import { useState } from 'react';
+// IMPORTS
 import ExcelJS from 'exceljs';
+import { useState } from 'react';
 import { saveAs } from 'file-saver';
-import { RiFileExcel2Fill } from 'react-icons/ri';
-import { IoClose } from 'react-icons/io5';
-import { FaCheckCircle } from 'react-icons/fa';
 
+// COMPONENTS
+import { LoadingButton } from './Loading';
+
+// FORMATTERS
 import {
    formatarDataParaBR,
    formatarHora,
    formatarHorasTotaisHorasDecimais,
    obterSufixoHoras,
 } from '../utils/formatters';
+
+// HELPERS
 import { corrigirTextoCorrompido } from '../lib/corrigirTextoCorrompido';
 
+// ICONS
+import { IoClose } from 'react-icons/io5';
+import { FaFileExport } from 'react-icons/fa';
+import { FaCheckCircle } from 'react-icons/fa';
+import { RiFileExcel2Fill } from 'react-icons/ri';
+
 // ================================================================================
-// TIPOS E INTERFACES
+// INTERFACES
 // ================================================================================
 interface DetalheOS {
    codOs: number;
@@ -76,7 +86,6 @@ interface ExcelButtonRelatorioOSProps {
 // ================================================================================
 // FUNÇÕES AUXILIARES
 // ================================================================================
-
 function getTipoAgrupamentoLabel(tipo: string): string {
    const labels: { [key: string]: string } = {
       cliente: 'Cliente',
@@ -103,11 +112,11 @@ export function ExcelRelatorioOS({
    const [incluirValidado, setIncluirValidado] = useState(false);
    const [isExporting, setIsExporting] = useState(false);
 
-   const handleOpenModal = () => {
+   const handleOpenModalExportarExcel = () => {
       setShowModal(true);
    };
 
-   const handleCloseModal = () => {
+   const handleCloseModalExportarExcel = () => {
       setShowModal(false);
       setIncluirFaturado(false);
       setIncluirValidado(false);
@@ -581,7 +590,7 @@ export function ExcelRelatorioOS({
             'HORA FIM',
             'HORAS',
             'DATA INCLUSÃO',
-            'RECURSO',
+            'CONSULTOR',
          ];
 
          if (incluirValidado) headers.push('CONSULTOR RECEBE');
@@ -639,11 +648,15 @@ export function ExcelRelatorioOS({
                const cell = worksheet.getCell(currentRow, colIndex + 1);
                cell.value = value;
                // Centralizar horizontalmente colunas de índice 0 a 5 e 7
+               const colunasComIndentacao = [1, 6, 8]; // Tarefa, Horas, Recurso
+               const colunasCentralizadas = [0, 2, 3, 4, 5, 7]; // OS, Chamado, Data, Hora Início, Hora Fim, Data Inclusão
+
                cell.alignment = {
-                  horizontal:
-                     colIndex <= 5 || colIndex === 7 ? 'center' : 'left',
+                  horizontal: colunasCentralizadas.includes(colIndex)
+                     ? 'center'
+                     : 'left',
                   vertical: 'middle',
-                  indent: colIndex === 6 || colIndex === 8 ? 2 : 0,
+                  indent: colunasComIndentacao.includes(colIndex) ? 2 : 0,
                };
                cell.border = {
                   top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
@@ -714,7 +727,7 @@ export function ExcelRelatorioOS({
          const nomeArquivo = `Relatorio_OS_${grupo.nome.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}.xlsx`;
          saveAs(blob, nomeArquivo);
 
-         handleCloseModal();
+         handleCloseModalExportarExcel();
       } catch (error) {
          console.error('Erro ao exportar Excel:', error);
       } finally {
@@ -722,10 +735,13 @@ export function ExcelRelatorioOS({
       }
    };
 
+   // ================================================================================
+   // RENDERIZAÇÃO
+   // ================================================================================
    return (
       <>
          <button
-            onClick={handleOpenModal}
+            onClick={handleOpenModalExportarExcel}
             title="Exportar para Excel"
             className="group cursor-pointer rounded-md bg-gradient-to-br from-green-600 to-green-700 p-3 shadow-md shadow-black transition-all hover:scale-110 active:scale-95"
          >
@@ -736,75 +752,121 @@ export function ExcelRelatorioOS({
             {buttonText}
          </button>
 
-         {/* MODAL */}
+         {/* ===== MODAL ===== */}
          {showModal && (
             <div className="animate-in fade-in fixed inset-0 z-70 flex items-center justify-center p-4 duration-300">
-               {/* Overlay */}
+               {/* ===== OVERLAY ===== */}
                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
-               {/* Modal Content */}
-               <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-xl overflow-hidden rounded-2xl border-[1px] border-slate-500 bg-slate-100 transition-all duration-500 ease-out">
-                  {/* Header */}
-                  <header className="relative flex items-center justify-between bg-gradient-to-r from-green-600 to-green-700 p-6 shadow-sm shadow-black">
-                     <div className="flex items-center gap-6">
-                        <RiFileExcel2Fill className="text-white" size={32} />
-                        <h2 className="text-xl font-extrabold tracking-wider text-white uppercase select-none">
-                           Exportar P/ Excel
-                        </h2>
+               {/* ===== CARD ===== */}
+               <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-2xl overflow-hidden rounded-2xl border-none bg-white transition-all duration-500 ease-out">
+                  {/* ===== HEADER ===== */}
+                  <header className="relative flex items-center justify-between bg-gradient-to-r from-teal-600 to-teal-700 p-6 shadow-sm shadow-black">
+                     <div className="flex items-center justify-center gap-6">
+                        <RiFileExcel2Fill className="text-white" size={60} />
+                        <div className="flex flex-col">
+                           <h1 className="text-2xl font-extrabold tracking-widest text-black uppercase select-none">
+                              Exportar P/ Excel
+                           </h1>
+                           <p className="text-base font-extrabold tracking-widest text-black italic select-none">
+                              {(() => {
+                                 // Extrai as propriedades que podem existir
+                                 const { dataInicio, dataFim, ano, mes } =
+                                    filtros || {};
+
+                                 const now = new Date();
+                                 const mesAtual = String(
+                                    now.getMonth() + 1
+                                 ).padStart(2, '0');
+                                 const anoAtual = now.getFullYear();
+
+                                 // Se tem dataInicio e dataFim (formato YYYY-MM-DD)
+                                 if (dataInicio && dataFim) {
+                                    // Converte de YYYY-MM-DD para DD/MM/YYYY
+                                    const [anoInicio, mesInicio, diaInicio] =
+                                       dataInicio.split('-');
+                                    const [anoFim, mesFim, diaFim] =
+                                       dataFim.split('-');
+
+                                    const dataInicioFormatada = `${diaInicio}/${mesInicio}/${anoInicio}`;
+                                    const dataFimFormatada = `${diaFim}/${mesFim}/${anoFim}`;
+
+                                    return (
+                                       <>
+                                          De {dataInicioFormatada} até{' '}
+                                          {dataFimFormatada}
+                                       </>
+                                    );
+                                 }
+
+                                 // Se tem ano e mês (mas não tem datas completas)
+                                 if (ano && mes) {
+                                    return (
+                                       <>
+                                          {mes}/{ano}
+                                       </>
+                                    );
+                                 }
+
+                                 // Se só tem mês
+                                 if (mes && !ano) {
+                                    return (
+                                       <>
+                                          {mes}/{anoAtual}
+                                       </>
+                                    );
+                                 }
+
+                                 // Se só tem ano
+                                 if (ano && !mes) {
+                                    return (
+                                       <>
+                                          {mesAtual}/{ano}
+                                       </>
+                                    );
+                                 }
+
+                                 // Se não tem nenhum filtro de data
+                                 return (
+                                    <>
+                                       {mesAtual}/{anoAtual}
+                                    </>
+                                 );
+                              })()}
+                           </p>
+                        </div>
                      </div>
+
+                     {/* BOTÃO FECHAR MODAL */}
                      <button
-                        onClick={handleCloseModal}
+                        onClick={handleCloseModalExportarExcel}
                         disabled={isExporting}
-                        className="group cursor-pointer rounded-full bg-red-500/50 p-1 text-white shadow-md shadow-black transition-all select-none hover:scale-125 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-95"
                      >
-                        <IoClose className="text-white" size={24} />
+                        <IoClose
+                           className="text-white group-hover:scale-110"
+                           size={24}
+                        />
                      </button>
                   </header>
 
-                  {/* Body */}
-                  <main className="flex flex-col gap-6 p-6">
-                     <p className="text-base font-bold tracking-wider text-black italic select-none">
-                        Selecione quais colunas deseja incluir no relatório:
-                     </p>
-
-                     <div className="flex flex-col gap-1">
-                        {/* Checkbox Faturado */}
-                        <label className="mb-4 flex cursor-pointer items-center gap-3 rounded-lg border-[1px] border-green-500 p-4 shadow-sm shadow-black transition-all hover:border-green-500 hover:bg-green-100">
-                           <input
-                              type="checkbox"
-                              checked={incluirFaturado}
-                              onChange={e =>
-                                 setIncluirFaturado(e.target.checked)
-                              }
-                              className="h-5 w-5 cursor-pointer accent-green-600"
-                              disabled={isExporting}
-                           />
-                           <div className="flex-1">
-                              <span className="font-bold tracking-widest text-black select-none">
-                                 Cliente Paga
-                              </span>
-                              <p className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Incluir coluna, Cliente Paga
-                              </p>
-                           </div>
-                           {incluirFaturado && (
-                              <FaCheckCircle
-                                 className="text-green-600"
-                                 size={24}
-                              />
-                           )}
-                        </label>
-
-                        {/* Checkbox Validado */}
-                        <label className="mb-4 flex cursor-pointer items-center gap-3 rounded-lg border-[1px] border-green-500 p-4 shadow-sm shadow-black transition-all hover:border-green-500 hover:bg-green-100">
+                  {/* ==== CONTEÚDO ==== */}
+                  <main className="flex flex-col gap-12 p-6">
+                     <div className="flex flex-col gap-6">
+                        <p className="text-base font-extrabold tracking-widest text-black select-none">
+                           Selecione abaixo, quais colunas deseja incluir no
+                           relatório:
+                        </p>
+                        {/* CHECKBOX VALIDADO */}
+                        <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-black/10 p-4 shadow-md shadow-black transition-all hover:scale-102">
                            <input
                               type="checkbox"
                               checked={incluirValidado}
                               onChange={e =>
                                  setIncluirValidado(e.target.checked)
                               }
-                              className="h-5 w-5 cursor-pointer accent-green-600"
                               disabled={isExporting}
+                              className="h-5 w-5 cursor-pointer accent-green-600 shadow-sm shadow-black"
                            />
                            <div className="flex-1">
                               <span className="font-bold tracking-widest text-black select-none">
@@ -821,29 +883,62 @@ export function ExcelRelatorioOS({
                               />
                            )}
                         </label>
+
+                        {/* CHECKBOX FATURADO */}
+                        <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-black/10 p-4 shadow-md shadow-black transition-all hover:scale-102">
+                           <input
+                              type="checkbox"
+                              checked={incluirFaturado}
+                              onChange={e =>
+                                 setIncluirFaturado(e.target.checked)
+                              }
+                              disabled={isExporting}
+                              className="h-5 w-5 cursor-pointer accent-green-600 shadow-sm shadow-black"
+                           />
+                           <div className="flex-1">
+                              <span className="font-bold tracking-widest text-black select-none">
+                                 Cliente Paga
+                              </span>
+                              <p className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                                 Incluir coluna, Cliente Paga
+                              </p>
+                           </div>
+                           {incluirFaturado && (
+                              <FaCheckCircle
+                                 className="text-green-600"
+                                 size={24}
+                              />
+                           )}
+                        </label>
                      </div>
 
-                     {/* Botões */}
-                     <div className="flex items-center justify-center gap-6">
+                     {/* ===== BOTÕES CANCELAR EXPORTAR ===== */}
+                     <div className="flex items-center justify-end gap-8">
                         <button
-                           onClick={handleCloseModal}
-                           className="flex-1 cursor-pointer rounded-md bg-red-600 px-6 py-2 text-lg font-extrabold text-white shadow-md shadow-black transition-all hover:scale-105 hover:bg-red-800 active:scale-95"
+                           onClick={handleCloseModalExportarExcel}
                            disabled={isExporting}
+                           className="w-[200px] cursor-pointer rounded-md border-none bg-gradient-to-r from-red-600 to-red-700 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                            Cancelar
                         </button>
                         <button
                            onClick={exportToExcel}
                            disabled={isExporting}
-                           className="flex-1 cursor-pointer rounded-md bg-green-600 px-6 py-2 text-lg font-extrabold text-white shadow-md shadow-black transition-all hover:scale-105 hover:bg-green-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                           className="w-[200px] cursor-pointer rounded-md border-none bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                            {isExporting ? (
-                              <div className="flex items-center justify-center gap-2">
-                                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                 <span>Exportando...</span>
-                              </div>
+                              <span className="flex items-center justify-center gap-3">
+                                 <LoadingButton size={20} />
+                                 Exportando...
+                              </span>
                            ) : (
-                              <>Exportar</>
+                              <div className="flex items-center justify-center gap-3">
+                                 <FaFileExport
+                                    className="mr-2 inline-block"
+                                    size={20}
+                                 />
+                                 <span>Exportar</span>
+                              </div>
                            )}
                         </button>
                      </div>

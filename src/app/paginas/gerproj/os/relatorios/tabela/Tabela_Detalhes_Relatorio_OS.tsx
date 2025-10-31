@@ -130,7 +130,7 @@ export const TabelalDetalhesRelatorioOS = ({
    const [filtroChamado, setFiltroChamado] = useState('');
 
    // Função para fechar o modal com animação
-   const handleClose = useCallback(() => {
+   const handleCloseTabelaRelatorioOS = useCallback(() => {
       setIsClosing(true);
       setTimeout(() => {
          setIsClosing(false);
@@ -489,13 +489,12 @@ export const TabelalDetalhesRelatorioOS = ({
                         />
                      </div>
 
+                     {/* BOTÃO FECHAR MODAL */}
                      <div className="group flex items-center justify-center">
                         <button
-                           onClick={handleClose}
+                           onClick={handleCloseTabelaRelatorioOS}
                            aria-label="Fechar relatório de OS"
-                           className={`group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 ${
-                              isClosing ? 'animate-spin' : ''
-                           }`}
+                           className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-95"
                         >
                            <IoClose
                               className="text-white group-hover:scale-125"

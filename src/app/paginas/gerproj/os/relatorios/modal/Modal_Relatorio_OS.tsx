@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 
 // COMPONENTS
-import { DropdownClientes } from './Dropdown_Clientes';
-import { DropdownRecursos } from './Dropdown_Recursos';
+import { DropdownClientes } from './Dropdown_Clientes_Recursos';
+import { DropdownRecursos } from './Dropdown_Clientes_Recursos';
 import { IsError } from '../../../../../../components/IsError';
 import { IsLoading } from '../../../../../../components/IsLoading';
 import { FiltrosModalRelatorioOS } from './Filtros_Modal_Relatorio_OS';
