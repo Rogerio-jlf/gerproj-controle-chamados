@@ -14,6 +14,7 @@ import {
    formatarDataParaBR,
    formatarHorasTotaisHorasDecimais,
    formatarMoeda,
+   obterSufixoHoras,
 } from '../../../../utils/formatters';
 
 // ICONS
@@ -27,6 +28,11 @@ import {
 } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import { MdDescription } from 'react-icons/md';
+
+// ================================================================================
+// CONSTANTES
+// ================================================================================
+const EMPTY_VALUE = 'n/a' as const;
 
 // ================================================================================
 // INTERFACES
@@ -78,20 +84,17 @@ export function ModalVisualizarTarefa({
          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
          {/* ========== */}
 
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-[80vw] overflow-hidden rounded-2xl border-0 bg-white/70 shadow-lg shadow-black transition-all duration-500 ease-out">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-[80vw] overflow-hidden rounded-2xl border-0 bg-white/70 transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-gradient-to-r from-teal-600 to-teal-700 p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
-                  <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
-                     <FaTasks className="text-black" size={28} />
-                  </div>
-                  {/* ===== */}
+                  <FaTasks className="text-black" size={72} />
                   <div className="flex flex-col">
                      <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
-                        Informações da Tarefa
+                        Detalhes da Tarefa
                      </h1>
-                     <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
-                        Código #{formatarCodNumber(tarefa.COD_TAREFA)}
+                     <p className="text-xl font-extrabold tracking-widest text-black uppercase italic select-none">
+                        Código {formatarCodNumber(tarefa.COD_TAREFA)}
                      </p>
                   </div>
                </div>
@@ -113,7 +116,7 @@ export function ModalVisualizarTarefa({
                   <div className="space-y-6">
                      {/* ===== CARD: INFORMAÇÕES GERAIS ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 shadow-sm shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 shadow-sm shadow-black">
                            <FaInfo className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
                               Informações Gerais
@@ -200,10 +203,10 @@ export function ModalVisualizarTarefa({
 
                      {/* ===== CARD: DADOS TEMPORAIS ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 shadow-sm shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 shadow-sm shadow-black">
                            <FaClock className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
-                              Dados Temporais
+                              Datas
                            </h2>
                         </div>
                         <div className="space-y-3 p-4">
@@ -298,7 +301,7 @@ export function ModalVisualizarTarefa({
                   <div className="space-y-6">
                      {/* ===== CARD: HORAS ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-sm shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-600 to-green-700 px-4 py-3 shadow-sm shadow-black">
                            <FaClock className="text-white" size={24} />
                            <h2 className="text-lg font-bold tracking-widest text-white select-none">
                               Horas
@@ -316,7 +319,9 @@ export function ModalVisualizarTarefa({
                                          tarefa.HREST_TAREFA.toString()
                                       )
                                     : 'n/a'}
-                                 h
+                                 {obterSufixoHoras(
+                                    tarefa.HREST_TAREFA ?? 'n/a'
+                                 )}
                               </span>
                            </div>
                            {/* ===== */}
@@ -331,7 +336,10 @@ export function ModalVisualizarTarefa({
                                     ? formatarHorasTotaisHorasDecimais(
                                          tarefa.HRATESC_TAREFA.toString()
                                       )
-                                    : 'n/a'}
+                                    : EMPTY_VALUE}
+                                 {obterSufixoHoras(
+                                    tarefa.HRATESC_TAREFA ?? EMPTY_VALUE
+                                 )}
                               </span>
                            </div>
                            {/* ===== */}
@@ -346,8 +354,10 @@ export function ModalVisualizarTarefa({
                                     ? formatarHorasTotaisHorasDecimais(
                                          tarefa.HRREAL_TAREFA.toString()
                                       )
-                                    : 'n/a'}
-                                 h
+                                    : 'n/a'}{' '}
+                                 {obterSufixoHoras(
+                                    tarefa.HRREAL_TAREFA ?? 'n/a'
+                                 )}
                               </span>
                            </div>
                            {/* ===== */}
