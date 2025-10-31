@@ -210,7 +210,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
             state: inputFilterCOD_OS,
             setter: setInputFilterCOD_OS,
          },
-         CODTRF_OS: {
+         tarefa: {
             state: inputFilterCODTRF_OS,
             setter: setInputFilterCODTRF_OS,
          },
@@ -586,10 +586,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
 
                   <button
                      onClick={handleCloseTabelaOS}
-                     aria-label="Fechar relatório de OS"
-                     className={`group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 ${
-                        isClosing ? 'animate-spin' : ''
-                     }`}
+                     className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-95"
                   >
                      <IoClose
                         className="text-white group-hover:scale-125"
@@ -913,7 +910,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
          {/* LOADING */}
          <IsLoading
             isLoading={isLoading}
-            title={`Aguarde... Buscando OS's para o período: ${[
+            title={`Aguarde... Buscando informações para o período: ${[
                dia === 'todos' ? '' : String(dia).padStart(2, '0'),
                mes === 'todos' ? '' : String(mes).padStart(2, '0'),
                ano === 'todos' ? '' : String(ano),

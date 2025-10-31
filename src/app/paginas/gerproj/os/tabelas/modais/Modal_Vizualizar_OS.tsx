@@ -14,6 +14,7 @@ import {
    formatarHora,
    formatarHorasTotaisHorasDecimais,
    formatarMoeda,
+   obterSufixoHoras,
 } from '../../../../../../utils/formatters';
 
 // HELPERS
@@ -93,8 +94,7 @@ export function ModalVisualizarOS({
 
                <button
                   onClick={handleCloseModalVisualizarOS}
-                  aria-label="Fechar relatório de OS"
-                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
+                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-95"
                >
                   <IoClose
                      className="text-white group-hover:scale-125"
@@ -209,13 +209,8 @@ export function ModalVisualizarOS({
                                  Hora Início
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {formatarHora(os.HRINI_OS)}
-                                 {(() => {
-                                    const n = parseFloat(
-                                       String(os.HRINI_OS).replace(',', '.')
-                                    );
-                                    return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
-                                 })()}
+                                 {formatarHora(os.HRINI_OS)}{' '}
+                                 {obterSufixoHoras(os.HRINI_OS)}
                               </span>
                            </div>
                            {/* ===== */}
@@ -226,13 +221,8 @@ export function ModalVisualizarOS({
                                  Hora Fim
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {formatarHora(os.HRFIM_OS)}
-                                 {(() => {
-                                    const n = parseFloat(
-                                       String(os.HRFIM_OS).replace(',', '.')
-                                    );
-                                    return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
-                                 })()}
+                                 {formatarHora(os.HRFIM_OS)}{' '}
+                                 {obterSufixoHoras(os.HRFIM_OS)}
                               </span>
                            </div>
                            {/* ===== */}
@@ -245,13 +235,10 @@ export function ModalVisualizarOS({
                               <span className="text-base font-bold tracking-widest text-black select-none">
                                  {formatarHorasTotaisHorasDecimais(
                                     os.QTD_HR_OS?.toString()
+                                 )}{' '}
+                                 {obterSufixoHoras(
+                                    os.QTD_HR_OS?.toString() || ''
                                  )}
-                                 {(() => {
-                                    const n = parseFloat(
-                                       String(os.QTD_HR_OS).replace(',', '.')
-                                    );
-                                    return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
-                                 })()}
                               </span>
                            </div>
                            {/* ===== */}

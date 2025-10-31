@@ -488,7 +488,7 @@ export function ModalRelatorioOS({ isOpen = true, onClose }: Props) {
       return (
          <IsLoading
             isLoading={true}
-            title="Aguarde... Buscando OS's no sistema, para gerar o relatório"
+            title="Aguarde... Buscando informações no sistema, para geraração do relatório"
          />
       );
    }
@@ -521,7 +521,6 @@ export function ModalRelatorioOS({ isOpen = true, onClose }: Props) {
 
                      <button
                         onClick={handleCloseRelatorio}
-                        aria-label="Fechar relatório de OS"
                         className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-95"
                      >
                         <IoClose

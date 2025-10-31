@@ -78,8 +78,8 @@ function ConfirmModal({
                {/* Botão fechar modal */}
                <button
                   onClick={onClose}
-                  aria-label="Fechar relatório de OS"
-                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95"
+                  disabled={isLoading}
+                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-95"
                >
                   <IoClose
                      className="text-white group-hover:scale-125"
@@ -171,7 +171,7 @@ function ConfirmModal({
                   {isLoading ? (
                      <span className="flex items-center justify-center gap-3">
                         <LoadingButton size={20} />
-                        Salvando...
+                        Alterando...
                      </span>
                   ) : (
                      <div className="flex items-center justify-center gap-3">

@@ -15,6 +15,7 @@ import {
    formatarHora,
    formatarCodNumber,
    formatarHorasTotaisHorasDecimais,
+   obterSufixoHoras,
 } from '../../../../../../utils/formatters';
 
 // HELPERS
@@ -185,10 +186,7 @@ const CellTime = ({ value }: CellTimeProps) => {
    return (
       <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
          {formattedTime || 'n/a'}
-         {(() => {
-            const n = parseFloat(String(formattedTime).replace(',', '.'));
-            return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
-         })()}
+         {obterSufixoHoras(formattedTime ?? 'n/a')}
       </div>
    );
 };
@@ -209,10 +207,7 @@ const CellTotalHours = ({ value }: CellTotalHoursProps) => {
    return (
       <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
          {formattedHours || 'n/a'}
-         {(() => {
-            const n = parseFloat(String(formattedHours).replace(',', '.'));
-            return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
-         })()}
+         {obterSufixoHoras(formattedHours ?? 'n/a')}
       </div>
    );
 };
@@ -363,14 +358,14 @@ export const colunasTabelaOS = (
       // Hora Fim
       {
          accessorKey: 'HRFIM_OS',
-         header: () => <HeaderCenter>HR. FINAL</HeaderCenter>,
+         header: () => <HeaderCenter>HR. TÉRMINO</HeaderCenter>,
          cell: ({ getValue }) => <CellTime value={getValue() as string} />,
       },
 
       // Total Horas
       {
          accessorKey: 'QTD_HR_OS',
-         header: () => <HeaderCenter>TOTAL HR's</HeaderCenter>,
+         header: () => <HeaderCenter>HR's GASTAS</HeaderCenter>,
          cell: ({ getValue }) => (
             <CellTotalHours value={getValue() as number} />
          ),

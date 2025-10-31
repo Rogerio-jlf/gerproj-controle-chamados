@@ -43,15 +43,15 @@ const COLUMN_WIDTHS: Record<string, string> = {
    tarefa: '12%',
    codProjeto: '6%',
    projeto: '12%',
+   chamado: '6%',
    data: '8%',
    horaInicio: '6%',
    horaFim: '6%',
    horas: '8%',
    dataInclusao: '8%',
    recurso: '15%',
-   faturado: '8%',
    validado: '8%',
-   chamado: '6%',
+   faturado: '8%',
 };
 
 // Títulos das colunas
@@ -61,15 +61,15 @@ const COLUMN_TITLES: Record<string, string> = {
    tarefa: 'TAREFA',
    codProjeto: 'CÓD. PROJETO',
    projeto: 'PROJETO',
+   chamado: 'CHAMADO',
    data: 'DT. INÍCIO',
    horaInicio: 'HR. INÍCIO',
-   horaFim: 'HR. FIM',
-   horas: "TOTAL HR's",
-   dataInclusao: 'DT. INCLUSÃO',
+   horaFim: 'HR. TÉRMINO',
+   horas: "HR's GASTAS",
+   dataInclusao: 'DT. APONTAMENTO',
    recurso: 'CONSULTOR',
-   faturado: 'CLIENTE PAGA',
    validado: 'CONSULTOR RECEBE',
-   chamado: 'CHAMADO',
+   faturado: 'CLIENTE PAGA',
 };
 
 function getColumnWidth(columnId: string): string {
@@ -487,7 +487,6 @@ export const TabelalDetalhesRelatorioOS = ({
                      <div className="group flex items-center justify-center">
                         <button
                            onClick={handleCloseTabelaRelatorioOS}
-                           aria-label="Fechar relatório de OS"
                            className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-95"
                         >
                            <IoClose

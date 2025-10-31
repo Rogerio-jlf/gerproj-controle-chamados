@@ -309,6 +309,14 @@ export const colunasTabelaDetalhesRelatorioOS: ColunaDefinition[] = [
       render: (value: string) => <CellText value={value} />,
    },
 
+   {
+      id: 'chamado',
+      header: 'Chamado',
+      accessor: 'chamado',
+      align: 'center',
+      render: (value: string) => <CellChamado value={value} />,
+   },
+
    // {
    //    id: 'codProjeto',
    //    header: 'Cód. Projeto',
@@ -379,14 +387,6 @@ export const colunasTabelaDetalhesRelatorioOS: ColunaDefinition[] = [
    },
 
    {
-      id: 'faturado',
-      header: 'Cliente Paga',
-      accessor: 'faturado',
-      align: 'center',
-      render: (value: string) => <CellStatus value={value} />,
-   },
-
-   {
       id: 'validado',
       header: 'Consultor Recebe',
       accessor: 'validado',
@@ -395,11 +395,11 @@ export const colunasTabelaDetalhesRelatorioOS: ColunaDefinition[] = [
    },
 
    {
-      id: 'chamado',
-      header: 'Chamado',
-      accessor: 'chamado',
+      id: 'faturado',
+      header: 'Cliente Paga',
+      accessor: 'faturado',
       align: 'center',
-      render: (value: string) => <CellChamado value={value} />,
+      render: (value: string) => <CellStatus value={value} />,
    },
 ];
 

@@ -41,10 +41,15 @@ export function corrigirTextoCorrompido(texto: string): string {
       .replace(/�es�/g, 'ões')
       .replace(/��ES/g, 'ÇÕES')
       .replace(/�/g, ' ')
-      .replace(/�A/g, 'ÇA');
+      .replace(/�A/g, 'ÇA')
+      .replace(/�o/g, 'ão')
+      .replace(/�a/g, 'ã')
+      .replace(/�e/g, 'é')
+      .replace(/�i/g, 'í')
+      .replace(/�u/g, 'ú');
 
-   // Limpa espaços duplos que podem ter sido criados
-   textoCorrigido = textoCorrigido.replace(/\s+/g, ' ').trim();
+   // Depois substituição genérica
+   textoCorrigido = textoCorrigido.replace(/�/g, ' ');
 
    // Se ainda contém caracteres corrompidos, tenta a abordagem de codificação
    if (textoCorrigido.includes('�')) {
