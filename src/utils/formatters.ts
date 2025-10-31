@@ -286,8 +286,15 @@ export function formatarMoeda(
 
    return simbolo ? `R$ ${formatted}` : formatted;
 }
+// ====================================================================================================
 
 export function obterSufixoHoras(horas: string | number): string {
    const n = parseFloat(String(horas).replace(',', '.'));
    return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
+}
+// ====================================================================================================
+
+export function obterSufixoOS(quantidade: string | number): string {
+   const n = parseFloat(String(quantidade).replace(',', '.'));
+   return isNaN(n) ? 'OS' : n > 1 ? "OS's" : 'OS';
 }

@@ -567,7 +567,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
 
          {/* CONTAINER */}
          <div
-            className={`animate-in slide-in-from-bottom-4 z-10 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl transition-all duration-500 ease-out ${
+            className={`animate-in slide-in-from-bottom-4 z-10 max-h-[90vh] w-full max-w-[95vw] overflow-hidden rounded-2xl transition-all duration-500 ease-out ${
                isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
             }`}
             style={{

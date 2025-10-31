@@ -24,12 +24,14 @@ import { FaFilterCircleXmark } from 'react-icons/fa6';
 import {
    formatarCodNumber,
    formatarHorasTotaisHorasDecimais,
+   obterSufixoHoras,
+   obterSufixoOS,
 } from '../../../../../../utils/formatters';
 
 // ================================================================================
 // CONSTANTES
 // ================================================================================
-const MODAL_MAX_HEIGHT = 'calc(100vh - 500px)';
+const MODAL_MAX_HEIGHT = 'calc(100vh - 470px)';
 const ANIMATION_DURATION = 100;
 const CACHE_TIME = 1000 * 60 * 5;
 
@@ -500,7 +502,9 @@ export function ModalRelatorioOS({ isOpen = true, onClose }: Props) {
 
             {/* CONTAINER */}
             <div
-               className="animate-in slide-in-from-bottom-4 z-10 h-[90vh] w-[95vw] overflow-hidden rounded-t-2xl transition-all duration-500 ease-out"
+               className={`animate-in slide-in-from-bottom-4 z-10 flex max-h-[90vh] w-full max-w-[95vw] flex-col overflow-hidden rounded-2xl transition-all duration-500 ease-out ${
+                  isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
+               }`}
                style={{
                   animationDuration: `${ANIMATION_DURATION}ms`,
                }}
@@ -518,9 +522,7 @@ export function ModalRelatorioOS({ isOpen = true, onClose }: Props) {
                      <button
                         onClick={handleCloseRelatorio}
                         aria-label="Fechar relatório de OS"
-                        className={`group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 ${
-                           isClosing ? 'animate-spin' : ''
-                        }`}
+                        className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-95"
                      >
                         <IoClose
                            className="text-white group-hover:scale-125"
@@ -605,14 +607,9 @@ export function ModalRelatorioOS({ isOpen = true, onClose }: Props) {
                                  {formatarHorasTotaisHorasDecimais(
                                     totalizadores.totalGeralHoras
                                  )}
-                                 {(() => {
-                                    const n = parseFloat(
-                                       String(
-                                          totalizadores.totalGeralHoras
-                                       ).replace(',', '.')
-                                    );
-                                    return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
-                                 })()}
+                                 {obterSufixoHoras(
+                                    totalizadores.totalGeralHoras
+                                 )}
                               </div>
                            </div>
 
@@ -665,12 +662,15 @@ export function ModalRelatorioOS({ isOpen = true, onClose }: Props) {
                                           <p className="pl-4 text-sm font-semibold tracking-widest text-white italic transition-colors select-none">
                                              {formatarCodNumber(
                                                 grupo.quantidadeOS
-                                             )}
-                                             {' OS(s) / '}
+                                             )}{' '}
+                                             {obterSufixoOS(grupo.quantidadeOS)}
+                                             {' / '}
                                              {formatarHorasTotaisHorasDecimais(
                                                 grupo.totalHoras
                                              )}
-                                             hs
+                                             {obterSufixoHoras(
+                                                grupo.totalHoras
+                                             )}
                                           </p>
                                        </div>
                                     </div>

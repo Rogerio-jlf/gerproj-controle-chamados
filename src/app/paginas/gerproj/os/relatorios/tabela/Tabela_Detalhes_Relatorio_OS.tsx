@@ -19,9 +19,8 @@ import {
 // FORMATTERS
 import {
    formatarCodNumber,
-   formatarDataParaBR,
    formatarHorasTotaisHorasDecimais,
-   normalizeDate,
+   obterSufixoHoras,
 } from '../../../../../../utils/formatters';
 
 // HELPERS
@@ -30,7 +29,7 @@ import { corrigirTextoCorrompido } from '../../../../../../lib/corrigirTextoCorr
 // ICONS
 import { IoClose } from 'react-icons/io5';
 import { HiDocumentReport } from 'react-icons/hi';
-import { FaEraser, FaExclamationTriangle, FaUserTie } from 'react-icons/fa';
+import { FaEraser, FaExclamationTriangle } from 'react-icons/fa';
 
 // ================================================================================
 // CONSTANTES
@@ -447,12 +446,7 @@ export const TabelalDetalhesRelatorioOS = ({
                               {formatarHorasTotaisHorasDecimais(
                                  grupo.totalHoras
                               )}
-                              {(() => {
-                                 const n = parseFloat(
-                                    String(grupo.totalHoras).replace(',', '.')
-                                 );
-                                 return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
-                              })()}
+                              {obterSufixoHoras(grupo.totalHoras)}
                            </div>
                         </div>
 

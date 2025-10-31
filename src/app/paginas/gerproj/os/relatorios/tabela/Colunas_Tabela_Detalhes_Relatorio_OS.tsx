@@ -9,6 +9,7 @@ import {
    formatarCodString,
    formatarDataParaBR,
    formatarDataHoraParaBR,
+   obterSufixoHoras,
 } from '../../../../../../utils/formatters';
 
 // HELPERS
@@ -136,15 +137,10 @@ const CellChamado = ({ value }: { value: string }) => {
 const CellHora = ({ value }: { value: string }) => {
    const ValueFormatted = useMemo(() => formatarHora(value), [value]);
 
-   const suffix = useMemo(() => {
-      const n = parseFloat(String(value).replace(',', '.'));
-      return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
-   }, [value]);
-
    return (
       <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
          {ValueFormatted}
-         {suffix}
+         {obterSufixoHoras(value)}
       </td>
    );
 };
@@ -158,15 +154,10 @@ const CellTotalHoras = ({ value }: { value: number }) => {
       [value]
    );
 
-   const suffix = useMemo(() => {
-      const n = parseFloat(String(value).replace(',', '.'));
-      return isNaN(n) ? 'hs' : n > 1 ? 'hs' : 'h';
-   }, [value]);
-
    return (
       <td className="p-3 text-center text-sm font-extrabold tracking-widest text-amber-500 select-none group-hover:font-extrabold group-hover:text-black">
          {ValueFormatted}
-         {suffix}
+         {obterSufixoHoras(value)}
       </td>
    );
 };

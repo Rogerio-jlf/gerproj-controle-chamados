@@ -165,7 +165,7 @@ export function FiltrosModalRelatorioOS({
    ]);
 
    return (
-      <div className="flex w-full items-center justify-center gap-6">
+      <div className="grid grid-cols-4 gap-6">
          <div className="w-[350px]">
             <DropdownAno value={ano} onChange={setAno} />
          </div>
