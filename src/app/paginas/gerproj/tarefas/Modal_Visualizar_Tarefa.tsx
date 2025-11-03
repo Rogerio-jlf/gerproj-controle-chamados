@@ -30,11 +30,6 @@ import { IoClose } from 'react-icons/io5';
 import { MdDescription } from 'react-icons/md';
 
 // ================================================================================
-// CONSTANTES
-// ================================================================================
-const EMPTY_VALUE = 'n/a' as const;
-
-// ================================================================================
 // INTERFACES
 // ================================================================================
 interface ModalVisualizarTarefaProps {
@@ -42,6 +37,11 @@ interface ModalVisualizarTarefaProps {
    onClose: () => void;
    tarefa: TabelaTarefaProps | null;
 }
+
+// ================================================================================
+// CONSTANTES
+// ================================================================================
+const EMPTY_VALUE = 'n/a' as const;
 
 // ================================================================================
 // COMPONENTE PRINCIPAL
@@ -136,7 +136,9 @@ export function ModalVisualizarTarefa({
                                  )}
                               >
                                  <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black italic select-none">
-                                    {tarefa.TAREFA_COMPLETA}
+                                    {corrigirTextoCorrompido(
+                                       tarefa.TAREFA_COMPLETA
+                                    )}
                                  </span>
                               </TooltipCondicionalTabelaTarefa>
                            </div>
@@ -148,10 +150,14 @@ export function ModalVisualizarTarefa({
                                  Projeto
                               </span>
                               <TooltipCondicionalTabelaTarefa
-                                 content={tarefa.PROJETO_COMPLETO || ''}
+                                 content={corrigirTextoCorrompido(
+                                    tarefa.PROJETO_COMPLETO || ''
+                                 )}
                               >
                                  <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black italic select-none">
-                                    {tarefa.PROJETO_COMPLETO}
+                                    {corrigirTextoCorrompido(
+                                       tarefa.PROJETO_COMPLETO
+                                    )}
                                  </span>
                               </TooltipCondicionalTabelaTarefa>
                            </div>

@@ -12,6 +12,7 @@ import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido
 import {
    formatarCodNumber,
    formatarHorasTotaisHorasDecimais,
+   obterSufixoHoras,
 } from '../../../../utils/formatters';
 
 // ICONS
@@ -27,6 +28,11 @@ interface ModalVisualizarProjetoProps {
    onClose: () => void;
    projeto: TabelaProjetoProps | null;
 }
+
+// ================================================================================
+// CONSTANTES
+// ================================================================================
+const EMPTY_VALUE = 'n/a' as const;
 
 // ================================================================================
 // COMPONENTE PRINCIPAL
@@ -50,22 +56,15 @@ export function ModalVisualizarProjeto({
    // Função auxiliar para formatar status
    const formatarStatus = (status: 'ATI' | 'ENC') => {
       return status === 'ATI' ? (
-         <span className="rounded-full bg-blue-600 px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+         <span className="rounded-full bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-1 text-sm font-extrabold tracking-widest text-white italic shadow-md shadow-black select-none">
             ATIVO
          </span>
       ) : (
-         <span className="rounded-full bg-red-600 px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+         <span className="rounded-full bg-gradient-to-r from-red-600 to-red-700 px-6 py-1 text-sm font-extrabold tracking-widest text-white italic shadow-md shadow-black select-none">
             ENCERRADO
          </span>
       );
    };
-
-   console.log('QTD_HRS_GASTAS:', projeto.QTD_HRS_GASTAS);
-   console.log('Tipo:', typeof projeto.QTD_HRS_GASTAS);
-   console.log(
-      'Formatado:',
-      formatarHorasTotaisHorasDecimais(projeto.QTD_HRS_GASTAS?.toString())
-   );
 
    // ================================================================================
    // RENDERIZAÇÃO
@@ -76,20 +75,18 @@ export function ModalVisualizarProjeto({
          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
          {/* ========== */}
 
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-[60vw] overflow-hidden rounded-2xl border-0 bg-white/70 shadow-lg shadow-black transition-all duration-500 ease-out">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-[60vw] overflow-hidden rounded-2xl border-0 bg-white/70 transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-gradient-to-r from-teal-600 to-teal-700 p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
-                  <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
-                     <FaProjectDiagram className="text-black" size={28} />
-                  </div>
+                  <FaProjectDiagram className="text-black" size={72} />
                   {/* ===== */}
                   <div className="flex flex-col">
-                     <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
-                        Informações do Projeto
+                     <h1 className="text-4xl font-extrabold tracking-widest text-black select-none">
+                        DETALHES DO PROJETO
                      </h1>
                      <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
-                        Código #{formatarCodNumber(projeto.COD_PROJETO)}
+                        CÓDIGO {formatarCodNumber(projeto.COD_PROJETO)}
                      </p>
                   </div>
                </div>
@@ -107,20 +104,22 @@ export function ModalVisualizarProjeto({
             {/* ===== CONTEÚDO ===== */}
             <main className="overflow-y-auto bg-gray-50 p-6">
                <div className="grid grid-cols-2 gap-6">
-                  {/* ===== COLUNA ESQUERDA ===== */}
+                  {/* ===== COLUNA DA ESQUERDA ===== */}
                   <div className="space-y-6">
-                     {/* ===== CARD: INFORMAÇÕES GERAIS ===== */}
+                     {/* ===== CARD INFORMAÇÕES GERAIS ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 shadow-sm shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 shadow-sm shadow-black">
+                           {/* HEADER */}
                            <FaInfo className="text-white" size={24} />
-                           <h2 className="text-lg font-bold tracking-widest text-white select-none">
-                              Informações Gerais
+                           <h2 className="text-lg font-extrabold tracking-widest text-white select-none">
+                              INFORMAÇÕES GERAIS
                            </h2>
                         </div>
+                        {/* ===== */}
                         <div className="space-y-3 p-4">
                            {/* PROJETO_COMPLETO */}
                            <div className="flex items-center justify-between gap-10 border-b border-slate-200 py-2">
-                              <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Projeto
                               </span>
                               <TooltipCondicionalTabelaProjeto
@@ -128,7 +127,7 @@ export function ModalVisualizarProjeto({
                                     projeto.PROJETO_COMPLETO
                                  )}
                               >
-                                 <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
+                                 <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black italic select-none">
                                     {corrigirTextoCorrompido(
                                        projeto.PROJETO_COMPLETO
                                     )}
@@ -139,7 +138,7 @@ export function ModalVisualizarProjeto({
 
                            {/* PROPOSTA_PROJETO */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Proposta
                               </span>
                               <TooltipCondicionalTabelaProjeto
@@ -147,7 +146,7 @@ export function ModalVisualizarProjeto({
                                     projeto.PROPOSTA_PROJETO || 'n/a'
                                  )}
                               >
-                                 <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
+                                 <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black italic select-none">
                                     {corrigirTextoCorrompido(
                                        projeto.PROPOSTA_PROJETO || 'n/a'
                                     )}
@@ -158,75 +157,73 @@ export function ModalVisualizarProjeto({
 
                            {/* PERC_PROJETO */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Percentual
                               </span>
                               <span className="text-lg font-bold tracking-widest text-black italic select-none">
-                                 {projeto.PERC_PROJETO}%
+                                 {projeto.PERC_PROJETO} %
                               </span>
                            </div>
                            {/* ===== */}
 
                            {/* QTDHORAS_PROJETO */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 QTD. Horas Previstas
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Horas Previstas
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {formatarHorasTotaisHorasDecimais(
-                                    projeto.QTDHORAS_PROJETO.toString()
-                                 )}
-                                 h
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
+                                 {projeto.QTDHORAS_PROJETO
+                                    ? `${formatarHorasTotaisHorasDecimais(projeto.QTDHORAS_PROJETO.toString())} ${obterSufixoHoras(projeto.QTDHORAS_PROJETO)}`
+                                    : EMPTY_VALUE}
                               </span>
                            </div>
                            {/* ===== */}
 
                            {/* QTD_HRS_GASTAS */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 QTD. Horas Gastas
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Horas Utilizadas
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {projeto.QTD_HRS_GASTAS
-                                    ? formatarHorasTotaisHorasDecimais(
-                                         projeto.QTD_HRS_GASTAS
-                                      )
-                                    : '0,00'}
-                                 h
+                                    ? `${formatarHorasTotaisHorasDecimais(projeto.QTD_HRS_GASTAS.toString())} ${obterSufixoHoras(projeto.QTD_HRS_GASTAS)}`
+                                    : EMPTY_VALUE}
                               </span>
                            </div>
                            {/* ===== */}
 
                            {/* STATUS_PROJETO */}
                            <div className="flex items-center justify-between py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Status
                               </span>
                               {formatarStatus(projeto.STATUS_PROJETO)}
                            </div>
+                           {/* ===== */}
                         </div>
                      </div>
-                     {/* ========== */}
                   </div>
                   {/* ==================== */}
 
-                  {/* ===== COLUNA DIREITA ===== */}
+                  {/* ===== COLUNA DA DIREITA ===== */}
                   <div className="space-y-6">
-                     {/* ===== CARD: CONSULTOR - CLIENTE - RESPONSÁVEL ===== */}
+                     {/* ===== CARD CONSULTOR, CLIENTE ERESPONSÁVEL ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-sm shadow-black">
+                        {/* HEADER */}
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-600 to-green-700 px-4 py-3 shadow-sm shadow-black">
                            <FaUser className="text-white" size={24} />
-                           <h2 className="text-lg font-bold tracking-widest text-white select-none">
-                              Consultor, Cliente e Responsável
+                           <h2 className="text-lg font-extrabold tracking-widest text-white select-none">
+                              CONSULTOR, CLIENTE E RESPONSÁVEL
                            </h2>
                         </div>
+                        {/* ===== */}
                         <div className="space-y-3 p-4">
                            {/* NOME_RECURSO */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Nome Consultor
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Consultor
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {projeto.NOME_RECURSO.trim()
                                     .split(/\s+/)
                                     .slice(0, 2)
@@ -237,10 +234,10 @@ export function ModalVisualizarProjeto({
 
                            {/* NOME_CLIENTE */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Nome Cliente
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Cliente
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {projeto.NOME_CLIENTE.trim()
                                     .split(/\s+/)
                                     .slice(0, 2)
@@ -252,38 +249,41 @@ export function ModalVisualizarProjeto({
                            {/* RESPCLI_PROJETO */}
                            <div className="flex items-center justify-between py-2">
                               <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Responsável Cliente
+                                 Cliente Responsável
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {projeto.RESPCLI_PROJETO}
                               </span>
                            </div>
+                           {/* ===== */}
                         </div>
                      </div>
                      {/* ========== */}
 
-                     {/* ===== CARD: LOGS ===== */}
+                     {/* ===== CARD LOGS ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 shadow-sm shadow-black">
+                        {/* HEADER */}
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-amber-600 to-amber-700 px-4 py-3 shadow-sm shadow-black">
                            <LuLogs className="text-white" size={24} />
-                           <h2 className="text-lg font-bold tracking-widest text-white select-none">
-                              Logs
+                           <h2 className="text-lg font-extrabold tracking-widest text-white select-none">
+                              LOGS
                            </h2>
                         </div>
+                        {/* ===== */}
                         <div className="space-y-3 p-4">
                            {/* LOGINC_PROJETO */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Log Inclusão
                               </span>
                               <TooltipCondicionalTabelaProjeto
                                  content={corrigirTextoCorrompido(
-                                    projeto.LOGINC_PROJETO || 'N/A'
+                                    projeto.LOGINC_PROJETO || EMPTY_VALUE
                                  )}
                               >
-                                 <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
+                                 <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black italic select-none">
                                     {corrigirTextoCorrompido(
-                                       projeto.LOGINC_PROJETO || 'N/A'
+                                       projeto.LOGINC_PROJETO || EMPTY_VALUE
                                     )}
                                  </span>
                               </TooltipCondicionalTabelaProjeto>
@@ -292,25 +292,26 @@ export function ModalVisualizarProjeto({
 
                            {/* LOGALT_PROJETO */}
                            <div className="flex items-center justify-between py-2">
-                              <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Log Alteração
                               </span>
                               <TooltipCondicionalTabelaProjeto
                                  content={corrigirTextoCorrompido(
-                                    projeto.LOGALT_PROJETO || 'N/A'
+                                    projeto.LOGALT_PROJETO || EMPTY_VALUE
                                  )}
                               >
-                                 <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
+                                 <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black italic select-none">
                                     {corrigirTextoCorrompido(
-                                       projeto.LOGALT_PROJETO || 'N/A'
+                                       projeto.LOGALT_PROJETO || EMPTY_VALUE
                                     )}
                                  </span>
                               </TooltipCondicionalTabelaProjeto>
                            </div>
+                           {/* ===== */}
                         </div>
                      </div>
-                     {/* ========== */}
                   </div>
+                  {/* ==================== */}
                </div>
             </main>
          </div>

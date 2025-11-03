@@ -513,10 +513,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
    if (isError) return <IsError error={error as Error} />;
    if (isLoading)
       return (
-         <IsLoading
-            isLoading
-            title="Aguarde... Buscando informações no sistema"
-         />
+         <IsLoading isLoading title="Aguarde... Buscando Tarefas no sistema" />
       );
 
    const shouldShowNoResults =

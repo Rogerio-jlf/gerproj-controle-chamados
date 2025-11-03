@@ -8,7 +8,7 @@ import { LoadingButton } from '../../../../../components/Loading';
 import { ToastCustom } from '../../../../../components/Toast_Custom';
 
 // FORMATTERS
-import { formatCodChamado } from '../../../../../utils/formatters';
+import { formatarCodNumber } from '../../../../../utils/formatters';
 
 // ICONS
 import { IoClose } from 'react-icons/io5';
@@ -72,7 +72,7 @@ export function ModalExcluirChamado({
             <ToastCustom
                type="success"
                title="Sucesso!"
-               description={`O Chamado #${formatCodChamado(codChamado)} foi excluído com sucesso!!!`}
+               description={`O Chamado #${formatarCodNumber(codChamado)} foi excluído com sucesso!!!`}
             />
          ));
 
@@ -88,7 +88,7 @@ export function ModalExcluirChamado({
             <ToastCustom
                type="error"
                title="Erro"
-               description={`Não foi possível deletar o Chamado #${formatCodChamado(codChamado)}.`}
+               description={`Não foi possível deletar o Chamado #${formatarCodNumber(codChamado)}.`}
             />
          ));
       } finally {
@@ -119,7 +119,7 @@ export function ModalExcluirChamado({
                         Excluir Chamado
                      </h1>
                      <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
-                        Código #{formatCodChamado(codChamado)}
+                        Código #{formatarCodNumber(codChamado)}
                      </p>
                   </div>
                </div>
@@ -140,7 +140,7 @@ export function ModalExcluirChamado({
                         <h3 className="text-xl font-extrabold tracking-wider text-black italic select-none">
                            Você selecionou o{' '}
                            <span className="text-2xl font-bold tracking-widest text-red-600 italic select-none">
-                              Chamado #{formatCodChamado(codChamado)}
+                              Chamado #{formatarCodNumber(codChamado)}
                            </span>{' '}
                            para exclusão. Se você deseja continuar com a
                            operação, clique no botão excluir, abaixo.

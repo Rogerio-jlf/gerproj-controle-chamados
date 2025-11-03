@@ -11,7 +11,7 @@ import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorromp
 
 // FORMATTERS
 import {
-   formatCodChamado,
+   formatarCodNumber,
    getStylesStatus,
 } from '../../../../../utils/formatters';
 
@@ -65,7 +65,7 @@ export function ModalVisualizarChamado({
                         Informações do Chamado
                      </h1>
                      <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
-                        Código #{formatCodChamado(chamado.COD_CHAMADO)}
+                        Código #{formatarCodNumber(chamado.COD_CHAMADO)}
                      </p>
                   </div>
                </div>
@@ -98,7 +98,7 @@ export function ModalVisualizarChamado({
                                  Chamado
                               </span>
                               <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {formatCodChamado(chamado.COD_CHAMADO)}
+                                 {formatarCodNumber(chamado.COD_CHAMADO)}
                               </span>
                            </div>
 

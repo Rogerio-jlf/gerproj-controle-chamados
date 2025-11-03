@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { BsEraserFill } from 'react-icons/bs';
-import { formatCodChamado } from '../../../../../../utils/formatters';
+import { formatarCodNumber } from '../../../../../../utils/formatters';
 
 // Componente para gerar mensagens personalizadas de filtro
 export function MensagemFiltroNaoEncontrado({
@@ -104,7 +104,7 @@ export function MensagemFiltroNaoEncontrado({
                      >
                         <span>{field}:</span>{' '}
                         <span className="font-bold tracking-widest text-yellow-400 italic select-none">
-                           "{formatCodChamado(Number(value))}"
+                           "{formatarCodNumber(Number(value))}"
                         </span>
                      </li>
                   ))}

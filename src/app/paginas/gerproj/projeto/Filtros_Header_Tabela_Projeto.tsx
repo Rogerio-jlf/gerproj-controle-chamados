@@ -1,7 +1,7 @@
 'use client';
 // IMPORTS
 import { debounce } from 'lodash';
-import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef, memo } from 'react';
 
 // COMPONENTS
 import { SelectAtiEncTabelaProjeto } from './Select_ATI_ENC_Tabela_Projeto';
@@ -12,33 +12,6 @@ import { InputFilterTableHeaderProps } from '../../../../types/types';
 // ICONS
 import { FaFilter } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
-
-// ================================================================================
-// CONSTANTES
-// ================================================================================
-const DEBOUNCE_DELAY = 400;
-
-const SEARCHABLE_COLUMNS = [
-   'PROJETO_COMPLETO',
-   'NOME_CLIENTE',
-   'RESPCLI_PROJETO',
-   'NOME_RECURSO',
-   'STATUS_PROJETO',
-] as const;
-
-const UPPERCASE_COLUMNS = ['STATUS_PROJETO'] as const;
-
-// Colunas que usam dropdown SIM/NÃO
-const DROPDOWN_SIM_NAO_COLUMNS = ['STATUS_PROJETO'] as const;
-
-// Limites de caracteres baseados no banco de dados
-export const COLUMN_MAX_LENGTH: Record<string, number> = {
-   PROJETO_COMPLETO: 15, // Concatenação: código + nome
-   NOME_CLIENTE: 15, // Concatenação: código + nome
-   RESPCLI_PROJETO: 15, // VARCHAR(50)
-   NOME_RECURSO: 15, // Concatenação: código + nome
-   STATUS_PROJETO: 3, // CHAR(3)
-};
 
 // ================================================================================
 // INTERFACES
@@ -56,8 +29,46 @@ interface ExtendedInputFilterProps extends InputFilterTableHeaderProps {
 }
 
 // ================================================================================
-// FUNÇÕES UTILITÁRIAS
+// CONSTANTES
 // ================================================================================
+const DEBOUNCE_DELAY = 600;
+
+// Colunas pesquisáveis
+const SEARCHABLE_COLUMNS = [
+   'PROJETO_COMPLETO',
+   'NOME_CLIENTE',
+   'RESPCLI_PROJETO',
+   'NOME_RECURSO',
+   'STATUS_PROJETO',
+] as const;
+
+// Colunas uppercase
+const UPPERCASE_COLUMNS = ['STATUS_PROJETO'] as const;
+
+// Colunas que usam dropdown
+const DROPDOWN_COLUMNS = ['STATUS_PROJETO'] as const;
+
+// Sets para verificação O(1)
+const SEARCHABLE_COLUMNS_SET = new Set(SEARCHABLE_COLUMNS);
+const UPPERCASE_COLUMNS_SET = new Set(UPPERCASE_COLUMNS);
+const DROPDOWN_COLUMNS_SET = new Set(DROPDOWN_COLUMNS);
+
+// Limites de caracteres por coluna
+export const MAX_LENGTH_COLUMN: Record<string, number> = {
+   PROJETO_COMPLETO: 15,
+   NOME_CLIENTE: 15,
+   RESPCLI_PROJETO: 15,
+   NOME_RECURSO: 15,
+   STATUS_PROJETO: 3,
+};
+
+// ================================================================================
+// UTILITÁRIOS
+// ================================================================================
+
+/**
+ * Normaliza string removendo acentos e convertendo para maiúsculas
+ */
 const normalizeString = (str: string): string => {
    return str
       .normalize('NFD')
@@ -65,198 +76,239 @@ const normalizeString = (str: string): string => {
       .toUpperCase();
 };
 
+/**
+ * Obtém valor da célula
+ */
 const getCellValue = (row: any, columnId: string): string => {
    const value = row.getValue(columnId);
    return String(value || '');
 };
 
 // ================================================================================
-// COMPONENTE INPUT FILTRO POR COLUNA COM DEBOUNCE E MAXLENGTH
+// COMPONENTE INPUT FILTRO COM DEBOUNCE
 // ================================================================================
-export const InputFilterWithDebounce = ({
-   value,
-   onChange,
-   type = 'text',
-   columnId,
-}: ExtendedInputFilterProps) => {
-   const [localValue, setLocalValue] = useState(value);
+const InputFilterWithDebounce = memo(
+   ({ value, onChange, type = 'text', columnId }: ExtendedInputFilterProps) => {
+      const [localValue, setLocalValue] = useState(value);
+      const isUserTyping = useRef(false);
+      const inputRef = useRef<HTMLInputElement>(null);
 
-   // Obter o limite máximo para a coluna específica
-   const maxLength = columnId ? COLUMN_MAX_LENGTH[columnId] : undefined;
+      // Obter o limite máximo para a coluna específica
+      const maxLength = useMemo(
+         () => (columnId ? MAX_LENGTH_COLUMN[columnId] : undefined),
+         [columnId]
+      );
 
-   // Sincroniza valor local com prop externa
-   useEffect(() => {
-      setLocalValue(value);
-   }, [value]);
+      // Sincroniza valor local com prop externa APENAS se não estiver digitando
+      useEffect(() => {
+         if (!isUserTyping.current) {
+            setLocalValue(value);
+         }
+      }, [value]);
 
-   // Debounce otimizado com cleanup
-   const debouncedOnChange = useMemo(
-      () =>
-         debounce((newValue: string) => {
-            onChange(newValue.trim());
-         }, DEBOUNCE_DELAY),
-      [onChange]
-   );
+      // Debounce otimizado com cleanup
+      const debouncedOnChange = useMemo(
+         () =>
+            debounce((newValue: string) => {
+               onChange(newValue.trim());
+               requestAnimationFrame(() => {
+                  isUserTyping.current = false;
+               });
+            }, DEBOUNCE_DELAY),
+         [onChange]
+      );
 
-   // Cleanup do debounce
-   useEffect(() => {
-      return () => {
+      // Cleanup do debounce
+      useEffect(() => {
+         return () => {
+            debouncedOnChange.cancel();
+         };
+      }, [debouncedOnChange]);
+
+      // Handler otimizado
+      const handleChange = useCallback(
+         (e: React.ChangeEvent<HTMLInputElement>) => {
+            isUserTyping.current = true;
+            const inputValue = e.target.value;
+
+            // Validar limite primeiro (mais rápido)
+            if (maxLength && inputValue.length > maxLength) return;
+
+            setLocalValue(inputValue);
+            debouncedOnChange(inputValue);
+         },
+         [debouncedOnChange, maxLength]
+      );
+
+      const handleClear = useCallback(() => {
+         isUserTyping.current = false;
+         setLocalValue('');
+         onChange('');
          debouncedOnChange.cancel();
-      };
-   }, [debouncedOnChange]);
 
-   // Handlers
-   const handleChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-         const inputValue = e.target.value;
+         // Manter foco após limpar
+         requestAnimationFrame(() => {
+            inputRef.current?.focus();
+         });
+      }, [onChange, debouncedOnChange]);
 
-         // Validar o limite de caracteres se definido
-         if (maxLength && inputValue.length > maxLength) {
-            return; // Não permite digitar além do limite
-         }
+      // Atalho de teclado para limpar (Escape)
+      const handleKeyDown = useCallback(
+         (e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === 'Escape' && localValue) {
+               e.preventDefault();
+               handleClear();
+            }
+         },
+         [localValue, handleClear]
+      );
 
-         setLocalValue(inputValue);
-         debouncedOnChange(inputValue);
-      },
-      [debouncedOnChange, maxLength]
-   );
+      // Calcular se está próximo do limite (>80%)
+      const isNearLimit = useMemo(
+         () =>
+            maxLength && localValue
+               ? localValue.length / maxLength > 0.8
+               : false,
+         [maxLength, localValue]
+      );
 
-   const handleClear = useCallback(() => {
-      setLocalValue('');
-      onChange('');
-      debouncedOnChange.cancel();
-   }, [onChange, debouncedOnChange]);
+      return (
+         <div className="group relative w-full">
+            <input
+               ref={inputRef}
+               type={type}
+               value={localValue}
+               onChange={handleChange}
+               onKeyDown={handleKeyDown}
+               maxLength={maxLength}
+               className={`hover:bg-opacity-90 w-full rounded-md px-4 py-2 text-lg font-bold shadow-sm shadow-black transition-all select-none focus:ring-2 focus:outline-none ${
+                  localValue
+                     ? 'bg-white text-black ring-2 ring-pink-500 focus:outline-none'
+                     : 'border border-teal-950 bg-teal-900 text-white hover:scale-95 hover:bg-teal-950'
+               } ${
+                  isNearLimit
+                     ? 'ring-2 ring-yellow-500/50 focus:ring-yellow-500'
+                     : 'focus:ring-pink-500'
+               }`}
+            />
 
-   // Atalho de teclado para limpar (Escape)
-   const handleKeyDown = useCallback(
-      (e: React.KeyboardEvent<HTMLInputElement>) => {
-         if (e.key === 'Escape' && localValue) {
-            e.preventDefault();
-            handleClear();
-         }
-      },
-      [localValue, handleClear]
-   );
-
-   // Calcular se está próximo do limite (>80%)
-   const isNearLimit =
-      maxLength && localValue ? localValue.length / maxLength > 0.8 : false;
-
-   return (
-      <div className="relative w-full">
-         <input
-            type={type}
-            value={localValue}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            maxLength={maxLength}
-            className={`w-full rounded-md border border-teal-950 bg-teal-900 px-4 py-2 pr-10 text-base text-white transition-all select-none hover:bg-teal-950 focus:ring-2 focus:outline-none ${
-               isNearLimit
-                  ? 'ring-2 ring-yellow-500/50 focus:ring-yellow-500'
-                  : 'focus:ring-pink-500'
-            }`}
-         />
-
-         {localValue && (
-            <button
-               onClick={handleClear}
-               aria-label="Limpar filtro"
-               title="Limpar (Esc)"
-               className="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer text-white transition-all hover:scale-150 hover:text-red-500 active:scale-95"
-               type="button"
-            >
-               <IoClose size={20} />
-            </button>
-         )}
-      </div>
-   );
-};
-
-// ================================================================================
-// COMPONENTE PRINCIPAL
-// ================================================================================
-export const FiltrosHeaderTabelaProjeto = ({
-   value,
-   onChange,
-   type = 'text',
-   columnId,
-}: ExtendedInputFilterProps) => {
-   // Verificar se a coluna usa dropdown SIM/NÃO
-   const isDropdownSimNao = columnId
-      ? DROPDOWN_SIM_NAO_COLUMNS.includes(columnId as any)
-      : false;
-
-   // Se for dropdown SIM/NÃO, renderizar o componente específico
-   if (isDropdownSimNao) {
-      return <SelectAtiEncTabelaProjeto value={value} onChange={onChange} />;
+            {localValue && (
+               <button
+                  onClick={handleClear}
+                  aria-label="Limpar filtro"
+                  title="Limpar (Esc)"
+                  className="absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer text-black transition-all hover:scale-150 hover:rotate-180 hover:text-red-500"
+                  type="button"
+               >
+                  <IoClose size={24} />
+               </button>
+            )}
+         </div>
+      );
    }
+);
 
-   // Caso contrário, renderizar o input normal
-   return (
-      <InputFilterWithDebounce
-         value={value}
-         onChange={onChange}
-         type={type}
-         columnId={columnId}
-      />
-   );
-};
+InputFilterWithDebounce.displayName = 'InputFilterWithDebounce';
+
+// ================================================================================
+// COMPONENTE PRINCIPAL (MEMOIZADO)
+// ================================================================================
+export const FiltrosHeaderTabelaProjeto = memo(
+   ({ value, onChange, type = 'text', columnId }: ExtendedInputFilterProps) => {
+      // Verificar se a coluna usa dropdown
+      const isDropdownColumn = useMemo(
+         () => (columnId ? DROPDOWN_COLUMNS_SET.has(columnId as any) : false),
+         [columnId]
+      );
+
+      // Se for dropdown, renderizar o componente específico
+      if (isDropdownColumn) {
+         return <SelectAtiEncTabelaProjeto value={value} onChange={onChange} />;
+      }
+
+      // Caso contrário, renderizar o input normal
+      return (
+         <InputFilterWithDebounce
+            value={value}
+            onChange={onChange}
+            type={type}
+            columnId={columnId}
+         />
+      );
+   }
+);
+
+FiltrosHeaderTabelaProjeto.displayName = 'FiltrosHeaderTabelaProjeto';
 
 // ================================================================================
 // CONTROLES DE FILTRO (MOSTRAR/OCULTAR E LIMPAR)
 // ================================================================================
-export const FilterControls = ({
-   showFilters,
-   setShowFilters,
-   totalActiveFilters,
-   clearFilters,
-   dataLength,
-}: FilterControlsProps) => {
-   const isDisabled = dataLength <= 1;
+export const FilterControls = memo(
+   ({
+      showFilters,
+      setShowFilters,
+      totalActiveFilters,
+      clearFilters,
+      dataLength,
+   }: FilterControlsProps) => {
+      const isDisabled = dataLength <= 1;
 
-   const handleToggleFilters = useCallback(() => {
-      if (!isDisabled) {
-         setShowFilters(!showFilters);
-      }
-   }, [isDisabled, showFilters, setShowFilters]);
+      const handleToggleFilters = useCallback(() => {
+         if (!isDisabled) {
+            setShowFilters(!showFilters);
+         }
+      }, [isDisabled, showFilters, setShowFilters]);
 
-   return (
-      <div className="group flex w-full flex-col gap-1">
-         <label className="flex items-center gap-3 text-base font-extrabold tracking-widest text-black uppercase select-none">
-            <FaFilter className="text-black" size={16} /> Filtros
-         </label>
+      // Cache do texto do botão
+      const clearButtonText = useMemo(
+         () => (totalActiveFilters > 1 ? 'Limpar Filtros' : 'Limpar Filtro'),
+         [totalActiveFilters]
+      );
 
-         <div className="flex items-center gap-6">
-            {/* Botão mostrar/ocultar filtros */}
-            <button
-               onClick={handleToggleFilters}
-               disabled={isDisabled}
-               className={`w-[300px] cursor-pointer rounded-md border-none px-6 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all focus:ring-2 focus:ring-pink-600 focus:outline-none ${
-                  showFilters
-                     ? 'border-none bg-blue-600 text-white hover:bg-blue-800'
-                     : 'border-none bg-white text-black hover:bg-white/50'
-               } ${
-                  isDisabled
-                     ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-slate-500'
-                     : 'active:scale-95'
-               }`}
-            >
-               {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
-            </button>
+      const toggleButtonText = showFilters
+         ? 'Ocultar Filtros'
+         : 'Mostrar Filtros';
 
-            {/* Botão limpar filtros */}
-            {totalActiveFilters > 0 && (
+      return (
+         <div className="group flex w-full flex-col gap-1">
+            <label className="flex items-center gap-3 text-base font-extrabold tracking-widest text-black uppercase select-none">
+               <FaFilter className="text-black" size={16} /> Filtros
+            </label>
+
+            <div className="flex items-center gap-6">
+               {/* Botão mostrar/ocultar filtros */}
                <button
-                  onClick={clearFilters}
-                  className="w-[300px] cursor-pointer rounded-md border-none bg-red-600 px-6 py-2.5 text-base font-extrabold tracking-widest text-white italic shadow-md shadow-black transition-all select-none hover:bg-red-800 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+                  onClick={handleToggleFilters}
+                  disabled={isDisabled}
+                  className={`w-[300px] cursor-pointer rounded-md border-none px-6 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all focus:ring-2 focus:ring-pink-600 focus:outline-none ${
+                     showFilters
+                        ? 'border-none bg-blue-600 text-white hover:bg-blue-800'
+                        : 'border-none bg-white text-black hover:bg-white/50'
+                  } ${
+                     isDisabled
+                        ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-slate-500'
+                        : 'active:scale-95'
+                  }`}
                >
-                  {totalActiveFilters > 1 ? `Limpar Filtros` : 'Limpar Filtro'}
+                  {toggleButtonText}
                </button>
-            )}
+
+               {/* Botão limpar filtros */}
+               {totalActiveFilters > 0 && (
+                  <button
+                     onClick={clearFilters}
+                     className="w-[300px] cursor-pointer rounded-md border-none bg-red-600 px-6 py-2.5 text-base font-extrabold tracking-widest text-white italic shadow-md shadow-black transition-all select-none hover:bg-red-800 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+                  >
+                     {clearButtonText}
+                  </button>
+               )}
+            </div>
          </div>
-      </div>
-   );
-};
+      );
+   }
+);
+
+FilterControls.displayName = 'FilterControls';
 
 // ================================================================================
 // HOOK PERSONALIZADO PARA FUNÇÕES DE FILTRO
@@ -267,6 +319,7 @@ export const useFiltrosHeaderTabelaProjeto = () => {
          if (!filterValue) return true;
 
          const searchValue = filterValue.toLowerCase().trim();
+         if (!searchValue) return true;
 
          return SEARCHABLE_COLUMNS.some(colId => {
             const cellValue = getCellValue(row, colId);
@@ -279,21 +332,23 @@ export const useFiltrosHeaderTabelaProjeto = () => {
 
    const columnFilterFn = useCallback(
       (row: any, columnId: string, filterValue: string) => {
-         if (!filterValue || filterValue === '') return true;
+         if (!filterValue) return true;
 
          const cellValue = getCellValue(row, columnId);
-         const filterString = String(filterValue).trim();
+         const filterTrimmed = String(filterValue).trim();
+
+         if (!filterTrimmed) return true;
 
          // Tratamento para colunas uppercase (com remoção de acentos)
-         if (UPPERCASE_COLUMNS.includes(columnId as any)) {
+         if (UPPERCASE_COLUMNS_SET.has(columnId as any)) {
             const normalizedCell = normalizeString(cellValue);
-            const normalizedFilter = normalizeString(filterString);
+            const normalizedFilter = normalizeString(filterTrimmed);
             return normalizedCell.includes(normalizedFilter);
          }
 
          // Tratamento padrão para texto
          const cellLower = cellValue.toLowerCase();
-         const filterLower = filterString.toLowerCase();
+         const filterLower = filterTrimmed.toLowerCase();
          return cellLower.includes(filterLower);
       },
       []
@@ -301,3 +356,8 @@ export const useFiltrosHeaderTabelaProjeto = () => {
 
    return { globalFilterFn, columnFilterFn };
 };
+
+// ================================================================================
+// EXPORTAÇÕES DE FUNÇÕES AUXILIARES
+// ================================================================================
+export { normalizeString, getCellValue };

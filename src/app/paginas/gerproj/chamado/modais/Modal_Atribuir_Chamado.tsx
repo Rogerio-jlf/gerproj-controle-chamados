@@ -22,10 +22,7 @@ import { TabelaChamadoProps } from '../../../../../types/types';
 import { corrigirTextoCorrompido } from '../../../../../lib/corrigirTextoCorrompido';
 
 // FORMATTERS
-import {
-   formatarCodNumber,
-   formatCodChamado,
-} from '../../../../../utils/formatters';
+import { formatarCodNumber } from '../../../../../utils/formatters';
 
 // ICONS
 import { Loader2 } from 'lucide-react';
@@ -286,7 +283,7 @@ export const ModalAtribuirChamado: React.FC<ModalAtribuirChamadoProps> = ({
             <ToastCustom
                type="success"
                title="Operação realizada com sucesso!"
-               description={`Chamado #${formatCodChamado(chamado?.COD_CHAMADO)} atribuído${
+               description={`Chamado #${formatarCodNumber(chamado?.COD_CHAMADO)} atribuído${
                   recursoSelecionadoNome
                      ? ` para ${recursoSelecionadoNome}`
                      : ''

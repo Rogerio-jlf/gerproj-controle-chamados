@@ -1,32 +1,27 @@
-// IMPORTS
 import { ColumnDef } from '@tanstack/react-table';
-import { useMemo, useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, memo } from 'react';
 import * as TooltipRadix from '@radix-ui/react-tooltip';
 
-// COMPONENTS
+import { TabelaProjetoProps } from '../../../../types/types';
+import {
+   formatarHorasTotaisHorasDecimais,
+   obterSufixoHoras,
+} from '../../../../utils/formatters';
+import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
 import {
    Tooltip,
    TooltipContent,
    TooltipProvider,
    TooltipTrigger,
 } from '../../../../components/ui/tooltip';
-
-// TYPES
-import { TabelaProjetoProps } from '../../../../types/types';
-
-// FORMATTERS
-import { formatarHorasTotaisHorasDecimais } from '../../../../utils/formatters';
-
-// HELPERS
-import { corrigirTextoCorrompido } from '../../../../lib/corrigirTextoCorrompido';
-
-// ICONS
 import { FaEye } from 'react-icons/fa';
 
 // ================================================================================
 // CONSTANTES
 // ================================================================================
-const STATUS_PROJETO_CONFIG = {
+const EMPTY_VALUE = 'n/a' as const;
+
+export const STATUS_PROJETO_CONFIG = {
    ATI: {
       label: 'ATIVO',
       bgColor: 'bg-blue-600',
@@ -44,8 +39,6 @@ const STATUS_PROJETO_CONFIG = {
    },
 } as const;
 
-const EMPTY_VALUE = 'n/a';
-
 // ================================================================================
 // INTERFACES
 // ================================================================================
@@ -53,13 +46,6 @@ interface ColunasProps {
    onVisualizarProjeto?: (codProjeto: number) => void;
 }
 
-// ================================================================================
-// COMPONENTES AUXILIARES REUTILIZÁVEIS
-// ================================================================================
-
-/**
- * Componente genérico para células de texto
- */
 interface CellTextProps {
    value: string | null | undefined;
    maxWords?: number;
@@ -67,37 +53,28 @@ interface CellTextProps {
    applyCorrection?: boolean;
 }
 
-const CellText = ({
-   value,
-   maxWords,
-   align = 'left',
-   applyCorrection = false,
-}: CellTextProps) => {
-   const isEmpty = !value || value.trim() === '';
+interface CellHoursProps {
+   value: number | string | null | undefined;
+}
+
+interface CellStatusProjetoProps {
+   value: string | null | undefined;
+}
+
+interface CellAcoesProps {
+   codProjeto: number;
+   onVisualizarProjeto?: (codProjeto: number) => void;
+}
+
+// ================================================================================
+// HOOKS CUSTOMIZADOS
+// ================================================================================
+function useTextOverflow(
+   value: string | null | undefined,
+   processedValue: string | null
+) {
    const textRef = useRef<HTMLSpanElement>(null);
    const [showTooltip, setShowTooltip] = useState(false);
-
-   const processedValue = useMemo(() => {
-      if (isEmpty) return null;
-
-      let processed = value;
-
-      if (maxWords && maxWords > 0) {
-         return value.split(' ').slice(0, maxWords).join(' ');
-      }
-
-      // Aplica correção de texto se necessário
-      if (applyCorrection) {
-         processed = corrigirTextoCorrompido(processed);
-      }
-
-      return processed;
-   }, [value, maxWords, applyCorrection, isEmpty]);
-
-   const alignClass =
-      align === 'center'
-         ? 'justify-center text-center'
-         : 'justify-start pl-2 text-left';
 
    useEffect(() => {
       const checkOverflow = () => {
@@ -109,9 +86,7 @@ const CellText = ({
          }
       };
 
-      // Pequeno delay para garantir que o DOM foi renderizado
       const timeoutId = setTimeout(checkOverflow, 100);
-
       window.addEventListener('resize', checkOverflow);
 
       return () => {
@@ -120,71 +95,137 @@ const CellText = ({
       };
    }, [value, processedValue]);
 
-   if (isEmpty) {
-      return (
-         <div
-            className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
-         >
-            {EMPTY_VALUE}
-         </div>
-      );
-   }
-
-   // Se não há overflow, renderiza sem tooltip
-   if (!showTooltip) {
-      return (
-         <div
-            className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
-         >
-            <span ref={textRef} className="block w-full truncate">
-               {corrigirTextoCorrompido(processedValue ?? '')}
-            </span>
-         </div>
-      );
-   }
-
-   // Se há overflow, renderiza com tooltip
-   return (
-      <div
-         className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
-      >
-         <TooltipRadix.Provider delayDuration={200}>
-            <TooltipRadix.Root>
-               <TooltipRadix.Trigger asChild>
-                  <span
-                     ref={textRef}
-                     className="block w-full cursor-help truncate"
-                  >
-                     {corrigirTextoCorrompido(processedValue ?? '')}
-                  </span>
-               </TooltipRadix.Trigger>
-               <TooltipRadix.Portal>
-                  <TooltipRadix.Content
-                     side="top"
-                     align="start"
-                     className="animate-in fade-in-0 zoom-in-95 z-[70] max-w-[800px] rounded-lg border border-pink-500 bg-white px-6 py-2 text-sm font-semibold tracking-widest text-black italic shadow-sm shadow-black select-none"
-                     sideOffset={10}
-                  >
-                     <div className="break-words">
-                        {corrigirTextoCorrompido(value)}
-                     </div>
-                     <TooltipRadix.Arrow className="fill-black" />
-                  </TooltipRadix.Content>
-               </TooltipRadix.Portal>
-            </TooltipRadix.Root>
-         </TooltipRadix.Provider>
-      </div>
-   );
-};
-
-/**
- * Componente para célula de status com badge colorido
- */
-interface CellStatusProjetoProps {
-   value: string | null | undefined;
+   return { textRef, showTooltip };
 }
 
-const CellStatusProjeto = ({ value }: CellStatusProjetoProps) => {
+// ================================================================================
+// UTILITÁRIOS
+// ================================================================================
+function processTextValue(
+   value: string | null | undefined,
+   maxWords?: number,
+   applyCorrection?: boolean
+): string | null {
+   if (!value || value.trim() === '') return null;
+
+   let processed = value;
+
+   if (maxWords && maxWords > 0) {
+      processed = value.split(' ').slice(0, maxWords).join(' ');
+   }
+
+   if (applyCorrection) {
+      processed = corrigirTextoCorrompido(processed);
+   }
+
+   return processed;
+}
+
+// ================================================================================
+// COMPONENTES AUXILIARES
+// ================================================================================
+const HeaderCenter = memo(({ children }: { children: React.ReactNode }) => (
+   <div className="text-center">{children}</div>
+));
+HeaderCenter.displayName = 'HeaderCenter';
+//====================
+
+const TooltipContentCustom = memo(({ content }: { content: string }) => (
+   <TooltipRadix.Content
+      side="top"
+      align="start"
+      className="animate-in fade-in-0 zoom-in-95 z-[70] max-w-[800px] rounded-lg border border-pink-500 bg-white px-6 py-2 text-sm font-semibold tracking-widest text-black italic shadow-sm shadow-black select-none"
+      sideOffset={10}
+   >
+      <div className="break-words">{corrigirTextoCorrompido(content)}</div>
+      <TooltipRadix.Arrow className="fill-black" />
+   </TooltipRadix.Content>
+));
+TooltipContentCustom.displayName = 'TooltipContentCustom';
+//====================
+
+const CellText = memo(
+   ({
+      value,
+      maxWords,
+      align = 'left',
+      applyCorrection = false,
+   }: CellTextProps) => {
+      const isEmpty = !value || value.trim() === '';
+      const processedValue = processTextValue(value, maxWords, applyCorrection);
+      const { textRef, showTooltip } = useTextOverflow(value, processedValue);
+
+      const alignClass =
+         align === 'center'
+            ? 'justify-center text-center'
+            : 'justify-start pl-2 text-left';
+
+      if (isEmpty) {
+         return (
+            <div
+               className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
+            >
+               {EMPTY_VALUE}
+            </div>
+         );
+      }
+
+      const content = corrigirTextoCorrompido(processedValue ?? '');
+
+      if (!showTooltip) {
+         return (
+            <div
+               className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
+            >
+               <span ref={textRef} className="block w-full truncate">
+                  {content}
+               </span>
+            </div>
+         );
+      }
+
+      return (
+         <div
+            className={`flex items-center rounded-md bg-black p-2 text-white ${alignClass}`}
+         >
+            <TooltipRadix.Provider delayDuration={200}>
+               <TooltipRadix.Root>
+                  <TooltipRadix.Trigger asChild>
+                     <span
+                        ref={textRef}
+                        className="block w-full cursor-help truncate"
+                     >
+                        {content}
+                     </span>
+                  </TooltipRadix.Trigger>
+                  <TooltipRadix.Portal>
+                     <TooltipContentCustom content={value!} />
+                  </TooltipRadix.Portal>
+               </TooltipRadix.Root>
+            </TooltipRadix.Provider>
+         </div>
+      );
+   }
+);
+CellText.displayName = 'CellText';
+//====================
+
+const CellHours = memo(({ value }: CellHoursProps) => {
+   const formattedHours = value
+      ? formatarHorasTotaisHorasDecimais(value)
+      : null;
+   const suffix = obterSufixoHoras(formattedHours ?? EMPTY_VALUE);
+
+   return (
+      <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
+         {formattedHours ? `${formattedHours}${suffix}` : EMPTY_VALUE}
+      </div>
+   );
+});
+CellHours.displayName = 'CellHours';
+//====================
+
+const CellStatusProjeto = memo(({ value }: CellStatusProjetoProps) => {
    const status = value
       ?.toUpperCase()
       .trim() as keyof typeof STATUS_PROJETO_CONFIG;
@@ -199,47 +240,23 @@ const CellStatusProjeto = ({ value }: CellStatusProjetoProps) => {
          {status || EMPTY_VALUE}
       </div>
    );
-};
+});
+CellStatusProjeto.displayName = 'CellStatusProjeto';
+//====================
 
-/**
- * Componente para célula de horas
- */
-interface CellHoursProps {
-   value: number | string | null | undefined;
-}
+const CellAcoes = memo(
+   ({ codProjeto, onVisualizarProjeto }: CellAcoesProps) => {
+      if (!onVisualizarProjeto) return null;
 
-const CellHours = ({ value }: CellHoursProps) => {
-   const formattedHours = useMemo(() => {
-      if (!value) return null;
-      return formatarHorasTotaisHorasDecimais(value);
-   }, [value]);
-
-   return (
-      <div className="flex items-center justify-center rounded-md bg-black p-2 text-center text-white">
-         {formattedHours ? `${formattedHours}h` : EMPTY_VALUE}
-      </div>
-   );
-};
-
-/**
- * Componente para célula de ações
- * NOVO COMPONENTE
- */
-interface CellAcoesProps {
-   codProjeto: number;
-   onVisualizarProjeto?: (codProjeto: number) => void;
-}
-
-const CellAcoes = ({ codProjeto, onVisualizarProjeto }: CellAcoesProps) => {
-   return (
-      <div className="flex items-center justify-center">
-         {onVisualizarProjeto && (
+      return (
+         <div className="flex items-center justify-center">
             <TooltipProvider>
                <Tooltip>
                   <TooltipTrigger asChild>
                      <button
                         onClick={() => onVisualizarProjeto(codProjeto)}
-                        className="inline-flex cursor-pointer items-center justify-center text-white transition-all hover:scale-150 active:scale-95"
+                        title="Visualizar Projeto"
+                        className="inline-flex cursor-pointer items-center justify-center text-white transition-all hover:scale-150"
                      >
                         <FaEye className="text-white" size={32} />
                      </button>
@@ -254,17 +271,11 @@ const CellAcoes = ({ codProjeto, onVisualizarProjeto }: CellAcoesProps) => {
                   </TooltipContent>
                </Tooltip>
             </TooltipProvider>
-         )}
-      </div>
-   );
-};
-
-/**
- * Componente para cabeçalho centralizado
- */
-const HeaderCenter = ({ children }: { children: React.ReactNode }) => (
-   <div className="text-center">{children}</div>
+         </div>
+      );
+   }
 );
+CellAcoes.displayName = 'CellAcoes';
 
 // ================================================================================
 // DEFINIÇÃO DAS COLUNAS
@@ -272,7 +283,6 @@ const HeaderCenter = ({ children }: { children: React.ReactNode }) => (
 export const colunasTabelaProjeto = (
    props?: ColunasProps
 ): ColumnDef<TabelaProjetoProps>[] => [
-   // PROJETO_COMPLETO
    {
       accessorKey: 'PROJETO_COMPLETO',
       header: () => <HeaderCenter>PROJETO</HeaderCenter>,
@@ -280,8 +290,6 @@ export const colunasTabelaProjeto = (
          <CellText value={getValue() as string} applyCorrection={true} />
       ),
    },
-
-   // NOME_CLIENTE
    {
       accessorKey: 'NOME_CLIENTE',
       header: () => <HeaderCenter>CLIENTE</HeaderCenter>,
@@ -293,8 +301,6 @@ export const colunasTabelaProjeto = (
          />
       ),
    },
-
-   // RESPONSÁVEL PELO PROJETO
    {
       accessorKey: 'RESPCLI_PROJETO',
       header: () => <HeaderCenter>RESPONSÁVEL</HeaderCenter>,
@@ -306,31 +312,27 @@ export const colunasTabelaProjeto = (
          />
       ),
    },
-
-   // NOME_RECURSO
    {
       accessorKey: 'NOME_RECURSO',
       header: () => <HeaderCenter>CONSULTOR</HeaderCenter>,
       cell: ({ getValue }) => (
-         <CellText value={getValue() as string} maxWords={2} applyCorrection />
+         <CellText
+            value={getValue() as string}
+            maxWords={2}
+            applyCorrection={true}
+         />
       ),
    },
-
-   // QTDHORAS_PROJETO
    {
       accessorKey: 'QTDHORAS_PROJETO',
       header: () => <HeaderCenter>QTD. HR's ESTIMADAS</HeaderCenter>,
       cell: ({ getValue }) => <CellHours value={getValue() as string} />,
    },
-
-   // QTD_HRS_GASTAS
    {
       accessorKey: 'QTD_HRS_GASTAS',
       header: () => <HeaderCenter>QTD. HR's GASTAS</HeaderCenter>,
       cell: ({ getValue }) => <CellHours value={getValue() as string} />,
    },
-
-   // STATUS_PROJETO
    {
       accessorKey: 'STATUS_PROJETO',
       header: () => <HeaderCenter>STATUS</HeaderCenter>,
@@ -338,8 +340,6 @@ export const colunasTabelaProjeto = (
          <CellStatusProjeto value={getValue() as string} />
       ),
    },
-
-   // AÇÕES
    {
       id: 'acoes',
       header: () => <HeaderCenter>AÇÕES</HeaderCenter>,
@@ -353,7 +353,7 @@ export const colunasTabelaProjeto = (
 ];
 
 // ================================================================================
-// EXPORT DE TIPOS ÚTEIS
+// EXPORTS
 // ================================================================================
-export type StatusType = keyof typeof STATUS_PROJETO_CONFIG;
-export { STATUS_PROJETO_CONFIG, EMPTY_VALUE };
+export type StatusProjetoType = keyof typeof STATUS_PROJETO_CONFIG;
+export { EMPTY_VALUE };
