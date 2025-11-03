@@ -38,16 +38,14 @@ const CONFIG = {
 } as const;
 
 const COLUMN_WIDTHS: Record<string, string> = {
-   TAREFA_COMPLETA: '17%',
-   PROJETO_COMPLETO: '17%',
+   TAREFA_COMPLETA: '20%',
+   PROJETO_COMPLETO: '20%',
    NOME_CLIENTE: '10%',
    NOME_RECURSO: '10%',
-   DTSOL_TAREFA: '7%',
-   DTAPROV_TAREFA: '7%',
-   DTPREVENT_TAREFA: '6%',
-   HREST_TAREFA: '6%',
-   QTD_HRS_GASTAS: '6%',
-   TIPO_TAREFA_COMPLETO: '9%',
+   DTSOL_TAREFA: '8%',
+   HREST_TAREFA: '8%',
+   QTD_HRS_GASTAS: '8%',
+   TIPO_TAREFA_COMPLETO: '11%',
    acoes: '5%',
 };
 
@@ -57,9 +55,6 @@ const FILTER_KEYS = [
    'NOME_CLIENTE',
    'NOME_RECURSO',
    'DTSOL_TAREFA',
-   'DTAPROV_TAREFA',
-   'DTPREVENT_TAREFA',
-   'STATUS_TAREFA',
    'TIPO_TAREFA_COMPLETO',
 ] as const;
 
@@ -120,11 +115,6 @@ function useFilters() {
    const debouncedNOME_CLIENTE = useDebouncedValue(filters.NOME_CLIENTE);
    const debouncedNOME_RECURSO = useDebouncedValue(filters.NOME_RECURSO);
    const debouncedDTSOL_TAREFA = useDebouncedValue(filters.DTSOL_TAREFA);
-   const debouncedDTAPROV_TAREFA = useDebouncedValue(filters.DTAPROV_TAREFA);
-   const debouncedDTPREVENT_TAREFA = useDebouncedValue(
-      filters.DTPREVENT_TAREFA
-   );
-   const debouncedSTATUS_TAREFA = useDebouncedValue(filters.STATUS_TAREFA);
    const debouncedTIPO_TAREFA_COMPLETO = useDebouncedValue(
       filters.TIPO_TAREFA_COMPLETO
    );
@@ -136,9 +126,6 @@ function useFilters() {
          NOME_CLIENTE: debouncedNOME_CLIENTE,
          NOME_RECURSO: debouncedNOME_RECURSO,
          DTSOL_TAREFA: debouncedDTSOL_TAREFA,
-         DTAPROV_TAREFA: debouncedDTAPROV_TAREFA,
-         DTPREVENT_TAREFA: debouncedDTPREVENT_TAREFA,
-         STATUS_TAREFA: debouncedSTATUS_TAREFA,
          TIPO_TAREFA_COMPLETO: debouncedTIPO_TAREFA_COMPLETO,
       }),
       [
@@ -147,9 +134,6 @@ function useFilters() {
          debouncedNOME_CLIENTE,
          debouncedNOME_RECURSO,
          debouncedDTSOL_TAREFA,
-         debouncedDTAPROV_TAREFA,
-         debouncedDTPREVENT_TAREFA,
-         debouncedSTATUS_TAREFA,
          debouncedTIPO_TAREFA_COMPLETO,
       ]
    );
@@ -259,10 +243,14 @@ const PaginationControls = ({
                   value={pageSize}
                   onChange={e => onPageSizeChange(Number(e.target.value))}
                   title="Selecionar quantidade registros"
-                  className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:scale-90 focus:ring-2 focus:ring-pink-600 focus:outline-none"
+                  className="cursor-pointer rounded-md border-t border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:scale-90 hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none"
                >
                   {CONFIG.PAGE_SIZE_OPTIONS.map(size => (
-                     <option key={size} value={size} className="bg-white">
+                     <option
+                        key={size}
+                        value={size}
+                        className="bg-white font-semibold tracking-widest"
+                     >
                         {size}
                      </option>
                   ))}
@@ -275,7 +263,7 @@ const PaginationControls = ({
                   title="Primeira página"
                   disabled={!paginationInfo.hasPrevPage}
                   aria-label="Ir para primeira página"
-                  className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:scale-90 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                  className="group cursor-pointer rounded-md border-t border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:scale-85 hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                >
                   <FiChevronsLeft
                      className="text-black group-disabled:text-red-500"
@@ -288,7 +276,7 @@ const PaginationControls = ({
                   title="Página anterior"
                   disabled={!paginationInfo.hasPrevPage}
                   aria-label="Página anterior"
-                  className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:scale-90 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                  className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:scale-85 hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                >
                   <MdChevronLeft
                      className="text-black group-disabled:text-red-500"
@@ -304,7 +292,7 @@ const PaginationControls = ({
                         onChange={e => onPageChange(Number(e.target.value))}
                         title="Selecionar página"
                         aria-label="Selecionar página"
-                        className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:scale-90 focus:ring-2 focus:ring-pink-600 focus:outline-none"
+                        className="cursor-pointer rounded-md border-t border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:scale-90 hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none"
                      >
                         {Array.from(
                            { length: paginationInfo.totalPages },
@@ -312,7 +300,7 @@ const PaginationControls = ({
                               <option
                                  key={i + 1}
                                  value={i + 1}
-                                 className="bg-white"
+                                 className="bg-white font-semibold tracking-widest"
                               >
                                  {i + 1}
                               </option>
@@ -330,7 +318,7 @@ const PaginationControls = ({
                   title="Próxima página"
                   disabled={!paginationInfo.hasNextPage}
                   aria-label="Próxima página"
-                  className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:scale-90 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                  className="group cursor-pointer rounded-md border-t border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:scale-85 hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                >
                   <MdChevronRight
                      className="text-black group-disabled:text-red-500"
@@ -343,7 +331,7 @@ const PaginationControls = ({
                   title="Última página"
                   disabled={!paginationInfo.hasNextPage}
                   aria-label="Ir para última página"
-                  className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:scale-90 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                  className="group cursor-pointer rounded-md border-t border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:scale-85 hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                >
                   <FiChevronsRight
                      className="text-black group-disabled:text-red-500"
@@ -403,9 +391,6 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
          NOME_CLIENTE: 'filter_NOME_CLIENTE',
          NOME_RECURSO: 'filter_NOME_RECURSO',
          DTSOL_TAREFA: 'filter_DTSOL_TAREFA',
-         DTAPROV_TAREFA: 'filter_DTAPROV_TAREFA',
-         DTPREVENT_TAREFA: 'filter_DTPREVENT_TAREFA',
-         STATUS_TAREFA: 'filter_STATUS_TAREFA',
          TIPO_TAREFA_COMPLETO: 'filter_TIPO_TAREFA_COMPLETO',
       };
 
@@ -549,13 +534,13 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
             }`}
             style={{ animationDuration: `${CONFIG.ANIMATION_DURATION}ms` }}
          >
-            {/* HEADER */}
+            {/* ===== HEADER ===== */}
             <header className="flex flex-col gap-14 bg-white/50 p-6 pb-24">
                <div className="flex items-center justify-between gap-8">
                   <div className="flex items-center justify-center gap-6">
                      <FaTasks className="text-black" size={72} />
-                     <h1 className="text-5xl font-extrabold tracking-widest text-black uppercase select-none">
-                        Tarefas
+                     <h1 className="text-5xl font-extrabold tracking-widest text-black select-none">
+                        TAREFAS
                      </h1>
                   </div>
 
@@ -623,7 +608,7 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
                                     <button
                                        onClick={clearAllFilters}
                                        title="Limpar Filtros"
-                                       className="group cursor-pointer rounded-full border-none bg-gradient-to-br from-red-600 to-red-700 px-6 py-2.5 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-110 active:scale-95"
+                                       className="group cursor-pointer rounded-full border-none bg-gradient-to-b from-red-600 to-red-700 px-6 py-2.5 shadow-md shadow-black transition-all hover:scale-110 hover:bg-gradient-to-r hover:from-red-900 hover:to-red-900"
                                     >
                                        <FaEraser
                                           size={20}

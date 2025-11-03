@@ -239,7 +239,7 @@ const CellAcoes = memo(({ codTarefa, onVisualizarTarefa }: CellAcoesProps) => {
          <button
             onClick={() => onVisualizarTarefa(codTarefa)}
             title="Visualizar Tarefa"
-            className="inline-flex cursor-pointer items-center justify-center text-white transition-all hover:scale-150 active:scale-95"
+            className="inline-flex cursor-pointer items-center justify-center text-white transition-all hover:scale-150"
          >
             <FaEye className="text-white" size={32} />
          </button>
@@ -285,12 +285,12 @@ export const colunasTabelaTarefa = (
    },
    {
       accessorKey: 'HREST_TAREFA',
-      header: () => <HeaderCenter>QTD. HR's. ESTIMADAS</HeaderCenter>,
+      header: () => <HeaderCenter>HR's. ESTIMADAS</HeaderCenter>,
       cell: ({ getValue }) => <CellHours value={getValue() as number} />,
    },
    {
       accessorKey: 'QTD_HRS_GASTAS',
-      header: () => <HeaderCenter>QTD. HR's. GASTAS</HeaderCenter>,
+      header: () => <HeaderCenter>HR's. GASTAS</HeaderCenter>,
       cell: ({ getValue }) => <CellHours value={getValue() as number} />,
    },
    {

@@ -65,11 +65,11 @@ export function ModalVisualizarTarefa({
    // Função auxiliar para formatar valores SIM/NAO
    const formatarSimNao = (value: 'SIM' | 'NAO') => {
       return value === 'SIM' ? (
-         <span className="rounded-full bg-blue-600 px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+         <span className="rounded-full bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-1 text-sm font-extrabold tracking-widest text-white italic shadow-md shadow-black select-none">
             SIM
          </span>
       ) : (
-         <span className="rounded-full bg-red-600 px-6 py-1 text-sm font-bold tracking-widest text-white italic select-none">
+         <span className="rounded-full bg-gradient-to-r from-red-600 to-red-700 px-6 py-1 text-sm font-extrabold tracking-widest text-white italic shadow-md shadow-black select-none">
             NÃO
          </span>
       );
@@ -90,11 +90,11 @@ export function ModalVisualizarTarefa({
                <div className="flex items-center justify-center gap-6">
                   <FaTasks className="text-black" size={72} />
                   <div className="flex flex-col">
-                     <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
-                        Detalhes da Tarefa
+                     <h1 className="text-4xl font-extrabold tracking-widest text-black select-none">
+                        DETALHES DA TAREFA
                      </h1>
-                     <p className="text-xl font-extrabold tracking-widest text-black uppercase italic select-none">
-                        Código {formatarCodNumber(tarefa.COD_TAREFA)}
+                     <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
+                        CÓDIGO {formatarCodNumber(tarefa.COD_TAREFA)}
                      </p>
                   </div>
                </div>
@@ -112,20 +112,22 @@ export function ModalVisualizarTarefa({
             {/* ===== CONTEÚDO ===== */}
             <main className="overflow-y-auto bg-gray-50 p-6">
                <div className="grid grid-cols-3 gap-6">
-                  {/* ===== COLUNA ESQUERDA ===== */}
+                  {/* ===== COLUNA DA ESQUERDA ===== */}
                   <div className="space-y-6">
-                     {/* ===== CARD: INFORMAÇÕES GERAIS ===== */}
+                     {/* ===== CARD INFORMAÇÕES GERAIS ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
                         <div className="flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 shadow-sm shadow-black">
+                           {/* HEADER */}
                            <FaInfo className="text-white" size={24} />
-                           <h2 className="text-lg font-bold tracking-widest text-white select-none">
-                              Informações Gerais
+                           <h2 className="text-lg font-extrabold tracking-widest text-white select-none">
+                              INFORMAÇÕES GERAIS
                            </h2>
                         </div>
+                        {/* ===== */}
                         <div className="space-y-3 p-4">
                            {/* TAREFA_COMPLETA */}
                            <div className="flex items-center justify-between gap-10 border-b border-slate-200 py-2">
-                              <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Tarefa
                               </span>
                               <TooltipCondicionalTabelaTarefa
@@ -133,7 +135,7 @@ export function ModalVisualizarTarefa({
                                     tarefa.TAREFA_COMPLETA || ''
                                  )}
                               >
-                                 <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
+                                 <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black italic select-none">
                                     {tarefa.TAREFA_COMPLETA}
                                  </span>
                               </TooltipCondicionalTabelaTarefa>
@@ -142,13 +144,13 @@ export function ModalVisualizarTarefa({
 
                            {/* PROJETO_COMPLETO */}
                            <div className="flex items-center justify-between gap-10 border-b border-slate-200 py-2">
-                              <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Projeto
                               </span>
                               <TooltipCondicionalTabelaTarefa
                                  content={tarefa.PROJETO_COMPLETO || ''}
                               >
-                                 <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
+                                 <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black italic select-none">
                                     {tarefa.PROJETO_COMPLETO}
                                  </span>
                               </TooltipCondicionalTabelaTarefa>
@@ -157,10 +159,10 @@ export function ModalVisualizarTarefa({
 
                            {/* ORDEM_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Ordem
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {formatarCodNumber(tarefa.ORDEM_TAREFA)}
                               </span>
                            </div>
@@ -168,10 +170,10 @@ export function ModalVisualizarTarefa({
 
                            {/* COD_AREA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Área
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {formatarCodNumber(tarefa.COD_AREA)}
                               </span>
                            </div>
@@ -179,10 +181,10 @@ export function ModalVisualizarTarefa({
 
                            {/* COD_TIPOTRF */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Tipo
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {tarefa.TIPO_TAREFA_COMPLETO}
                               </span>
                            </div>
@@ -190,32 +192,35 @@ export function ModalVisualizarTarefa({
 
                            {/* COD_FASE */}
                            <div className="flex items-center justify-between py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Fase
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {formatarCodNumber(tarefa.COD_FASE)}
                               </span>
                            </div>
+                           {/* ===== */}
                         </div>
                      </div>
                      {/* ========== */}
 
-                     {/* ===== CARD: DADOS TEMPORAIS ===== */}
+                     {/* ===== CARD DATAS ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
                         <div className="flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 shadow-sm shadow-black">
+                           {/* HEADER */}
                            <FaClock className="text-white" size={24} />
-                           <h2 className="text-lg font-bold tracking-widest text-white select-none">
-                              Datas
+                           <h2 className="text-lg font-extrabold tracking-widest text-white select-none">
+                              DATAS
                            </h2>
                         </div>
+                        {/* ===== */}
                         <div className="space-y-3 p-4">
                            {/* DTSOL_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Data Solicitação
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Solicitação
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {tarefa.DTSOL_TAREFA
                                     ? formatarDataParaBR(
                                          tarefa.DTSOL_TAREFA.toString()
@@ -227,10 +232,10 @@ export function ModalVisualizarTarefa({
 
                            {/* DTAPROV_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Data Aprovação
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Aprovação
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {tarefa.DTAPROV_TAREFA
                                     ? formatarDataParaBR(
                                          tarefa.DTAPROV_TAREFA.toString()
@@ -242,10 +247,10 @@ export function ModalVisualizarTarefa({
 
                            {/* DTPREVENT_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Data Previsão
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Previsão
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {tarefa.DTPREVENT_TAREFA
                                     ? formatarDataParaBR(
                                          tarefa.DTPREVENT_TAREFA.toString()
@@ -257,10 +262,10 @@ export function ModalVisualizarTarefa({
 
                            {/* DTINC_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Data Inclusão
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Inclusão
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {formatarDataParaBR(
                                     tarefa.DTINC_TAREFA.toString()
                                  )}
@@ -270,10 +275,10 @@ export function ModalVisualizarTarefa({
 
                            {/* VALINI_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Validade Início
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {formatarDataParaBR(
                                     tarefa.VALINI_TAREFA.toString()
                                  )}
@@ -283,113 +288,105 @@ export function ModalVisualizarTarefa({
 
                            {/* VALFIM_TAREFA */}
                            <div className="flex items-center justify-between py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Validade Fim
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {formatarDataParaBR(
                                     tarefa.VALFIM_TAREFA.toString()
                                  )}
                               </span>
                            </div>
+                           {/* ===== */}
                         </div>
                      </div>
                   </div>
                   {/* ==================== */}
 
-                  {/* ===== COLUNA MEIO ===== */}
+                  {/* ===== COLUNA DO MEIO ===== */}
                   <div className="space-y-6">
-                     {/* ===== CARD: HORAS ===== */}
+                     {/* ===== CARD HORAS ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
                         <div className="flex items-center gap-3 bg-gradient-to-r from-green-600 to-green-700 px-4 py-3 shadow-sm shadow-black">
                            <FaClock className="text-white" size={24} />
-                           <h2 className="text-lg font-bold tracking-widest text-white select-none">
-                              Horas
+                           <h2 className="text-lg font-extrabold tracking-widest text-white select-none">
+                              HORAS
                            </h2>
                         </div>
+                        {/* ===== */}
                         <div className="space-y-3 p-4">
                            {/* HREST_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 QTD. Horas Estimadas
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Estimada
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {tarefa.HREST_TAREFA
-                                    ? formatarHorasTotaisHorasDecimais(
-                                         tarefa.HREST_TAREFA.toString()
-                                      )
-                                    : 'n/a'}
-                                 {obterSufixoHoras(
-                                    tarefa.HREST_TAREFA ?? 'n/a'
-                                 )}
+                                    ? `${formatarHorasTotaisHorasDecimais(tarefa.HREST_TAREFA.toString())} ${obterSufixoHoras(tarefa.HREST_TAREFA)}`
+                                    : EMPTY_VALUE}
                               </span>
                            </div>
                            {/* ===== */}
 
                            {/* HRATESC_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Horas Até Estimar
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Há Verificar
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {tarefa.HRATESC_TAREFA
-                                    ? formatarHorasTotaisHorasDecimais(
-                                         tarefa.HRATESC_TAREFA.toString()
-                                      )
+                                    ? `${formatarHorasTotaisHorasDecimais(tarefa.HRATESC_TAREFA.toString())} ${obterSufixoHoras(tarefa.HRATESC_TAREFA)}`
                                     : EMPTY_VALUE}
-                                 {obterSufixoHoras(
-                                    tarefa.HRATESC_TAREFA ?? EMPTY_VALUE
-                                 )}
                               </span>
                            </div>
                            {/* ===== */}
 
                            {/* HRREAL_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 QTD. Horas Reais
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Real
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {tarefa.HRREAL_TAREFA
-                                    ? formatarHorasTotaisHorasDecimais(
-                                         tarefa.HRREAL_TAREFA.toString()
-                                      )
-                                    : 'n/a'}{' '}
-                                 {obterSufixoHoras(
-                                    tarefa.HRREAL_TAREFA ?? 'n/a'
-                                 )}
+                                    ? `${formatarHorasTotaisHorasDecimais(tarefa.HRREAL_TAREFA.toString())} ${obterSufixoHoras(tarefa.HRREAL_TAREFA)}`
+                                    : 'n/a'}
                               </span>
                            </div>
                            {/* ===== */}
 
                            {/* QTD_HRS_GASTAS */}
                            <div className="flex items-center justify-between py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 QTD. Horas Gastas
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Utilizadas
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {formatarHorasTotaisHorasDecimais(
                                     tarefa.QTD_HRS_GASTAS.toString()
+                                 )}{' '}
+                                 {obterSufixoHoras(
+                                    tarefa.QTD_HRS_GASTAS.toString()
                                  )}
-                                 h
                               </span>
                            </div>
+                           {/* ===== */}
                         </div>
                      </div>
                      {/* ========== */}
 
-                     {/* ===== CARD: INDICADORES ===== */}
+                     {/* ===== CARD INDICADORES ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-sm shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-600 to-green-700 px-4 py-3 shadow-sm shadow-black">
+                           {/* HEADER */}
                            <FaCheck className="text-white" size={24} />
-                           <h2 className="text-lg font-bold tracking-widest text-white select-none">
-                              Indicadores
+                           <h2 className="text-lg font-extrabold tracking-widest text-white select-none">
+                              INDICADORES
                            </h2>
                         </div>
+                        {/* ===== */}
                         <div className="space-y-3 p-4">
                            {/* MARGEM_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Margem
                               </span>
                               {formatarSimNao(tarefa.MARGEM_TAREFA)}
@@ -398,7 +395,7 @@ export function ModalVisualizarTarefa({
 
                            {/* ESTIMADO_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Estimado
                               </span>
                               {formatarSimNao(tarefa.ESTIMADO_TAREFA)}
@@ -407,8 +404,8 @@ export function ModalVisualizarTarefa({
 
                            {/* FATEST_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Faturar Estimativa
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Fatura Estimativa
                               </span>
                               {formatarSimNao(tarefa.FATEST_TAREFA)}
                            </div>
@@ -416,8 +413,8 @@ export function ModalVisualizarTarefa({
 
                            {/* PERIMP_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Permitir Importação
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Permite Importação
                               </span>
                               {formatarSimNao(tarefa.PERIMP_TAREFA)}
                            </div>
@@ -425,31 +422,34 @@ export function ModalVisualizarTarefa({
 
                            {/* FATURA_TAREFA */}
                            <div className="flex items-center justify-between py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Faturar
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Fatura
                               </span>
                               {formatarSimNao(tarefa.FATURA_TAREFA)}
                            </div>
+                           {/* ===== */}
                         </div>
                      </div>
                      {/* ========== */}
                   </div>
                   {/* ==================== */}
 
-                  {/* ===== COLUNA DIREITA ===== */}
+                  {/* ===== COLUNA DA DIREITA ===== */}
                   <div className="space-y-6">
-                     {/* ===== CARD: FINANCEIRO ===== */}
+                     {/* ===== CARD FINANCEIRO ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-sm shadow-black">
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-600 to-green-700 px-4 py-3 shadow-sm shadow-black">
+                           {/* HEADER */}
                            <FaDollarSign className="text-white" size={24} />
-                           <h2 className="text-lg font-bold tracking-widest text-white select-none">
-                              Informações Financeiras
+                           <h2 className="text-lg font-extrabold tracking-widest text-white select-none">
+                              INFORMAÇÕES FINANCEIRAS
                            </h2>
                         </div>
+                        {/* ===== */}
                         <div className="space-y-3 p-4">
                            {/* VRHR_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Valor Hora
                               </span>
                               <span className="text-lg font-bold tracking-widest text-black italic select-none">
@@ -460,54 +460,57 @@ export function ModalVisualizarTarefa({
 
                            {/* PERC_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Percentual
                               </span>
                               <span className="text-lg font-bold tracking-widest text-black italic select-none">
-                                 {tarefa.PERC_TAREFA}%
+                                 {tarefa.PERC_TAREFA} %
                               </span>
                            </div>
                            {/* ===== */}
 
                            {/* LIMMES_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Limite Mensal
                               </span>
                               <span className="text-lg font-bold tracking-widest text-black italic select-none">
-                                 {tarefa.LIMMES_TAREFA ?? 'n/a'}
+                                 {tarefa.LIMMES_TAREFA ?? EMPTY_VALUE}
                               </span>
                            </div>
                            {/* ===== */}
 
                            {/* VALIDA_TAREFA */}
                            <div className="flex items-center justify-between py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Validação
                               </span>
                               <span className="text-lg font-bold tracking-widest text-black italic select-none">
                                  {tarefa.VALIDA_TAREFA}
                               </span>
                            </div>
+                           {/* ===== */}
                         </div>
                      </div>
                      {/* ========== */}
 
-                     {/* ===== CARD: RECURSO, CLIENTE E RESPONSÁVEL ===== */}
+                     {/* ===== CARD RECURSO, CLIENTE E RESPONSÁVEL ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 shadow-sm shadow-black">
+                        {/* HEADER */}
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-amber-600 to-amber-700 px-4 py-3 shadow-sm shadow-black">
                            <FaUser className="text-white" size={24} />
-                           <h2 className="text-lg font-bold tracking-widest text-white select-none">
-                              Consultor, Cliente e Responsável
+                           <h2 className="text-lg font-extrabold tracking-widest text-white select-none">
+                              CONSULTOR, CLIENTE E RESPONSÁVEL
                            </h2>
                         </div>
+                        {/* ===== */}
                         <div className="space-y-3 p-4">
                            {/* NOME_RECURSO */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Nome Consultor
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Consultor
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {tarefa.NOME_RECURSO.trim()
                                     .split(/\s+/)
                                     .slice(0, 2)
@@ -518,10 +521,10 @@ export function ModalVisualizarTarefa({
 
                            {/* CODRECRESP_TAREFA */}
                            <div className="flex items-center justify-between border-b border-slate-200 py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Responsável Consultor
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Consultor Responsável
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {tarefa.NOME_RECURSO_RESPONSAVEL.trim()
                                     .split(/\s+/)
                                     .slice(0, 2)
@@ -532,10 +535,10 @@ export function ModalVisualizarTarefa({
 
                            {/* NOME_CLIENTE */}
                            <div className="flex items-center justify-between py-2">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
                                  Cliente
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
                                  {tarefa.NOME_CLIENTE.trim()
                                     .split(/\s+/)
                                     .slice(0, 2)
@@ -549,26 +552,28 @@ export function ModalVisualizarTarefa({
 
                      {/* ===== CARD OBSERVAÇÕES ===== */}
                      <div className="overflow-hidden rounded-xl bg-white shadow-md shadow-black">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 shadow-sm shadow-black">
+                        {/* HEADER */}
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-amber-600 to-amber-700 px-4 py-3 shadow-sm shadow-black">
                            <MdDescription className="text-white" size={24} />
-                           <h2 className="text-lg font-bold tracking-widest text-white select-none">
-                              Observações e Outros
+                           <h2 className="text-lg font-extrabold tracking-widest text-white select-none">
+                              OBSERVAÇÕES E OUTROS
                            </h2>
                         </div>
+                        {/* ===== */}
                         <div className="space-y-3 p-4">
                            {/* OBS_TAREFA */}
                            <div className="flex items-center justify-between gap-10 py-2">
-                              <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Observações
+                              <span className="w-60 flex-shrink-0 text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Observação
                               </span>
                               <TooltipCondicionalTabelaTarefa
                                  content={corrigirTextoCorrompido(
-                                    tarefa.OBS_TAREFA || 'n/a'
+                                    tarefa.OBS_TAREFA || EMPTY_VALUE
                                  )}
                               >
-                                 <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black select-none">
+                                 <span className="flex-1 truncate text-right text-base font-bold tracking-widest text-black italic select-none">
                                     {corrigirTextoCorrompido(
-                                       tarefa.OBS_TAREFA || 'n/a'
+                                       tarefa.OBS_TAREFA || EMPTY_VALUE
                                     )}
                                  </span>
                               </TooltipCondicionalTabelaTarefa>
@@ -576,15 +581,17 @@ export function ModalVisualizarTarefa({
 
                            {/* EXIBECHAM_TAREFA */}
                            <div className="flex items-center justify-between border-t border-slate-200 pt-3">
-                              <span className="text-sm font-semibold tracking-widest text-slate-600 italic select-none">
-                                 Exibi Chamado
+                              <span className="text-sm font-semibold tracking-widest text-slate-600 select-none">
+                                 Exibe Chamado
                               </span>
-                              <span className="text-base font-bold tracking-widest text-black select-none">
-                                 {tarefa.EXIBECHAM_TAREFA ?? 'n/a'}
+                              <span className="text-base font-bold tracking-widest text-black italic select-none">
+                                 {tarefa.EXIBECHAM_TAREFA ?? EMPTY_VALUE}
                               </span>
                            </div>
+                           {/* ===== */}
                         </div>
                      </div>
+                     {/* ========== */}
                      {/* ==================== */}
                   </div>
                </div>

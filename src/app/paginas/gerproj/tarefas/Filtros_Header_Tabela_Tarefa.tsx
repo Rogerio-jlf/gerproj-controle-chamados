@@ -1,7 +1,7 @@
 'use client';
 // IMPORTS
 import { debounce } from 'lodash';
-import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef, memo } from 'react';
 
 // TYPES
 import { InputFilterTableHeaderProps } from '../../../../types/types';
@@ -31,7 +31,7 @@ interface ExtendedInputFilterProps extends InputFilterTableHeaderProps {
 // ================================================================================
 // CONSTANTES
 // ================================================================================
-const DEBOUNCE_DELAY = 400;
+const DEBOUNCE_DELAY = 600;
 
 // Colunas pesquisáveis
 const SEARCHABLE_COLUMNS = [
@@ -40,35 +40,32 @@ const SEARCHABLE_COLUMNS = [
    'NOME_CLIENTE',
    'NOME_RECURSO',
    'DTSOL_TAREFA',
-   'DTAPROV_TAREFA',
-   'DTPREVENT_TAREFA',
    'HREST_TAREFA',
    'QTD_HRS_TAREFA',
    'TIPO_TAREFA_COMPLETO',
 ] as const;
 
 // Colunas de data
-const DATE_COLUMNS = [
-   'DTSOL_TAREFA',
-   'DTAPROV_TAREFA',
-   'DTPREVENT_TAREFA',
-] as const;
+const DATE_COLUMNS = ['DTSOL_TAREFA'] as const;
 
 // Colunas apenas numéricas
 const NUMERIC_COLUMNS = ['HREST_TAREFA', 'QTD_HRS_TAREFA'] as const;
 
+// Sets para verificação O(1)
+const SEARCHABLE_COLUMNS_SET = new Set(SEARCHABLE_COLUMNS);
+const DATE_COLUMNS_SET = new Set(DATE_COLUMNS);
+const NUMERIC_COLUMNS_SET = new Set(NUMERIC_COLUMNS);
+
 // Limites de caracteres por coluna
-export const COLUMN_MAX_LENGTH: Record<string, number> = {
+export const MAX_LENGTH_COLUMN: Record<string, number> = {
    TAREFA_COMPLETA: 15,
    PROJETO_COMPLETO: 15,
    NOME_CLIENTE: 12,
    NOME_RECURSO: 12,
-   DTSOL_TAREFA: 10, // DD/MM/YYYY
-   DTAPROV_TAREFA: 10,
-   DTPREVENT_TAREFA: 10,
-   TIPO_TAREFA_COMPLETO: 12,
+   DTSOL_TAREFA: 10,
    HREST_TAREFA: 10,
    QTD_HRS_TAREFA: 10,
+   TIPO_TAREFA_COMPLETO: 12,
 };
 
 // ================================================================================
@@ -98,7 +95,7 @@ function formatDateString(input: string): string {
  * Formata número com separador de milhar (opcional)
  * Exemplo: "12345" -> "12.345"
  */
-function formatNumberWithThousands(input: string): string {
+function formatThousandsNumber(input: string): string {
    const numbersOnly = input.replace(/\D/g, '');
    if (numbersOnly.length === 0) return '';
    return numbersOnly.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -125,327 +122,249 @@ const getCellValue = (row: any, columnId: string): string => {
 // ================================================================================
 // COMPONENTE INPUT FILTRO COM DEBOUNCE
 // ================================================================================
-const InputFilterWithDebounce = ({
-   value,
-   onChange,
-   type = 'text',
-   columnId,
-}: ExtendedInputFilterProps) => {
-   const [localValue, setLocalValue] = useState(value);
-   const isUserTyping = useRef(false);
-   const inputRef = useRef<HTMLInputElement>(null);
-   const shouldMaintainFocus = useRef(false);
-   const isInitialMount = useRef(true);
+const InputFilterWithDebounce = memo(
+   ({ value, onChange, type = 'text', columnId }: ExtendedInputFilterProps) => {
+      const [localValue, setLocalValue] = useState(value);
+      const isUserTyping = useRef(false);
+      const inputRef = useRef<HTMLInputElement>(null);
 
-   // Obter o limite máximo para a coluna específica
-   const maxLength = useMemo(
-      () => (columnId ? COLUMN_MAX_LENGTH[columnId] : undefined),
-      [columnId]
-   );
+      // Obter o limite máximo para a coluna específica
+      const maxLength = useMemo(
+         () => (columnId ? MAX_LENGTH_COLUMN[columnId] : undefined),
+         [columnId]
+      );
 
-   // Verificar se a coluna aceita apenas números
-   const isNumericOnly = useMemo(
-      () => (columnId ? NUMERIC_COLUMNS.includes(columnId as any) : false),
-      [columnId]
-   );
+      // Verificar se a coluna aceita apenas números
+      const isNumericOnly = useMemo(
+         () => (columnId ? NUMERIC_COLUMNS_SET.has(columnId as any) : false),
+         [columnId]
+      );
 
-   // Verificar se é coluna de data
-   const isDateColumn = useMemo(
-      () => (columnId ? DATE_COLUMNS.includes(columnId as any) : false),
-      [columnId]
-   );
+      // Verificar se é coluna de data
+      const isDateColumn = useMemo(
+         () => (columnId ? DATE_COLUMNS_SET.has(columnId as any) : false),
+         [columnId]
+      );
 
-   // Sincroniza valor local com prop externa APENAS se não estiver digitando
-   useEffect(() => {
-      if (!isUserTyping.current) {
-         if (isNumericOnly && value) {
-            const formatted = formatNumberWithThousands(value);
-            setLocalValue(formatted);
-         } else {
-            setLocalValue(value);
-         }
-      }
-   }, [value, isNumericOnly]);
-
-   // Mantém o foco após re-renderização
-   useEffect(() => {
-      // Pula o primeiro mount
-      if (isInitialMount.current) {
-         isInitialMount.current = false;
-         return;
-      }
-
-      if (shouldMaintainFocus.current && inputRef.current) {
-         const activeElement = document.activeElement;
-
-         // Só restaura o foco se não estiver em outro input
-         if (
-            activeElement?.tagName !== 'INPUT' ||
-            activeElement === inputRef.current
-         ) {
-            inputRef.current.focus();
-         }
-
-         shouldMaintainFocus.current = false;
-      }
-   });
-
-   // Debounce otimizado com cleanup
-   const debouncedOnChange = useMemo(
-      () =>
-         debounce((newValue: string) => {
-            onChange(newValue.trim());
-            setTimeout(() => {
-               isUserTyping.current = false;
-            }, 100);
-         }, DEBOUNCE_DELAY),
-      [onChange]
-   );
-
-   // Cleanup do debounce
-   useEffect(() => {
-      return () => {
-         debouncedOnChange.cancel();
-      };
-   }, [debouncedOnChange]);
-
-   // Handlers
-   const handleChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-         isUserTyping.current = true;
-         shouldMaintainFocus.current = true;
-         let inputValue = e.target.value;
-
-         // Salvar posição do cursor
-         const cursorPosition = e.target.selectionStart;
-
-         // Função para restaurar foco
-         const restoreFocus = () => {
-            if (
-               inputRef.current &&
-               document.activeElement !== inputRef.current
-            ) {
-               inputRef.current.focus();
-               if (cursorPosition !== null) {
-                  try {
-                     inputRef.current.setSelectionRange(
-                        cursorPosition,
-                        cursorPosition
-                     );
-                  } catch (e) {
-                     // Ignora erro se não for possível definir posição
-                  }
-               }
+      // Sincroniza valor local com prop externa APENAS se não estiver digitando
+      useEffect(() => {
+         if (!isUserTyping.current) {
+            if (isNumericOnly && value) {
+               const formatted = formatThousandsNumber(value);
+               setLocalValue(formatted);
+            } else {
+               setLocalValue(value);
             }
+         }
+      }, [value, isNumericOnly]);
+
+      // Debounce otimizado com cleanup
+      const debouncedOnChange = useMemo(
+         () =>
+            debounce((newValue: string) => {
+               onChange(newValue.trim());
+               requestAnimationFrame(() => {
+                  isUserTyping.current = false;
+               });
+            }, DEBOUNCE_DELAY),
+         [onChange]
+      );
+
+      // Cleanup do debounce
+      useEffect(() => {
+         return () => {
+            debouncedOnChange.cancel();
          };
+      }, [debouncedOnChange]);
 
-         // Validação especial para campos numéricos
-         if (isNumericOnly) {
-            const numbersOnly = inputValue.replace(/\D/g, '');
+      // Handler otimizado
+      const handleChange = useCallback(
+         (e: React.ChangeEvent<HTMLInputElement>) => {
+            isUserTyping.current = true;
+            const inputValue = e.target.value;
 
-            if (numbersOnly && !/^\d*$/.test(numbersOnly)) {
-               return;
+            // Validar limite primeiro (mais rápido)
+            if (maxLength && inputValue.length > maxLength) return;
+
+            let processedValue = inputValue;
+            let valueToSend = inputValue;
+
+            // Processamento por tipo de coluna
+            if (isNumericOnly) {
+               const numbersOnly = inputValue.replace(/\D/g, '');
+               processedValue = formatThousandsNumber(numbersOnly);
+               valueToSend = numbersOnly;
+            } else if (isDateColumn) {
+               const numbersOnly = inputValue.replace(/[^\d]/g, '');
+               processedValue = formatDateString(numbersOnly).slice(0, 10);
+               valueToSend = processedValue;
             }
 
-            const formatted = formatNumberWithThousands(numbersOnly);
-            setLocalValue(formatted);
-            debouncedOnChange(numbersOnly);
+            setLocalValue(processedValue);
+            debouncedOnChange(valueToSend);
+         },
+         [debouncedOnChange, maxLength, isNumericOnly, isDateColumn]
+      );
 
-            setTimeout(restoreFocus, 0);
-            return;
-         }
+      const handleClear = useCallback(() => {
+         isUserTyping.current = false;
+         setLocalValue('');
+         onChange('');
+         debouncedOnChange.cancel();
 
-         // Validação especial para campos de data
-         if (isDateColumn) {
-            let cleanValue = inputValue.replace(/[^\d/]/g, '');
-            const numbersOnly = cleanValue.replace(/\//g, '');
-            const formatted = formatDateString(numbersOnly);
-            const finalValue = formatted.slice(0, 10);
+         // Manter foco após limpar
+         requestAnimationFrame(() => {
+            inputRef.current?.focus();
+         });
+      }, [onChange, debouncedOnChange]);
 
-            setLocalValue(finalValue);
-            debouncedOnChange(finalValue);
+      // Atalho de teclado para limpar (Escape)
+      const handleKeyDown = useCallback(
+         (e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === 'Escape' && localValue) {
+               e.preventDefault();
+               handleClear();
+            }
+         },
+         [localValue, handleClear]
+      );
 
-            setTimeout(restoreFocus, 0);
-            return;
-         }
+      // Calcular se está próximo do limite (>80%)
+      const isNearLimit = useMemo(
+         () =>
+            maxLength && localValue
+               ? localValue.length / maxLength > 0.8
+               : false,
+         [maxLength, localValue]
+      );
 
-         // Validar o limite de caracteres se definido
-         if (maxLength && inputValue.length > maxLength) {
-            return;
-         }
+      return (
+         <div className="group relative w-full">
+            <input
+               ref={inputRef}
+               type={type}
+               value={localValue}
+               onChange={handleChange}
+               onKeyDown={handleKeyDown}
+               maxLength={maxLength}
+               inputMode={isNumericOnly || isDateColumn ? 'numeric' : 'text'}
+               pattern={isNumericOnly ? '[0-9]*' : undefined}
+               className={`hover:bg-opacity-90 w-full rounded-md px-4 py-2 text-lg font-bold shadow-sm shadow-black transition-all select-none focus:ring-2 focus:outline-none ${
+                  localValue
+                     ? 'bg-white text-black ring-2 ring-pink-500 focus:outline-none'
+                     : 'border border-teal-950 bg-teal-900 text-white hover:scale-95 hover:bg-teal-950'
+               } ${
+                  isNearLimit
+                     ? 'ring-2 ring-yellow-500/50 focus:ring-yellow-500'
+                     : 'focus:ring-pink-500'
+               }`}
+            />
 
-         setLocalValue(inputValue);
-         debouncedOnChange(inputValue);
+            {localValue && (
+               <button
+                  onClick={handleClear}
+                  aria-label="Limpar filtro"
+                  title="Limpar (Esc)"
+                  className="absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer text-black transition-all hover:scale-150 hover:rotate-180 hover:text-red-500"
+                  type="button"
+               >
+                  <IoClose size={24} />
+               </button>
+            )}
+         </div>
+      );
+   }
+);
 
-         setTimeout(restoreFocus, 0);
-      },
-      [debouncedOnChange, maxLength, isNumericOnly, isDateColumn]
-   );
-
-   const handleClear = useCallback(() => {
-      isUserTyping.current = false;
-      shouldMaintainFocus.current = true;
-      setLocalValue('');
-      onChange('');
-      debouncedOnChange.cancel();
-
-      // Manter foco após limpar
-      setTimeout(() => {
-         if (inputRef.current) {
-            inputRef.current.focus();
-         }
-      }, 0);
-   }, [onChange, debouncedOnChange]);
-
-   // Atalho de teclado para limpar (Escape)
-   const handleKeyDown = useCallback(
-      (e: React.KeyboardEvent<HTMLInputElement>) => {
-         if (e.key === 'Escape' && localValue) {
-            e.preventDefault();
-            handleClear();
-         }
-      },
-      [localValue, handleClear]
-   );
-
-   // Calcular se está próximo do limite (>80%)
-   const isNearLimit = useMemo(
-      () =>
-         maxLength && localValue ? localValue.length / maxLength > 0.8 : false,
-      [maxLength, localValue]
-   );
-
-   // Event handlers para manter foco
-   const handleFocus = useCallback(() => {
-      shouldMaintainFocus.current = true;
-   }, []);
-
-   const handleBlur = useCallback(() => {
-      // Pequeno delay para verificar se o blur foi intencional
-      setTimeout(() => {
-         if (isUserTyping.current) {
-            shouldMaintainFocus.current = true;
-         }
-      }, 50);
-   }, []);
-
-   return (
-      <div className="group relative w-full">
-         <input
-            ref={inputRef}
-            type={type}
-            value={localValue}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            maxLength={maxLength}
-            inputMode={isNumericOnly || isDateColumn ? 'numeric' : 'text'}
-            pattern={isNumericOnly ? '[0-9]*' : undefined}
-            className={`hover:bg-opacity-90 w-full rounded-md px-4 py-2 text-base font-bold transition-all select-none focus:ring-2 focus:outline-none ${
-               localValue
-                  ? 'bg-white text-black ring-2 ring-pink-500 focus:outline-none'
-                  : 'border border-teal-950 bg-teal-900 text-white hover:bg-teal-950'
-            } ${
-               isNearLimit
-                  ? 'ring-2 ring-yellow-500/50 focus:ring-yellow-500'
-                  : 'focus:ring-pink-500'
-            }`}
-         />
-
-         {localValue && (
-            <button
-               onClick={handleClear}
-               aria-label="Limpar filtro"
-               title="Limpar (Esc)"
-               className="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer text-black transition-all hover:scale-150 hover:rotate-180 hover:text-red-500"
-               type="button"
-            >
-               <IoClose size={24} />
-            </button>
-         )}
-      </div>
-   );
-};
+InputFilterWithDebounce.displayName = 'InputFilterWithDebounce';
 
 // ================================================================================
 // COMPONENTE PRINCIPAL (MEMOIZADO)
 // ================================================================================
-export const FiltrosHeaderTabelaTarefa = ({
-   value,
-   onChange,
-   type = 'text',
-   columnId,
-}: ExtendedInputFilterProps) => {
-   // Memoiza o componente para evitar re-renders desnecessários
-   return useMemo(
-      () => (
+export const FiltrosHeaderTabelaTarefa = memo(
+   ({ value, onChange, type = 'text', columnId }: ExtendedInputFilterProps) => {
+      return (
          <InputFilterWithDebounce
             value={value}
             onChange={onChange}
             type={type}
             columnId={columnId}
          />
-      ),
-      [value, onChange, type, columnId]
-   );
-};
+      );
+   }
+);
+
+FiltrosHeaderTabelaTarefa.displayName = 'FiltrosHeaderTabelaTarefa';
 
 // ================================================================================
 // CONTROLES DE FILTRO (MOSTRAR/OCULTAR E LIMPAR)
 // ================================================================================
-export const FilterControls = ({
-   showFilters,
-   setShowFilters,
-   totalActiveFilters,
-   clearFilters,
-   dataLength,
-}: FilterControlsProps) => {
-   const isDisabled = dataLength <= 1;
+export const FilterControls = memo(
+   ({
+      showFilters,
+      setShowFilters,
+      totalActiveFilters,
+      clearFilters,
+      dataLength,
+   }: FilterControlsProps) => {
+      const isDisabled = dataLength <= 1;
 
-   const handleToggleFilters = useCallback(() => {
-      if (!isDisabled) {
-         setShowFilters(!showFilters);
-      }
-   }, [isDisabled, showFilters, setShowFilters]);
+      const handleToggleFilters = useCallback(() => {
+         if (!isDisabled) {
+            setShowFilters(!showFilters);
+         }
+      }, [isDisabled, showFilters, setShowFilters]);
 
-   return (
-      <div className="group flex w-full flex-col gap-1">
-         <label className="flex items-center gap-3 text-base font-extrabold tracking-widest text-black uppercase select-none">
-            <FaFilter className="text-black" size={16} /> Filtros
-         </label>
+      // Cache do texto do botão
+      const clearButtonText = useMemo(
+         () => (totalActiveFilters > 1 ? 'Limpar Filtros' : 'Limpar Filtro'),
+         [totalActiveFilters]
+      );
 
-         <div className="flex items-center gap-6">
-            {/* Botão mostrar/ocultar filtros */}
-            <button
-               onClick={handleToggleFilters}
-               disabled={isDisabled}
-               className={`w-[300px] cursor-pointer rounded-md border-none px-6 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all focus:ring-2 focus:ring-pink-600 focus:outline-none ${
-                  showFilters
-                     ? 'border-none bg-blue-600 text-white hover:bg-blue-800'
-                     : 'border-none bg-white text-black hover:bg-white/50'
-               } ${
-                  isDisabled
-                     ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-slate-500'
-                     : 'active:scale-95'
-               }`}
-            >
-               {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
-            </button>
+      const toggleButtonText = showFilters
+         ? 'Ocultar Filtros'
+         : 'Mostrar Filtros';
 
-            {/* Botão limpar filtros */}
-            {totalActiveFilters > 0 && (
+      return (
+         <div className="group flex w-full flex-col gap-1">
+            <label className="flex items-center gap-3 text-base font-extrabold tracking-widest text-black uppercase select-none">
+               <FaFilter className="text-black" size={16} /> Filtros
+            </label>
+
+            <div className="flex items-center gap-6">
+               {/* Botão mostrar/ocultar filtros */}
                <button
-                  onClick={clearFilters}
-                  className="w-[300px] cursor-pointer rounded-md border-none bg-red-600 px-6 py-2.5 text-base font-extrabold tracking-widest text-white italic shadow-md shadow-black transition-all select-none hover:bg-red-800 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+                  onClick={handleToggleFilters}
+                  disabled={isDisabled}
+                  className={`w-[300px] cursor-pointer rounded-md border-none px-6 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all focus:ring-2 focus:ring-pink-600 focus:outline-none ${
+                     showFilters
+                        ? 'border-none bg-blue-600 text-white hover:bg-blue-800'
+                        : 'border-none bg-white text-black hover:bg-white/50'
+                  } ${
+                     isDisabled
+                        ? 'disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-slate-500'
+                        : 'active:scale-95'
+                  }`}
                >
-                  {totalActiveFilters > 1 ? `Limpar Filtros` : 'Limpar Filtro'}
+                  {toggleButtonText}
                </button>
-            )}
+
+               {/* Botão limpar filtros */}
+               {totalActiveFilters > 0 && (
+                  <button
+                     onClick={clearFilters}
+                     className="w-[300px] cursor-pointer rounded-md border-none bg-red-600 px-6 py-2.5 text-base font-extrabold tracking-widest text-white italic shadow-md shadow-black transition-all select-none hover:bg-red-800 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+                  >
+                     {clearButtonText}
+                  </button>
+               )}
+            </div>
          </div>
-      </div>
-   );
-};
+      );
+   }
+);
+
+FilterControls.displayName = 'FilterControls';
 
 // ================================================================================
 // HOOK PERSONALIZADO PARA FUNÇÕES DE FILTRO
@@ -456,12 +375,13 @@ export const useFiltrosHeaderTabelaTarefa = () => {
          if (!filterValue) return true;
 
          const searchValue = filterValue.toLowerCase().trim();
+         if (!searchValue) return true;
 
          return SEARCHABLE_COLUMNS.some(colId => {
             const cellValue = getCellValue(row, colId);
 
             // Para campos de data, usar normalização
-            if (DATE_COLUMNS.includes(colId as any)) {
+            if (DATE_COLUMNS_SET.has(colId as any)) {
                const dateFormats = normalizeDate(cellValue);
                return dateFormats.some(dateFormat =>
                   dateFormat.toLowerCase().includes(searchValue)
@@ -478,27 +398,30 @@ export const useFiltrosHeaderTabelaTarefa = () => {
 
    const columnFilterFn = useCallback(
       (row: any, columnId: string, filterValue: string) => {
-         if (!filterValue || filterValue === '') return true;
+         if (!filterValue) return true;
 
          const cellValue = getCellValue(row, columnId);
-         const filterString = String(filterValue).trim();
+         const filterTrimmed = String(filterValue).trim();
+
+         if (!filterTrimmed) return true;
 
          // Tratamento especial para campos de data
-         if (DATE_COLUMNS.includes(columnId as any)) {
+         if (DATE_COLUMNS_SET.has(columnId as any)) {
             const dateFormats = normalizeDate(cellValue);
+            const filterLower = filterTrimmed.toLowerCase();
             return dateFormats.some(dateFormat =>
-               dateFormat.toLowerCase().includes(filterString.toLowerCase())
+               dateFormat.toLowerCase().includes(filterLower)
             );
          }
 
          // Tratamento para colunas numéricas
-         if (NUMERIC_COLUMNS.includes(columnId as any)) {
-            return cellValue.includes(filterString);
+         if (NUMERIC_COLUMNS_SET.has(columnId as any)) {
+            return cellValue.includes(filterTrimmed);
          }
 
          // Tratamento padrão para texto
          const cellLower = cellValue.toLowerCase();
-         const filterLower = filterString.toLowerCase();
+         const filterLower = filterTrimmed.toLowerCase();
          return cellLower.includes(filterLower);
       },
       []
@@ -512,7 +435,7 @@ export const useFiltrosHeaderTabelaTarefa = () => {
 // ================================================================================
 export {
    formatDateString,
-   formatNumberWithThousands,
+   formatThousandsNumber,
    normalizeString,
    getCellValue,
 };

@@ -61,7 +61,7 @@ export function TooltipCondicionalTabelaTarefa({
                <Tooltip.Content
                   side="top"
                   align="end"
-                  className="animate-in fade-in-0 zoom-in-95 z-[70] max-w-[800px] rounded-lg bg-black px-6 py-2 text-sm font-semibold tracking-widest text-white shadow-sm shadow-black"
+                  className="animate-in fade-in-0 zoom-in-95 z-[70] max-w-[800px] rounded-lg bg-black px-6 py-2 text-sm font-bold tracking-widest text-white"
                   sideOffset={5}
                >
                   <div className="break-words">{content}</div>

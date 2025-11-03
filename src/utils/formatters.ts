@@ -25,6 +25,7 @@ export const formatarDataParaBR = (
       return dateString;
    }
 };
+// ====================================================================================================
 
 export const formatarDataHoraParaBR = (
    dateString: string | null | undefined,
@@ -181,21 +182,6 @@ export const normalizeDate = (dateValue: any): string[] => {
 
    return [...new Set(formats)]; // Remove duplicatas
 };
-
-export const formatCodChamado = (num: number | null | undefined) => {
-   if (num == null) return ''; // Trata null E undefined
-   const str = num.toString();
-   if (str.length <= 2) return str;
-   return str.slice(0, 2) + '.' + str.slice(2);
-};
-
-export const formatCodOS = (string: string | null | undefined) => {
-   if (string == null) return ''; // Trata null E undefined
-   const str = string.toString();
-   if (str.length <= 2) return str;
-   return str.slice(0, 2) + '.' + str.slice(2);
-};
-
 // ====================================================================================================
 
 export const formatarCodNumber = (num: number | null | undefined): string => {
@@ -203,6 +189,7 @@ export const formatarCodNumber = (num: number | null | undefined): string => {
    // Intl já usa o separador de milhares adequado para 'de-DE' (ponto)
    return new Intl.NumberFormat('de-DE').format(num);
 };
+// ===================================================================================================
 
 export const formatarCodString = (value: string | null | undefined): string => {
    if (!value) return '';
@@ -214,6 +201,7 @@ export const formatarCodString = (value: string | null | undefined): string => {
    // Converte para número e formata
    return new Intl.NumberFormat('de-DE').format(Number(onlyDigits));
 };
+// ====================================================================================================
 
 export const formatarHorasTotaisHorasDecimais = (
    value: string | number | null | undefined
@@ -241,6 +229,7 @@ export const formatarHorasTotaisHorasDecimais = (
 
    return `${hoursFormatted}:${minutesFormatted}`;
 };
+// ====================================================================================================
 
 export function formatarMoeda(
    value: number | string | null | undefined,
