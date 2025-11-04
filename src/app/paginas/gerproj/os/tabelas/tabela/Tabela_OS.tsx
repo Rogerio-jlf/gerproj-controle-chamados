@@ -1,6 +1,5 @@
 'use client';
 
-// IMPORTS
 import {
    flexRender,
    getCoreRowModel,
@@ -11,57 +10,63 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 
-// COMPONENTS
 import { FiltrosHeaderTabelaOs } from './Filtros_Header_Tabela_OS';
 import { IsError } from '../../../../../../components/IsError';
 import { IsLoading } from '../../../../../../components/IsLoading';
 import { colunasTabelaOS } from './Colunas_Tabela_OS';
 import { FiltrosTabelaOS } from './Filtros_Tabela_OS';
 import { ModalVisualizarOS } from '../modais/Modal_Vizualizar_OS';
-
-// FORMATERS
 import { formatarCodNumber } from '../../../../../../utils/formatters';
-
-// HOOKS
 import { useAuth } from '../../../../../../hooks/useAuth';
-
-// TYPES
 import { TabelaOSProps } from '../../../../../../types/types';
-
-// CONTEXTS
 import { useFiltersTabelaOs } from '../../../../../../contexts/Filters_Context_Tabela_OS';
 
-// ICONS
 import { IoClose } from 'react-icons/io5';
 import { GrServices } from 'react-icons/gr';
-import { FaFilterCircleXmark } from 'react-icons/fa6';
-import { FaEraser, FaExclamationTriangle } from 'react-icons/fa';
+import { FaFilterCircleXmark, FaEraser } from 'react-icons/fa6';
+import { FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 
 // ================================================================================
 // CONSTANTES
 // ================================================================================
-const MODAL_MAX_HEIGHT = 'calc(100vh - 470px)';
-const DEBOUNCE_DELAY = 800;
-const ANIMATION_DURATION = 100;
-const CACHE_TIME = 1000 * 60 * 5;
-const PAGE_SIZE_OPTIONS = [20, 50, 100];
+const CONFIG = {
+   MODAL_MAX_HEIGHT: 'calc(100vh - 470px)',
+   DEBOUNCE_DELAY: 600,
+   ANIMATION_DURATION: 100,
+   CACHE_TIME: 1000 * 60 * 5,
+   PAGE_SIZE_OPTIONS: [20, 50, 100],
+   DEFAULT_PAGE_SIZE: 20,
+} as const;
 
 const COLUMN_WIDTHS: Record<string, string> = {
-   COD_OS: '7%',
-   CODTRF_OS: '7%',
-   CHAMADO_OS: '7%',
+   COD_OS: '6%',
+   TAREFA_COMPLETA: '20%',
+   CHAMADO_OS: '6%',
    DTINI_OS: '7%',
-   HRINI_OS: '7%',
-   HRFIM_OS: '7%',
-   QTD_HR_OS: '7%',
+   HRINI_OS: '6%',
+   HRFIM_OS: '6%',
+   QTD_HR_OS: '6%',
    DTINC_OS: '10%',
-   NOME_RECURSO: '16%',
-   VALID_OS: '10%',
-   FATURADO_OS: '10%',
+   NOME_RECURSO: '10%',
+   VALID_OS: '9%',
+   FATURADO_OS: '9%',
    acoes: '5%',
 };
+
+const FILTER_KEYS = [
+   'COD_OS',
+   'TAREFA_COMPLETA',
+   'CHAMADO_OS',
+   'DTINI_OS',
+   'DTINC_OS',
+   'NOME_RECURSO',
+   'VALID_OS',
+   'FATURADO_OS',
+] as const;
+
+type FilterKey = (typeof FILTER_KEYS)[number];
 
 // ================================================================================
 // INTERFACES
@@ -85,34 +90,125 @@ interface Props {
    onClose: () => void;
 }
 
-// ================================================================================
-// COMPONENTES AUXILIARES
-// ================================================================================
-const EmptyState = ({
-   ano,
-   mes,
-   dia,
-}: {
+interface DateFilters {
    ano: number | 'todos';
    mes: number | 'todos';
    dia: number | 'todos';
-}) => (
-   <section className="bg-black py-72 text-center">
-      <FaExclamationTriangle
-         className="mx-auto mb-6 text-yellow-500"
-         size={80}
-      />
-      <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
-         {`Nenhuma OS foi encontrada para o período: ${[
-            dia === 'todos' ? '' : String(dia).padStart(2, '0'),
-            mes === 'todos' ? '' : String(mes).padStart(2, '0'),
-            ano === 'todos' ? '' : String(ano),
-         ]
-            .filter(part => part !== '')
-            .join('/')}`}
-      </h3>
-   </section>
-);
+}
+
+// ================================================================================
+// HOOKS CUSTOMIZADOS
+// ================================================================================
+function useDebouncedValue<T>(
+   value: T,
+   delay: number = CONFIG.DEBOUNCE_DELAY
+): T {
+   const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+   useEffect(() => {
+      const timer = setTimeout(() => setDebouncedValue(value), delay);
+      return () => clearTimeout(timer);
+   }, [value, delay]);
+
+   return debouncedValue;
+}
+
+function useFilters() {
+   const [filters, setFilters] = useState<Record<FilterKey, string>>(
+      Object.fromEntries(FILTER_KEYS.map(key => [key, ''])) as Record<
+         FilterKey,
+         string
+      >
+   );
+
+   // Debounce cada filtro individualmente
+   const debouncedCOD_OS = useDebouncedValue(filters.COD_OS);
+   const debouncedTAREFA_COMPLETA = useDebouncedValue(filters.TAREFA_COMPLETA);
+   const debouncedCHAMADO_OS = useDebouncedValue(filters.CHAMADO_OS);
+   const debouncedDTINI_OS = useDebouncedValue(filters.DTINI_OS);
+   const debouncedDTINC_OS = useDebouncedValue(filters.DTINC_OS);
+   const debouncedNOME_RECURSO = useDebouncedValue(filters.NOME_RECURSO);
+   const debouncedVALID_OS = useDebouncedValue(filters.VALID_OS);
+   const debouncedFATURADO_OS = useDebouncedValue(filters.FATURADO_OS);
+
+   const debouncedFilters = useMemo(
+      () => ({
+         COD_OS: debouncedCOD_OS,
+         TAREFA_COMPLETA: debouncedTAREFA_COMPLETA,
+         CHAMADO_OS: debouncedCHAMADO_OS,
+         DTINI_OS: debouncedDTINI_OS,
+         DTINC_OS: debouncedDTINC_OS,
+         NOME_RECURSO: debouncedNOME_RECURSO,
+         VALID_OS: debouncedVALID_OS,
+         FATURADO_OS: debouncedFATURADO_OS,
+      }),
+      [
+         debouncedCOD_OS,
+         debouncedTAREFA_COMPLETA,
+         debouncedCHAMADO_OS,
+         debouncedDTINI_OS,
+         debouncedDTINC_OS,
+         debouncedNOME_RECURSO,
+         debouncedVALID_OS,
+         debouncedFATURADO_OS,
+      ]
+   );
+
+   const setFilter = useCallback((key: FilterKey, value: string) => {
+      setFilters(prev => ({ ...prev, [key]: value }));
+   }, []);
+
+   const clearAllFilters = useCallback(() => {
+      setFilters(
+         Object.fromEntries(FILTER_KEYS.map(key => [key, ''])) as Record<
+            FilterKey,
+            string
+         >
+      );
+   }, []);
+
+   const activeFilterCount = useMemo(
+      () => Object.values(debouncedFilters).filter(f => f?.trim()).length,
+      [debouncedFilters]
+   );
+
+   return {
+      filters,
+      debouncedFilters,
+      setFilter,
+      clearAllFilters,
+      activeFilterCount,
+   };
+}
+
+// ================================================================================
+// COMPONENTES AUXILIARES
+// ================================================================================
+const EmptyState = ({ dateFilters }: { dateFilters: DateFilters }) => {
+   const formattedPeriod = [
+      dateFilters.dia === 'todos'
+         ? ''
+         : String(dateFilters.dia).padStart(2, '0'),
+      dateFilters.mes === 'todos'
+         ? ''
+         : String(dateFilters.mes).padStart(2, '0'),
+      dateFilters.ano === 'todos' ? '' : String(dateFilters.ano),
+   ]
+      .filter(part => part !== '')
+      .join('/');
+
+   return (
+      <section className="bg-black py-72 text-center">
+         <FaExclamationTriangle
+            className="mx-auto mb-6 text-yellow-500"
+            size={80}
+         />
+         <h3 className="text-2xl font-bold tracking-widest text-white italic select-none">
+            {`Nenhuma OS foi encontrada para o período: ${formattedPeriod}`}
+         </h3>
+      </section>
+   );
+};
 
 const NoResultsState = ({
    totalActiveFilters,
@@ -140,170 +236,178 @@ const NoResultsState = ({
    </div>
 );
 
-// ================================================================================
-// FUNÇÕES UTILITÁRIAS
-// ================================================================================
-function getColumnWidth(columnId: string): string {
-   return COLUMN_WIDTHS[columnId] || 'auto';
-}
+const PaginationControls = ({
+   paginationInfo,
+   currentPage,
+   pageSize,
+   onPageChange,
+   onPageSizeChange,
+   totalRows,
+}: {
+   paginationInfo: PaginationInfo;
+   currentPage: number;
+   pageSize: number;
+   onPageChange: (page: number) => void;
+   onPageSizeChange: (size: number) => void;
+   totalRows: number;
+}) => (
+   <div className="bg-white/70 px-12 py-4">
+      <div className="flex items-center justify-between">
+         <section className="flex items-center gap-4">
+            <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
+               {totalRows} registro{totalRows !== 1 ? 's' : ''} na página atual,
+            </span>
+            <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
+               {paginationInfo.totalRecords > 1
+                  ? `de ${formatarCodNumber(paginationInfo.totalRecords)} encontrados no total`
+                  : 'de 1 encontrado no total'}
+            </span>
+         </section>
 
-function useDebouncedValue<T>(value: T, delay: number = DEBOUNCE_DELAY): T {
-   const [debouncedValue, setDebouncedValue] = useState<T>(value);
+         <section className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+               <span className="text-lg font-semibold tracking-widest text-black italic select-none">
+                  Itens por página:
+               </span>
+               <select
+                  value={pageSize}
+                  onChange={e => onPageSizeChange(Number(e.target.value))}
+                  title="Selecionar quantidade registros"
+                  className="cursor-pointer rounded-md border-t border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:scale-90 hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none"
+               >
+                  {CONFIG.PAGE_SIZE_OPTIONS.map(size => (
+                     <option
+                        key={size}
+                        value={size}
+                        className="bg-white font-semibold tracking-widest"
+                     >
+                        {size}
+                     </option>
+                  ))}
+               </select>
+            </div>
 
-   useEffect(() => {
-      const timer = setTimeout(() => {
-         setDebouncedValue(value);
-      }, delay);
+            <div className="flex items-center gap-3">
+               <button
+                  onClick={() => onPageChange(1)}
+                  title="Primeira página"
+                  disabled={!paginationInfo.hasPrevPage}
+                  aria-label="Ir para primeira página"
+                  className="group cursor-pointer rounded-md border-t border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:scale-85 hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+               >
+                  <FiChevronsLeft
+                     className="text-black group-disabled:text-red-500"
+                     size={24}
+                  />
+               </button>
 
-      return () => clearTimeout(timer);
-   }, [value, delay]);
+               <button
+                  onClick={() => onPageChange(currentPage - 1)}
+                  title="Página anterior"
+                  disabled={!paginationInfo.hasPrevPage}
+                  aria-label="Página anterior"
+                  className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:scale-85 hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+               >
+                  <MdChevronLeft
+                     className="text-black group-disabled:text-red-500"
+                     size={24}
+                  />
+               </button>
 
-   return debouncedValue;
-}
+               <div className="flex items-center justify-center gap-2">
+                  <span className="text-lg font-semibold tracking-widest text-black italic select-none">
+                     Página{' '}
+                     <select
+                        value={currentPage}
+                        onChange={e => onPageChange(Number(e.target.value))}
+                        title="Selecionar página"
+                        aria-label="Selecionar página"
+                        className="cursor-pointer rounded-md border-t border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:scale-90 hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none"
+                     >
+                        {Array.from(
+                           { length: paginationInfo.totalPages },
+                           (_, i) => (
+                              <option
+                                 key={i + 1}
+                                 value={i + 1}
+                                 className="bg-white font-semibold tracking-widest"
+                              >
+                                 {i + 1}
+                              </option>
+                           )
+                        )}
+                     </select>
+                  </span>
+                  <span className="text-lg font-semibold tracking-widest text-black italic select-none">
+                     de {formatarCodNumber(paginationInfo.totalPages)}
+                  </span>
+               </div>
+
+               <button
+                  onClick={() => onPageChange(currentPage + 1)}
+                  title="Próxima página"
+                  disabled={!paginationInfo.hasNextPage}
+                  aria-label="Próxima página"
+                  className="group cursor-pointer rounded-md border-t border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:scale-85 hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+               >
+                  <MdChevronRight
+                     className="text-black group-disabled:text-red-500"
+                     size={24}
+                  />
+               </button>
+
+               <button
+                  onClick={() => onPageChange(paginationInfo.totalPages)}
+                  title="Última página"
+                  disabled={!paginationInfo.hasNextPage}
+                  aria-label="Ir para última página"
+                  className="group cursor-pointer rounded-md border-t border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:scale-85 hover:bg-white/50 focus:ring-2 focus:ring-pink-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+               >
+                  <FiChevronsRight
+                     className="text-black group-disabled:text-red-500"
+                     size={24}
+                  />
+               </button>
+            </div>
+         </section>
+      </div>
+   </div>
+);
 
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
 export function TabelaOS({ isOpen, onClose }: Props) {
-   // ================================================================================
-   // HOOKS E CONTEXTOS
-   // ================================================================================
    const { user } = useAuth();
    const queryClient = useQueryClient();
-   const { filters, setFilters } = useFiltersTabelaOs();
-   const { ano, mes, dia } = filters;
+   const { filters: dateFilters, setFilters: setDateFilters } =
+      useFiltersTabelaOs();
    const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
    const [selectedOS, setSelectedOS] = useState<TabelaOSProps | null>(null);
    const [openModalVisualizarOS, setOpenModalVisualizarOS] = useState(false);
-
-   // ================================================================================
-   // ESTADOS - FILTROS (INPUTS SEM DEBOUNCE)
-   // ================================================================================
-   const [inputFilterCOD_OS, setInputFilterCOD_OS] = useState('');
-   const [inputFilterCODTRF_OS, setInputFilterCODTRF_OS] = useState('');
-   const [inputFilterCHAMADO_OS, setInputFilterCHAMADO_OS] = useState('');
-   const [inputFilterDTINI_OS, setInputFilterDTINI_OS] = useState('');
-   const [inputFilterDTINC_OS, setInputFilterDTINC_OS] = useState('');
-   const [inputFilterNOME_RECURSO, setInputFilterNOME_RECURSO] = useState('');
-   const [inputFilterVALID_OS, setInputFilterVALID_OS] = useState('');
-   const [inputFilterFATURADO_OS, setInputFilterFATURADO_OS] = useState('');
-   useState('');
-
-   // ESTADOS - FILTROS (COM DEBOUNCE)
-   const filterCOD_OS = useDebouncedValue(inputFilterCOD_OS);
-   const filterCHAMADO_OS = useDebouncedValue(inputFilterCHAMADO_OS);
-   const filterCODTRF_OS = useDebouncedValue(inputFilterCODTRF_OS);
-   const filterDTINI_OS = useDebouncedValue(inputFilterDTINI_OS);
-   const filterDTINC_OS = useDebouncedValue(inputFilterDTINC_OS);
-   const filterNOME_RECURSO = useDebouncedValue(inputFilterNOME_RECURSO);
-   const filterVALID_OS = useDebouncedValue(inputFilterVALID_OS);
-   const filterFATURADO_OS = useDebouncedValue(inputFilterFATURADO_OS);
-
-   // ================================================================================
-   // MAPEAMENTO DE FILTROS
-   // ================================================================================
-   const FILTER_MAP = useMemo(
-      () => ({
-         COD_OS: {
-            state: inputFilterCOD_OS,
-            setter: setInputFilterCOD_OS,
-         },
-         tarefa: {
-            state: inputFilterCODTRF_OS,
-            setter: setInputFilterCODTRF_OS,
-         },
-         CHAMADO_OS: {
-            state: inputFilterCHAMADO_OS,
-            setter: setInputFilterCHAMADO_OS,
-         },
-         DTINI_OS: {
-            state: inputFilterDTINI_OS,
-            setter: setInputFilterDTINI_OS,
-         },
-         DTINC_OS: {
-            state: inputFilterDTINC_OS,
-            setter: setInputFilterDTINC_OS,
-         },
-         NOME_RECURSO: {
-            state: inputFilterNOME_RECURSO,
-            setter: setInputFilterNOME_RECURSO,
-         },
-         VALID_OS: {
-            state: inputFilterVALID_OS,
-            setter: setInputFilterVALID_OS,
-         },
-         FATURADO_OS: {
-            state: inputFilterFATURADO_OS,
-            setter: setInputFilterFATURADO_OS,
-         },
-      }),
-      [
-         inputFilterCOD_OS,
-         inputFilterCHAMADO_OS,
-         inputFilterCODTRF_OS,
-         inputFilterDTINI_OS,
-         inputFilterDTINC_OS,
-         inputFilterNOME_RECURSO,
-         inputFilterVALID_OS,
-         inputFilterFATURADO_OS,
-      ]
-   );
-
-   // ================================================================================
-   // ESTADOS - PAGINAÇÃO
-   // ================================================================================
-   const [currentPage, setCurrentPage] = useState(1);
-   const [pageSize, setPageSize] = useState(20);
-
-   // ================================================================================
-   // ESTADOS - TABELA
-   // ================================================================================
+   const [currentPage, setCurrentPage] = useState<number>(1);
+   const [pageSize, setPageSize] = useState<number>(CONFIG.DEFAULT_PAGE_SIZE);
    const [sorting, setSorting] = useState<SortingState>([
       { id: 'COD_OS', desc: true },
    ]);
-   const [isClosing, setIsClosing] = useState(false);
+   const [isClosing, setIsClosing] = useState<boolean>(false);
 
-   // ================================================================================
-   // COMPUTED VALUES - FILTROS
-   // ================================================================================
-   const totalActiveFilters = useMemo(() => {
-      const filters = [
-         filterCOD_OS,
-         filterCODTRF_OS,
-         filterCHAMADO_OS,
-         filterDTINI_OS,
-         filterDTINC_OS,
-         filterNOME_RECURSO,
-         filterVALID_OS,
-         filterFATURADO_OS,
-      ];
-      return filters.filter(f => f?.trim()).length;
-   }, [
-      filterCOD_OS,
-      filterCODTRF_OS,
-      filterCHAMADO_OS,
-      filterDTINI_OS,
-      filterDTINC_OS,
-      filterNOME_RECURSO,
-      filterVALID_OS,
-      filterFATURADO_OS,
-   ]);
+   const {
+      filters,
+      debouncedFilters,
+      setFilter,
+      clearAllFilters,
+      activeFilterCount,
+   } = useFilters();
 
-   // ================================================================================
-   // QUERY PARAMS E API
-   // ================================================================================
-   const enabled = useMemo(() => {
-      return !!(
-         (ano === 'todos' || typeof ano === 'number') &&
-         (mes === 'todos' || typeof mes === 'number') &&
-         (dia === 'todos' || typeof dia === 'number') &&
-         token &&
-         user
-      );
-   }, [ano, mes, dia, token, user]);
+   // Reset page quando filtros mudarem
+   useEffect(() => {
+      setCurrentPage(1);
+   }, [debouncedFilters]);
 
+   // Query params
    const queryParams = useMemo(() => {
       if (!user) return new URLSearchParams();
 
@@ -313,76 +417,81 @@ export function TabelaOS({ isOpen, onClose }: Props) {
       });
 
       // Filtros de data
-      params.append('ano', ano === 'todos' ? 'todos' : String(ano));
-      params.append('mes', mes === 'todos' ? 'todos' : String(mes));
-      params.append('dia', dia === 'todos' ? 'todos' : String(dia));
+      params.append(
+         'ano',
+         dateFilters.ano === 'todos' ? 'todos' : String(dateFilters.ano)
+      );
+      params.append(
+         'mes',
+         dateFilters.mes === 'todos' ? 'todos' : String(dateFilters.mes)
+      );
+      params.append(
+         'dia',
+         dateFilters.dia === 'todos' ? 'todos' : String(dateFilters.dia)
+      );
 
       // Filtros de coluna
-      const filterMappings = [
-         { filter: filterCOD_OS, param: 'filter_COD_OS' },
-         { filter: filterCODTRF_OS, param: 'filter_CODTRF_OS' },
-         { filter: filterCHAMADO_OS, param: 'filter_CHAMADO_OS' },
-         { filter: filterDTINI_OS, param: 'filter_DTINI_OS' },
-         { filter: filterDTINC_OS, param: 'filter_DTINC_OS' },
-         { filter: filterNOME_RECURSO, param: 'filter_NOME_RECURSO' },
-         { filter: filterVALID_OS, param: 'filter_VALID_OS' },
-         { filter: filterFATURADO_OS, param: 'filter_FATURADO_OS' },
-      ];
+      const filterMappings: Record<FilterKey, string> = {
+         COD_OS: 'filter_COD_OS',
+         TAREFA_COMPLETA: 'filter_TAREFA_COMPLETA',
+         CHAMADO_OS: 'filter_CHAMADO_OS',
+         DTINI_OS: 'filter_DTINI_OS',
+         DTINC_OS: 'filter_DTINC_OS',
+         NOME_RECURSO: 'filter_NOME_RECURSO',
+         VALID_OS: 'filter_VALID_OS',
+         FATURADO_OS: 'filter_FATURADO_OS',
+      };
 
-      filterMappings.forEach(({ filter, param }) => {
-         if (filter && filter.trim()) {
-            params.append(param, filter.trim());
+      Object.entries(debouncedFilters).forEach(([key, value]) => {
+         if (value?.trim()) {
+            params.append(filterMappings[key as FilterKey], value.trim());
          }
       });
 
       return params;
-   }, [
-      user,
-      currentPage,
-      pageSize,
-      ano,
-      mes,
-      dia,
-      filterCOD_OS,
-      filterCODTRF_OS,
-      filterCHAMADO_OS,
-      filterDTINI_OS,
-      filterDTINC_OS,
-      filterNOME_RECURSO,
-      filterVALID_OS,
-      filterFATURADO_OS,
-   ]);
+   }, [user, currentPage, pageSize, dateFilters, debouncedFilters]);
 
-   async function fetchOS(
-      params: URLSearchParams,
-      token: string
-   ): Promise<ApiResponse> {
-      const res = await fetch(`/api/os/tabela?${params}`, {
-         headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-         },
-      });
+   // API fetch
+   const fetchOS = useCallback(
+      async (params: URLSearchParams, token: string): Promise<ApiResponse> => {
+         const res = await fetch(`/api/os/tabela?${params}`, {
+            headers: {
+               Authorization: `Bearer ${token}`,
+               'Content-Type': 'application/json',
+            },
+         });
 
-      if (!res.ok) {
-         const errorData = await res.json();
-         throw new Error(errorData.error || 'Erro ao buscar OS');
-      }
+         if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.error || 'Erro ao buscar OS');
+         }
 
-      const responseData = await res.json();
+         const responseData = await res.json();
 
-      return {
-         data: responseData.data || [],
-         pagination: responseData.pagination || {
-            currentPage: 1,
-            totalPages: 1,
-            totalRecords: 0,
-            recordsPerPage: pageSize,
-            hasNextPage: false,
-            hasPrevPage: false,
-         },
-      };
-   }
+         return {
+            data: responseData.data || [],
+            pagination: responseData.pagination || {
+               currentPage: 1,
+               totalPages: 1,
+               totalRecords: 0,
+               recordsPerPage: pageSize,
+               hasNextPage: false,
+               hasPrevPage: false,
+            },
+         };
+      },
+      [pageSize]
+   );
+
+   const enabled = useMemo(() => {
+      return !!(
+         (dateFilters.ano === 'todos' || typeof dateFilters.ano === 'number') &&
+         (dateFilters.mes === 'todos' || typeof dateFilters.mes === 'number') &&
+         (dateFilters.dia === 'todos' || typeof dateFilters.dia === 'number') &&
+         token &&
+         user
+      );
+   }, [dateFilters.ano, dateFilters.mes, dateFilters.dia, token, user]);
 
    const {
       data: apiResponse,
@@ -393,81 +502,31 @@ export function TabelaOS({ isOpen, onClose }: Props) {
       queryKey: ['osData', queryParams.toString(), token],
       queryFn: () => fetchOS(queryParams, token!),
       enabled,
-      staleTime: CACHE_TIME,
+      staleTime: CONFIG.CACHE_TIME,
       retry: 2,
    });
 
    const data = useMemo(() => apiResponse?.data || [], [apiResponse]);
    const paginationInfo = apiResponse?.pagination;
 
-   // ================================================================================
-   // EFFECTS - FILTROS
-   // ================================================================================
-   useEffect(() => {
-      setCurrentPage(1);
-   }, [
-      filterCOD_OS,
-      filterCODTRF_OS,
-      filterCHAMADO_OS,
-      filterDTINI_OS,
-      filterDTINC_OS,
-      filterNOME_RECURSO,
-      filterVALID_OS,
-      filterFATURADO_OS,
-   ]);
-
-   // ================================================================================
-   // HANDLERS - FILTROS
-   // ================================================================================
-   const clearFilters = useCallback(() => {
-      setInputFilterCOD_OS('');
-      setInputFilterCODTRF_OS('');
-      setInputFilterCHAMADO_OS('');
-      setInputFilterDTINI_OS('');
-      setInputFilterDTINC_OS('');
-      setInputFilterNOME_RECURSO('');
-      setInputFilterVALID_OS('');
-      setInputFilterFATURADO_OS('');
-      setCurrentPage(1);
-   }, []);
-
-   const handleFiltersChange = useCallback(
-      (newFilters: {
-         ano: number | 'todos';
-         mes: number | 'todos';
-         dia: number | 'todos';
-      }) => {
-         setFilters(prevFilters => ({
-            ...prevFilters,
-            ...newFilters,
-         }));
-      },
-      [setFilters]
+   // Handlers
+   const handlePageChange = useCallback(
+      (newPage: number) => setCurrentPage(newPage),
+      []
    );
-
-   // ================================================================================
-   // HANDLERS - PAGINAÇÃO
-   // ================================================================================
-   const handlePageChange = useCallback((newPage: number) => {
-      setCurrentPage(newPage);
-   }, []);
 
    const handlePageSizeChange = useCallback((newSize: number) => {
       setPageSize(newSize);
       setCurrentPage(1);
    }, []);
 
-   // ================================================================================
-   // HANDLERS - MODAL
-   // ================================================================================
    const handleCloseTabelaOS = useCallback(() => {
       setIsClosing(true);
       setTimeout(() => {
          setIsClosing(false);
          onClose();
-      }, ANIMATION_DURATION);
+      }, CONFIG.ANIMATION_DURATION);
    }, [onClose]);
-   // =====
 
    const handleOpenModalVisualizarOS = useCallback(
       (codOs: number) => {
@@ -485,9 +544,6 @@ export function TabelaOS({ isOpen, onClose }: Props) {
       setSelectedOS(null);
    }, []);
 
-   // ================================================================================
-   // HANDLERS - UPDATE FIELD
-   // ================================================================================
    const handleUpdateField = useCallback(
       async (codOs: number, field: string, value: any) => {
          if (!token) {
@@ -519,9 +575,17 @@ export function TabelaOS({ isOpen, onClose }: Props) {
       [token, queryClient]
    );
 
-   // ================================================================================
-   // CONFIGURAÇÃO DA TABELA
-   // ================================================================================
+   const handleFiltersChange = useCallback(
+      (newFilters: DateFilters) => {
+         setDateFilters(prevFilters => ({
+            ...prevFilters,
+            ...newFilters,
+         }));
+      },
+      [setDateFilters]
+   );
+
+   // Tabela config
    const colunas = useMemo(
       () =>
          colunasTabelaOS({
@@ -532,185 +596,194 @@ export function TabelaOS({ isOpen, onClose }: Props) {
    );
 
    const table = useReactTable({
-      data: data ?? [],
+      data,
       columns: colunas,
       getCoreRowModel: getCoreRowModel(),
       getSortedRowModel: getSortedRowModel(),
       onSortingChange: setSorting,
-      state: {
-         sorting,
-      },
+      state: { sorting },
       manualPagination: true,
       manualFiltering: true,
    });
 
-   // ================================================================================
-   // VALIDAÇÕES E ESTADOS DE CARREGAMENTO
-   // ================================================================================
+   // Validações
    if (!isOpen) return null;
-
-   if (!user || !token) {
+   if (!user || !token)
       return <IsError error={new Error('Usuário não autenticado.')} />;
-   }
+   if (isError) return <IsError error={error as Error} />;
 
-   if (isError) {
-      return <IsError error={error as Error} />;
-   }
+   const shouldShowNoResults =
+      paginationInfo &&
+      paginationInfo.totalRecords > 0 &&
+      table.getFilteredRowModel().rows.length === 0;
 
-   // ================================================================================
-   // RENDERIZAÇÃO
-   // ================================================================================
+   const formattedPeriod = [
+      dateFilters.dia === 'todos'
+         ? ''
+         : String(dateFilters.dia).padStart(2, '0'),
+      dateFilters.mes === 'todos'
+         ? ''
+         : String(dateFilters.mes).padStart(2, '0'),
+      dateFilters.ano === 'todos' ? '' : String(dateFilters.ano),
+   ]
+      .filter(part => part !== '')
+      .join('/');
+
    return (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
-         {/* OVERLAY */}
          <div className="absolute inset-0 bg-teal-900" />
 
-         {/* CONTAINER */}
          <div
             className={`animate-in slide-in-from-bottom-4 z-10 max-h-[90vh] w-full max-w-[95vw] overflow-hidden rounded-2xl transition-all duration-500 ease-out ${
                isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
             }`}
-            style={{
-               animationDuration: `${ANIMATION_DURATION}ms`,
-            }}
+            style={{ animationDuration: `${CONFIG.ANIMATION_DURATION}ms` }}
          >
-            {/* HEADER */}
+            {/* ===== HEADER ===== */}
             <header className="flex flex-col gap-14 bg-white/50 p-6">
                <div className="flex items-center justify-between gap-8">
                   <div className="flex items-center justify-center gap-6">
                      <GrServices className="text-black" size={72} />
-                     <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
-                        Ordens de Serviço
+                     <h1 className="text-5xl font-extrabold tracking-widest text-black select-none">
+                        OS's
                      </h1>
                   </div>
 
                   <button
                      onClick={handleCloseTabelaOS}
-                     className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-95"
+                     className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500"
                   >
                      <IoClose
-                        className="text-white group-hover:scale-125"
+                        className="text-white group-hover:scale-110"
                         size={24}
                      />
                   </button>
                </div>
 
-               {/* FILTROS HEADER */}
+               {/* FILTROS DE DATA */}
                <div className="flex items-center gap-6">
                   <div className="flex w-[1000px] items-center">
                      <FiltrosTabelaOS onFiltersChange={handleFiltersChange} />
                   </div>
-                  <div className="flex items-center">
-                     {totalActiveFilters > 0 && (
-                        <button
-                           onClick={clearFilters}
-                           title="Limpar Filtros"
-                           className="mt-7 cursor-pointer rounded-full border-none bg-gradient-to-br from-red-600 to-red-700 px-6 py-2.5 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-110 active:scale-95"
-                        >
-                           <FaEraser
-                              size={20}
-                              className="text-white group-hover:scale-110"
-                           />
-                        </button>
-                     )}
-                  </div>
                </div>
             </header>
 
-            {/* ===== TABELA ===== */}
+            {/* TABELA */}
             <main className="h-full w-full overflow-hidden bg-black">
                <div
                   className="h-full overflow-y-auto"
-                  style={{ maxHeight: MODAL_MAX_HEIGHT }}
+                  style={{ maxHeight: CONFIG.MODAL_MAX_HEIGHT }}
                >
                   <table className="w-full table-fixed border-collapse">
-                     {/* CABEÇALHO DA TABELA */}
-                     <thead className="sticky top-0 z-20">
+                     <thead
+                        style={{
+                           position: 'sticky',
+                           top: 0,
+                           zIndex: 30,
+                           backgroundColor: '#0f766e',
+                        }}
+                     >
+                        {/* Títulos */}
                         {table.getHeaderGroups().map(headerGroup => (
-                           <tr key={headerGroup.id}>
-                              {headerGroup.headers.map(header => (
+                           <tr key={headerGroup.id} className="bg-teal-800">
+                              {headerGroup.headers.map((header, idx) => (
                                  <th
-                                    key={header.id}
-                                    className="bg-teal-800 py-6 font-extrabold tracking-wider text-white select-none"
+                                    key={`header-${idx}-${header.id}`}
+                                    className="bg-teal-800 py-6 text-base font-extrabold tracking-wider text-white select-none"
                                     style={{
-                                       width: getColumnWidth(header.column.id),
+                                       width:
+                                          COLUMN_WIDTHS[header.column.id] ||
+                                          'auto',
                                     }}
                                  >
-                                    {header.isPlaceholder
-                                       ? null
-                                       : flexRender(
-                                            header.column.columnDef.header,
-                                            header.getContext()
-                                         )}
+                                    {flexRender(
+                                       header.column.columnDef.header,
+                                       header.getContext()
+                                    )}
                                  </th>
                               ))}
                            </tr>
                         ))}
 
-                        {/* ===== FILTROS DA TABELA ===== */}
-                        <tr>
-                           {table.getAllColumns().map(column => (
+                        {/* Filtros */}
+                        <tr className="bg-teal-800">
+                           {table.getAllColumns().map((column, idx) => (
                               <th
-                                 key={column.id}
+                                 key={`filter-${idx}-${column.id}`}
                                  className="bg-teal-800 px-3 pb-6"
                                  style={{
-                                    width: getColumnWidth(column.id),
+                                    width: COLUMN_WIDTHS[column.id] || 'auto',
                                  }}
                               >
-                                 {column.id in FILTER_MAP && (
+                                 {column.id === 'acoes' &&
+                                 activeFilterCount > 0 ? (
+                                    <button
+                                       onClick={clearAllFilters}
+                                       title="Limpar Filtros"
+                                       className="group cursor-pointer rounded-full border-none bg-gradient-to-b from-red-600 to-red-700 px-6 py-2.5 shadow-md shadow-black transition-all hover:scale-110 hover:bg-gradient-to-r hover:from-red-900 hover:to-red-900"
+                                    >
+                                       <FaEraser
+                                          size={20}
+                                          className="text-white group-hover:scale-110"
+                                       />
+                                    </button>
+                                 ) : column.id !== 'HRINI_OS' &&
+                                   column.id !== 'HRFIM_OS' &&
+                                   column.id !== 'QTD_HR_OS' &&
+                                   column.id !== 'acoes' &&
+                                   FILTER_KEYS.includes(
+                                      column.id as FilterKey
+                                   ) ? (
                                     <FiltrosHeaderTabelaOs
-                                       value={
-                                          FILTER_MAP[
-                                             column.id as keyof typeof FILTER_MAP
-                                          ].state
-                                       }
+                                       value={filters[column.id as FilterKey]}
                                        onChange={value =>
-                                          FILTER_MAP[
-                                             column.id as keyof typeof FILTER_MAP
-                                          ].setter(String(value))
+                                          setFilter(
+                                             column.id as FilterKey,
+                                             String(value)
+                                          )
                                        }
                                        columnId={column.id}
                                     />
-                                 )}
+                                 ) : null}
                               </th>
                            ))}
                         </tr>
                      </thead>
 
-                     {/* CORPO DA TABELA */}
+                     {/* CORPO */}
                      <tbody>
+                        {table.getRowModel().rows.map((row, rowIndex) => (
+                           <tr
+                              key={row.id}
+                              className={`group transition-all ${
+                                 rowIndex % 2 === 0
+                                    ? 'bg-slate-800'
+                                    : 'bg-slate-700'
+                              }`}
+                           >
+                              {row.getVisibleCells().map(cell => (
+                                 <td
+                                    key={cell.id}
+                                    className="border border-white/30 bg-black p-2 text-sm font-semibold tracking-widest text-white select-none group-hover:bg-white/50 group-hover:text-black"
+                                    style={{
+                                       width:
+                                          COLUMN_WIDTHS[cell.column.id] ||
+                                          'auto',
+                                    }}
+                                 >
+                                    <div className="overflow-hidden">
+                                       {flexRender(
+                                          cell.column.columnDef.cell,
+                                          cell.getContext()
+                                       )}
+                                    </div>
+                                 </td>
+                              ))}
+                           </tr>
+                        ))}
+
+                        {/* Células vazias */}
                         {table.getRowModel().rows.length > 0 &&
-                           !isLoading &&
-                           table.getRowModel().rows.map((row, rowIndex) => (
-                              <tr
-                                 key={row.id}
-                                 className={`group transition-all ${
-                                    rowIndex % 2 === 0
-                                       ? 'bg-slate-800'
-                                       : 'bg-slate-700'
-                                 }`}
-                              >
-                                 {row.getVisibleCells().map(cell => (
-                                    <td
-                                       key={cell.id}
-                                       className="border border-white/30 bg-black p-2 text-sm font-semibold tracking-widest text-white select-none group-hover:bg-white/50 group-hover:text-black"
-                                       style={{
-                                          width: getColumnWidth(cell.column.id),
-                                       }}
-                                    >
-                                       <div className="overflow-hidden">
-                                          {flexRender(
-                                             cell.column.columnDef.cell,
-                                             cell.getContext()
-                                          )}
-                                       </div>
-                                    </td>
-                                 ))}
-                              </tr>
-                           ))}
-                        {/* CÉLULAS VAZIAS PARA PREENCHER O ESPAÇO */}
-                        {!isLoading &&
-                           table.getRowModel().rows.length > 0 &&
                            Array.from({
                               length: Math.max(
                                  0,
@@ -732,8 +805,9 @@ export function TabelaOS({ isOpen, onClose }: Props) {
                                        key={column.id}
                                        className="border border-white/30 bg-black p-2"
                                        style={{
-                                          width: getColumnWidth(column.id),
-                                          height: '54px', // Altura aproximada de uma linha
+                                          width:
+                                             COLUMN_WIDTHS[column.id] || 'auto',
+                                          height: '54px',
                                        }}
                                     >
                                        &nbsp;
@@ -747,158 +821,30 @@ export function TabelaOS({ isOpen, onClose }: Props) {
             </main>
 
             {/* PAGINAÇÃO */}
-            {/* PAGINAÇÃO */}
             {paginationInfo && paginationInfo.totalRecords > 0 && (
-               <div className="bg-white/70 px-12 py-4">
-                  <div className="flex items-center justify-between">
-                     {/* Informações da página */}
-                     <section className="flex items-center gap-4">
-                        <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
-                           {table.getFilteredRowModel().rows.length} registro
-                           {table.getFilteredRowModel().rows.length !== 1
-                              ? 's'
-                              : ''}{' '}
-                           na página atual,
-                        </span>
-                        <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
-                           {paginationInfo.totalRecords > 1
-                              ? `de ${formatarCodNumber(paginationInfo.totalRecords)} encontrados no total`
-                              : `de 1 encontrado no total`}
-                        </span>
-                     </section>
-
-                     {/* Controles de paginação */}
-                     <section className="flex items-center gap-3">
-                        {/* Seletor de itens por página */}
-                        <div className="flex items-center gap-2">
-                           <span className="text-base font-semibold tracking-widest text-black italic select-none">
-                              Itens por página:
-                           </span>
-                           <select
-                              value={pageSize}
-                              onChange={e =>
-                                 handlePageSizeChange(Number(e.target.value))
-                              }
-                              className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
-                           >
-                              {PAGE_SIZE_OPTIONS.map(size => (
-                                 <option
-                                    key={size}
-                                    value={size}
-                                    className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
-                                 >
-                                    {size}
-                                 </option>
-                              ))}
-                           </select>
-                        </div>
-
-                        {/* Botões de navegação */}
-                        <div className="flex items-center gap-3">
-                           <button
-                              onClick={() => handlePageChange(1)}
-                              disabled={!paginationInfo.hasPrevPage}
-                              aria-label="Ir para primeira página"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                           >
-                              <FiChevronsLeft
-                                 className="text-black group-disabled:text-red-500"
-                                 size={24}
-                              />
-                           </button>
-
-                           <button
-                              onClick={() => handlePageChange(currentPage - 1)}
-                              disabled={!paginationInfo.hasPrevPage}
-                              aria-label="Página anterior"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                           >
-                              <MdChevronLeft
-                                 className="text-black group-disabled:text-red-500"
-                                 size={24}
-                              />
-                           </button>
-
-                           <div className="flex items-center justify-center gap-2">
-                              <span className="text-base font-semibold tracking-widest text-black italic select-none">
-                                 Página{' '}
-                                 <select
-                                    value={currentPage}
-                                    onChange={e =>
-                                       handlePageChange(Number(e.target.value))
-                                    }
-                                    aria-label="Selecionar página"
-                                    className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
-                                 >
-                                    {Array.from(
-                                       { length: paginationInfo.totalPages },
-                                       (_, i) => (
-                                          <option
-                                             key={i + 1}
-                                             value={i + 1}
-                                             className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
-                                          >
-                                             {i + 1}
-                                          </option>
-                                       )
-                                    )}
-                                 </select>
-                              </span>
-                              <span className="text-base font-semibold tracking-widest text-black italic select-none">
-                                 {' '}
-                                 de{' '}
-                                 {formatarCodNumber(paginationInfo.totalPages)}
-                              </span>
-                           </div>
-
-                           <button
-                              onClick={() => handlePageChange(currentPage + 1)}
-                              disabled={!paginationInfo.hasNextPage}
-                              aria-label="Próxima página"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                           >
-                              <MdChevronRight
-                                 className="text-black group-disabled:text-red-500"
-                                 size={24}
-                              />
-                           </button>
-
-                           <button
-                              onClick={() =>
-                                 handlePageChange(paginationInfo.totalPages)
-                              }
-                              disabled={!paginationInfo.hasNextPage}
-                              aria-label="Ir para última página"
-                              className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                           >
-                              <FiChevronsRight
-                                 className="text-black group-disabled:text-red-500"
-                                 size={24}
-                              />
-                           </button>
-                        </div>
-                     </section>
-                  </div>
-               </div>
+               <PaginationControls
+                  paginationInfo={paginationInfo}
+                  currentPage={currentPage}
+                  pageSize={pageSize}
+                  onPageChange={handlePageChange}
+                  onPageSizeChange={handlePageSizeChange}
+                  totalRows={table.getFilteredRowModel().rows.length}
+               />
             )}
 
-            {/* ===== MENSAGEM QUANDO NÃO HÁ OS ===== */}
-            {data && data.length === 0 && !isLoading && (
-               <EmptyState ano={ano} mes={mes} dia={dia} />
+            {/* ESTADOS VAZIOS */}
+            {data.length === 0 && !isLoading && (
+               <EmptyState dateFilters={dateFilters} />
             )}
-
-            {/* MENSAGEM QUANDO OS FILTROS NÃO RETORNAM RESULTADOS */}
-            {paginationInfo &&
-               paginationInfo.totalRecords > 0 &&
-               table.getFilteredRowModel().rows.length === 0 && (
-                  <NoResultsState
-                     totalActiveFilters={totalActiveFilters}
-                     clearFilters={clearFilters}
-                  />
-               )}
+            {shouldShowNoResults && (
+               <NoResultsState
+                  totalActiveFilters={activeFilterCount}
+                  clearFilters={clearAllFilters}
+               />
+            )}
          </div>
 
-         {/* MODAL VISUALIZAR OS */}
+         {/* MODAL */}
          {openModalVisualizarOS && selectedOS && (
             <ModalVisualizarOS
                isOpen={openModalVisualizarOS}
@@ -910,13 +856,7 @@ export function TabelaOS({ isOpen, onClose }: Props) {
          {/* LOADING */}
          <IsLoading
             isLoading={isLoading}
-            title={`Aguarde... Buscando informações para o período: ${[
-               dia === 'todos' ? '' : String(dia).padStart(2, '0'),
-               mes === 'todos' ? '' : String(mes).padStart(2, '0'),
-               ano === 'todos' ? '' : String(ano),
-            ]
-               .filter(part => part !== '')
-               .join('/')}`}
+            title={`Aguarde... Buscando OS's para o período: ${formattedPeriod}`}
          />
       </div>
    );

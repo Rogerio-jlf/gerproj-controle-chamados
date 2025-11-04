@@ -59,6 +59,7 @@ function ConfirmModal({
       <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
          {/* ===== OVERLAY ===== */}
          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+         {/* ========== */}
 
          <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
@@ -66,27 +67,28 @@ function ConfirmModal({
                <div className="flex items-center justify-center gap-6">
                   <MdEditSquare className="text-black" size={72} />
                   <div className="flex flex-col">
-                     <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
-                        Editar Cliente Paga
+                     <h1 className="text-4xl font-extrabold tracking-widest text-black select-none">
+                        EDITAR CLIENTE PAGA
                      </h1>
                      <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
-                        Código #{formatarCodNumber(codOs)}
+                        CÓDIGO {formatarCodNumber(codOs)}
                      </p>
                   </div>
                </div>
+               {/* ========== */}
 
-               {/* Botão fechar modal */}
                <button
                   onClick={onClose}
                   disabled={isLoading}
-                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-95"
+                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500"
                >
                   <IoClose
-                     className="text-white group-hover:scale-125"
+                     className="text-white group-hover:scale-110"
                      size={24}
                   />
                </button>
             </header>
+            {/* ==================== */}
 
             {/* ===== CONTEÚDO ===== */}
             <main className="flex flex-col gap-12 px-6 py-16">
@@ -157,7 +159,7 @@ function ConfirmModal({
                <button
                   onClick={onClose}
                   disabled={isLoading}
-                  className="w-[200px] cursor-pointer rounded-md border-none bg-gradient-to-r from-red-600 to-red-700 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-[200px] cursor-pointer rounded-md border-none bg-gradient-to-r from-red-600 to-red-700 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-105 hover:bg-gradient-to-r hover:from-red-900 hover:to-red-900 disabled:cursor-not-allowed disabled:opacity-50"
                >
                   Cancelar
                </button>
@@ -166,7 +168,7 @@ function ConfirmModal({
                <button
                   onClick={onConfirm}
                   disabled={isLoading}
-                  className="w-[200px] cursor-pointer rounded-md border-none bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-[200px] cursor-pointer rounded-md border-none bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:scale-105 hover:bg-gradient-to-r hover:from-blue-900 hover:to-blue-900 disabled:cursor-not-allowed disabled:opacity-50"
                >
                   {isLoading ? (
                      <span className="flex items-center justify-center gap-3">

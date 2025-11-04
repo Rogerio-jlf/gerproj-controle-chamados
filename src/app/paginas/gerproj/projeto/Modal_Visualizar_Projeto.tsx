@@ -94,9 +94,12 @@ export function ModalVisualizarProjeto({
 
                <button
                   onClick={handleCloseModalVisualizarProjeto}
-                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500"
                >
-                  <IoClose size={24} />
+                  <IoClose
+                     className="text-white group-hover:scale-110"
+                     size={24}
+                  />
                </button>
             </header>
             {/* ==================== */}

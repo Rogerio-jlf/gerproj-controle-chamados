@@ -4,13 +4,10 @@ import { debounce } from 'lodash';
 import { useMemo, useState, useCallback, useEffect, useRef, memo } from 'react';
 
 // TYPES
-import { InputFilterTableHeaderProps } from '../../../../../../types/types';
+import { InputFilterTableHeaderProps } from '../../../../types/types';
 
 // FORMATTERS
-import { normalizeDate } from '../../../../../../utils/formatters';
-
-// COMPONENTS
-import { DropdownSimNao } from './Dropdown_Sim_Nao';
+import { normalizeDate } from '../../../../utils/formatters';
 
 // ICONS
 import { FaFilter } from 'react-icons/fa';
@@ -38,48 +35,39 @@ const DEBOUNCE_DELAY = 600;
 
 // Colunas pesquisáveis
 const SEARCHABLE_COLUMNS = [
-   'COD_OS',
-   'TAREFA_COMPLETA',
-   'CHAMADO_OS',
-   'DTINI_OS',
-   'DTINC_OS',
-   'NOME_CLIENTE',
-   'FATURADO_OS',
+   'COD_CHAMADO',
+   'DATA_CHAMADO',
+   'HORA_CHAMADO',
+   'ASSUNTO_CHAMADO',
+   'STATUS_CHAMADO',
+   'DTENVIO_CHAMADO',
    'NOME_RECURSO',
-   'VALID_OS',
+   'NOME_CLIENTE',
+   'EMAIL_CHAMADO',
 ] as const;
 
 // Colunas de data
-const DATE_COLUMNS = ['DTINI_OS', 'DTINC_OS'] as const;
+const DATE_COLUMNS = ['DATA_CHAMADO', 'DTENVIO_CHAMADO'] as const;
 
 // Colunas apenas numéricas
-const NUMERIC_COLUMNS = ['COD_OS', 'CHAMADO_OS'] as const;
-
-// Colunas uppercase
-const UPPERCASE_COLUMNS = ['FATURADO_OS', 'VALID_OS'] as const;
-
-// Colunas que usam dropdown SIM/NÃO
-const DROPDOWN_SIM_NAO_COLUMNS = ['FATURADO_OS', 'VALID_OS'] as const;
+const NUMERIC_COLUMNS = ['COD_CHAMADO'] as const;
 
 // Sets para verificação O(1)
 const SEARCHABLE_COLUMNS_SET = new Set(SEARCHABLE_COLUMNS);
 const DATE_COLUMNS_SET = new Set(DATE_COLUMNS);
 const NUMERIC_COLUMNS_SET = new Set(NUMERIC_COLUMNS);
-const UPPERCASE_COLUMNS_SET = new Set(UPPERCASE_COLUMNS);
-const DROPDOWN_SIM_NAO_COLUMNS_SET = new Set(DROPDOWN_SIM_NAO_COLUMNS);
 
 // Limites de caracteres por coluna
 export const MAX_LENGTH_COLUMN: Record<string, number> = {
-   COD_OS: 6,
-   TAREFA_COMPLETA: 20,
-   CHAMADO_OS: 6,
-   DTINI_OS: 10,
-   DTINC_OS: 10,
-   COMP_OS: 7,
-   NOME_CLIENTE: 15,
-   NOME_RECURSO: 15,
-   FATURADO_OS: 3,
-   VALID_OS: 3,
+   COD_CHAMADO: 6,
+   DATA_CHAMADO: 10,
+   HORA_CHAMADO: 8,
+   ASSUNTO_CHAMADO: 50,
+   STATUS_CHAMADO: 12,
+   DTENVIO_CHAMADO: 10,
+   NOME_RECURSO: 12,
+   NOME_CLIENTE: 12,
+   EMAIL_CHAMADO: 30,
 };
 
 // ================================================================================
@@ -263,15 +251,11 @@ const InputFilterWithDebounce = memo(
                maxLength={maxLength}
                inputMode={isNumericOnly || isDateColumn ? 'numeric' : 'text'}
                pattern={isNumericOnly ? '[0-9]*' : undefined}
-               className={`hover:bg-opacity-90 w-full rounded-md px-4 py-2 text-lg font-bold shadow-sm shadow-black transition-all select-none focus:ring-2 focus:outline-none ${
+               className={`hover:bg-opacity-90 w-full rounded-md px-4 py-2 text-lg font-bold shadow-sm shadow-black transition-all select-none focus:ring-2 focus:ring-pink-500 focus:outline-none active:scale-95 ${
                   localValue
                      ? 'bg-white text-black ring-2 ring-pink-500 focus:outline-none'
-                     : 'border border-teal-950 bg-teal-900 text-white hover:scale-95 hover:bg-teal-950'
-               } ${
-                  isNearLimit
-                     ? 'ring-2 ring-yellow-500/50 focus:ring-yellow-500'
-                     : 'focus:ring-pink-500'
-               }`}
+                     : 'border border-teal-950 bg-teal-900 text-white hover:shadow-lg hover:shadow-black'
+               } `}
             />
 
             {localValue && (
@@ -295,19 +279,8 @@ InputFilterWithDebounce.displayName = 'InputFilterWithDebounce';
 // ================================================================================
 // COMPONENTE PRINCIPAL (MEMOIZADO)
 // ================================================================================
-export const FiltrosHeaderTabelaOs = memo(
+export const FiltrosHeaderTabelaChamado = memo(
    ({ value, onChange, type = 'text', columnId }: ExtendedInputFilterProps) => {
-      // Verificar se a coluna usa dropdown SIM/NÃO
-      const isDropdownSimNao = columnId
-         ? DROPDOWN_SIM_NAO_COLUMNS_SET.has(columnId as any)
-         : false;
-
-      // Se for dropdown SIM/NÃO, renderizar o componente específico
-      if (isDropdownSimNao) {
-         return <DropdownSimNao value={value} onChange={onChange} />;
-      }
-
-      // Caso contrário, renderizar o input normal
       return (
          <InputFilterWithDebounce
             value={value}
@@ -319,7 +292,7 @@ export const FiltrosHeaderTabelaOs = memo(
    }
 );
 
-FiltrosHeaderTabelaOs.displayName = 'FiltrosHeaderTabelaOs';
+FiltrosHeaderTabelaChamado.displayName = 'FiltrosHeaderTabelaChamado';
 
 // ================================================================================
 // CONTROLES DE FILTRO (MOSTRAR/OCULTAR E LIMPAR)
@@ -394,7 +367,7 @@ FilterControls.displayName = 'FilterControls';
 // ================================================================================
 // HOOK PERSONALIZADO PARA FUNÇÕES DE FILTRO
 // ================================================================================
-export const useFiltrosHeaderTabelaOS = () => {
+export const useFiltrosHeaderTabelaChamado = () => {
    const globalFilterFn = useCallback(
       (row: any, columnId: string, filterValue: string) => {
          if (!filterValue) return true;
@@ -437,13 +410,6 @@ export const useFiltrosHeaderTabelaOS = () => {
             return dateFormats.some(dateFormat =>
                dateFormat.toLowerCase().includes(filterLower)
             );
-         }
-
-         // Tratamento para colunas uppercase (FATURADO_OS, VALID_OS)
-         if (UPPERCASE_COLUMNS_SET.has(columnId as any)) {
-            const normalizedCell = normalizeString(cellValue);
-            const normalizedFilter = normalizeString(filterTrimmed);
-            return normalizedCell.includes(normalizedFilter);
          }
 
          // Tratamento para colunas numéricas

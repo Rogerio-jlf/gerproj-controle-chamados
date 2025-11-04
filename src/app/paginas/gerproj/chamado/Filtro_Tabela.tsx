@@ -1,10 +1,10 @@
 'use client';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
-import { useFiltersTabelaChamado } from '../../../../../contexts/Filters_Context_Tabela_Chamado';
-import { SelectAnoTabelaChamado } from './Select_Ano_Tabela_Chamado';
-import { SelectMesTabelaChamado } from './Select_Mes_Tabela_Chamado';
-import { SelectDiaTabelaChamado } from './Select_Dia_Tabela_Chamado';
+import { useFiltersTabelaChamado } from '../../../../contexts/Filters_Context_Tabela_Chamado';
+import { DropdownAno } from './Dropdown_Ano_Mes_Dia';
+import { DropdownMes } from './Dropdown_Ano_Mes_Dia';
+import { DropdownDia } from './Dropdown_Ano_Mes_Dia';
 
 interface FiltrosProps {
    onFiltersChange: (filters: {
@@ -149,15 +149,15 @@ export function FiltrosTabelaChamado({ onFiltersChange }: FiltrosProps) {
    return (
       <div className="flex w-full gap-6">
          <div className="w-[300px]">
-            <SelectAnoTabelaChamado value={ano} onChange={setAno} />
+            <DropdownAno value={ano} onChange={setAno} />
          </div>
 
          <div className="w-[300px]">
-            <SelectMesTabelaChamado value={mes} onChange={setMes} />
+            <DropdownMes value={mes} onChange={setMes} />
          </div>
 
          <div className="w-[300px]">
-            <SelectDiaTabelaChamado
+            <DropdownDia
                value={dia}
                onChange={handleDiaChange}
                diasDisponiveis={getDiasParaSelect()}

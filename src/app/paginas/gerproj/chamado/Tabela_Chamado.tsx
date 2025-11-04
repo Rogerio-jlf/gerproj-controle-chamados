@@ -1,63 +1,53 @@
 'use client';
 
-// IMPORTS
 import {
    flexRender,
-   SortingState,
-   useReactTable,
    getCoreRowModel,
+   useReactTable,
    getSortedRowModel,
+   SortingState,
 } from '@tanstack/react-table';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, useCallback, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-// COMPONENTS
-import {
-   FiltrosHeaderTabelaChamado,
-   FilterControls,
-} from './filtros/Filtros_Header_Tabela_Chamado';
+import { FiltrosHeaderTabelaChamado } from './Filtro_Header_Tabela';
 import { IsError } from '../../../../components/IsError';
 import { IsLoading } from '../../../../components/IsLoading';
 import { SessionExpired } from '../../../../components/IsExpired';
-import { ModalRelatorioOS } from '../os/relatorios/modal/Modal_Relatorio_OS';
-import { colunasTabelaChamados } from './Colunas_Tabela_Chamado';
-import { DropdownMenuTabelaChamado } from './Dropdown_Menu_Tabela_Chamado';
-import { FiltrosTabelaChamado } from './filtros/Filtros_Tabela_Chamado';
+import { colunasTabelaChamados } from './Coluna_Tabela';
+import { FiltrosTabelaChamado } from './Filtro_Tabela';
+import { DropdownMenuTabelaChamado } from './Dropdown_Menu';
+import { ModalVisualizarChamado } from './modais/Modal_Visualizar_Chamado';
+import { ModalAtribuirChamado } from './modais/Modal_Atribuir_Chamado';
+import { ModalExcluirChamado } from './modais/Modal_Deletar_Chamado';
+import { ModalPermitirRetroativoOsChamado } from './modais/Modal_Permitir_OS_Retroativa_Chamado';
 import { TabelaOS } from '../os/tabelas/tabela/Tabela_OS';
 import { TabelaTarefas } from '../tarefas/Tabela_Tarefa';
 import { TabelaProjeto } from '../projeto/Tabela_Projeto';
-import { ModalExcluirChamado } from './modais/Modal_Deletar_Chamado';
-import { ModalAtribuirChamado } from './modais/Modal_Atribuir_Chamado';
-import { ModalVisualizarChamado } from './modais/Modal_Visualizar_Chamado';
-import { ModalPermitirRetroativoOsChamado } from './modais/Modal_Permitir_OS_Retroativa_Chamado';
-
-// HOOKS
+import { ModalRelatorioOS } from '../os/relatorios/modal/Modal_Relatorio_OS';
+import { formatarCodNumber } from '../../../../utils/formatters';
 import { useAuth } from '../../../../hooks/useAuth';
-
-// CONTEXTS
 import { useFiltersTabelaChamado } from '../../../../contexts/Filters_Context_Tabela_Chamado';
-
-// TYPES
 import { TabelaChamadoProps } from '../../../../types/types';
 
-// FORMATTERS
-import { formatarCodNumber } from '../../../../utils/formatters';
-
-// ICONS
 import { IoCall } from 'react-icons/io5';
 import { FaFilterCircleXmark } from 'react-icons/fa6';
-import { FaExclamationTriangle } from 'react-icons/fa';
+import { FaEraser, FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 
 // ================================================================================
 // CONSTANTES
 // ================================================================================
-const MODAL_MAX_HEIGHT = 'calc(100vh - 486px)';
-const DEBOUNCE_DELAY = 500;
-const CACHE_TIME = 1000 * 60 * 5;
-const PAGE_SIZE_OPTIONS = [20, 50, 100];
+const CONFIG = {
+   MODAL_MAX_HEIGHT: 'calc(100vh - 524px)',
+   DEBOUNCE_DELAY: 600,
+   ANIMATION_DURATION: 100,
+   CACHE_TIME: 1000 * 60 * 5,
+   PAGE_SIZE_OPTIONS: [20, 50, 100],
+   DEFAULT_PAGE_SIZE: 20,
+} as const;
 
 const COLUMN_WIDTHS: Record<string, string> = {
    COD_CHAMADO: '6%',
@@ -71,6 +61,19 @@ const COLUMN_WIDTHS: Record<string, string> = {
    EMAIL_CHAMADO: '11%',
    actions: '5%',
 };
+
+const FILTER_KEYS = [
+   'COD_CHAMADO',
+   'DATA_CHAMADO',
+   'ASSUNTO_CHAMADO',
+   'STATUS_CHAMADO',
+   'DTENVIO_CHAMADO',
+   'NOME_RECURSO',
+   'NOME_CLIENTE',
+   'EMAIL_CHAMADO',
+] as const;
+
+type FilterKey = (typeof FILTER_KEYS)[number];
 
 // ================================================================================
 // INTERFACES
@@ -90,6 +93,91 @@ interface ApiResponse {
 }
 
 // ================================================================================
+// HOOKS CUSTOMIZADOS
+// ================================================================================
+function useDebouncedValue<T>(
+   value: T,
+   delay: number = CONFIG.DEBOUNCE_DELAY
+): T {
+   const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+   useEffect(() => {
+      const timer = setTimeout(() => setDebouncedValue(value), delay);
+      return () => clearTimeout(timer);
+   }, [value, delay]);
+
+   return debouncedValue;
+}
+
+function useFilters() {
+   const [filters, setFilters] = useState<Record<FilterKey, string>>(
+      Object.fromEntries(FILTER_KEYS.map(key => [key, ''])) as Record<
+         FilterKey,
+         string
+      >
+   );
+
+   // Debounce cada filtro individualmente
+   const debouncedCOD_CHAMADO = useDebouncedValue(filters.COD_CHAMADO);
+   const debouncedDATA_CHAMADO = useDebouncedValue(filters.DATA_CHAMADO);
+   const debouncedASSUNTO_CHAMADO = useDebouncedValue(filters.ASSUNTO_CHAMADO);
+   const debouncedSTATUS_CHAMADO = useDebouncedValue(filters.STATUS_CHAMADO);
+   const debouncedDTENVIO_CHAMADO = useDebouncedValue(filters.DTENVIO_CHAMADO);
+   const debouncedNOME_RECURSO = useDebouncedValue(filters.NOME_RECURSO);
+   const debouncedNOME_CLIENTE = useDebouncedValue(filters.NOME_CLIENTE);
+   const debouncedEMAIL_CHAMADO = useDebouncedValue(filters.EMAIL_CHAMADO);
+
+   const debouncedFilters = useMemo(
+      () => ({
+         COD_CHAMADO: debouncedCOD_CHAMADO,
+         DATA_CHAMADO: debouncedDATA_CHAMADO,
+         ASSUNTO_CHAMADO: debouncedASSUNTO_CHAMADO,
+         STATUS_CHAMADO: debouncedSTATUS_CHAMADO,
+         DTENVIO_CHAMADO: debouncedDTENVIO_CHAMADO,
+         NOME_RECURSO: debouncedNOME_RECURSO,
+         NOME_CLIENTE: debouncedNOME_CLIENTE,
+         EMAIL_CHAMADO: debouncedEMAIL_CHAMADO,
+      }),
+      [
+         debouncedCOD_CHAMADO,
+         debouncedDATA_CHAMADO,
+         debouncedASSUNTO_CHAMADO,
+         debouncedSTATUS_CHAMADO,
+         debouncedDTENVIO_CHAMADO,
+         debouncedNOME_RECURSO,
+         debouncedNOME_CLIENTE,
+         debouncedEMAIL_CHAMADO,
+      ]
+   );
+
+   const setFilter = useCallback((key: FilterKey, value: string) => {
+      setFilters(prev => ({ ...prev, [key]: value }));
+   }, []);
+
+   const clearAllFilters = useCallback(() => {
+      setFilters(
+         Object.fromEntries(FILTER_KEYS.map(key => [key, ''])) as Record<
+            FilterKey,
+            string
+         >
+      );
+   }, []);
+
+   const activeFilterCount = useMemo(
+      () => Object.values(debouncedFilters).filter(f => f?.trim()).length,
+      [debouncedFilters]
+   );
+
+   return {
+      filters,
+      debouncedFilters,
+      setFilter,
+      clearAllFilters,
+      activeFilterCount,
+   };
+}
+
+// ================================================================================
 // COMPONENTES AUXILIARES
 // ================================================================================
 const EmptyState = ({
@@ -101,7 +189,7 @@ const EmptyState = ({
    mes: number | 'todos';
    dia: number | 'todos';
 }) => (
-   <section className="bg-black py-72 text-center">
+   <section className="bg-black py-56 text-center">
       <FaExclamationTriangle
          className="mx-auto mb-6 text-yellow-500"
          size={80}
@@ -144,136 +232,166 @@ const NoResultsState = ({
    </div>
 );
 
+const PaginationControls = ({
+   paginationInfo,
+   currentPage,
+   pageSize,
+   onPageChange,
+   onPageSizeChange,
+   totalRows,
+}: {
+   paginationInfo: PaginationInfo;
+   currentPage: number;
+   pageSize: number;
+   onPageChange: (page: number) => void;
+   onPageSizeChange: (size: number) => void;
+   totalRows: number;
+}) => (
+   <div className="bg-white/70 px-12 py-4">
+      <div className="flex items-center justify-between">
+         <section className="flex items-center gap-4">
+            <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
+               {totalRows} registro{totalRows !== 1 ? 's' : ''} na página atual,
+            </span>
+            <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
+               {paginationInfo.totalRecords > 1
+                  ? `de ${formatarCodNumber(paginationInfo.totalRecords)} encontrados no total`
+                  : 'de 1 encontrado no total'}
+            </span>
+         </section>
+
+         <section className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+               <span className="text-lg font-semibold tracking-widest text-black italic select-none">
+                  Itens por página:
+               </span>
+               <select
+                  value={pageSize}
+                  onChange={e => onPageSizeChange(Number(e.target.value))}
+                  title="Selecionar quantidade registros"
+                  className="cursor-pointer rounded-md border-t border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:shadow-xl hover:shadow-black focus:ring-4 focus:ring-pink-600 focus:outline-none active:scale-95"
+               >
+                  {CONFIG.PAGE_SIZE_OPTIONS.map(size => (
+                     <option
+                        key={size}
+                        value={size}
+                        className="bg-white font-semibold tracking-widest"
+                     >
+                        {size}
+                     </option>
+                  ))}
+               </select>
+            </div>
+
+            <div className="flex items-center gap-3">
+               <button
+                  onClick={() => onPageChange(1)}
+                  title="Primeira página"
+                  disabled={!paginationInfo.hasPrevPage}
+                  aria-label="Ir para primeira página"
+                  className="group cursor-pointer rounded-md border-t border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:shadow-xl hover:shadow-black focus:ring-4 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+               >
+                  <FiChevronsLeft
+                     className="text-black group-disabled:text-red-500"
+                     size={24}
+                  />
+               </button>
+
+               <button
+                  onClick={() => onPageChange(currentPage - 1)}
+                  title="Página anterior"
+                  disabled={!paginationInfo.hasPrevPage}
+                  aria-label="Página anterior"
+                  className="group cursor-pointer rounded-md border-t border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:shadow-xl hover:shadow-black focus:ring-4 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+               >
+                  <MdChevronLeft
+                     className="text-black group-disabled:text-red-500"
+                     size={24}
+                  />
+               </button>
+
+               <div className="flex items-center justify-center gap-2">
+                  <span className="text-lg font-semibold tracking-widest text-black italic select-none">
+                     Página{' '}
+                     <select
+                        value={currentPage}
+                        onChange={e => onPageChange(Number(e.target.value))}
+                        title="Selecionar página"
+                        aria-label="Selecionar página"
+                        className="cursor-pointer rounded-md border-t border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:shadow-xl hover:shadow-black focus:ring-4 focus:ring-pink-600 focus:outline-none active:scale-95"
+                     >
+                        {Array.from(
+                           { length: paginationInfo.totalPages },
+                           (_, i) => (
+                              <option
+                                 key={i + 1}
+                                 value={i + 1}
+                                 className="bg-white font-semibold tracking-widest"
+                              >
+                                 {i + 1}
+                              </option>
+                           )
+                        )}
+                     </select>
+                  </span>
+                  <span className="text-lg font-semibold tracking-widest text-black italic select-none">
+                     de {formatarCodNumber(paginationInfo.totalPages)}
+                  </span>
+               </div>
+
+               <button
+                  onClick={() => onPageChange(currentPage + 1)}
+                  title="Próxima página"
+                  disabled={!paginationInfo.hasNextPage}
+                  aria-label="Próxima página"
+                  className="group cursor-pointer rounded-md border-t border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:shadow-xl hover:shadow-black focus:ring-4 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+               >
+                  <MdChevronRight
+                     className="text-black group-disabled:text-red-500"
+                     size={24}
+                  />
+               </button>
+
+               <button
+                  onClick={() => onPageChange(paginationInfo.totalPages)}
+                  title="Última página"
+                  disabled={!paginationInfo.hasNextPage}
+                  aria-label="Ir para última página"
+                  className="group cursor-pointer rounded-md border-t border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:shadow-xl hover:shadow-black focus:ring-4 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+               >
+                  <FiChevronsRight
+                     className="text-black group-disabled:text-red-500"
+                     size={24}
+                  />
+               </button>
+            </div>
+         </section>
+      </div>
+   </div>
+);
+
 // ================================================================================
-// FUNÇÕES UTILITÁRIAS
-// ================================================================================
-function getColumnWidth(columnId: string): string {
-   return COLUMN_WIDTHS[columnId] || 'auto';
-}
-// ==========
-
-function useDebouncedValue<T>(value: T, delay: number = DEBOUNCE_DELAY): T {
-   const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-   useEffect(() => {
-      const timer = setTimeout(() => {
-         setDebouncedValue(value);
-      }, delay);
-
-      return () => clearTimeout(timer);
-   }, [value, delay]);
-
-   return debouncedValue;
-}
-
-// ================================================================================
-// COMPONENTE INTERNO COM SEARCH PARAMS
+// COMPONENTE INTERNO
 // ================================================================================
 function TabelaChamadoContent() {
-   // ================================================================================
-   // HOOKS E CONTEXTOS
-   // ================================================================================
    const router = useRouter();
    const searchParams = useSearchParams();
    const queryClient = useQueryClient();
    const { user, loading: isAuthLoading, isTokenExpired } = useAuth();
-   const { filters, setFilters } = useFiltersTabelaChamado();
-   const { ano, mes, dia } = filters;
+   const { filters: dateFilters, setFilters: setDateFilters } =
+      useFiltersTabelaChamado();
+   const { ano, mes, dia } = dateFilters;
+
    const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-   // ================================================================================
-   // ESTADOS - FILTROS (INPUTS SEM DEBOUNCE)
-   // ================================================================================
-   const [inputFilterCOD_CHAMADO, setInputFilterCOD_CHAMADO] = useState('');
-   const [inputFilterDATA_CHAMADO, setInputFilterDATA_CHAMADO] = useState('');
-   const [inputFilterASSUNTO_CHAMADO, setInputFilterASSUNTO_CHAMADO] =
-      useState('');
-   const [inputFilterSTATUS_CHAMADO, setInputFilterSTATUS_CHAMADO] =
-      useState('');
-   const [inputFilterDTENVIO_CHAMADO, setInputFilterDTENVIO_CHAMADO] =
-      useState('');
-   const [inputFilterNOME_RECURSO, setInputFilterNOME_RECURSO] = useState('');
-   const [inputFilterNOME_CLIENTE, setInputFilterNOME_CLIENTE] = useState('');
-   const [inputFilterEMAIL_CHAMADO, setInputFilterEMAIL_CHAMADO] = useState('');
-
-   // ESTADOS - FILTROS (COM DEBOUNCE)
-   const filterCOD_CHAMADO = useDebouncedValue(inputFilterCOD_CHAMADO);
-   const filterDATA_CHAMADO = useDebouncedValue(inputFilterDATA_CHAMADO);
-   const filterASSUNTO_CHAMADO = useDebouncedValue(inputFilterASSUNTO_CHAMADO);
-   const filterSTATUS_CHAMADO = useDebouncedValue(inputFilterSTATUS_CHAMADO);
-   const filterDTENVIO_CHAMADO = useDebouncedValue(inputFilterDTENVIO_CHAMADO);
-   const filterNOME_RECURSO = useDebouncedValue(inputFilterNOME_RECURSO);
-   const filterNOME_CLIENTE = useDebouncedValue(inputFilterNOME_CLIENTE);
-   const filterEMAIL_CHAMADO = useDebouncedValue(inputFilterEMAIL_CHAMADO);
-
-   // ================================================================================
-   // MAPEAMENTO DE FILTROS
-   // ================================================================================
-   const FILTER_MAP = useMemo(
-      () => ({
-         COD_CHAMADO: {
-            state: inputFilterCOD_CHAMADO,
-            setter: setInputFilterCOD_CHAMADO,
-         },
-         DATA_CHAMADO: {
-            state: inputFilterDATA_CHAMADO,
-            setter: setInputFilterDATA_CHAMADO,
-         },
-         ASSUNTO_CHAMADO: {
-            state: inputFilterASSUNTO_CHAMADO,
-            setter: setInputFilterASSUNTO_CHAMADO,
-         },
-         STATUS_CHAMADO: {
-            state: inputFilterSTATUS_CHAMADO,
-            setter: setInputFilterSTATUS_CHAMADO,
-         },
-         DTENVIO_CHAMADO: {
-            state: inputFilterDTENVIO_CHAMADO,
-            setter: setInputFilterDTENVIO_CHAMADO,
-         },
-         NOME_RECURSO: {
-            state: inputFilterNOME_RECURSO,
-            setter: setInputFilterNOME_RECURSO,
-         },
-         NOME_CLIENTE: {
-            state: inputFilterNOME_CLIENTE,
-            setter: setInputFilterNOME_CLIENTE,
-         },
-         EMAIL_CHAMADO: {
-            state: inputFilterEMAIL_CHAMADO,
-            setter: setInputFilterEMAIL_CHAMADO,
-         },
-      }),
-      [
-         inputFilterCOD_CHAMADO,
-         inputFilterDATA_CHAMADO,
-         inputFilterASSUNTO_CHAMADO,
-         inputFilterSTATUS_CHAMADO,
-         inputFilterDTENVIO_CHAMADO,
-         inputFilterNOME_RECURSO,
-         inputFilterNOME_CLIENTE,
-         inputFilterEMAIL_CHAMADO,
-      ]
-   );
-
-   // ================================================================================
-   // ESTADOS - PAGINAÇÃO
-   // ================================================================================
-   const [currentPage, setCurrentPage] = useState(1);
-   const [pageSize, setPageSize] = useState(20);
-
-   // ================================================================================
-   // ESTADOS - TABELA
-   // ================================================================================
+   const [currentPage, setCurrentPage] = useState<number>(1);
+   const [pageSize, setPageSize] = useState<number>(CONFIG.DEFAULT_PAGE_SIZE);
    const [sorting, setSorting] = useState<SortingState>([
       { id: 'COD_CHAMADO', desc: true },
    ]);
-   const [showFilters, setShowFilters] = useState(false);
+   const [showFilters, setShowFilters] = useState<boolean>(false);
 
-   // ================================================================================
-   // ESTADOS - MODAIS E VIEWS
-   // ================================================================================
    const activeView = searchParams.get('modal') as
       | 'chamados'
       | 'os'
@@ -297,45 +415,20 @@ function TabelaChamadoContent() {
    const [selectedChamadoParaRetroativa, setSelectedChamadoParaRetroativa] =
       useState<TabelaChamadoProps | null>(null);
 
-   // ================================================================================
-   // COMPUTED VALUES - FILTROS
-   // ================================================================================
-   const totalActiveFilters = useMemo(() => {
-      const filters = [
-         filterCOD_CHAMADO,
-         filterDATA_CHAMADO,
-         filterASSUNTO_CHAMADO,
-         filterSTATUS_CHAMADO,
-         filterDTENVIO_CHAMADO,
-         filterNOME_RECURSO,
-         filterNOME_CLIENTE,
-         filterEMAIL_CHAMADO,
-      ];
-      return filters.filter(f => f?.trim()).length;
-   }, [
-      filterCOD_CHAMADO,
-      filterDATA_CHAMADO,
-      filterASSUNTO_CHAMADO,
-      filterSTATUS_CHAMADO,
-      filterDTENVIO_CHAMADO,
-      filterNOME_RECURSO,
-      filterNOME_CLIENTE,
-      filterEMAIL_CHAMADO,
-   ]);
+   const {
+      filters,
+      debouncedFilters,
+      setFilter,
+      clearAllFilters,
+      activeFilterCount,
+   } = useFilters();
 
-   // ================================================================================
-   // QUERY PARAMS E API
-   // ================================================================================
-   const enabled = useMemo(() => {
-      return !!(
-         (ano === 'todos' || typeof ano === 'number') &&
-         (mes === 'todos' || typeof mes === 'number') &&
-         (dia === 'todos' || typeof dia === 'number') &&
-         token &&
-         user
-      );
-   }, [ano, mes, dia, token, user]);
+   // Reset page quando filtros mudarem
+   useEffect(() => {
+      setCurrentPage(1);
+   }, [debouncedFilters]);
 
+   // Query params
    const queryParams = useMemo(() => {
       if (!user) return new URLSearchParams();
 
@@ -349,72 +442,67 @@ function TabelaChamadoContent() {
       params.append('mes', mes === 'todos' ? 'todos' : String(mes));
       params.append('dia', dia === 'todos' ? 'todos' : String(dia));
 
-      // Filtros de coluna
-      const filterMappings = [
-         { filter: filterCOD_CHAMADO, param: 'filter_COD_CHAMADO' },
-         { filter: filterDATA_CHAMADO, param: 'filter_DATA_CHAMADO' },
-         { filter: filterASSUNTO_CHAMADO, param: 'filter_ASSUNTO_CHAMADO' },
-         { filter: filterSTATUS_CHAMADO, param: 'filter_STATUS_CHAMADO' },
-         { filter: filterDTENVIO_CHAMADO, param: 'filter_DTENVIO_CHAMADO' },
-         { filter: filterNOME_RECURSO, param: 'filter_NOME_RECURSO' },
-         { filter: filterNOME_CLIENTE, param: 'filter_NOME_CLIENTE' },
-         { filter: filterEMAIL_CHAMADO, param: 'filter_EMAIL_CHAMADO' },
-      ];
+      const filterMappings: Record<FilterKey, string> = {
+         COD_CHAMADO: 'filter_COD_CHAMADO',
+         DATA_CHAMADO: 'filter_DATA_CHAMADO',
+         ASSUNTO_CHAMADO: 'filter_ASSUNTO_CHAMADO',
+         STATUS_CHAMADO: 'filter_STATUS_CHAMADO',
+         DTENVIO_CHAMADO: 'filter_DTENVIO_CHAMADO',
+         NOME_RECURSO: 'filter_NOME_RECURSO',
+         NOME_CLIENTE: 'filter_NOME_CLIENTE',
+         EMAIL_CHAMADO: 'filter_EMAIL_CHAMADO',
+      };
 
-      filterMappings.forEach(({ filter, param }) => {
-         if (filter && filter.trim()) {
-            params.append(param, filter.trim());
+      Object.entries(debouncedFilters).forEach(([key, value]) => {
+         if (value?.trim()) {
+            params.append(filterMappings[key as FilterKey], value.trim());
          }
       });
 
       return params;
-   }, [
-      user,
-      currentPage,
-      pageSize,
-      ano,
-      mes,
-      dia,
-      filterCOD_CHAMADO,
-      filterDATA_CHAMADO,
-      filterASSUNTO_CHAMADO,
-      filterSTATUS_CHAMADO,
-      filterDTENVIO_CHAMADO,
-      filterNOME_RECURSO,
-      filterNOME_CLIENTE,
-      filterEMAIL_CHAMADO,
-   ]);
+   }, [user, currentPage, pageSize, ano, mes, dia, debouncedFilters]);
 
-   async function fetchChamados(
-      params: URLSearchParams,
-      token: string
-   ): Promise<ApiResponse> {
-      const res = await fetch(`/api/chamado/tabela?${params}`, {
-         headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-         },
-      });
+   // API fetch
+   const fetchChamados = useCallback(
+      async (params: URLSearchParams, token: string): Promise<ApiResponse> => {
+         const res = await fetch(`/api/chamado/tabela?${params}`, {
+            headers: {
+               Authorization: `Bearer ${token}`,
+               'Content-Type': 'application/json',
+            },
+         });
 
-      if (!res.ok) {
-         const errorData = await res.json();
-         throw new Error(errorData.error || 'Erro ao buscar chamados');
-      }
+         if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.error || 'Erro ao buscar chamados');
+         }
 
-      const responseData = await res.json();
+         const responseData = await res.json();
 
-      return {
-         data: responseData.data || [],
-         pagination: responseData.pagination || {
-            currentPage: 1,
-            totalPages: 1,
-            totalRecords: 0,
-            recordsPerPage: pageSize,
-            hasNextPage: false,
-            hasPrevPage: false,
-         },
-      };
-   }
+         return {
+            data: responseData.data || [],
+            pagination: responseData.pagination || {
+               currentPage: 1,
+               totalPages: 1,
+               totalRecords: 0,
+               recordsPerPage: pageSize,
+               hasNextPage: false,
+               hasPrevPage: false,
+            },
+         };
+      },
+      [pageSize]
+   );
+
+   const enabled = useMemo(() => {
+      return !!(
+         (ano === 'todos' || typeof ano === 'number') &&
+         (mes === 'todos' || typeof mes === 'number') &&
+         (dia === 'todos' || typeof dia === 'number') &&
+         token &&
+         user
+      );
+   }, [ano, mes, dia, token, user]);
 
    const {
       data: apiResponse,
@@ -425,32 +513,14 @@ function TabelaChamadoContent() {
       queryKey: ['chamadosAbertos', queryParams.toString(), token],
       queryFn: () => fetchChamados(queryParams, token!),
       enabled,
-      staleTime: CACHE_TIME,
+      staleTime: CONFIG.CACHE_TIME,
       retry: 2,
    });
 
    const data = useMemo(() => apiResponse?.data || [], [apiResponse]);
    const paginationInfo = apiResponse?.pagination;
 
-   // ================================================================================
-   // EFFECTS - FILTROS
-   // ================================================================================
-   useEffect(() => {
-      setCurrentPage(1);
-   }, [
-      filterCOD_CHAMADO,
-      filterDATA_CHAMADO,
-      filterASSUNTO_CHAMADO,
-      filterSTATUS_CHAMADO,
-      filterDTENVIO_CHAMADO,
-      filterNOME_RECURSO,
-      filterNOME_CLIENTE,
-      filterEMAIL_CHAMADO,
-   ]);
-
-   // ================================================================================
-   // HANDLERS - NAVEGAÇÃO COM ROUTER
-   // ================================================================================
+   // Handlers - Navegação
    const handleOpenView = useCallback(
       (view: 'os' | 'tarefas' | 'relatorio' | 'projetos') => {
          router.push(`?modal=${view}`, { scroll: false });
@@ -462,53 +532,36 @@ function TabelaChamadoContent() {
       router.push('?', { scroll: false });
    }, [router]);
 
-   // ================================================================================
-   // HANDLERS - FILTROS
-   // ================================================================================
-   const clearFilters = useCallback(() => {
-      setInputFilterCOD_CHAMADO('');
-      setInputFilterDATA_CHAMADO('');
-      setInputFilterASSUNTO_CHAMADO('');
-      setInputFilterSTATUS_CHAMADO('');
-      setInputFilterDTENVIO_CHAMADO('');
-      setInputFilterNOME_RECURSO('');
-      setInputFilterNOME_CLIENTE('');
-      setInputFilterEMAIL_CHAMADO('');
-      setCurrentPage(1);
-   }, []);
-
-   const handleFiltersChange = useCallback(
-      (newFilters: {
-         ano: number | 'todos';
-         mes: number | 'todos';
-         dia: number | 'todos';
-      }) => {
-         setFilters(prevFilters => ({
-            ...prevFilters,
-            ...newFilters,
-         }));
-      },
-      [setFilters]
+   // Handlers - Paginação
+   const handlePageChange = useCallback(
+      (newPage: number) => setCurrentPage(newPage),
+      []
    );
-
-   // ================================================================================
-   // HANDLERS - PAGINAÇÃO
-   // ================================================================================
-   const handlePageChange = useCallback((newPage: number) => {
-      setCurrentPage(newPage);
-   }, []);
 
    const handlePageSizeChange = useCallback((newSize: number) => {
       setPageSize(newSize);
       setCurrentPage(1);
    }, []);
 
-   // ================================================================================
-   // HANDLERS - MODAIS (VISUALIZAR)
-   // ================================================================================
+   // Handlers - Filtros de Data
+   const handleFiltersChange = useCallback(
+      (newFilters: {
+         ano: number | 'todos';
+         mes: number | 'todos';
+         dia: number | 'todos';
+      }) => {
+         setDateFilters(prevFilters => ({
+            ...prevFilters,
+            ...newFilters,
+         }));
+      },
+      [setDateFilters]
+   );
+
+   // Handlers - Modal Visualizar
    const handleOpenModalVisualizarChamado = useCallback(
       (codChamado: number) => {
-         const chamado = data?.find(c => c.COD_CHAMADO === codChamado);
+         const chamado = data.find(c => c.COD_CHAMADO === codChamado);
          if (chamado) {
             setSelectedChamado(chamado);
             setOpenModalVizualizarChamado(true);
@@ -522,9 +575,7 @@ function TabelaChamadoContent() {
       setSelectedChamado(null);
    }, []);
 
-   // ================================================================================
-   // HANDLERS - MODAIS (ATRIBUIR)
-   // ================================================================================
+   // Handlers - Modal Atribuir
    const handleOpenModalAtribuirChamado = useCallback(
       (chamado: TabelaChamadoProps) => {
          setSelectedChamadoParaAtribuir(chamado);
@@ -533,12 +584,15 @@ function TabelaChamadoContent() {
       []
    );
 
-   // ================================================================================
-   // HANDLERS - MODAIS (RETROATIVA)
-   // ================================================================================
+   const handleCloseModalAtribuirChamado = useCallback(() => {
+      setOpenModalAtribuirChamado(false);
+      setSelectedChamadoParaAtribuir(null);
+   }, []);
+
+   // Handlers - Modal Retroativa
    const handleOpenModalPermitirOsRetroativa = useCallback(
       (codChamado: number) => {
-         const chamado = data?.find(c => c.COD_CHAMADO === codChamado);
+         const chamado = data.find(c => c.COD_CHAMADO === codChamado);
          if (chamado) {
             setSelectedChamadoParaRetroativa(chamado);
             setOpenModalPermitirOsRetroativa(true);
@@ -547,9 +601,12 @@ function TabelaChamadoContent() {
       [data]
    );
 
-   // ================================================================================
-   // HANDLERS - MODAIS (EXCLUSÃO)
-   // ================================================================================
+   const handleCloseModalPermitirOsRetroativa = useCallback(() => {
+      setOpenModalPermitirOsRetroativa(false);
+      setSelectedChamadoParaRetroativa(null);
+   }, []);
+
+   // Handlers - Modal Excluir
    const handleOpenModalExcluirChamado = useCallback((codChamado: number) => {
       setSelectedCodChamadoParaExcluir(codChamado);
    }, []);
@@ -568,9 +625,7 @@ function TabelaChamadoContent() {
       handleCloseModalExcluirChamado();
    }, [queryClient, currentPage, data, handleCloseModalExcluirChamado]);
 
-   // ================================================================================
-   // CONFIGURAÇÃO DA TABELA
-   // ================================================================================
+   // Tabela config
    const colunas = useMemo(
       () =>
          colunasTabelaChamados({
@@ -592,21 +647,17 @@ function TabelaChamadoContent() {
    );
 
    const table = useReactTable({
-      data: data ?? [],
+      data,
       columns: colunas,
       getCoreRowModel: getCoreRowModel(),
       getSortedRowModel: getSortedRowModel(),
       onSortingChange: setSorting,
-      state: {
-         sorting,
-      },
+      state: { sorting },
       manualPagination: true,
       manualFiltering: true,
    });
 
-   // ================================================================================
-   // VALIDAÇÕES E ESTADOS DE CARREGAMENTO
-   // ================================================================================
+   // Validações
    if (isAuthLoading) {
       return <IsLoading isLoading={true} title="Verificando autenticação..." />;
    }
@@ -623,23 +674,26 @@ function TabelaChamadoContent() {
       return <IsError error={error as Error} />;
    }
 
-   // ================================================================================
-   // RENDERIZAÇÃO
-   // ================================================================================
+   const shouldShowNoResults =
+      paginationInfo &&
+      paginationInfo.totalRecords > 0 &&
+      table.getFilteredRowModel().rows.length === 0;
+
    return (
       <div className="flex items-center justify-center">
          {/* VIEW DE CHAMADOS */}
          {(!activeView || activeView === 'chamados') && (
-            <div className="animate-in slide-in-from-bottom-4 max-h-[100vh] w-full max-w-[95vw] overflow-hidden rounded-2xl transition-all duration-500 ease-out">
+            <div
+               className="animate-in slide-in-from-bottom-4 max-h-[90vh] w-full max-w-[95vw] overflow-hidden rounded-2xl transition-all duration-500 ease-out"
+               style={{ animationDuration: `${CONFIG.ANIMATION_DURATION}ms` }}
+            >
                {/* HEADER */}
-               <header className="flex flex-col gap-6 bg-white/50 p-6">
+               <header className="flex flex-col gap-14 bg-white/50 p-6">
                   <div className="flex items-center justify-between gap-8">
                      <div className="flex items-center justify-center gap-6">
-                        <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
-                           <IoCall className="text-black" size={28} />
-                        </div>
-                        <h1 className="text-4xl font-extrabold tracking-widest text-black uppercase select-none">
-                           Chamados
+                        <IoCall className="text-black" size={72} />
+                        <h1 className="text-5xl font-extrabold tracking-widest text-black select-none">
+                           CHAMADOS
                         </h1>
                      </div>
 
@@ -668,118 +722,126 @@ function TabelaChamadoContent() {
                            onFiltersChange={handleFiltersChange}
                         />
                      </div>
-                     <div className="flex items-center">
-                        <FilterControls
-                           showFilters={showFilters}
-                           setShowFilters={setShowFilters}
-                           totalActiveFilters={totalActiveFilters}
-                           clearFilters={clearFilters}
-                           dataLength={paginationInfo?.totalRecords || 0}
-                        />
-                     </div>
                   </div>
                </header>
 
-               {/* ===== TABELA ===== */}
+               {/* TABELA */}
                <main className="h-full w-full overflow-hidden bg-black">
                   <div
                      className="h-full overflow-y-auto"
-                     style={{ maxHeight: MODAL_MAX_HEIGHT }}
+                     style={{ maxHeight: CONFIG.MODAL_MAX_HEIGHT }}
                   >
                      <table className="w-full table-fixed border-collapse">
-                        {/* CABEÇALHO DA TABELA */}
-                        <thead className="sticky top-0 z-20">
+                        <thead
+                           style={{
+                              position: 'sticky',
+                              top: 0,
+                              zIndex: 30,
+                              backgroundColor: '#0f766e',
+                           }}
+                        >
+                           {/* Títulos */}
                            {table.getHeaderGroups().map(headerGroup => (
-                              <tr key={headerGroup.id}>
-                                 {headerGroup.headers.map(header => (
+                              <tr key={headerGroup.id} className="bg-teal-800">
+                                 {headerGroup.headers.map((header, idx) => (
                                     <th
-                                       key={header.id}
-                                       className="bg-teal-800 py-6 font-extrabold tracking-wider text-white select-none"
+                                       key={`header-${idx}-${header.id}`}
+                                       className="bg-teal-800 py-6 text-base font-extrabold tracking-wider text-white select-none"
                                        style={{
-                                          width: getColumnWidth(
-                                             header.column.id
-                                          ),
+                                          width:
+                                             COLUMN_WIDTHS[header.column.id] ||
+                                             'auto',
                                        }}
                                     >
-                                       {header.isPlaceholder
-                                          ? null
-                                          : flexRender(
-                                               header.column.columnDef.header,
-                                               header.getContext()
-                                            )}
+                                       {flexRender(
+                                          header.column.columnDef.header,
+                                          header.getContext()
+                                       )}
                                     </th>
                                  ))}
                               </tr>
                            ))}
 
-                           {/* ===== FILTROS DA TABELA ===== */}
-                           {showFilters && (
-                              <tr>
-                                 {table.getAllColumns().map(column => (
-                                    <th
-                                       key={column.id}
-                                       className="bg-teal-800 px-3 pb-6"
-                                       style={{
-                                          width: getColumnWidth(column.id),
-                                       }}
-                                    >
-                                       {column.id in FILTER_MAP && (
-                                          <FiltrosHeaderTabelaChamado
-                                             value={
-                                                FILTER_MAP[
-                                                   column.id as keyof typeof FILTER_MAP
-                                                ].state
-                                             }
-                                             onChange={value =>
-                                                FILTER_MAP[
-                                                   column.id as keyof typeof FILTER_MAP
-                                                ].setter(String(value))
-                                             }
-                                             columnId={column.id}
+                           {/* Filtros */}
+                           <tr className="bg-teal-800">
+                              {table.getAllColumns().map((column, idx) => (
+                                 <th
+                                    key={`filter-${idx}-${column.id}`}
+                                    className="bg-teal-800 px-3 pb-6"
+                                    style={{
+                                       width:
+                                          COLUMN_WIDTHS[column.id] || 'auto',
+                                    }}
+                                 >
+                                    {column.id === 'acoes' &&
+                                    activeFilterCount > 0 ? (
+                                       <button
+                                          onClick={clearAllFilters}
+                                          title="Limpar Filtros"
+                                          className="group cursor-pointer rounded-full border-none bg-gradient-to-b from-red-600 to-red-700 px-6 py-2.5 shadow-md shadow-black transition-all hover:shadow-xl hover:shadow-black active:scale-95"
+                                       >
+                                          <FaEraser
+                                             size={24}
+                                             className="text-white group-hover:scale-110"
                                           />
-                                       )}
-                                    </th>
-                                 ))}
-                              </tr>
-                           )}
+                                       </button>
+                                    ) : column.id !== 'HORA_CHAMADO' &&
+                                      column.id !== 'acoes' &&
+                                      FILTER_KEYS.includes(
+                                         column.id as FilterKey
+                                      ) ? (
+                                       <FiltrosHeaderTabelaChamado
+                                          value={
+                                             filters[column.id as FilterKey]
+                                          }
+                                          onChange={value =>
+                                             setFilter(
+                                                column.id as FilterKey,
+                                                String(value)
+                                             )
+                                          }
+                                          columnId={column.id}
+                                       />
+                                    ) : null}
+                                 </th>
+                              ))}
+                           </tr>
                         </thead>
 
-                        {/* CORPO DA TABELA */}
+                        {/* CORPO */}
                         <tbody>
+                           {table.getRowModel().rows.map((row, rowIndex) => (
+                              <tr
+                                 key={row.id}
+                                 className={`group transition-all ${
+                                    rowIndex % 2 === 0
+                                       ? 'bg-slate-800'
+                                       : 'bg-slate-700'
+                                 }`}
+                              >
+                                 {row.getVisibleCells().map(cell => (
+                                    <td
+                                       key={cell.id}
+                                       className="border border-white/30 bg-black p-2 text-sm font-semibold tracking-widest text-white select-none group-hover:bg-white/50 group-hover:text-black"
+                                       style={{
+                                          width:
+                                             COLUMN_WIDTHS[cell.column.id] ||
+                                             'auto',
+                                       }}
+                                    >
+                                       <div className="overflow-hidden">
+                                          {flexRender(
+                                             cell.column.columnDef.cell,
+                                             cell.getContext()
+                                          )}
+                                       </div>
+                                    </td>
+                                 ))}
+                              </tr>
+                           ))}
+
+                           {/* Células vazias */}
                            {table.getRowModel().rows.length > 0 &&
-                              !isLoading &&
-                              table.getRowModel().rows.map((row, rowIndex) => (
-                                 <tr
-                                    key={row.id}
-                                    className={`group transition-all ${
-                                       rowIndex % 2 === 0
-                                          ? 'bg-slate-800'
-                                          : 'bg-slate-700'
-                                    }`}
-                                 >
-                                    {row.getVisibleCells().map(cell => (
-                                       <td
-                                          key={cell.id}
-                                          className="border border-white/30 bg-black p-2 text-sm font-semibold tracking-widest text-white select-none group-hover:bg-white/50 group-hover:text-black"
-                                          style={{
-                                             width: getColumnWidth(
-                                                cell.column.id
-                                             ),
-                                          }}
-                                       >
-                                          <div className="overflow-hidden">
-                                             {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
-                                             )}
-                                          </div>
-                                       </td>
-                                    ))}
-                                 </tr>
-                              ))}
-                           {/* CÉLULAS VAZIAS PARA PREENCHER O ESPAÇO */}
-                           {!isLoading &&
-                              table.getRowModel().rows.length > 0 &&
                               Array.from({
                                  length: Math.max(
                                     0,
@@ -802,8 +864,10 @@ function TabelaChamadoContent() {
                                           key={column.id}
                                           className="border border-white/30 bg-black p-2"
                                           style={{
-                                             width: getColumnWidth(column.id),
-                                             height: '54px', // Altura aproximada de uma linha
+                                             width:
+                                                COLUMN_WIDTHS[column.id] ||
+                                                'auto',
+                                             height: '54px',
                                           }}
                                        >
                                           &nbsp;
@@ -818,161 +882,26 @@ function TabelaChamadoContent() {
 
                {/* PAGINAÇÃO */}
                {paginationInfo && paginationInfo.totalRecords > 0 && (
-                  <div className="bg-white/70 px-12 py-4">
-                     <div className="flex items-center justify-between">
-                        {/* Informações da página */}
-                        <section className="flex items-center gap-4">
-                           <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
-                              {table.getFilteredRowModel().rows.length} registro
-                              {table.getFilteredRowModel().rows.length !== 1
-                                 ? 's'
-                                 : ''}{' '}
-                              na página atual,
-                           </span>
-                           <span className="text-lg font-extrabold tracking-widest text-black italic select-none">
-                              {paginationInfo.totalRecords > 1
-                                 ? `de ${formatarCodNumber(paginationInfo.totalRecords)} encontrados no total`
-                                 : `de 1 encontrado no total`}
-                           </span>
-                        </section>
-
-                        {/* Controles de paginação */}
-                        <section className="flex items-center gap-3">
-                           {/* Seletor de itens por página */}
-                           <div className="flex items-center gap-2">
-                              <span className="text-base font-semibold tracking-widest text-black italic select-none">
-                                 Itens por página:
-                              </span>
-                              <select
-                                 value={pageSize}
-                                 onChange={e =>
-                                    handlePageSizeChange(Number(e.target.value))
-                                 }
-                                 className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
-                              >
-                                 {PAGE_SIZE_OPTIONS.map(size => (
-                                    <option
-                                       key={size}
-                                       value={size}
-                                       className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
-                                    >
-                                       {size}
-                                    </option>
-                                 ))}
-                              </select>
-                           </div>
-
-                           {/* Botões de navegação */}
-                           <div className="flex items-center gap-3">
-                              <button
-                                 onClick={() => handlePageChange(1)}
-                                 disabled={!paginationInfo.hasPrevPage}
-                                 aria-label="Ir para primeira página"
-                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                              >
-                                 <FiChevronsLeft
-                                    className="text-black group-disabled:text-red-500"
-                                    size={24}
-                                 />
-                              </button>
-
-                              <button
-                                 onClick={() =>
-                                    handlePageChange(currentPage - 1)
-                                 }
-                                 disabled={!paginationInfo.hasPrevPage}
-                                 aria-label="Página anterior"
-                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                              >
-                                 <MdChevronLeft
-                                    className="text-black group-disabled:text-red-500"
-                                    size={24}
-                                 />
-                              </button>
-
-                              <div className="flex items-center justify-center gap-2">
-                                 <span className="text-base font-semibold tracking-widest text-black italic select-none">
-                                    Página{' '}
-                                    <select
-                                       value={currentPage}
-                                       onChange={e =>
-                                          handlePageChange(
-                                             Number(e.target.value)
-                                          )
-                                       }
-                                       aria-label="Selecionar página"
-                                       className="cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 text-base font-semibold tracking-widest text-black italic shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
-                                    >
-                                       {Array.from(
-                                          { length: paginationInfo.totalPages },
-                                          (_, i) => (
-                                             <option
-                                                key={i + 1}
-                                                value={i + 1}
-                                                className="bg-white text-base font-semibold tracking-widest text-black italic select-none"
-                                             >
-                                                {i + 1}
-                                             </option>
-                                          )
-                                       )}
-                                    </select>
-                                 </span>
-                                 <span className="text-base font-semibold tracking-widest text-black italic select-none">
-                                    {' '}
-                                    de{' '}
-                                    {formatarCodNumber(
-                                       paginationInfo.totalPages
-                                    )}
-                                 </span>
-                              </div>
-
-                              <button
-                                 onClick={() =>
-                                    handlePageChange(currentPage + 1)
-                                 }
-                                 disabled={!paginationInfo.hasNextPage}
-                                 aria-label="Próxima página"
-                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                              >
-                                 <MdChevronRight
-                                    className="text-black group-disabled:text-red-500"
-                                    size={24}
-                                 />
-                              </button>
-
-                              <button
-                                 onClick={() =>
-                                    handlePageChange(paginationInfo.totalPages)
-                                 }
-                                 disabled={!paginationInfo.hasNextPage}
-                                 aria-label="Ir para última página"
-                                 className="group cursor-pointer rounded-md border-t-1 border-slate-400 px-4 py-1 shadow-md shadow-black transition-all hover:bg-white/60 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                              >
-                                 <FiChevronsRight
-                                    className="text-black group-disabled:text-red-500"
-                                    size={24}
-                                 />
-                              </button>
-                           </div>
-                        </section>
-                     </div>
-                  </div>
+                  <PaginationControls
+                     paginationInfo={paginationInfo}
+                     currentPage={currentPage}
+                     pageSize={pageSize}
+                     onPageChange={handlePageChange}
+                     onPageSizeChange={handlePageSizeChange}
+                     totalRows={table.getFilteredRowModel().rows.length}
+                  />
                )}
 
-               {/* ===== MENSAGEM QUANDO NÃO HÁ CHAMADOS ===== */}
-               {data && data.length === 0 && !isLoading && (
+               {/* ESTADOS VAZIOS */}
+               {data.length === 0 && !isLoading && (
                   <EmptyState ano={ano} mes={mes} dia={dia} />
                )}
-
-               {/* MENSAGEM QUANDO OS FILTROS NÃO RETORNAM RESULTADOS */}
-               {paginationInfo &&
-                  paginationInfo.totalRecords > 0 &&
-                  table.getFilteredRowModel().rows.length === 0 && (
-                     <NoResultsState
-                        totalActiveFilters={totalActiveFilters}
-                        clearFilters={clearFilters}
-                     />
-                  )}
+               {shouldShowNoResults && (
+                  <NoResultsState
+                     totalActiveFilters={activeFilterCount}
+                     clearFilters={clearAllFilters}
+                  />
+               )}
             </div>
          )}
 
@@ -1009,7 +938,7 @@ function TabelaChamadoContent() {
          {openModalAtribuirChamado && selectedChamadoParaAtribuir && (
             <ModalAtribuirChamado
                isOpen={openModalAtribuirChamado}
-               onClose={() => setOpenModalAtribuirChamado(false)}
+               onClose={handleCloseModalAtribuirChamado}
                chamado={selectedChamadoParaAtribuir}
             />
          )}
@@ -1028,7 +957,7 @@ function TabelaChamadoContent() {
          {openModalPermitirOsRetroativa && selectedChamadoParaRetroativa && (
             <ModalPermitirRetroativoOsChamado
                isOpen={openModalPermitirOsRetroativa}
-               onClose={() => setOpenModalPermitirOsRetroativa(false)}
+               onClose={handleCloseModalPermitirOsRetroativa}
                chamadoId={String(selectedChamadoParaRetroativa.COD_CHAMADO)}
                currentUserId={''}
             />

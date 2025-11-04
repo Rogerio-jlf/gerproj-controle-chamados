@@ -4,7 +4,7 @@ import { debounce } from 'lodash';
 import { useMemo, useState, useCallback, useEffect, useRef, memo } from 'react';
 
 // COMPONENTS
-import { SelectAtiEncTabelaProjeto } from './Select_ATI_ENC_Tabela_Projeto';
+import { DropdownAtiEnc } from './Dropdown_ATI_ENC';
 
 // TYPES
 import { InputFilterTableHeaderProps } from '../../../../types/types';
@@ -223,7 +223,7 @@ export const FiltrosHeaderTabelaProjeto = memo(
 
       // Se for dropdown, renderizar o componente específico
       if (isDropdownColumn) {
-         return <SelectAtiEncTabelaProjeto value={value} onChange={onChange} />;
+         return <DropdownAtiEnc value={value} onChange={onChange} />;
       }
 
       // Caso contrário, renderizar o input normal

@@ -318,6 +318,21 @@ function buildWhereConditions(
       params.push(Number(codOsQuery));
    }
 
+   // filter_TAREFA_COMPLETA
+   const filterTarefaCompleta = getCleanParam(
+      searchParams.get('filter_TAREFA_COMPLETA')
+   );
+   if (filterTarefaCompleta) {
+      conditions.push(
+         '(CAST(TAREFA.COD_TAREFA AS VARCHAR(20)) LIKE ? OR UPPER(TAREFA.NOME_TAREFA) LIKE ?)'
+      );
+      params.push(
+         `%${filterTarefaCompleta}%`,
+         `%${filterTarefaCompleta.toUpperCase()}%`
+      );
+   }
+   // =====
+
    // ===== FILTROS DE COLUNA =====
    const filterChamadoOs = getCleanParam(searchParams.get('filter_CHAMADO_OS'));
    if (filterChamadoOs) {

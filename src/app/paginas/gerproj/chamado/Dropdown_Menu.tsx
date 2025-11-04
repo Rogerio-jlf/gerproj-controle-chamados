@@ -186,7 +186,7 @@ export function DropdownMenuTabelaChamado({
                setIsOpen(!isOpen);
                if (!isOpen) setActiveSubMenu(null);
             }}
-            className="flex cursor-pointer items-center justify-center gap-4 rounded-md border-none bg-teal-700 px-10 py-4 text-white shadow-md shadow-black transition-all hover:bg-teal-900 focus:ring-2 focus:ring-pink-600 focus:outline-none active:scale-95"
+            className="flex cursor-pointer items-center justify-center gap-4 rounded-md border-none bg-teal-700 px-10 py-4 text-white shadow-md shadow-black transition-all hover:shadow-xl hover:shadow-black focus:ring-4 focus:ring-pink-600 focus:outline-none active:scale-95"
          >
             <FaChartBar className="text-white" size={24} />
             <span className="text-lg font-extrabold tracking-widest text-white uppercase">

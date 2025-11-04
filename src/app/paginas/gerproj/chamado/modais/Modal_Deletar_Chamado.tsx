@@ -106,41 +106,46 @@ export function ModalExcluirChamado({
       <div className="animate-in fade-in fixed inset-0 z-60 flex items-center justify-center p-4 duration-300">
          {/* ===== OVERLAY ===== */}
          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+         {/* ========== */}
 
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border-0 bg-white shadow-lg shadow-black transition-all duration-500 ease-out">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-4xl overflow-hidden rounded-2xl border border-teal-900 bg-white transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
-            <header className="relative flex items-center justify-between bg-gradient-to-r from-teal-600 to-teal-700 p-6 shadow-sm shadow-black">
+            <header className="relative flex items-center justify-between bg-teal-700 p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
-                  <div className="flex items-center justify-center rounded-lg bg-white/30 p-4 shadow-md shadow-black">
-                     <RiDeleteBin5Fill className="text-black" size={28} />
-                  </div>
+                  <RiDeleteBin5Fill className="text-gray-300" size={72} />
                   <div className="flex flex-col">
-                     <h1 className="text-3xl font-extrabold tracking-widest text-black uppercase select-none">
-                        Excluir Chamado
+                     <h1 className="text-4xl font-extrabold tracking-widest text-gray-300 select-none">
+                        EXCLUIR CHAMADO
                      </h1>
-                     <p className="text-xl font-extrabold tracking-widest text-black italic select-none">
-                        Código #{formatarCodNumber(codChamado)}
+                     <p className="text-xl font-extrabold tracking-widest text-gray-300 italic select-none">
+                        CÓDIGO {formatarCodNumber(codChamado)}
                      </p>
                   </div>
                </div>
+               {/* ========== */}
 
                <button
                   onClick={handleCloseModalExcluirChamado}
-                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={isLoading}
+                  className="group active::scale-95 cursor-pointer rounded-full bg-white/20 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500"
                >
-                  <IoClose size={24} />
+                  <IoClose
+                     className="text-white group-hover:scale-110"
+                     size={24}
+                  />
                </button>
             </header>
+            {/* ==================== */}
 
             {/* ===== CONTEÚDO ===== */}
             <main className="flex flex-col gap-12 px-6 py-16">
-               <div className="flex flex-col items-center justify-center gap-10 rounded-xl border-t border-l-8 border-red-600 bg-white p-6 text-center shadow-md shadow-black">
+               <div className="flex flex-col items-center justify-center gap-10 rounded-xl border-l-8 border-red-600 bg-white p-6 text-center shadow-sm shadow-black">
                   <div className="flex flex-col items-center justify-center">
                      <div className="flex items-center justify-center gap-3">
                         <h3 className="text-xl font-extrabold tracking-wider text-black italic select-none">
                            Você selecionou o{' '}
                            <span className="text-2xl font-bold tracking-widest text-red-600 italic select-none">
-                              Chamado #{formatarCodNumber(codChamado)}
+                              Chamado {formatarCodNumber(codChamado)}
                            </span>{' '}
                            para exclusão. Se você deseja continuar com a
                            operação, clique no botão excluir, abaixo.
@@ -156,7 +161,7 @@ export function ModalExcluirChamado({
                <button
                   onClick={handleCloseModalExcluirChamado}
                   disabled={isLoading}
-                  className="w-[200px] cursor-pointer rounded-md border-none bg-red-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:bg-red-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-[200px] cursor-pointer rounded-md border-none bg-gradient-to-r from-red-600 to-red-700 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-sm shadow-black transition-all hover:shadow-lg hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                >
                   Cancelar
                </button>
@@ -165,18 +170,18 @@ export function ModalExcluirChamado({
                <button
                   onClick={handleSubmitExcluirChamado}
                   disabled={isLoading || !codChamado}
-                  className="w-[200px] cursor-pointer rounded-md border-none bg-blue-500 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-md shadow-black transition-all hover:bg-blue-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-[200px] cursor-pointer rounded-md border-none bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-2 text-lg font-extrabold tracking-widest text-white shadow-sm shadow-black transition-all hover:shadow-lg hover:shadow-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                >
                   {isLoading ? (
                      <span className="flex items-center justify-center gap-3">
-                        <LoadingButton size={20} />
+                        <LoadingButton size={24} />
                         Excluindo...
                      </span>
                   ) : (
                      <div className="flex items-center justify-center gap-3">
                         <RiDeleteBin5Fill
                            className="mr-2 inline-block"
-                           size={20}
+                           size={24}
                         />
                         <span>Excluir</span>
                      </div>

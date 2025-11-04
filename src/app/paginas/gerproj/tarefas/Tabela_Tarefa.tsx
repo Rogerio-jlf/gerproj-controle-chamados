@@ -386,8 +386,8 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
       });
 
       const filterMappings: Record<FilterKey, string> = {
-         TAREFA_COMPLETA: 'filter_NOME_TAREFA',
-         PROJETO_COMPLETO: 'filter_NOME_PROJETO',
+         TAREFA_COMPLETA: 'filter_TAREFA_COMPLETA',
+         PROJETO_COMPLETO: 'filter_PROJETO_COMPLETO',
          NOME_CLIENTE: 'filter_NOME_CLIENTE',
          NOME_RECURSO: 'filter_NOME_RECURSO',
          DTSOL_TAREFA: 'filter_DTSOL_TAREFA',
@@ -543,10 +543,10 @@ export function TabelaTarefas({ isOpen, onClose }: Props) {
 
                   <button
                      onClick={handleCloseTabelaTarefa}
-                     className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-95"
+                     className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500"
                   >
                      <IoClose
-                        className="text-white group-hover:scale-125"
+                        className="text-white group-hover:scale-110"
                         size={24}
                      />
                   </button>

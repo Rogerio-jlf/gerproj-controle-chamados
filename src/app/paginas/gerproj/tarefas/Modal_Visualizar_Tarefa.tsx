@@ -84,7 +84,7 @@ export function ModalVisualizarTarefa({
          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
          {/* ========== */}
 
-         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-[80vw] overflow-hidden rounded-2xl border-0 bg-white/70 transition-all duration-500 ease-out">
+         <div className="animate-in slide-in-from-bottom-4 relative z-10 max-h-[100vh] w-full max-w-[80vw] overflow-hidden rounded-2xl border-0 bg-white transition-all duration-500 ease-out">
             {/* ===== HEADER ===== */}
             <header className="relative flex items-center justify-between bg-gradient-to-r from-teal-600 to-teal-700 p-6 shadow-sm shadow-black">
                <div className="flex items-center justify-center gap-6">
@@ -102,9 +102,12 @@ export function ModalVisualizarTarefa({
 
                <button
                   onClick={handleCloseModalVisualizarTarefa}
-                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 text-white transition-all hover:scale-125 hover:rotate-180 hover:bg-red-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500"
                >
-                  <IoClose size={24} />
+                  <IoClose
+                     className="text-white group-hover:scale-110"
+                     size={24}
+                  />
                </button>
             </header>
             {/* ==================== */}

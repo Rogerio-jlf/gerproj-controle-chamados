@@ -38,16 +38,10 @@ export function IsLoading({
                      Carregando
                   </span>
 
-                  <div className="flex gap-1">
-                     <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-400"></div>
-                     <div
-                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-400"
-                        style={{ animationDelay: '0.1s' }}
-                     ></div>
-                     <div
-                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-400"
-                        style={{ animationDelay: '0.2s' }}
-                     ></div>
+                  <div className="inline-flex gap-1">
+                     <span className="h-2 w-2 animate-[bounce_1s_ease-in-out_infinite] rounded-full bg-blue-600"></span>
+                     <span className="h-2 w-2 animate-[bounce_1s_ease-in-out_0.2s_infinite] rounded-full bg-blue-600"></span>
+                     <span className="h-2 w-2 animate-[bounce_1s_ease-in-out_0.4s_infinite] rounded-full bg-blue-600"></span>
                   </div>
                </div>
             </div>

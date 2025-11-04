@@ -22,8 +22,8 @@ interface OptionType {
 // CONSTANTES
 // ================================================================================
 const OPTIONS: readonly OptionType[] = [
-   { name: 'SIM', code: 'SIM' },
-   { name: 'NÃO', code: 'NAO' },
+   { name: 'ATI', code: 'ATI' },
+   { name: 'ENC', code: 'ENC' },
 ] as const;
 
 // ================================================================================
@@ -102,7 +102,7 @@ DropdownOption.displayName = 'DropdownOption';
 // ================================================================================
 // COMPONENTE PRINCIPAL
 // ================================================================================
-export const DropdownSimNao = memo(({ value, onChange }: SelectAtiEncProps) => {
+export const DropdownAtiEnc = memo(({ value, onChange }: SelectAtiEncProps) => {
    const [isOpen, setIsOpen] = useState(false);
    const [localValue, setLocalValue] = useState(value);
    const isUserTyping = useRef(false);
@@ -226,4 +226,4 @@ export const DropdownSimNao = memo(({ value, onChange }: SelectAtiEncProps) => {
    );
 });
 
-DropdownSimNao.displayName = 'DropdownSimNaoTabelaProjeto';
+DropdownAtiEnc.displayName = 'DropdownAtiEncTabelaProjeto';

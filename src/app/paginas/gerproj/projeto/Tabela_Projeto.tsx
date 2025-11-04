@@ -547,10 +547,10 @@ export function TabelaProjeto({ isOpen, onClose }: Props) {
 
                   <button
                      onClick={handleCloseTabelaProjeto}
-                     className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-95"
+                     className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500"
                   >
                      <IoClose
-                        className="text-white group-hover:scale-125"
+                        className="text-white group-hover:scale-110"
                         size={24}
                      />
                   </button>
