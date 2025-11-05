@@ -37,9 +37,10 @@ interface DropdownOption {
 
 interface DropdownHeaderProps {
    onOpenTabelaOS: () => void;
-   onOpenRelatorioOS: () => void;
    onOpenTabelaTarefa: () => void;
    onOpenTabelaProjeto: () => void;
+   onOpenRelatorioOS: () => void;
+   onOpenRelatorioChamados: () => void;
 }
 
 // ================================================================================
@@ -47,9 +48,10 @@ interface DropdownHeaderProps {
 // ================================================================================
 export function DropdownMenuTabelaChamado({
    onOpenTabelaOS,
-   onOpenRelatorioOS,
    onOpenTabelaTarefa,
    onOpenTabelaProjeto,
+   onOpenRelatorioOS,
+   onOpenRelatorioChamados,
 }: DropdownHeaderProps) {
    const [isOpen, setIsOpen] = useState(false);
    const [hoveredOption, setHoveredOption] = useState<string | null>(null);
@@ -76,21 +78,21 @@ export function DropdownMenuTabelaChamado({
    // Opções de relatório (sub-menu)
    const relatorioSubOptions: SubOption[] = [
       {
-         id: 'relatorio-os',
-         label: "Relatório OS's",
-         icon: BiSolidReport,
+         id: 'relatorio-chamado',
+         label: 'Relatório Chamados',
+         icon: AiOutlineBarChart,
          action: () => {
-            onOpenRelatorioOS();
+            onOpenRelatorioChamados();
             setIsOpen(false);
             setActiveSubMenu(null);
          },
       },
       {
-         id: 'relatorio-grafico',
-         label: 'Relatório Gráfico',
-         icon: AiOutlineBarChart,
+         id: 'relatorio-os',
+         label: "Relatório OS's",
+         icon: BiSolidReport,
          action: () => {
-            console.log('Relatório Gráfico');
+            onOpenRelatorioOS();
             setIsOpen(false);
             setActiveSubMenu(null);
          },

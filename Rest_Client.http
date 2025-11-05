@@ -39,4 +39,10 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lI
 # ============================================================
 ###
 GET http://localhost:3000/api/os/relatorio?agruparPor=cliente&ano=2025&mes=03&dataFim=2025-03-10
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MTgzOTA2NCwiZXhwIjoxNzYxODQ5ODY0fQ.Y2W0fekmr-u9QD2jSyZHVl6uMxWEg8dKYPTLJR2i340
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MjMzNjgxOCwiZXhwIjoxNzYyMzQ3NjE4fQ.zQ0XmHTBy_enCQNG9s3r95VebE_5pOP2vqj1J3I_GbY
+# ============================================================
+# RELATÓRIOS CHAMADOS
+# ============================================================
+###
+GET http://localhost:3000/api/chamado/relatorio?agruparPor=cliente&ano=2025&mes=03&dataFim=2025-03-10
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MjM0OTE4MywiZXhwIjoxNzYyMzU5OTgzfQ.ZT7zEK56DAX_ntg7LDlkdB-jL4gY_eaQsucJYcYP1QQ

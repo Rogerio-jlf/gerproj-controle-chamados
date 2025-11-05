@@ -36,6 +36,7 @@ import { FaFilterCircleXmark } from 'react-icons/fa6';
 import { FaEraser, FaExclamationTriangle } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
+import { ModalRelatorioChamados } from './relatorio/modal/Modal_Relatorio_Chamado';
 
 // ================================================================================
 // CONSTANTES
@@ -396,8 +397,9 @@ function TabelaChamadoContent() {
       | 'chamados'
       | 'os'
       | 'tarefas'
-      | 'relatorio'
       | 'projetos'
+      | 'relatorio'
+      | 'relatorio-chamados'
       | null;
 
    const [OpenModalVizualizarChamado, setOpenModalVizualizarChamado] =
@@ -522,7 +524,14 @@ function TabelaChamadoContent() {
 
    // Handlers - Navegação
    const handleOpenView = useCallback(
-      (view: 'os' | 'tarefas' | 'relatorio' | 'projetos') => {
+      (
+         view:
+            | 'os'
+            | 'tarefas'
+            | 'relatorio'
+            | 'projetos'
+            | 'relatorio-chamados'
+      ) => {
          router.push(`?modal=${view}`, { scroll: false });
       },
       [router]
@@ -709,6 +718,9 @@ function TabelaChamadoContent() {
                               }
                               onOpenRelatorioOS={() =>
                                  handleOpenView('relatorio')
+                              }
+                              onOpenRelatorioChamados={() =>
+                                 handleOpenView('relatorio-chamados')
                               }
                            />
                         </div>
@@ -913,6 +925,11 @@ function TabelaChamadoContent() {
          {/* VIEW DROPDOWN DA TABELA DE TAREFAS */}
          {activeView === 'tarefas' && (
             <TabelaTarefas isOpen={true} onClose={handleCloseView} />
+         )}
+
+         {/* VIEW DROPDOWN DO RELATÓRIO DE OS'S */}
+         {activeView === 'relatorio-chamados' && (
+            <ModalRelatorioChamados isOpen={true} onClose={handleCloseView} />
          )}
 
          {/* VIEW DROPDOWN DO RELATÓRIO DE OS'S */}
