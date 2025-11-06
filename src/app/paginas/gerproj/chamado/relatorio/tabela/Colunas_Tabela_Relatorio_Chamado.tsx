@@ -1,24 +1,102 @@
 // IMPORTS
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as TooltipRadix from '@radix-ui/react-tooltip';
+import Link from 'next/link';
 
 // FORMATTERS
 import {
    formatarCodNumber,
    formatarDataParaBR,
    formatarDataHoraParaBR,
+   formatarHora,
+   obterSufixoHoras,
+   formatarHorasTotaisHorasDecimais,
 } from '../../../../../../utils/formatters';
-
-import { TabelaChamadoProps } from '../../../../../../types/types';
 
 // HELPERS
 import { corrigirTextoCorrompido } from '../../../../../../lib/corrigirTextoCorrompido';
+
+// ================================================================================
+// INTERFACES
+// ================================================================================
+export interface DetalhesChamadoColunas {
+   codChamado: number;
+   dataChamado: string;
+   horaChamado: string;
+   assuntoChamado: string | null;
+   emailChamado: string | null;
+   nomeRecurso: string | null;
+   dtEnvioChamado: string | null;
+   quantidadeHorasGastasChamado: number | null;
+   statusChamado: string;
+   conclusaoChamado: string | null;
+   nomeClassificacao: string | null;
+}
+
+interface ColunaDefinition {
+   id: string;
+   header: string;
+   accessor: keyof DetalhesChamadoColunas;
+   render: (value: any, row: DetalhesChamadoColunas) => React.ReactNode;
+   showWhen?: (agruparPor: string) => boolean;
+   align?: 'left' | 'center' | 'right';
+}
 
 // ================================================================================
 // CONSTANTES
 // ================================================================================
 const EMPTY_VALUE = 'n/a';
 
+// ================================================================================
+// HOOKS CUSTOMIZADOS
+// ================================================================================
+function useTextOverflow(
+   value: string | null | undefined,
+   processedValue: string | null
+) {
+   const textRef = useRef<HTMLSpanElement>(null);
+   const [showTooltip, setShowTooltip] = useState(false);
+
+   useEffect(() => {
+      const checkOverflow = () => {
+         if (textRef.current && value) {
+            const isOverflowing =
+               textRef.current.scrollWidth > textRef.current.clientWidth ||
+               textRef.current.scrollHeight > textRef.current.clientHeight;
+            setShowTooltip(isOverflowing);
+         }
+      };
+
+      const timeoutId = setTimeout(checkOverflow, 100);
+      window.addEventListener('resize', checkOverflow);
+
+      return () => {
+         clearTimeout(timeoutId);
+         window.removeEventListener('resize', checkOverflow);
+      };
+   }, [value, processedValue]);
+
+   return { textRef, showTooltip };
+}
+
+// ================================================================================
+// COMPONENTES AUXILIARES
+// ================================================================================
+const TooltipContentCustom = ({ content }: { content: string }) => (
+   <TooltipRadix.Content
+      side="top"
+      align="start"
+      className="animate-in fade-in-0 zoom-in-95 z-[70] max-w-[800px] rounded-lg border border-pink-500 bg-white px-6 py-2 text-sm font-semibold tracking-widest text-black italic shadow-sm shadow-black select-none"
+      sideOffset={10}
+   >
+      <div className="break-words">{corrigirTextoCorrompido(content)}</div>
+      <TooltipRadix.Arrow className="fill-black" />
+   </TooltipRadix.Content>
+);
+
+// ================================================================================
+// COMPONENTES AUXILIARES DE CÉLULAS
+// ================================================================================
 const getStylesStatus = (status: string | undefined) => {
    switch (status?.toUpperCase()) {
       case 'NAO FINALIZADO':
@@ -46,44 +124,7 @@ const getStylesStatus = (status: string | undefined) => {
          return 'bg-gray-500 text-black italic';
    }
 };
-
-// ================================================================================
-// INTERFACES
-// ================================================================================
-export interface DetalheChamado {
-   codChamado: number;
-   data: string | null;
-   hora: string | null;
-   assunto: string | null;
-   status: string | null;
-   prioridade: number | null;
-   dataEnvio: string | null;
-   diasEmAberto: number | null;
-   tempoAtendimentoDias: number | null;
-   cliente?: string | null;
-   codCliente?: number | null;
-   recurso?: string | null;
-   codRecurso?: number | null;
-   projeto?: string | null;
-   codProjeto?: number | null;
-   tarefa?: string | null;
-   codTarefa?: number | null;
-   classificacao?: string | null;
-   codClassificacao?: number | null;
-}
-
-interface ColunaDefinition {
-   id: string;
-   header: string;
-   accessor: keyof DetalheChamado;
-   render: (value: any, row: DetalheChamado) => React.ReactNode;
-   showWhen?: (agruparPor: string) => boolean;
-   align?: 'left' | 'center' | 'right';
-}
-
-// ================================================================================
-// COMPONENTES AUXILIARES DE CÉLULAS
-// ================================================================================
+// ====================
 
 /**
  * Célula de número formatado
@@ -100,6 +141,7 @@ const CellNumber = ({ value }: { value: number | null }) => {
       </td>
    );
 };
+// ====================
 
 /**
  * Célula de data formatada
@@ -116,30 +158,7 @@ const CellDate = ({ value }: { value: string | null }) => {
       </td>
    );
 };
-
-/**
- * Célula de data e hora formatada
- */
-const CellDateTime = ({
-   value,
-   includeTime = true,
-}: {
-   value: string | null;
-   includeTime?: boolean;
-}) => {
-   const ValueFormatted = useMemo(() => {
-      if (!value) return EMPTY_VALUE;
-      return includeTime
-         ? formatarDataHoraParaBR(value)
-         : formatarDataParaBR(value);
-   }, [value, includeTime]);
-
-   return (
-      <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-         {ValueFormatted}
-      </td>
-   );
-};
+// ====================
 
 /**
  * Célula de hora simples
@@ -147,42 +166,42 @@ const CellDateTime = ({
 const CellHora = ({ value }: { value: string | null }) => {
    return (
       <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-         {value || EMPTY_VALUE}
+         {formatarHora(value || EMPTY_VALUE)}{' '}
+         {obterSufixoHoras(value || EMPTY_VALUE)}
       </td>
    );
 };
+// ====================
 
 /**
- * Célula de texto formatada (para assunto, projeto, tarefa, classificacao)
+ * Célula de texto formatada (para assunto, classificacao, etc)
+ * ✅ Refatorado seguindo padrão do CellEmail
  */
 const CellText = ({ value }: { value?: string | null }) => {
-   const textRef = useRef<HTMLSpanElement>(null);
-   const [showTooltip, setShowTooltip] = useState(false);
-
+   const isEmpty = !value || value.trim() === '';
    const ValueFormatted = useMemo(
-      () => (value ? corrigirTextoCorrompido(value) : EMPTY_VALUE),
-      [value]
+      () => (isEmpty ? EMPTY_VALUE : corrigirTextoCorrompido(value)),
+      [value, isEmpty]
    );
 
-   useEffect(() => {
-      const checkOverflow = () => {
-         if (textRef.current && value) {
-            const isOverflowing =
-               textRef.current.scrollWidth > textRef.current.clientWidth ||
-               textRef.current.scrollHeight > textRef.current.clientHeight;
-            setShowTooltip(isOverflowing);
-         }
-      };
+   const { textRef, showTooltip } = useTextOverflow(value, ValueFormatted);
 
-      const timeoutId = setTimeout(checkOverflow, 100);
-      window.addEventListener('resize', checkOverflow);
+   // Sem tooltip - renderização simples
+   if (!showTooltip) {
+      return (
+         <td className="p-3 text-left text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
+            {isEmpty ? (
+               EMPTY_VALUE
+            ) : (
+               <span ref={textRef} className="block w-full truncate">
+                  {ValueFormatted}
+               </span>
+            )}
+         </td>
+      );
+   }
 
-      return () => {
-         clearTimeout(timeoutId);
-         window.removeEventListener('resize', checkOverflow);
-      };
-   }, [value, ValueFormatted]);
-
+   // Com tooltip - texto com overflow
    return (
       <td className="p-3 text-left text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
          <TooltipRadix.Provider delayDuration={200}>
@@ -196,41 +215,133 @@ const CellText = ({ value }: { value?: string | null }) => {
                   </span>
                </TooltipRadix.Trigger>
                <TooltipRadix.Portal>
-                  <TooltipRadix.Content
-                     side="top"
-                     align="start"
-                     className="animate-in fade-in-0 zoom-in-95 z-[70] max-w-[800px] rounded-lg border border-pink-500 bg-white px-6 py-2 text-sm font-semibold tracking-widest text-black italic shadow-sm shadow-black select-none"
-                     sideOffset={10}
-                  >
-                     <div className="break-words">
-                        {corrigirTextoCorrompido(ValueFormatted)}
-                     </div>
-                     <TooltipRadix.Arrow className="fill-black" />
-                  </TooltipRadix.Content>
+                  <TooltipContentCustom content={value!} />
                </TooltipRadix.Portal>
             </TooltipRadix.Root>
          </TooltipRadix.Provider>
       </td>
    );
 };
+// ====================
+
+/**
+ * Célula de e-mail formatada com link mailto
+ * ✅ Refatorado seguindo padrão do CellEmail do exemplo
+ */
+const CellEmail = ({ value }: { value?: string | null }) => {
+   const isEmpty = !value || value.trim() === '';
+   const ValueFormatted = useMemo(
+      () => (isEmpty ? EMPTY_VALUE : corrigirTextoCorrompido(value)),
+      [value, isEmpty]
+   );
+
+   const { textRef, showTooltip } = useTextOverflow(value, ValueFormatted);
+
+   // Sem tooltip - renderização simples
+   if (!showTooltip) {
+      return (
+         <td className="p-3 text-left text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
+            <Link
+               href={isEmpty ? '#' : `mailto:${value}`}
+               className="block w-full"
+               onClick={isEmpty ? e => e.preventDefault() : undefined}
+            >
+               {isEmpty ? (
+                  EMPTY_VALUE
+               ) : (
+                  <span ref={textRef} className="block w-full truncate">
+                     {ValueFormatted}
+                  </span>
+               )}
+            </Link>
+         </td>
+      );
+   }
+
+   // Com tooltip - email com overflow
+   return (
+      <td className="p-3 text-left text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
+         <Link href={`mailto:${value}`} className="block w-full">
+            <TooltipRadix.Provider delayDuration={200}>
+               <TooltipRadix.Root>
+                  <TooltipRadix.Trigger asChild>
+                     <span
+                        ref={textRef}
+                        className="block w-full cursor-help truncate"
+                     >
+                        {ValueFormatted}
+                     </span>
+                  </TooltipRadix.Trigger>
+                  <TooltipRadix.Portal>
+                     <TooltipContentCustom content={value!} />
+                  </TooltipRadix.Portal>
+               </TooltipRadix.Root>
+            </TooltipRadix.Provider>
+         </Link>
+      </td>
+   );
+};
+// ====================
 
 /**
  * Célula de recurso/cliente formatada
  */
 const CellRecurso = ({ value }: { value?: string | null }) => {
-   const ValueFormatted = useMemo(
-      () => (value ? corrigirTextoCorrompido(value) : EMPTY_VALUE),
-      [value]
-   );
+   const isEmpty = !value || value.trim() === '';
+   const ValueFormatted = useMemo(() => {
+      if (isEmpty) return EMPTY_VALUE;
+      const corrected = corrigirTextoCorrompido(value);
+      return corrected.split(' ').slice(0, 2).join(' ');
+   }, [value, isEmpty]);
 
    return (
       <td className="p-3 text-left text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
-         {corrigirTextoCorrompido(
-            ValueFormatted.split(' ').slice(0, 2).join(' ')
-         )}
+         {ValueFormatted}
       </td>
    );
 };
+// ====================
+
+/**
+ * Célula de data e hora formatada
+ */
+const CellDateTime = ({ value }: { value: string | null }) => {
+   const ValueFormatted = useMemo(() => {
+      if (!value) return EMPTY_VALUE;
+
+      try {
+         const formatted = formatarDataHoraParaBR(value);
+         return formatted;
+      } catch (error) {
+         console.error('❌ Erro ao formatar data:', error, value);
+         return EMPTY_VALUE;
+      }
+   }, [value]);
+
+   return (
+      <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
+         {ValueFormatted}
+      </td>
+   );
+};
+// ====================
+
+/**
+ * Célula de total de horas formatada
+ */
+const CellTotalHours = ({ value }: { value: number | null }) => {
+   const ValueFormatted = useMemo(() => {
+      if (value === null || isNaN(value)) return EMPTY_VALUE;
+      return formatarHorasTotaisHorasDecimais(value); // ✅ CORREÇÃO: Passa o number
+   }, [value]);
+
+   return (
+      <td className="p-3 text-center text-sm font-semibold tracking-widest text-amber-500 select-none group-hover:font-extrabold group-hover:text-black">
+         {ValueFormatted} {obterSufixoHoras(value ?? EMPTY_VALUE)}
+      </td>
+   );
+};
+// ====================
 
 /**
  * Célula de status com badge colorido
@@ -242,6 +353,7 @@ const CellStatus = ({ value }: { value: string | null }) => {
       () => (value ? corrigirTextoCorrompido(value) : EMPTY_VALUE),
       [value]
    );
+
    return (
       <td className="p-3 text-center text-sm font-semibold tracking-widest select-none group-hover:font-extrabold group-hover:text-black">
          <span
@@ -252,6 +364,7 @@ const CellStatus = ({ value }: { value: string | null }) => {
       </td>
    );
 };
+// ====================
 
 /**
  * Cabeçalho de coluna
@@ -279,67 +392,95 @@ export const colunasTabelaDetalhesRelatorioChamados: ColunaDefinition[] = [
       align: 'center',
       render: (value: number) => <CellNumber value={value} />,
    },
+   // ====================
 
    {
-      id: 'data',
+      id: 'dataChamado',
       header: 'Data',
-      accessor: 'data',
+      accessor: 'dataChamado',
       align: 'center',
       render: (value: string | null) => <CellDate value={value} />,
    },
+   // ====================
 
    {
-      id: 'hora',
+      id: 'horaChamado',
       header: 'Hora',
-      accessor: 'hora',
+      accessor: 'horaChamado',
       align: 'center',
       render: (value: string | null) => <CellHora value={value} />,
    },
+   // ====================
+
    {
-      id: 'assunto',
+      id: 'assuntoChamado',
       header: 'Assunto',
-      accessor: 'assunto',
+      accessor: 'assuntoChamado',
       align: 'left',
       render: (value: string | null) => <CellText value={value} />,
    },
-   {
-      id: 'cliente',
-      header: 'Cliente',
-      accessor: 'cliente',
-      align: 'left',
-      showWhen: (agruparPor: string) => agruparPor !== 'cliente',
-      render: (value: string | null) => <CellRecurso value={value} />,
-   },
+   // ====================
 
    {
-      id: 'recurso',
+      id: 'emailChamado',
+      header: 'E-mail',
+      accessor: 'emailChamado',
+      align: 'left',
+      render: (value: string | null) => <CellEmail value={value} />,
+   },
+   // ====================
+
+   {
+      id: 'nomeRecurso',
       header: 'Consultor',
-      accessor: 'recurso',
+      accessor: 'nomeRecurso',
       align: 'left',
       showWhen: (agruparPor: string) => agruparPor !== 'recurso',
       render: (value: string | null) => <CellRecurso value={value} />,
    },
+   // ====================
 
    {
-      id: 'status',
+      id: 'dtEnvioChamado',
+      header: 'Data de Envio',
+      accessor: 'dtEnvioChamado',
+      align: 'center',
+      render: (value: string | null) => <CellDateTime value={value} />,
+   },
+   // ====================
+
+   {
+      id: 'quantidadeHorasGastasChamado',
+      header: 'Horas Gastas',
+      accessor: 'quantidadeHorasGastasChamado',
+      align: 'center',
+      render: (value: number | null) => <CellTotalHours value={value} />,
+   },
+   // ====================
+
+   {
+      id: 'statusChamado',
       header: 'Status',
-      accessor: 'status',
+      accessor: 'statusChamado',
       align: 'center',
       showWhen: (agruparPor: string) => agruparPor !== 'status',
       render: (value: string | null) => <CellStatus value={value} />,
    },
+   // ====================
+
    {
-      id: 'dataEnvio',
-      header: 'Data Envio',
-      accessor: 'dataEnvio',
+      id: 'conclusaoChamado',
+      header: 'Conclusão',
+      accessor: 'conclusaoChamado',
       align: 'center',
       render: (value: string | null) => <CellDateTime value={value} />,
    },
+   // ====================
 
    {
-      id: 'classificacao',
+      id: 'nomeClassificacao',
       header: 'Classificação',
-      accessor: 'classificacao',
+      accessor: 'nomeClassificacao',
       align: 'left',
       showWhen: (agruparPor: string) => agruparPor !== 'classificacao',
       render: (value: string | null) => <CellText value={value} />,
@@ -386,7 +527,7 @@ export const TableHeader = ({ agruparPor }: TableHeaderProps) => {
 // COMPONENTE DE LINHA DA TABELA
 // ================================================================================
 interface TableRowProps {
-   detalhe: DetalheChamado;
+   detalhe: DetalhesChamadoColunas;
    agruparPor: string;
    index: number;
 }

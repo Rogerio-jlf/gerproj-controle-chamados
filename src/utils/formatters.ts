@@ -50,16 +50,20 @@ export const formatarDataHoraParaBR = (
       const ano = date.getFullYear();
 
       // Formata a hora
-      const horas = String(date.getHours()).padStart(2, '0');
+      const horas = date.getHours();
       const minutos = String(date.getMinutes()).padStart(2, '0');
       const segundos = String(date.getSeconds()).padStart(2, '0');
 
+      // Define sufixo de hora (h ou hs)
+      const sufixoHora = horas <= 1 ? 'h' : 'hs';
+      const horasFormatadas = String(horas).padStart(2, '0');
+
       // Retorna com ou sem segundos
       if (incluirSegundos) {
-         return `${dia}/${mes}/${ano} ${horas}:${minutos}:${segundos}`;
+         return `${dia}/${mes}/${ano} - ${horasFormatadas}:${minutos}:${segundos} ${sufixoHora}`;
       }
 
-      return `${dia}/${mes}/${ano} ${horas}:${minutos}`;
+      return `${dia}/${mes}/${ano} - ${horasFormatadas}:${minutos} ${sufixoHora}`;
    } catch (error) {
       console.error('Erro ao formatar data/hora:', error);
       return dateString;
@@ -212,9 +216,16 @@ export const formatarHorasTotaisHorasDecimais = (
    let minutes = 0;
 
    if (typeof value === 'number') {
-      // Caso seja decimal -> ex: 12.5 = 12h30
+      // Caso seja decimal -> ex: 12.5 = 12h30, 0.5 = 0h30, 1.75 = 1h45
       hours = Math.floor(value);
-      minutes = Math.round((value - hours) * 60);
+
+      // ✅ CORREÇÃO: Calcular minutos a partir do valor original, não da parte decimal
+      // Isso evita problemas de precisão com números float
+      const totalMinutes = Math.round(value * 60);
+      minutes = totalMinutes % 60;
+
+      // ✅ Recalcula as horas a partir dos minutos totais
+      hours = Math.floor(totalMinutes / 60);
    } else if (typeof value === 'string') {
       // Caso seja string "HH:MM"
       const [hStr, mStr] = value.split(':');

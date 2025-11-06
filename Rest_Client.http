@@ -44,5 +44,5 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lI
 # RELATÓRIOS CHAMADOS
 # ============================================================
 ###
-GET http://localhost:3000/api/chamado/relatorio?agruparPor=cliente&ano=2025&mes=03&dataFim=2025-03-10
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MjM0OTE4MywiZXhwIjoxNzYyMzU5OTgzfQ.ZT7zEK56DAX_ntg7LDlkdB-jL4gY_eaQsucJYcYP1QQ
+GET http://localhost:3000/api/chamado/relatorio?agruparPor=cliente&ano=2025&mes=10&dataFim=2025-10-31
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ0LCJub21lIjoiQU5BIFBBVUxBIEFMVkVTIENPUlRFUyIsInRpcG8iOiJBRE0iLCJyZWN1cnNvIjp7ImlkIjoxNDMsIm5vbWUiOiJBTkEgUEFVTEEgQUxWRVMgQ09SVEVTIiwiZW1haWwiOiJhbmEuYWx2ZXNAc29sdXRpaS5jb20uYnIiLCJhdGl2byI6MX0sImlhdCI6MTc2MjM2NzQ5OCwiZXhwIjoxNzYyMzc4Mjk4fQ.dWLr65-VwETbClb2CrkbxuGHifr62V6brSqI2xjbo5c

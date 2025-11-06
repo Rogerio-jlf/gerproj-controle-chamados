@@ -24,6 +24,7 @@ export interface TabelaChamadoProps {
    TAREFA_COMPLETA: string | null;
    NOME_PROJETO: string | null;
    PROJETO_COMPLETO: string | null;
+   TOTAL_HORAS_GASTAS: number | null;
 }
 
 // ================================================================================

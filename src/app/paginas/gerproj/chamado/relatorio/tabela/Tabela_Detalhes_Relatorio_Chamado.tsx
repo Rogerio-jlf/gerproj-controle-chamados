@@ -13,7 +13,7 @@ import {
    TableRow,
    EmptyRow,
    useVisibleColumns,
-   type DetalheChamado,
+   type DetalhesChamadoColunas,
 } from '../tabela/Colunas_Tabela_Relatorio_Chamado';
 
 // FORMATTERS
@@ -25,7 +25,8 @@ import { corrigirTextoCorrompido } from '../../../../../../lib/corrigirTextoCorr
 // ICONS
 import { IoClose } from 'react-icons/io5';
 import { HiDocumentReport } from 'react-icons/hi';
-import { FaEraser, FaExclamationTriangle } from 'react-icons/fa';
+import { FaEraser } from 'react-icons/fa';
+import { RiFilterOffFill } from 'react-icons/ri';
 
 // ================================================================================
 // CONSTANTES
@@ -34,38 +35,32 @@ const ANIMATION_DURATION = 100;
 
 // Mapeamento de larguras das colunas
 const COLUMN_WIDTHS: Record<string, string> = {
-   codChamado: '6%',
-   data: '8%',
-   hora: '6%',
-   assunto: '20%',
-   status: '8%',
-   prioridade: '8%',
-   dataEnvio: '10%',
-   diasEmAberto: '8%',
-   tempoAtendimentoDias: '10%',
-   cliente: '12%',
-   recurso: '12%',
-   projeto: '12%',
-   tarefa: '12%',
-   classificacao: '12%',
+   codChamado: '7%',
+   dataChamado: '10%',
+   horaChamado: '6%',
+   assuntoChamado: '20%',
+   emailChamado: '8%',
+   nomeRecurso: '8%',
+   dtEnvioChamado: '10%',
+   quantidadeHorasGastasChamado: '8%',
+   statusChamado: '10%',
+   conclusaoChamado: '12%',
+   nomeClassificacao: '12%',
 };
 
 // Títulos das colunas
 const COLUMN_TITLES: Record<string, string> = {
    codChamado: 'CHAMADO',
-   data: 'DATA',
-   hora: 'HORA',
-   assunto: 'ASSUNTO',
-   status: 'STATUS',
-   prioridade: 'PRIORIDADE',
-   dataEnvio: 'DT. ENVIO',
-   diasEmAberto: 'DIAS EM ABERTO',
-   tempoAtendimentoDias: 'TEMPO ATENDIMENTO',
-   cliente: 'CLIENTE',
-   recurso: 'CONSULTOR',
-   projeto: 'PROJETO',
-   tarefa: 'TAREFA',
-   classificacao: 'CLASSIFICAÇÃO',
+   dataChamado: 'DATA',
+   horaChamado: 'HORA',
+   assuntoChamado: 'ASSUNTO',
+   emailChamado: 'EMAIL',
+   nomeRecurso: 'CONSULTOR',
+   dtEnvioChamado: 'DT. ENVIO',
+   quantidadeHorasGastasChamado: 'HRS. GASTAS',
+   statusChamado: 'STATUS',
+   conclusaoChamado: 'DT. CONCLUSÃO',
+   nomeClassificacao: 'CLASSIFICAÇÃO',
 };
 
 function getColumnWidth(columnId: string): string {
@@ -79,24 +74,19 @@ function getColumnTitle(columnId: string): string {
 // ================================================================================
 // INTERFACES
 // ================================================================================
-interface GrupoRelatorio {
+interface GrupoRelatorioTabela {
    chave: string;
    nome: string;
    quantidadeChamados: number;
-   chamadosAbertos: number;
-   chamadosFechados: number;
-   chamadosPendentes: number;
-   mediaTempoAtendimento: number | null;
-   detalhes: DetalheChamado[];
-   codCliente?: number;
-   codRecurso?: number;
-   codProjeto?: number;
-   codClassificacao?: number;
-   status?: string;
+   quantidadeChamadosAbertos: number;
+   quantidadeChamadosFinalizados: number;
+   quantidadeChamadosPendentes: number;
+   quantidadeHorasGastas: number;
+   detalhes: DetalhesChamadoColunas[];
 }
 
 interface ModalDetalhesProps {
-   grupo: GrupoRelatorio;
+   grupo: GrupoRelatorioTabela;
    agruparPor: string;
    filtrosAplicados: any;
    onClose: () => void;
@@ -114,20 +104,13 @@ export const TabelaDetalhesRelatorioChamados = ({
    const [isClosing, setIsClosing] = useState(false);
 
    // Estados dos filtros do modal (header da tabela)
-   const [filtroChamado, setFiltroChamado] = useState('');
-   const [filtroData, setFiltroData] = useState('');
-   const [filtroHora, setFiltroHora] = useState('');
-   const [filtroAssunto, setFiltroAssunto] = useState('');
-   const [filtroStatus, setFiltroStatus] = useState('');
-   const [filtroPrioridade, setFiltroPrioridade] = useState('');
-   const [filtroDataEnvio, setFiltroDataEnvio] = useState('');
-   const [filtroDiasEmAberto, setFiltroDiasEmAberto] = useState('');
-   const [filtroTempoAtendimento, setFiltroTempoAtendimento] = useState('');
-   const [filtroCliente, setFiltroCliente] = useState('');
-   const [filtroRecurso, setFiltroRecurso] = useState('');
-   const [filtroProjeto, setFiltroProjeto] = useState('');
-   const [filtroTarefa, setFiltroTarefa] = useState('');
-   const [filtroClassificacao, setFiltroClassificacao] = useState('');
+   const [filtroCodChamado, setFiltroCodChamado] = useState('');
+   const [filtroDataChamado, setFiltroDataChamado] = useState('');
+   const [filtroNomeRecurso, setFiltroNomeRecurso] = useState('');
+   const [filtroDtEnvioChamado, setFiltroDtEnvioChamado] = useState('');
+   const [filtroStatusChamado, setFiltroStatusChamado] = useState('');
+   const [filtroConclusaoChamado, setFiltroConclusaoChamado] = useState('');
+   const [filtroNomeClassificacao, setFiltroNomeClassificacao] = useState('');
 
    // Função para fechar o modal com animação
    const handleCloseTabelaRelatorioChamados = useCallback(() => {
@@ -139,213 +122,118 @@ export const TabelaDetalhesRelatorioChamados = ({
    }, [onClose]);
 
    const limparFiltros = useCallback(() => {
-      setFiltroChamado('');
-      setFiltroData('');
-      setFiltroHora('');
-      setFiltroAssunto('');
-      setFiltroStatus('');
-      setFiltroPrioridade('');
-      setFiltroDataEnvio('');
-      setFiltroDiasEmAberto('');
-      setFiltroTempoAtendimento('');
-      setFiltroCliente('');
-      setFiltroRecurso('');
-      setFiltroProjeto('');
-      setFiltroTarefa('');
-      setFiltroClassificacao('');
+      setFiltroCodChamado('');
+      setFiltroDataChamado('');
+      setFiltroNomeRecurso('');
+      setFiltroDtEnvioChamado('');
+      setFiltroStatusChamado('');
+      setFiltroConclusaoChamado('');
+      setFiltroNomeClassificacao('');
    }, []);
 
    const filtrosAtivos = useMemo(() => {
       return [
-         filtroChamado,
-         filtroData,
-         filtroHora,
-         filtroAssunto,
-         filtroStatus,
-         filtroPrioridade,
-         filtroDataEnvio,
-         filtroDiasEmAberto,
-         filtroTempoAtendimento,
-         filtroCliente,
-         filtroRecurso,
-         filtroProjeto,
-         filtroTarefa,
-         filtroClassificacao,
+         filtroCodChamado,
+         filtroDataChamado,
+         filtroNomeRecurso,
+         filtroDtEnvioChamado,
+         filtroStatusChamado,
+         filtroConclusaoChamado,
+         filtroNomeClassificacao,
       ].filter(f => f.trim()).length;
    }, [
-      filtroChamado,
-      filtroData,
-      filtroHora,
-      filtroAssunto,
-      filtroStatus,
-      filtroPrioridade,
-      filtroDataEnvio,
-      filtroDiasEmAberto,
-      filtroTempoAtendimento,
-      filtroCliente,
-      filtroRecurso,
-      filtroProjeto,
-      filtroTarefa,
-      filtroClassificacao,
+      filtroCodChamado,
+      filtroDataChamado,
+      filtroNomeRecurso,
+      filtroDtEnvioChamado,
+      filtroStatusChamado,
+      filtroConclusaoChamado,
+      filtroNomeClassificacao,
    ]);
 
    const detalhesFiltrados = useMemo(() => {
       return grupo.detalhes.filter(detalhe => {
          // Filtro de Chamado
          if (
-            filtroChamado &&
-            !String(detalhe.codChamado).includes(filtroChamado)
+            filtroCodChamado &&
+            !String(detalhe.codChamado).includes(filtroCodChamado)
          ) {
             return false;
          }
 
          // Filtro de Data
-         if (filtroData) {
+         if (filtroDataChamado) {
             const dataFiltroNormalizada =
-               normalizeDateForComparison(filtroData);
+               normalizeDateForComparison(filtroDataChamado);
             const dataDetalheNormalizada = normalizeDateForComparison(
-               detalhe.data || ''
+               detalhe.dataChamado || ''
             );
 
             if (!dataDetalheNormalizada.includes(dataFiltroNormalizada)) {
-               return false;
-            }
-         }
-
-         // Filtro de Hora
-         if (
-            filtroHora &&
-            !String(detalhe.hora || '')
-               .toLowerCase()
-               .includes(filtroHora.toLowerCase())
-         ) {
-            return false;
-         }
-
-         // Filtro de Assunto
-         if (
-            filtroAssunto &&
-            !String(detalhe.assunto || '')
-               .toLowerCase()
-               .includes(filtroAssunto.toLowerCase())
-         ) {
-            return false;
-         }
-
-         // Filtro de Status
-         if (filtroStatus) {
-            if (!detalhe.status) return false;
-            if (
-               !detalhe.status
-                  .toUpperCase()
-                  .includes(filtroStatus.toUpperCase())
-            ) {
-               return false;
-            }
-         }
-
-         // Filtro de Prioridade
-         if (filtroPrioridade) {
-            if (String(detalhe.prioridade) !== filtroPrioridade) {
-               return false;
-            }
-         }
-
-         // Filtro de Data Envio
-         if (filtroDataEnvio) {
-            const dataFiltroNormalizada =
-               normalizeDateForComparison(filtroDataEnvio);
-            const dataDetalheNormalizada = normalizeDateForComparison(
-               detalhe.dataEnvio || ''
-            );
-
-            if (!dataDetalheNormalizada.includes(dataFiltroNormalizada)) {
-               return false;
-            }
-         }
-
-         // Filtro de Dias em Aberto
-         if (
-            filtroDiasEmAberto &&
-            String(detalhe.diasEmAberto || '') !== filtroDiasEmAberto
-         ) {
-            return false;
-         }
-
-         // Filtro de Tempo de Atendimento
-         if (
-            filtroTempoAtendimento &&
-            String(detalhe.tempoAtendimentoDias || '') !==
-               filtroTempoAtendimento
-         ) {
-            return false;
-         }
-
-         // Filtro de Cliente
-         if (filtroCliente) {
-            const clienteNormalizado = corrigirTextoCorrompido(
-               detalhe.cliente ?? ''
-            );
-            if (
-               !clienteNormalizado
-                  .toLowerCase()
-                  .includes(filtroCliente.toLowerCase())
-            ) {
                return false;
             }
          }
 
          // Filtro de Recurso
-         if (filtroRecurso) {
+         if (filtroNomeRecurso) {
             const recursoNormalizado = corrigirTextoCorrompido(
-               detalhe.recurso ?? ''
+               detalhe.nomeRecurso ?? ''
             );
             if (
                !recursoNormalizado
                   .toLowerCase()
-                  .includes(filtroRecurso.toLowerCase())
+                  .includes(filtroNomeRecurso.toLowerCase())
             ) {
                return false;
             }
          }
 
-         // Filtro de Projeto
-         if (filtroProjeto) {
-            const projetoNormalizado = corrigirTextoCorrompido(
-               detalhe.projeto ?? ''
+         // Filtro de Data Envio
+         if (filtroDtEnvioChamado) {
+            const dataFiltroNormalizada =
+               normalizeDateForComparison(filtroDtEnvioChamado);
+            const dataDetalheNormalizada = normalizeDateForComparison(
+               detalhe.dtEnvioChamado || ''
             );
+
+            if (!dataDetalheNormalizada.includes(dataFiltroNormalizada)) {
+               return false;
+            }
+         }
+
+         // Filtro de Status
+         if (filtroStatusChamado) {
+            if (!detalhe.statusChamado) return false;
             if (
-               !projetoNormalizado
-                  .toLowerCase()
-                  .includes(filtroProjeto.toLowerCase())
+               !detalhe.statusChamado
+                  .toUpperCase()
+                  .includes(filtroStatusChamado.toUpperCase())
             ) {
                return false;
             }
          }
 
-         // Filtro de Tarefa
-         if (filtroTarefa) {
-            const tarefaNormalizada = corrigirTextoCorrompido(
-               detalhe.tarefa ?? ''
-            );
+         // Filtro de Conclusão
+         if (filtroConclusaoChamado) {
+            if (!detalhe.conclusaoChamado) return false;
             if (
-               !tarefaNormalizada
-                  .toLowerCase()
-                  .includes(filtroTarefa.toLowerCase())
+               !detalhe.conclusaoChamado
+                  .toUpperCase()
+                  .includes(filtroConclusaoChamado.toUpperCase())
             ) {
                return false;
             }
          }
 
          // Filtro de Classificação
-         if (filtroClassificacao) {
+         if (filtroNomeClassificacao) {
             const classificacaoNormalizada = corrigirTextoCorrompido(
-               detalhe.classificacao ?? ''
+               detalhe.nomeClassificacao ?? ''
             );
             if (
                !classificacaoNormalizada
                   .toLowerCase()
-                  .includes(filtroClassificacao.toLowerCase())
+                  .includes(filtroNomeClassificacao.toLowerCase())
             ) {
                return false;
             }
@@ -355,20 +243,13 @@ export const TabelaDetalhesRelatorioChamados = ({
       });
    }, [
       grupo.detalhes,
-      filtroChamado,
-      filtroData,
-      filtroHora,
-      filtroAssunto,
-      filtroStatus,
-      filtroPrioridade,
-      filtroDataEnvio,
-      filtroDiasEmAberto,
-      filtroTempoAtendimento,
-      filtroCliente,
-      filtroRecurso,
-      filtroProjeto,
-      filtroTarefa,
-      filtroClassificacao,
+      filtroCodChamado,
+      filtroDataChamado,
+      filtroNomeRecurso,
+      filtroDtEnvioChamado,
+      filtroStatusChamado,
+      filtroConclusaoChamado,
+      filtroNomeClassificacao,
    ]);
 
    const totalLinhasOriginais = grupo.detalhes.length;
@@ -385,28 +266,24 @@ export const TabelaDetalhesRelatorioChamados = ({
       string,
       { state: string; setter: (value: string) => void }
    > = {
-      codChamado: { state: filtroChamado, setter: setFiltroChamado },
-      data: { state: filtroData, setter: setFiltroData },
-      hora: { state: filtroHora, setter: setFiltroHora },
-      assunto: { state: filtroAssunto, setter: setFiltroAssunto },
-      status: { state: filtroStatus, setter: setFiltroStatus },
-      prioridade: { state: filtroPrioridade, setter: setFiltroPrioridade },
-      dataEnvio: { state: filtroDataEnvio, setter: setFiltroDataEnvio },
-      diasEmAberto: {
-         state: filtroDiasEmAberto,
-         setter: setFiltroDiasEmAberto,
+      codChamado: { state: filtroCodChamado, setter: setFiltroCodChamado },
+      dataChamado: { state: filtroDataChamado, setter: setFiltroDataChamado },
+      nomeRecurso: { state: filtroNomeRecurso, setter: setFiltroNomeRecurso },
+      dtEnvioChamado: {
+         state: filtroDtEnvioChamado,
+         setter: setFiltroDtEnvioChamado,
       },
-      tempoAtendimentoDias: {
-         state: filtroTempoAtendimento,
-         setter: setFiltroTempoAtendimento,
+      statusChamado: {
+         state: filtroStatusChamado,
+         setter: setFiltroStatusChamado,
       },
-      cliente: { state: filtroCliente, setter: setFiltroCliente },
-      recurso: { state: filtroRecurso, setter: setFiltroRecurso },
-      projeto: { state: filtroProjeto, setter: setFiltroProjeto },
-      tarefa: { state: filtroTarefa, setter: setFiltroTarefa },
-      classificacao: {
-         state: filtroClassificacao,
-         setter: setFiltroClassificacao,
+      conclusaoChamado: {
+         state: filtroConclusaoChamado,
+         setter: setFiltroConclusaoChamado,
+      },
+      nomeClassificacao: {
+         state: filtroNomeClassificacao,
+         setter: setFiltroNomeClassificacao,
       },
    };
 
@@ -499,11 +376,11 @@ export const TabelaDetalhesRelatorioChamados = ({
                   </div>
 
                   <div className="flex items-center justify-between gap-20">
-                     {/* Informações do grupo */}
+                     {/* CARDS TOTALIZADORES */}
                      <div className="flex h-full items-center justify-center gap-6">
                         <div className="flex w-[300px] flex-col gap-1 rounded-tl-4xl rounded-br-4xl border border-purple-600 bg-gradient-to-br from-purple-600 to-purple-700 px-6 py-2 shadow-md shadow-black">
                            <div className="text-sm font-extrabold tracking-widest text-white select-none">
-                              TOTAL DE CHAMADOS
+                              CHAMADOS
                            </div>
                            <div className="pl-4 text-3xl font-extrabold tracking-widest text-white italic select-none">
                               {formatarCodNumber(grupo.quantidadeChamados)}
@@ -512,10 +389,12 @@ export const TabelaDetalhesRelatorioChamados = ({
 
                         <div className="flex w-[300px] flex-col gap-1 rounded-tl-4xl rounded-br-4xl border border-green-600 bg-gradient-to-br from-green-600 to-green-700 px-6 py-2 shadow-md shadow-black">
                            <div className="text-sm font-extrabold tracking-widest text-white select-none">
-                              CHAMADOS FECHADOS
+                              CHAMADOS FINALIZADOS
                            </div>
                            <div className="pl-4 text-3xl font-extrabold tracking-widest text-white italic select-none">
-                              {formatarCodNumber(grupo.chamadosFechados)}
+                              {formatarCodNumber(
+                                 grupo.quantidadeChamadosFinalizados
+                              )}
                            </div>
                         </div>
 
@@ -524,7 +403,9 @@ export const TabelaDetalhesRelatorioChamados = ({
                               CHAMADOS ABERTOS
                            </div>
                            <div className="pl-4 text-3xl font-extrabold tracking-widest text-white italic select-none">
-                              {formatarCodNumber(grupo.chamadosAbertos)}
+                              {formatarCodNumber(
+                                 grupo.quantidadeChamadosAbertos
+                              )}
                            </div>
                         </div>
 
@@ -533,7 +414,9 @@ export const TabelaDetalhesRelatorioChamados = ({
                               CHAMADOS PENDENTES
                            </div>
                            <div className="pl-4 text-3xl font-extrabold tracking-widest text-white italic select-none">
-                              {formatarCodNumber(grupo.chamadosPendentes)}
+                              {formatarCodNumber(
+                                 grupo.quantidadeChamadosPendentes
+                              )}
                            </div>
                         </div>
                      </div>
@@ -556,10 +439,10 @@ export const TabelaDetalhesRelatorioChamados = ({
                      <div className="group flex items-center justify-center">
                         <button
                            onClick={handleCloseTabelaRelatorioChamados}
-                           className="group cursor-pointer rounded-full bg-red-500/50 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-95"
+                           className="cursor-pointer rounded-full bg-white/70 p-3 transition-all hover:scale-110 hover:rotate-180 hover:bg-red-500 active:scale-95"
                         >
                            <IoClose
-                              className="text-white group-hover:scale-125"
+                              className="text-black group-hover:scale-125 group-hover:text-white"
                               size={24}
                            />
                         </button>
@@ -572,14 +455,21 @@ export const TabelaDetalhesRelatorioChamados = ({
             <main className="flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-black">
                <div className="h-full overflow-x-hidden overflow-y-auto">
                   {detalhesFiltrados.length === 0 ? (
-                     <div className="flex flex-col items-center justify-center bg-black py-72 text-center">
-                        <FaExclamationTriangle
-                           className="mx-auto mb-6 text-yellow-500"
+                     <div className="flex flex-col items-center justify-center gap-6 bg-black py-72 text-center">
+                        <RiFilterOffFill
+                           className="mx-auto text-white"
                            size={80}
                         />
-                        <h3 className="text-2xl font-extrabold tracking-widest text-white italic select-none">
+                        <h3 className="mb-12 text-2xl font-extrabold tracking-widest text-white italic select-none">
                            Nenhum registro encontrado para os filtros aplicados
                         </h3>
+                        <button
+                           onClick={limparFiltros}
+                           title="Limpar Filtros"
+                           className="w-[200px] cursor-pointer rounded-md border-none bg-gradient-to-r from-red-600 to-red-700 px-6 py-2 text-lg font-extrabold tracking-widest text-white transition-all hover:scale-110 active:scale-95"
+                        >
+                           Limpar Filtros
+                        </button>
                      </div>
                   ) : (
                      <table className="w-full table-fixed border-collapse">

@@ -68,24 +68,28 @@ export function DropdownStatus({ value, onChange }: DropdownProps) {
          {/* Button */}
          <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex w-full cursor-pointer items-center justify-between rounded-md bg-gradient-to-br from-teal-600 to-teal-700 px-4 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all hover:scale-108 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+            className={`group relative flex w-full cursor-pointer items-center justify-between rounded-md py-2.5 pr-4 pl-4 tracking-widest italic shadow-sm shadow-black transition-all hover:shadow-lg hover:shadow-black focus:ring-2 focus:ring-pink-500 focus:outline-none active:scale-95 ${
+               value
+                  ? 'bg-white text-black ring-2 ring-pink-500 focus:outline-none'
+                  : 'border border-teal-950 bg-teal-900 text-white hover:shadow-lg hover:shadow-black'
+            }`}
          >
-            <span className={value ? 'text-white' : 'text-slate-400'}>
-               {selectedOption?.name || 'TODOS'}
-            </span>
+            <span>{selectedOption?.name}</span>
 
             <div className="flex items-center gap-2">
                {value && (
                   <span
                      onClick={handleClear}
-                     className="cursor-pointer text-white transition-all hover:scale-150 hover:text-red-500 active:scale-95"
+                     className="cursor-pointer text-black transition-all hover:scale-150 hover:rotate-180 hover:text-red-500"
                      title="Limpar"
                   >
                      <IoClose size={24} />
                   </span>
                )}
                <span
-                  className={`text-white transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                  className={`transition-all ${isOpen ? 'rotate-180' : ''} ${
+                     value ? 'text-black' : 'text-white'
+                  }`}
                >
                   <IoIosArrowDown size={24} />
                </span>
@@ -117,9 +121,9 @@ export function DropdownStatus({ value, onChange }: DropdownProps) {
 // ====================================================================================================
 
 // ================================================================================
-// COMPONENTE DROPDOWN PRIORIDADE
+// COMPONENTE DROPDOWN CLASSIFICACAO
 // ================================================================================
-export function DropdownPrioridade({ value, onChange }: DropdownProps) {
+export function DropdownClassificacao({ value, onChange }: DropdownProps) {
    const [isOpen, setIsOpen] = useState(false);
    const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -168,24 +172,28 @@ export function DropdownPrioridade({ value, onChange }: DropdownProps) {
          {/* Button */}
          <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex w-full cursor-pointer items-center justify-between rounded-md bg-gradient-to-br from-teal-600 to-teal-700 px-4 py-2.5 text-base font-extrabold tracking-widest italic shadow-md shadow-black transition-all hover:scale-108 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+            className={`group relative flex w-full cursor-pointer items-center justify-between rounded-md py-2.5 pr-4 pl-4 tracking-widest italic shadow-sm shadow-black transition-all hover:shadow-lg hover:shadow-black focus:ring-2 focus:ring-pink-500 focus:outline-none active:scale-95 ${
+               value
+                  ? 'bg-white text-black ring-2 ring-pink-500 focus:outline-none'
+                  : 'border border-teal-950 bg-teal-900 text-white hover:shadow-lg hover:shadow-black'
+            }`}
          >
-            <span className={value ? 'text-white' : 'text-slate-400'}>
-               {selectedOption?.name || 'TODAS'}
-            </span>
+            <span>{selectedOption?.name}</span>
 
             <div className="flex items-center gap-2">
                {value && (
                   <span
                      onClick={handleClear}
-                     className="cursor-pointer text-white transition-all hover:scale-150 hover:text-red-500 active:scale-95"
+                     className="cursor-pointer text-black transition-all hover:scale-150 hover:rotate-180 hover:text-red-500"
                      title="Limpar"
                   >
                      <IoClose size={24} />
                   </span>
                )}
                <span
-                  className={`text-white transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                  className={`transition-all ${isOpen ? 'rotate-180' : ''} ${
+                     value ? 'text-black' : 'text-white'
+                  }`}
                >
                   <IoIosArrowDown size={24} />
                </span>

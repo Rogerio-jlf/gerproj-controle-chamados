@@ -21,7 +21,7 @@ interface InputFilterHeaderProps {
 // ================================================================================
 // CONSTANTES
 // ================================================================================
-const DEBOUNCE_DELAY = 400;
+const DEBOUNCE_DELAY = 600;
 
 // Colunas que usam dropdown SIM/NÃO
 const DROPDOWN_SIM_NAO_COLUMNS = ['faturado', 'validado'] as const;

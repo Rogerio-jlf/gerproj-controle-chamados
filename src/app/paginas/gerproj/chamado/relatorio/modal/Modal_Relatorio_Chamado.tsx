@@ -33,51 +33,36 @@ const CACHE_TIME = 1000 * 60 * 5;
 // ================================================================================
 // INTERFACES
 // ================================================================================
-interface DetalheChamado {
-   codChamado: number;
-   data: string | null;
-   hora: string | null;
-   assunto: string | null;
-   status: string | null;
-   prioridade: number | null;
-   dataEnvio: string | null;
-   diasEmAberto: number | null;
-   tempoAtendimentoDias: number | null;
-   cliente?: string | null;
-   codCliente?: number | null;
-   recurso?: string | null;
-   codRecurso?: number | null;
-   projeto?: string | null;
-   codProjeto?: number | null;
-   tarefa?: string | null;
-   codTarefa?: number | null;
-   classificacao?: string | null;
-   codClassificacao?: number | null;
+interface TotalizadoresModal {
+   totalGeralChamados: number;
+   totalGeralChamadosAbertos: number;
+   totalGeralChamadosFinalizados: number;
+   totalGeralChamadosPendentes: number;
+   totalGeralHorasGastas: number;
 }
 
-interface GrupoRelatorio {
+interface DetalhesChamadoModal {
+   codChamado: number;
+   dataChamado: string;
+   horaChamado: string;
+   assuntoChamado: string | null;
+   emailChamado: string | null;
+   nomeRecurso: string | null;
+   dtEnvioChamado: string | null;
+   quantidadeHorasGastasChamado: number | null;
+   statusChamado: string;
+   conclusaoChamado: string | null;
+   nomeClassificacao: string | null;
+}
+interface GrupoRelatorioModal {
    chave: string;
    nome: string;
    quantidadeChamados: number;
-   chamadosAbertos: number;
-   chamadosFechados: number;
-   chamadosPendentes: number;
-   mediaTempoAtendimento: number | null;
-   detalhes: DetalheChamado[];
-   codCliente?: number;
-   codRecurso?: number;
-   codProjeto?: number;
-   codClassificacao?: number;
-   status?: string;
-}
-
-interface Totalizadores {
-   totalChamados: number;
-   totalAbertos: number;
-   totalFechados: number;
-   totalPendentes: number;
-   mediaGeralTempoAtendimento: number | null;
-   quantidadeGrupos: number;
+   quantidadeChamadosAbertos: number;
+   quantidadeChamadosFinalizados: number;
+   quantidadeChamadosPendentes: number;
+   quantidadeHorasGastas: number;
+   detalhes: DetalhesChamadoModal[];
 }
 
 interface RelatorioResponse {
@@ -92,13 +77,9 @@ interface RelatorioResponse {
       filtros: {
          cliente: string | null;
          recurso: string | null;
-         projeto: string | null;
-         status: string | null;
-         prioridade: string | null;
-         classificacao: string | null;
       };
-      totalizadores: Totalizadores;
-      grupos: GrupoRelatorio[];
+      totalizadores: TotalizadoresModal;
+      grupos: GrupoRelatorioModal[];
    };
 }
 
@@ -180,9 +161,8 @@ export function ModalRelatorioChamados({ isOpen = true, onClose }: Props) {
    >('todos');
 
    // Estados - UI
-   const [selectedGrupo, setSelectedGrupo] = useState<GrupoRelatorio | null>(
-      null
-   );
+   const [selectedGrupo, setSelectedGrupo] =
+      useState<GrupoRelatorioModal | null>(null);
    const [isClosing, setIsClosing] = useState(false);
 
    // Callback para receber os filtros do componente filho
@@ -580,7 +560,7 @@ export function ModalRelatorioChamados({ isOpen = true, onClose }: Props) {
                               </div>
                               <div className="pl-4 text-3xl font-extrabold tracking-widest text-white italic select-none">
                                  {formatarCodNumber(
-                                    totalizadores.totalChamados
+                                    totalizadores.totalGeralChamados
                                  )}
                               </div>
                            </div>
@@ -591,7 +571,7 @@ export function ModalRelatorioChamados({ isOpen = true, onClose }: Props) {
                               </div>
                               <div className="pl-4 text-3xl font-extrabold tracking-widest text-white italic select-none">
                                  {formatarCodNumber(
-                                    totalizadores.totalFechados
+                                    totalizadores.totalGeralChamadosFinalizados
                                  )}
                               </div>
                            </div>
@@ -601,7 +581,9 @@ export function ModalRelatorioChamados({ isOpen = true, onClose }: Props) {
                                  CHAMADOS ABERTOS
                               </div>
                               <div className="pl-4 text-3xl font-extrabold tracking-widest text-white italic select-none">
-                                 {formatarCodNumber(totalizadores.totalAbertos)}
+                                 {formatarCodNumber(
+                                    totalizadores.totalGeralChamadosAbertos
+                                 )}
                               </div>
                            </div>
 
@@ -611,7 +593,7 @@ export function ModalRelatorioChamados({ isOpen = true, onClose }: Props) {
                               </div>
                               <div className="pl-4 text-3xl font-extrabold tracking-widest text-white italic select-none">
                                  {formatarCodNumber(
-                                    totalizadores.totalPendentes
+                                    totalizadores.totalGeralChamadosPendentes
                                  )}
                               </div>
                            </div>
@@ -660,15 +642,15 @@ export function ModalRelatorioChamados({ isOpen = true, onClose }: Props) {
                                              )}
                                              {' | Abertos: '}
                                              {formatarCodNumber(
-                                                grupo.chamadosAbertos
+                                                grupo.quantidadeChamadosAbertos
                                              )}
                                              {' | Fechados: '}
                                              {formatarCodNumber(
-                                                grupo.chamadosFechados
+                                                grupo.quantidadeChamadosFinalizados
                                              )}
                                              {' | Pendentes: '}
                                              {formatarCodNumber(
-                                                grupo.chamadosPendentes
+                                                grupo.quantidadeChamadosPendentes
                                              )}
                                           </p>
                                        </div>

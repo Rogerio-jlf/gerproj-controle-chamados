@@ -125,7 +125,7 @@ const getCellValue = (row: any, columnId: string): string => {
 // COMPONENTE INPUT FILTRO COM DEBOUNCE
 // ================================================================================
 const InputFilterWithDebounce = memo(
-   ({ value, onChange, type = 'text', columnId }: ExtendedInputFilterProps) => {
+   ({ value, onChange, columnId }: ExtendedInputFilterProps) => {
       const [localValue, setLocalValue] = useState(value);
       const isUserTyping = useRef(false);
       const inputRef = useRef<HTMLInputElement>(null);
@@ -244,7 +244,7 @@ const InputFilterWithDebounce = memo(
          <div className="group relative w-full">
             <input
                ref={inputRef}
-               type={type}
+               type="text"
                value={localValue}
                onChange={handleChange}
                onKeyDown={handleKeyDown}
