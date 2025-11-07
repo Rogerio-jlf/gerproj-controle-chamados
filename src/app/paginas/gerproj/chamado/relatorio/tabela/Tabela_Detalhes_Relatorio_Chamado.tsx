@@ -15,6 +15,11 @@ import {
    useVisibleColumns,
    type DetalhesChamadoColunas,
 } from '../tabela/Colunas_Tabela_Relatorio_Chamado';
+import {
+   getColumnWidth,
+   getColumnTitle,
+   // ... outros imports
+} from '../tabela/Colunas_Tabela_Relatorio_Chamado';
 
 // FORMATTERS
 import { formatarCodNumber } from '../../../../../../utils/formatters';
@@ -32,44 +37,6 @@ import { RiFilterOffFill } from 'react-icons/ri';
 // CONSTANTES
 // ================================================================================
 const ANIMATION_DURATION = 100;
-
-// Mapeamento de larguras das colunas
-const COLUMN_WIDTHS: Record<string, string> = {
-   codChamado: '7%',
-   dataChamado: '10%',
-   horaChamado: '6%',
-   assuntoChamado: '20%',
-   emailChamado: '8%',
-   nomeRecurso: '8%',
-   dtEnvioChamado: '10%',
-   quantidadeHorasGastasChamado: '8%',
-   statusChamado: '10%',
-   conclusaoChamado: '12%',
-   nomeClassificacao: '12%',
-};
-
-// Títulos das colunas
-const COLUMN_TITLES: Record<string, string> = {
-   codChamado: 'CHAMADO',
-   dataChamado: 'DATA',
-   horaChamado: 'HORA',
-   assuntoChamado: 'ASSUNTO',
-   emailChamado: 'EMAIL',
-   nomeRecurso: 'CONSULTOR',
-   dtEnvioChamado: 'DT. ENVIO',
-   quantidadeHorasGastasChamado: 'HRS. GASTAS',
-   statusChamado: 'STATUS',
-   conclusaoChamado: 'DT. CONCLUSÃO',
-   nomeClassificacao: 'CLASSIFICAÇÃO',
-};
-
-function getColumnWidth(columnId: string): string {
-   return COLUMN_WIDTHS[columnId] || 'auto';
-}
-
-function getColumnTitle(columnId: string): string {
-   return COLUMN_TITLES[columnId] || columnId.toUpperCase();
-}
 
 // ================================================================================
 // INTERFACES

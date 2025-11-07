@@ -43,9 +43,61 @@ interface ColunaDefinition {
 }
 
 // ================================================================================
-// CONSTANTES
+// CONSTANTES - CONFIGURAÇÃO DAS COLUNAS
 // ================================================================================
 const EMPTY_VALUE = 'n/a';
+
+/**
+ * Larguras fixas das colunas
+ */
+export const COLUMN_WIDTHS: Record<string, string> = {
+   codChamado: '7%',
+   dataChamado: '10%',
+   horaChamado: '6%',
+   assuntoChamado: '20%',
+   emailChamado: '8%',
+   nomeRecurso: '8%',
+   dtEnvioChamado: '10%',
+   quantidadeHorasGastasChamado: '8%',
+   statusChamado: '10%',
+   conclusaoChamado: '10%',
+   nomeClassificacao: '12%',
+};
+
+/**
+ * Títulos das colunas
+ */
+export const COLUMN_TITLES: Record<string, string> = {
+   codChamado: 'CHAMADO',
+   dataChamado: 'DATA',
+   horaChamado: 'HORA',
+   assuntoChamado: 'ASSUNTO',
+   emailChamado: 'EMAIL',
+   nomeRecurso: 'CONSULTOR',
+   dtEnvioChamado: 'DT. ENVIO',
+   quantidadeHorasGastasChamado: 'HRS. GASTAS',
+   statusChamado: 'STATUS',
+   conclusaoChamado: 'DT. CONCLUSÃO',
+   nomeClassificacao: 'CLASSIFICAÇÃO',
+};
+
+// ================================================================================
+// FUNÇÕES AUXILIARES - CONFIGURAÇÃO DAS COLUNAS
+// ================================================================================
+
+/**
+ * Retorna a largura configurada para uma coluna
+ */
+export function getColumnWidth(columnId: string): string {
+   return COLUMN_WIDTHS[columnId] || 'auto';
+}
+
+/**
+ * Retorna o título formatado para uma coluna
+ */
+export function getColumnTitle(columnId: string): string {
+   return COLUMN_TITLES[columnId] || columnId.toUpperCase();
+}
 
 // ================================================================================
 // HOOKS CUSTOMIZADOS
@@ -101,34 +153,23 @@ const getStylesStatus = (status: string | undefined) => {
    switch (status?.toUpperCase()) {
       case 'NAO FINALIZADO':
          return 'bg-red-500 text-black italic';
-
       case 'EM ATENDIMENTO':
          return 'bg-blue-500 text-white italic';
-
       case 'FINALIZADO':
          return 'bg-green-500 text-black italic';
-
       case 'NAO INICIADO':
          return 'bg-yellow-500 text-black italic';
-
       case 'STANDBY':
          return 'bg-orange-500 text-black';
-
       case 'ATRIBUIDO':
          return 'bg-teal-500 text-black italic';
-
       case 'AGUARDANDO VALIDACAO':
          return 'bg-purple-500 text-white italic';
-
       default:
          return 'bg-gray-500 text-black italic';
    }
 };
-// ====================
 
-/**
- * Célula de número formatado
- */
 const CellNumber = ({ value }: { value: number | null }) => {
    const ValueFormatted = useMemo(
       () => (value !== null ? formatarCodNumber(value) : EMPTY_VALUE),
@@ -141,11 +182,7 @@ const CellNumber = ({ value }: { value: number | null }) => {
       </td>
    );
 };
-// ====================
 
-/**
- * Célula de data formatada
- */
 const CellDate = ({ value }: { value: string | null }) => {
    const formatted = useMemo(
       () => (value ? formatarDataParaBR(value) : EMPTY_VALUE),
@@ -158,11 +195,7 @@ const CellDate = ({ value }: { value: string | null }) => {
       </td>
    );
 };
-// ====================
 
-/**
- * Célula de hora simples
- */
 const CellHora = ({ value }: { value: string | null }) => {
    return (
       <td className="p-3 text-center text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
@@ -171,12 +204,7 @@ const CellHora = ({ value }: { value: string | null }) => {
       </td>
    );
 };
-// ====================
 
-/**
- * Célula de texto formatada (para assunto, classificacao, etc)
- * ✅ Refatorado seguindo padrão do CellEmail
- */
 const CellText = ({ value }: { value?: string | null }) => {
    const isEmpty = !value || value.trim() === '';
    const ValueFormatted = useMemo(
@@ -186,7 +214,6 @@ const CellText = ({ value }: { value?: string | null }) => {
 
    const { textRef, showTooltip } = useTextOverflow(value, ValueFormatted);
 
-   // Sem tooltip - renderização simples
    if (!showTooltip) {
       return (
          <td className="p-3 text-left text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
@@ -201,7 +228,6 @@ const CellText = ({ value }: { value?: string | null }) => {
       );
    }
 
-   // Com tooltip - texto com overflow
    return (
       <td className="p-3 text-left text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
          <TooltipRadix.Provider delayDuration={200}>
@@ -222,12 +248,7 @@ const CellText = ({ value }: { value?: string | null }) => {
       </td>
    );
 };
-// ====================
 
-/**
- * Célula de e-mail formatada com link mailto
- * ✅ Refatorado seguindo padrão do CellEmail do exemplo
- */
 const CellEmail = ({ value }: { value?: string | null }) => {
    const isEmpty = !value || value.trim() === '';
    const ValueFormatted = useMemo(
@@ -237,7 +258,6 @@ const CellEmail = ({ value }: { value?: string | null }) => {
 
    const { textRef, showTooltip } = useTextOverflow(value, ValueFormatted);
 
-   // Sem tooltip - renderização simples
    if (!showTooltip) {
       return (
          <td className="p-3 text-left text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
@@ -258,7 +278,6 @@ const CellEmail = ({ value }: { value?: string | null }) => {
       );
    }
 
-   // Com tooltip - email com overflow
    return (
       <td className="p-3 text-left text-sm font-semibold tracking-widest text-white select-none group-hover:font-extrabold group-hover:text-black">
          <Link href={`mailto:${value}`} className="block w-full">
@@ -281,11 +300,7 @@ const CellEmail = ({ value }: { value?: string | null }) => {
       </td>
    );
 };
-// ====================
 
-/**
- * Célula de recurso/cliente formatada
- */
 const CellRecurso = ({ value }: { value?: string | null }) => {
    const isEmpty = !value || value.trim() === '';
    const ValueFormatted = useMemo(() => {
@@ -300,11 +315,7 @@ const CellRecurso = ({ value }: { value?: string | null }) => {
       </td>
    );
 };
-// ====================
 
-/**
- * Célula de data e hora formatada
- */
 const CellDateTime = ({ value }: { value: string | null }) => {
    const ValueFormatted = useMemo(() => {
       if (!value) return EMPTY_VALUE;
@@ -324,15 +335,11 @@ const CellDateTime = ({ value }: { value: string | null }) => {
       </td>
    );
 };
-// ====================
 
-/**
- * Célula de total de horas formatada
- */
 const CellTotalHours = ({ value }: { value: number | null }) => {
    const ValueFormatted = useMemo(() => {
       if (value === null || isNaN(value)) return EMPTY_VALUE;
-      return formatarHorasTotaisHorasDecimais(value); // ✅ CORREÇÃO: Passa o number
+      return formatarHorasTotaisHorasDecimais(value);
    }, [value]);
 
    return (
@@ -341,11 +348,7 @@ const CellTotalHours = ({ value }: { value: number | null }) => {
       </td>
    );
 };
-// ====================
 
-/**
- * Célula de status com badge colorido
- */
 const CellStatus = ({ value }: { value: string | null }) => {
    const statusStyles = getStylesStatus(value || undefined);
 
@@ -364,11 +367,7 @@ const CellStatus = ({ value }: { value: string | null }) => {
       </td>
    );
 };
-// ====================
 
-/**
- * Cabeçalho de coluna
- */
 const HeaderCell = ({ children }: { children: React.ReactNode }) => (
    <th className="p-6 text-center text-base font-bold tracking-widest text-white uppercase select-none">
       {children}
@@ -392,8 +391,6 @@ export const colunasTabelaDetalhesRelatorioChamados: ColunaDefinition[] = [
       align: 'center',
       render: (value: number) => <CellNumber value={value} />,
    },
-   // ====================
-
    {
       id: 'dataChamado',
       header: 'Data',
@@ -401,8 +398,6 @@ export const colunasTabelaDetalhesRelatorioChamados: ColunaDefinition[] = [
       align: 'center',
       render: (value: string | null) => <CellDate value={value} />,
    },
-   // ====================
-
    {
       id: 'horaChamado',
       header: 'Hora',
@@ -410,8 +405,6 @@ export const colunasTabelaDetalhesRelatorioChamados: ColunaDefinition[] = [
       align: 'center',
       render: (value: string | null) => <CellHora value={value} />,
    },
-   // ====================
-
    {
       id: 'assuntoChamado',
       header: 'Assunto',
@@ -419,8 +412,6 @@ export const colunasTabelaDetalhesRelatorioChamados: ColunaDefinition[] = [
       align: 'left',
       render: (value: string | null) => <CellText value={value} />,
    },
-   // ====================
-
    {
       id: 'emailChamado',
       header: 'E-mail',
@@ -428,8 +419,6 @@ export const colunasTabelaDetalhesRelatorioChamados: ColunaDefinition[] = [
       align: 'left',
       render: (value: string | null) => <CellEmail value={value} />,
    },
-   // ====================
-
    {
       id: 'nomeRecurso',
       header: 'Consultor',
@@ -438,8 +427,6 @@ export const colunasTabelaDetalhesRelatorioChamados: ColunaDefinition[] = [
       showWhen: (agruparPor: string) => agruparPor !== 'recurso',
       render: (value: string | null) => <CellRecurso value={value} />,
    },
-   // ====================
-
    {
       id: 'dtEnvioChamado',
       header: 'Data de Envio',
@@ -447,8 +434,6 @@ export const colunasTabelaDetalhesRelatorioChamados: ColunaDefinition[] = [
       align: 'center',
       render: (value: string | null) => <CellDateTime value={value} />,
    },
-   // ====================
-
    {
       id: 'quantidadeHorasGastasChamado',
       header: 'Horas Gastas',
@@ -456,8 +441,6 @@ export const colunasTabelaDetalhesRelatorioChamados: ColunaDefinition[] = [
       align: 'center',
       render: (value: number | null) => <CellTotalHours value={value} />,
    },
-   // ====================
-
    {
       id: 'statusChamado',
       header: 'Status',
@@ -466,8 +449,6 @@ export const colunasTabelaDetalhesRelatorioChamados: ColunaDefinition[] = [
       showWhen: (agruparPor: string) => agruparPor !== 'status',
       render: (value: string | null) => <CellStatus value={value} />,
    },
-   // ====================
-
    {
       id: 'conclusaoChamado',
       header: 'Conclusão',
@@ -475,8 +456,6 @@ export const colunasTabelaDetalhesRelatorioChamados: ColunaDefinition[] = [
       align: 'center',
       render: (value: string | null) => <CellDateTime value={value} />,
    },
-   // ====================
-
    {
       id: 'nomeClassificacao',
       header: 'Classificação',
@@ -541,12 +520,10 @@ export const TableRow = ({ detalhe, agruparPor, index }: TableRowProps) => {
             const value = detalhe[col.accessor];
             const rendered = col.render(value, detalhe);
 
-            // Se o render retornou um elemento React válido, clona com a key
             if (React.isValidElement(rendered)) {
                return React.cloneElement(rendered, { key: col.id });
             }
 
-            // Para primitivos ou null/undefined, envolve em td
             return (
                <td
                   key={col.id}
@@ -584,7 +561,7 @@ export const EmptyRow = ({ index, columnCount }: EmptyRowProps) => {
 };
 
 // ================================================================================
-// EXPORT DE TIPOS ÚTEIS
+// EXPORTS
 // ================================================================================
 export type { ColunaDefinition };
 export { EMPTY_VALUE };
